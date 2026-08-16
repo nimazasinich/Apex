@@ -1,0 +1,33 @@
+Historical dry-run evidence imported from APEX-complete-integrated-v1.0.47-audited.zip.
+It describes the earlier audited environment and is not a current cleanup execution result.
+Line endings were normalized for repository hygiene.
+
+> apex-trading-engine@1.0.0 qa:cleanup:dry
+> tsx scripts/qa/cleanupQaArtifacts.mts --dry-run
+
+[qa:cleanup] mode=DRY-RUN qaDir=C:\project\APEX-frontend-phase2 (4)\apex-trading-engine\_qa
+[qa:cleanup] protected (18): 2026-07-30_17-22-00, a11y_smoke_, a11y_smoke_2026-07-30_17-18-02, diag, empty_states_2026-07-30_17-12-48, phase0_acceptance_20260730_173315, phase0_baseline_20260730_171438, phase0_live_20260730_172137, split_dock_headed_2026-07-30_17-16-38, step1_verify_2026-07-30_16-04-13, step1_verify_2026-07-30_16-05-15, step1_verify_2026-07-30_16-08-09, ui_audit, ux_capture, v3_final_acceptance_2026-07-30_17-18-27, v3_phase_gate_2026-07-30_14-43-44, v3_phase_gate_2026-07-30_14-52-54, v3_phase_gate_2026-07-30_15-00-12
+[qa:cleanup] would delete: 2026-07-30_17-02-01/ (contact_sheet)
+[qa:cleanup] would delete: 2026-07-30_17-05-28/ (contact_sheet)
+[qa:cleanup] would delete: a11y_smoke_2026-07-30_16-37-56/ (a11y)
+[qa:cleanup] would delete: a11y_smoke_2026-07-30_17-00-28/ (a11y)
+[qa:cleanup] would delete: analysis-pages-ocean-v1/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-ocean-v2/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-ocean-v3/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-ocean-v4/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-ocean-v5/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-ocean-v6/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-ocean-v7/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-refresh/ (diagnostic)
+[qa:cleanup] would delete: analysis-pages-refresh-final/ (diagnostic)
+[qa:cleanup] would delete: cc-visual/ (diagnostic)
+[qa:cleanup] would delete: overview-layout/ (diagnostic)
+[qa:cleanup] would delete: phase0_baseline_20260730_165219/ (phase0)
+[qa:cleanup] would delete: split_dock_headed_2026-07-30_16-15-55/ (split_dock)
+[qa:cleanup] would delete: split_dock_headed_2026-07-30_16-46-07/ (split_dock)
+[qa:cleanup] would delete: split_dock_headed_2026-07-30_17-00-23/ (split_dock)
+[qa:cleanup] would delete: v3_final_acceptance_2026-07-30_15-27-49/ (final_acceptance)
+[qa:cleanup] would delete: v3_final_acceptance_2026-07-30_15-46-23/ (final_acceptance)
+[qa:cleanup] would delete: v3_final_acceptance_2026-07-30_16-55-34/ (final_acceptance)
+[qa:cleanup] would delete: visual-layout/ (diagnostic)
+[qa:cleanup] done removed=23 protected=18 size 240.90 MB -> 127.10 MB

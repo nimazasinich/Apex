@@ -4,16 +4,15 @@ import { resolve } from 'node:path';
 
 const root = process.cwd();
 const classified = new Set([
-  // `.git` is classified because this gate must pass inside a real repository,
-  // not only inside an extracted source archive. `actions/checkout` always
-  // creates it, so leaving it unclassified made the gate structurally
-  // unpassable in CI.
-  '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.git', '.github', '.gitignore',
+  '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.github', '.gitignore',
   '.mcp-recovered', '.node-version', '.nvmrc', 'apex-npm-tarballs.zip', 'CLAUDE.md', 'Doc', 'QA', 'README.md', 'README.txt', '_archive', '_qa', '_release', 'dist', 'index.html',
   'node_modules', 'openapi', 'package-lock.json', 'package.json', 'public', 'RUN-APEX.bat', 'scripts', 'server.ts', 'src', 'tests',
   'test-results', 'tools', 'tsconfig.json', 'tsconfig.ui02.json', 'vendor', 'VERSION', 'vite.config.ts',
 ]);
-const entries = readdirSync(root).sort();
+// `.git` is version-control metadata, not a source artifact to classify. It is
+// created by every clone and every `actions/checkout` run, so it is filtered out
+// here rather than added to the classified source set.
+const entries = readdirSync(root).sort().filter((entry) => entry !== '.git');
 const unknown = entries.filter((entry) => !classified.has(entry));
 const contract = readFileSync(resolve(root, 'Doc/repository/ROOT_CONTRACT.md'), 'utf8');
 const errors = [];

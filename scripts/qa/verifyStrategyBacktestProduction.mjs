@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+import fs from 'node:fs';import path from 'node:path';
+const root=process.cwd();const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+const strategy=read('src/pages/strategies/StrategyPage.tsx');const model=read('src/pages/strategies/StrategyModelWorkspace.tsx');const evidence=read('src/pages/strategies/StrategyEvidenceRail.tsx');const strategyCss=read('src/pages/strategies/StrategyPage.css');const backtest=read('src/pages/backtesting/BacktestingPage.tsx');const checkpoint=read('src/pages/backtesting/backtestCheckpointStorage.ts');const runBuilder=read('src/pages/backtesting/BacktestRunBuilder.tsx');const equity=read('src/pages/backtesting/BacktestEquityPanel.tsx');const trades=read('src/pages/backtesting/BacktestTradesPanel.tsx');const backtestCss=read('src/pages/backtesting/BacktestingPage.css');const routes=read('src/services/apexNextMarketRoutes.ts');const validation=read('src/services/apiValidation.ts');const marketData=read('src/services/marketDataService.ts');const scanner=read('src/services/strategyEngine/scannerPresetAdapter.ts');const types=read('src/types.ts');const pkg=JSON.parse(read('package.json'));const manifest=JSON.parse(read('public/manifest.json'));
+const checks=[];const check=(name,pass,detail='')=>checks.push({name,pass:Boolean(pass),detail});
+check('release identity is synchronized',pkg.version===manifest.version&&/^\d+\.\d+\.\d+$/.test(pkg.version),pkg.version);
+check('strategy evidence is honest before validation',evidence.includes('Evidence pending')&&evidence.includes('not presented as verified performance'));
+check('strategy actions hand off instead of hidden replay',strategy.includes("navigateWorkspace('backtesting')")&&!strategy.includes('/api/market/backtest'));
+check('blocked strategy state is explicit',model.includes('Prerequisite blocked')&&model.includes('Prerequisites Required'));
+check('strategy phone layout returns to natural document flow',strategyCss.includes('height: auto !important')&&strategyCss.includes('.strategy-model-actions { position: static;'));
+check('backtest supports 5000-bar research history',backtest.includes('BAR_OPTIONS')&&checkpoint.includes('5_000')&&validation.includes("parseFiniteNumber(input, input.bars === undefined ? 'lookback' : 'bars', 2_000, 200, 5_000"));
+check('backtest hold window is editable',runBuilder.includes('Maximum hold')&&runBuilder.includes('onMaxHoldBarsChange'));
+check('zero-trade run can still chart verified market benchmark',equity.includes('const chartData = hasEquity ? equityData : marketData')&&equity.includes('marketData'));
+check('backtest chart has deterministic responsive height',backtestCss.includes('height: clamp(290px, 40vh, 390px)')&&backtestCss.includes('min-height: 290px'));
+check('API returns market benchmark',routes.includes('marketCurve')&&types.includes('marketCurve?: Array'));
+check('API returns diagnostics',routes.includes("diagnostics: NonNullable<BacktestResult['diagnostics']>")&&types.includes('diagnostics?:'));
+check('historical fetch paginates Binance and KuCoin Futures',marketData.includes('getPaginatedBinanceHistory')&&marketData.includes('getPaginatedKuCoinHistory'));
+check('walk-forward validation uses longer verified history',routes.includes('fetchHistoricalCandlesForBacktest(symbol, 2_400')&&routes.includes('historical.candles.length < 1_200'));
+check('scanner preset parameters are applied',scanner.includes('parameters?: Record<string, number | string>')&&scanner.includes('runtimeOverrides')&&routes.includes('parameters: effectiveParameters'));
+check('validation result updates active evidence snapshot',strategy.includes('buildStrategyEvidenceSnapshot')&&strategy.includes('latestSnapshot'));
+check('no-trade/trade exit reason remains visible',trades.includes('trade.reason')&&trades.includes('Timed exit'));
+check('direction is explicit in strategy and backtest builders',model.includes('<DirectionSelector')&&runBuilder.includes('<DirectionSelector'));
+check('Research Matrix is additive and paper-only',backtest.includes('MultiStrategyResearchPanel')&&backtest.includes('Research Matrix'));
+check('multi research exact horizon is bounded to provider ceiling',routes.includes('400, 5_000')&&routes.includes('insufficient_requested_history'));
+check('paper sizing is server-bound before position sizing',routes.includes('multiAgentCouncilStore.verify')&&routes.includes('sizePaperMultiTradePositions'));
+check('no multi research route submits live orders',!routes.slice(routes.indexOf("'/api/strategies/multi-backtest'"),routes.indexOf("'/api/strategies/:strategyId'",routes.indexOf("'/api/strategies/multi-backtest'"))).includes('submitLiveOrder'));
+const failed=checks.filter(c=>!c.pass);for(const c of checks)console.log(`${c.pass?'PASS':'FAIL'}  ${c.name}${c.detail?` — ${c.detail}`:''}`);console.log(`\n${checks.length-failed.length}/${checks.length} checks passed.`);if(failed.length)process.exit(1);

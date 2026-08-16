@@ -24,7 +24,7 @@ permissions:
 jobs:
   verify:
     name: verify (lint + unit + runtime + build + QA + docs + release-gate)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -92,7 +92,7 @@ jobs:
 
   dependency-review:
     name: dependency review (new vulnerable dependencies)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # Pull requests only: the action compares the PR head against its base, so
     # there is no meaningful diff to review on a direct push to main.
     if: github.event_name == 'pull_request'
@@ -111,7 +111,7 @@ jobs:
 
   verify-visual:
     name: verify:visual (Playwright browser + 1368x753 screenshot QA)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: verify
     steps:
       - uses: actions/checkout@v7

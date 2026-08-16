@@ -17,7 +17,7 @@ permissions:
 jobs:
   doc-drift:
     name: Documentation drift gate
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
@@ -42,7 +42,7 @@ jobs:
 
   dependency-scan:
     name: Dependency vulnerability scan
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
