@@ -4,8 +4,12 @@ import { resolve } from 'node:path';
 
 const root = process.cwd();
 const classified = new Set([
-  '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.github', '.gitignore',
-  '.mcp-recovered', '.node-version', '.nvmrc', 'apex-npm-tarballs.zip', 'CLAUDE.md', 'Doc', 'QA', 'README.txt', '_archive', '_qa', '_release', 'dist', 'index.html',
+  // `.git` is classified because this gate must pass inside a real repository,
+  // not only inside an extracted source archive. `actions/checkout` always
+  // creates it, so leaving it unclassified made the gate structurally
+  // unpassable in CI.
+  '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.git', '.github', '.gitignore',
+  '.mcp-recovered', '.node-version', '.nvmrc', 'apex-npm-tarballs.zip', 'CLAUDE.md', 'Doc', 'QA', 'README.md', 'README.txt', '_archive', '_qa', '_release', 'dist', 'index.html',
   'node_modules', 'openapi', 'package-lock.json', 'package.json', 'public', 'RUN-APEX.bat', 'scripts', 'server.ts', 'src', 'tests',
   'test-results', 'tools', 'tsconfig.json', 'tsconfig.ui02.json', 'vendor', 'VERSION', 'vite.config.ts',
 ]);

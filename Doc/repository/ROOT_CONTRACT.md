@@ -9,6 +9,8 @@ This contract classifies the repository root by **source ownership**, **generate
 | Path | Purpose | Clean source artifact |
 |---|---|---|
 | `README.txt` | Root pointer to canonical documentation under `Doc/` | Yes |
+| `README.md` | Landing page rendered by GitHub for the published repository. Distinct from `README.txt`, which remains the in-artifact documentation pointer. | Yes |
+| `CLAUDE.md` | Root agent instruction file; imports the handoff/tooling notes under `Doc/` | Yes |
 | `VERSION` | Human-readable application version identity | Yes |
 | `RUN-APEX.bat` | Canonical Windows install/build/start launcher | Yes |
 | `package.json` / `package-lock.json` | npm manifest and lockfile | Yes |
@@ -33,6 +35,7 @@ This contract classifies the repository root by **source ownership**, **generate
 | Path | Classification | Clean source artifact |
 |---|---|---|
 | `node_modules/` | Installed dependencies, platform-local | **No** |
+| `.git/` | Git metadata for the published repository. Present in every clone and in every `actions/checkout` run, so it is classified rather than treated as an unknown root entry. | **No** |
 | `dist/` | Compiled build output; belongs in the separate build artifact | **No** |
 | `QA/` | Machine-readable/current QA output; belongs in evidence artifact where selected | **No** |
 | `_qa/` | Ephemeral browser/visual captures | **No** |
