@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T04:32:44.231Z",
+  "generatedAt": "2026-08-17T09:57:05.628Z",
   "root": "Doc",
   "count": 236,
   "categories": {
@@ -26,7 +26,7 @@
     "FUNCTION_INDEX.json": "71af9ba296892b4bf95001f2232042b790980cbb1c40ac02bf415759957074e1",
     "FUNCTION_INDEX.md": "b41022e17abb87559ad5c502eb072f8f0573bc33fc4ad3c6bebe11dfa4169071",
     "FUNCTION_INDEX_AUTOMATION.md": "661734fa2528078f1e2b02959983958bec81948d6c7fbc49ab5396a64bdc48c1",
-    "PROJECT_README.md": "ba90c44d19e6927b7987cb2294cb1eec3da1f5726507ce8e362cb0012afab950",
+    "PROJECT_README.md": "90915ef4c1857698950ca1835ef8d7790fc6377a415d99e30a16d94dd848f7ca",
     "README.md": "6fc3427212df252aa678e02c9b347e1b53a694ee4981b0fb302687fb537898b4",
     "SOURCE_DELIVERY_STATUS.md": "02f47b2de5a00d5798710c6e929a4e276dcec4a4fb4c70b7d26be035bdbdcfdd",
     "STRATEGY_STUDIO_UI_IMPLEMENTATION.md": "399518676a122583b8bc1f0cfb156f3193ddbeab45ef8167fbdf34f18ef18916",
@@ -234,7 +234,7 @@
     "repository/ROOT_CLEANUP_2026-08-10.json": "d4c9e92a564eb03547356d4b3f327eba703082b0f7d9455d374120db5ca5d224",
     "repository/ROOT_CLEANUP_2026-08-10.md": "415b4d3c2f53d6413220feab63c83319381483570b9a64cfe73c002afc8e2915",
     "repository/ROOT_CLEANUP_REPORT.md": "dec3fd64025f5ab7f7208a4ec737b9bb3058a5db248052c68b679faa27294f16",
-    "repository/ROOT_CONTRACT.md": "c8db7cff0ef325c11d363f10884e5133fcd397d930f24623e16668a893a00330",
+    "repository/ROOT_CONTRACT.md": "8762b48e0d9808ad6cc0b184f41159b86232d7f989c26e8257e8c51ac335f0cd",
     "repository/ROOT_SURFACE_AFTER_2026-08-10.md": "243d5634e9c34564e5c2e14a8975fee26f259faba4695522cedae598b0ba62c9",
     "repository/UNTRACKED_FILES_AUDIT.md": "854af7e5420848b694e00853148b659f1857e8a5662a5ca1d0adf125fc41ea34",
     "repository/VIEWPORT_1368x753_CONTRACT.md": "690078bae579fe18a615a1afafb8423e234a59e56d066cd43a64830c3eb94f6e",
@@ -552,8 +552,8 @@
       "category": "active",
       "format": "md",
       "title": "APEX Unified Terminal",
-      "bytes": 19797,
-      "updatedAt": "2026-08-17T04:04:57.589Z"
+      "bytes": 19915,
+      "updatedAt": "2026-08-17T09:56:05.351Z"
     },
     {
       "path": "provider-audits/2026-08-01-hf-space4-btc/round-1-orderbook.json",
@@ -880,8 +880,8 @@
       "category": "active",
       "format": "md",
       "title": "Root Contract",
-      "bytes": 5737,
-      "updatedAt": "2026-08-17T04:08:44.583Z"
+      "bytes": 5545,
+      "updatedAt": "2026-08-17T04:08:44.000Z"
     },
     {
       "path": "repository/ROOT_SURFACE_AFTER_2026-08-10.md",

@@ -170,7 +170,7 @@ npm run release:package
 - [`APEX_TRADING_SUBMENU_RELOCATION_REPORT_v1.0.47_FA.md`](reports/historical/legacy-root-2026-08-09/APEX_TRADING_SUBMENU_RELOCATION_REPORT_v1.0.47_FA.md)
 - [`APEX_AGENT_SAFE_MERGE_REPORT_v1.0.46_FA.md`](reports/historical/legacy-root-2026-08-09/APEX_AGENT_SAFE_MERGE_REPORT_v1.0.46_FA.md)
 - [`APEX_STRATEGY_BACKTEST_PRODUCTION_REPORT_v1.0.45_FA.md`](reports/historical/legacy-root-2026-08-09/APEX_STRATEGY_BACKTEST_PRODUCTION_REPORT_v1.0.45_FA.md)
-- [`QA/agent-safe-merge-v1.0.47.json`](../QA/agent-safe-merge-v1.0.47.json)
+- Historical QA evidence artifact for v1.0.47 was generated under the local root QA output tree by the `qa:agent-safe-merge` gate; that tree is intentionally excluded from clean source control.
 - `Smart Autopilot accepted runtime evidence` — was `_qa/accepted/smart-autopilot/SMART_AUTOPILOT_RUNTIME_EVIDENCE.json`; the `_qa/` tree is not part of this repository and the artifact is not present, so this is recorded as a historical reference rather than a link. Current strategy-optimizer evidence lives under `QA/`.
 - `Strategy Studio final regression` — was `_qa/accepted/strategy-studio/APEX_STRATEGY_STUDIO_FINAL_REGRESSION.log`; likewise absent, and no equivalent `.log` exists under `QA/`.
 

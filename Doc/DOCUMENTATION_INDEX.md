@@ -1,6 +1,6 @@
 # APEX Documentation Index
 
-Generated: 2026-08-17T04:32:44.223Z
+Generated: 2026-08-17T09:57:05.619Z
 
 This file is generated from the current `Doc/` tree. Use `Doc/README.md` for the short operating guide and `Refrence.md` for agent navigation rules.
 
