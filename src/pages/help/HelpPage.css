@@ -1,0 +1,335 @@
+/* Help page — reference-inspired support center for the 1368×753 contract. */
+.apex-v3-help-page {
+  grid-template-columns: minmax(0, 1fr) 286px;
+  gap: 10px;
+}
+
+.apex-v3-help-main {
+  display: grid;
+  grid-template-rows: 48px 40px 144px 184px minmax(0, 1fr);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.apex-v3-help-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.apex-v3-help-title > span { display: none; }
+.apex-v3-help-title h1 { margin: 0; font-size: 19px; line-height: 1.1; letter-spacing: -.02em; }
+.apex-v3-help-title p { margin: 4px 0 0; color: var(--apex-muted-600); font-size: 8.5px; }
+
+.apex-v3-help-search {
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--apex-green-300);
+  border-radius: 9px;
+  background: var(--apex-surface);
+}
+.apex-v3-help-search:focus-within { border-color: var(--apex-green-500); box-shadow: 0 0 0 3px rgba(45,190,69,.08); }
+.apex-v3-help-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--apex-ink-900); font-size: 9px; }
+
+.apex-v3-topics-card,
+.apex-v3-faq-card,
+.apex-v3-tutorials-card {
+  display: grid;
+  grid-template-rows: 34px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.apex-v3-help-topics {
+  padding: 7px 8px 8px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.apex-v3-topic-card {
+  min-width: 0;
+  padding: 9px;
+  display: grid;
+  grid-template-rows: 27px 16px minmax(0, 1fr) 15px;
+  gap: 3px;
+  border: 1px solid var(--apex-border);
+  border-radius: 10px;
+  background: var(--apex-surface);
+  text-align: left;
+}
+.apex-v3-topic-card:hover,
+.apex-v3-topic-card.active { border-color: var(--apex-green-200); background: var(--apex-green-050); }
+.apex-v3-topic-card > i { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%; background: var(--apex-green-050); color: var(--apex-green-600); }
+.apex-v3-topic-card strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 8.5px; }
+.apex-v3-topic-card > span { overflow: hidden; color: var(--apex-muted-600); font-size: 6.6px; line-height: 1.35; }
+.apex-v3-topic-card small { display: flex; align-items: center; gap: 3px; color: var(--apex-green-700); font-size: 6.5px; }
+
+.apex-v3-faq-list { padding: 0 10px 8px; overflow: auto; }
+.apex-v3-faq-list details { border-bottom: 1px solid var(--apex-divider); }
+.apex-v3-faq-list summary { min-height: 30px; display: flex; align-items: center; color: var(--apex-ink-900); font-size: 8.5px; font-weight: 650; cursor: pointer; }
+.apex-v3-faq-list p { margin: 0 0 7px; color: var(--apex-muted-600); font-size: 7px; line-height: 1.4; }
+
+.apex-v3-tutorial-grid {
+  padding: 7px 8px 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.apex-v3-tutorial-card {
+  width: 100%;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--apex-divider);
+  border-radius: 9px;
+  background: var(--apex-surface);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition: transform var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.apex-v3-tutorial-card:hover { transform: translateY(-1px); border-color: var(--apex-green-300); box-shadow: var(--apex-shadow-sm); }
+.apex-v3-tutorial-card:focus-visible { outline: 2px solid var(--apex-focus); outline-offset: 3px; }
+.apex-v3-tutorial-thumb {
+  height: 62px;
+  position: relative;
+  background-color: var(--apex-surface-soft);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.apex-v3-tutorial-card > strong { display: block; padding: 6px 7px 0; color: var(--apex-ink-900); font-size: 7.8px; }
+.apex-v3-tutorial-card > p { margin: 3px 7px 7px; color: var(--apex-muted-600); font-size: 6.4px; line-height: 1.3; }
+
+.help-context {
+  grid-template-rows: 188px 168px minmax(0, 1fr);
+}
+
+.apex-v3-contact-list { padding: 5px 10px; display: grid; gap: 4px; }
+.apex-v3-contact-list > div { min-height: 39px; padding: 5px 7px; display: grid; grid-template-columns: 17px minmax(0, 1fr) auto; align-items: center; gap: 7px; border: 1px solid var(--apex-divider); border-radius: 8px; background: var(--apex-surface); }
+.apex-v3-contact-list strong,
+.apex-v3-contact-list small { display: block; }
+.apex-v3-contact-list strong { font-size: 8.5px; }
+.apex-v3-contact-list small { margin-top: 2px; color: var(--apex-muted-600); font-size: 6.5px; }
+
+.apex-v3-announcement-list { padding: 5px 10px; overflow: auto; }
+.apex-v3-announcement-list article { padding: 6px 0; border-bottom: 1px solid var(--apex-divider); }
+.apex-v3-announcement-list article:last-child { border-bottom: 0; }
+.apex-v3-announcement-list strong { display: block; margin-top: 3px; font-size: 8px; }
+.apex-v3-announcement-list p { margin: 3px 0; color: var(--apex-muted-600); font-size: 6.6px; line-height: 1.35; }
+.apex-v3-announcement-list small { font-size: 6px; font-weight: 700; text-transform: capitalize; }
+
+@media (max-width: 1119px) {
+  .apex-v3-help-page { grid-template-columns: 1fr; }
+  .apex-v3-help-main {
+    height: auto;
+    grid-template-rows: auto auto auto auto auto;
+  }
+  .help-context { grid-template-rows: auto auto auto; }
+  .apex-v3-help-topics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-v3-tutorial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Functional support interactions. */
+.apex-v3-contact-list > button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.apex-v3-contact-list > button:hover,
+.apex-v3-contact-list > button:focus-visible { background: var(--apex-surface-soft); outline: none; }
+
+.apex-help-modal-backdrop {
+  position: fixed;
+  z-index: 1500;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 29, 42, .42);
+  backdrop-filter: blur(3px);
+}
+
+.apex-help-modal {
+  width: min(560px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  overflow: auto;
+  border: 1px solid var(--apex-border);
+  border-radius: 14px;
+  background: var(--apex-surface);
+  box-shadow: 0 24px 70px rgba(17, 32, 48, .24);
+}
+.apex-help-modal > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--apex-divider);
+}
+.apex-help-modal header small { color: var(--apex-green-700); font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .07em; }
+.apex-help-modal header h2 { margin: 4px 0 3px; color: var(--apex-ink-900); font-size: 18px; }
+.apex-help-modal header p { margin: 0; color: var(--apex-muted-600); font-size: 11px; line-height: 1.55; }
+.apex-help-modal header > button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--apex-border);
+  border-radius: 8px;
+  background: var(--apex-surface);
+  color: var(--apex-muted-600);
+  cursor: pointer;
+}
+.apex-help-modal ol { display: grid; gap: 10px; margin: 0; padding: 18px 20px; list-style: none; }
+.apex-help-modal li { display: grid; grid-template-columns: 22px 1fr; align-items: start; gap: 8px; color: var(--apex-ink-700); font-size: 11px; line-height: 1.55; }
+.apex-help-modal li svg { color: var(--apex-green-700); margin-top: 1px; }
+.apex-help-modal pre {
+  margin: 18px 20px;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid var(--apex-border);
+  border-radius: 9px;
+  background: var(--apex-surface-soft);
+  color: var(--apex-ink-700);
+  font: 10px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre-wrap;
+}
+.apex-help-modal footer { display: flex; justify-content: flex-end; padding: 12px 20px 18px; }
+.apex-help-modal footer button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--apex-green-700);
+  border-radius: 8px;
+  background: var(--apex-green-700);
+  color: #fff;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .apex-v3-help-title h1 { font-size: 18px; line-height: 1.2; }
+  .apex-v3-help-title p,
+  .apex-v3-help-search input { font-size: 11px; }
+
+  .apex-v3-help-topics,
+  .apex-v3-tutorial-grid { grid-template-columns: 1fr; }
+
+  .apex-v3-topic-card {
+    min-height: 104px;
+    grid-template-rows: 28px auto 1fr auto;
+    padding: 10px;
+  }
+  .apex-v3-topic-card strong,
+  .apex-v3-faq-list summary,
+  .apex-v3-contact-list strong { font-size: 11px; }
+  .apex-v3-topic-card > span,
+  .apex-v3-faq-list p,
+  .apex-v3-tutorial-card > p,
+  .apex-v3-contact-list small,
+  .apex-v3-announcement-list p { font-size: 10px; line-height: 1.45; }
+  .apex-v3-topic-card small,
+  .apex-v3-announcement-list small { font-size: 9px; }
+  .apex-v3-tutorial-card > strong,
+  .apex-v3-announcement-list strong { font-size: 11px; }
+  .apex-v3-tutorial-thumb { height: 92px; }
+
+  .apex-help-modal-backdrop { padding: 10px; }
+  .apex-help-modal { max-height: calc(100vh - 20px); }
+  .apex-help-modal > header { gap: 10px; padding: 14px 14px 12px; }
+  .apex-help-modal ol { padding: 14px; }
+  .apex-help-modal pre { margin: 14px; font-size: 10px; }
+  .apex-help-modal footer { padding: 10px 14px 14px; }
+}
+
+/* Reference-aligned Help Center readability and local tutorial media. */
+.apex-v3-help-main {
+  grid-template-rows: 52px 42px 150px 190px minmax(0, 1fr);
+  gap: 9px;
+}
+.apex-v3-help-title h1 { font-size: 20px; font-weight: 700; }
+.apex-v3-help-title p { font-size: 11px; line-height: 1.3; }
+.apex-v3-help-search input { font-size: 11px; }
+
+.apex-v3-topics-card,
+.apex-v3-faq-card,
+.apex-v3-tutorials-card {
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.apex-v3-help-topics { gap: 8px; padding: 8px; }
+.apex-v3-topic-card {
+  grid-template-rows: 30px auto minmax(0, 1fr) auto;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 10px;
+}
+.apex-v3-topic-card > i { width: 30px; height: 30px; }
+.apex-v3-topic-card strong { font-size: 10px; line-height: 1.2; }
+.apex-v3-topic-card > span { font-size: 10px; line-height: 1.35; }
+.apex-v3-topic-card small { font-size: 10px; line-height: 1.2; }
+
+.apex-v3-faq-list summary { min-height: 30px; font-size: 10px; }
+.apex-v3-faq-list p { font-size: 10px; line-height: 1.4; }
+
+.apex-v3-tutorial-grid { gap: 9px; padding: 8px; }
+.apex-v3-tutorial-thumb {
+  position: relative;
+  height: 76px;
+  overflow: hidden;
+  background: var(--apex-surface-soft);
+}
+.apex-v3-tutorial-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.apex-v3-tutorial-thumb > span {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  min-height: 19px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 5px;
+  background: rgba(15, 23, 42, .78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+}
+.apex-v3-tutorial-card > strong { padding: 7px 8px 0; font-size: 10px; line-height: 1.2; }
+.apex-v3-tutorial-card > p { margin: 4px 8px 8px; font-size: 10px; line-height: 1.3; }
+
+.apex-v3-contact-list strong { font-size: 10px; }
+.apex-v3-contact-list small { font-size: 10px; line-height: 1.25; }
+.apex-v3-announcement-list strong { font-size: 10px; }
+.apex-v3-announcement-list p { font-size: 10px; line-height: 1.35; }
+.apex-v3-announcement-list small { font-size: 10px; }
+
+@media (max-width: 1119px) {
+  .apex-v3-help-main { grid-template-rows: auto; }
+}

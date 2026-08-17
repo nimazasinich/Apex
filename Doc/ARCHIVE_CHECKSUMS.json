@@ -1,0 +1,99 @@
+{
+  "files": [
+    {
+      "path": "src\\services\\proxyFetch.ts",
+      "sha256": "32E861679BDDC4022E41FFCB205A627943220071D6588AD921355744E2208B36",
+      "md5": "E48CB095CFF889EB837B77A109294A61",
+      "bytes": 11374,
+      "lastWrite": "2026-06-23T08:08:52+03:30"
+    },
+    {
+      "path": "src\\services\\providerRouter.ts",
+      "sha256": "F6C45C2A5589C32F8F61FF7C1D2BD57FDCFC4E2E4A88678494B03F00D705EA43",
+      "md5": "181D4A63896A266FCE4657BD897523B5",
+      "bytes": 12607,
+      "lastWrite": "2026-06-23T08:08:52+03:30"
+    },
+    {
+      "path": "src\\services\\exchangeClient.ts",
+      "sha256": "828D3E1451F0C40D335794322E4BA9F87F463FC22D793EFDD41722DF65B3FAA1",
+      "md5": "EB6DA720197F951ABC5FA3BE00F8B210",
+      "bytes": 13460,
+      "lastWrite": "2026-06-23T08:08:52+03:30"
+    },
+    {
+      "path": "src\\services\\lifecycleCore.ts",
+      "sha256": "0667F39DCF453096EB61E7005C59ED813B8DBED436FED8C1E4749AFBC43C1B13",
+      "md5": "036252EDC1C493F3F6BD9FFDFE4B053A",
+      "bytes": 7749,
+      "lastWrite": "2026-06-21T08:35:10+03:30"
+    },
+    {
+      "path": "src\\services\\scannerCore.ts",
+      "sha256": "431A9F315A1B091BD67CBAA655DD0879C58E56F7EB0B0A6AF2150581488FF7FF",
+      "md5": "293EB7BA81E73E3E5E3B8E4C781A62E4",
+      "bytes": 14590,
+      "lastWrite": "2026-06-21T17:44:37+03:30"
+    },
+    {
+      "path": "src\\services\\marketData.ts",
+      "sha256": "307AE8DA4C1E7B0669E9471A02495A809E37D1612C6496BF3708F5D17C2A9C76",
+      "md5": "6CF65539F89B4B08FB1AF3A5657ED45A",
+      "bytes": 60465,
+      "lastWrite": "2026-06-21T15:08:34+03:30"
+    },
+    {
+      "path": "src\\services\\mathEngine.ts",
+      "sha256": "6751B2957BD519930F23520C21FACC68CDFEC2F61EC6B1748E715C92148C26A0",
+      "md5": "EC6FFD8E72A1EB4EDF8A69999D5D6B8C",
+      "bytes": 28703,
+      "lastWrite": "2026-06-21T17:46:17+03:30"
+    },
+    {
+      "path": "src\\services\\smartMoneyContextEngine.ts",
+      "sha256": "410E60896A108E434A6B2BA320315D3DFF1BD69600A220389E322AD68F5489F5",
+      "md5": "ED8A54A17BB3876FB99736C613A02C46",
+      "bytes": 16789,
+      "lastWrite": "2026-06-21T17:44:11+03:30"
+    },
+    {
+      "path": "src\\services\\adaptiveThresholdEngine.ts",
+      "sha256": "E645F137D02FC9B83421BDD663FD3A0D98618A19B1AB2E2500ABC643D27A03A1",
+      "md5": "A8DC5E4B6634EF4D7A8BCA6D4D293EA1",
+      "bytes": 29250,
+      "lastWrite": "2026-06-21T08:41:50+03:30"
+    },
+    {
+      "path": "Doc\\automation\\load_matrix_100\\LOAD_MATRIX_100_RESULT.md",
+      "sha256": "12BEC350BBE9B75C4B6226FA65B085310222984F80BB22CEBFEFB98A23CAAAF9",
+      "md5": "751CA36F537099B2F991D4F7D4AEE619",
+      "bytes": 2477,
+      "lastWrite": "2026-06-21T08:35:10+03:30"
+    },
+    {
+      "path": "Doc\\automation\\load_matrix_100\\LOAD_MATRIX_100_SUMMARY.json",
+      "sha256": "1FACB3C813F65E45B5CED1B61C949985E53D8398F7AC145AFBE0B85CAD6657A2",
+      "md5": "88F54647F2652AD1E33D120B4081F334",
+      "bytes": 627513,
+      "lastWrite": "2026-06-21T08:35:10+03:30"
+    }
+  ],
+  "generatedAt": "2026-07-27T16:00:32.9827106+03:30",
+  "purpose": "Pre-archive checksums for canonical provider and automation outputs",
+  "archiveZip": {
+    "path": "_archive_20260727_consolidated.zip",
+    "sha256": "31FB1356AFD43C713D1DBCC552477192592249F44BD61831FB74A5A212E21A4F",
+    "bytes": 1920172466,
+    "sourceFiles": 83508,
+    "verifiedAt": "2026-07-27T16:06:07.9234330+03:30",
+    "spotExtractOk": true
+  },
+  "tempZip": {
+    "path": "temp_20260727.zip",
+    "sha256": "897F609D6BAC40D382540E17FB0945FD56DF1DCF52917F14F54FF528EDE11940",
+    "bytes": 52066,
+    "verifiedAt": "2026-07-27T16:06:30+03:30",
+    "spotExtractOk": true,
+    "note": "Includes retired api.txt (placeholder keys only — no rotation needed)"
+  }
+}

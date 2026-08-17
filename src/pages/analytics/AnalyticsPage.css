@@ -1,0 +1,120 @@
+/* Analytics reference pass — the research candidate stream stays available in
+   the insight rail, while the primary canvas is reserved for account analytics. */
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-main-column {
+  grid-template-rows: 48px 112px minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-metrics.five {
+  gap: 12px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-metric {
+  height: 112px !important;
+  min-height: 112px !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-analytics-grid {
+  grid-template-columns: 1.35fr 1fr !important;
+  grid-template-rows: 1.08fr .92fr !important;
+  gap: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-chart-card,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-context-section {
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-card-head small,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-month-bars span,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-chart-empty-note,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-heatmap-weeks span,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-heatmap-days span,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-heatmap span,
+:root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-heatmap-legend {
+  font-size: 10px !important;
+}
+
+@media (max-width: 1120px) {
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-main-column {
+    grid-template-rows: auto auto auto !important;
+  }
+}
+
+/* Fine-pass: keep the entire Analytics insight rail visible at 1368x753
+   without hiding sections or shrinking readable text below 10px. */
+@media (min-width: 1121px) and (max-height: 820px) {
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page > .v20-context-sidebar {
+    padding: 7px !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-context-section {
+    padding: 7px 8px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-context-section > strong,
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-section-title strong {
+    margin-bottom: 4px !important;
+    font-size: 10px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-context-section > p,
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-score-disclaimer,
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-strategy-card small {
+    font-size: 10px !important;
+    line-height: 1.28 !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-context-section > p {
+    margin: 2px 0 4px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-strategy-card {
+    gap: 2px 6px !important;
+    padding: 5px 7px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-strategy-card .apex-mini-sparkline {
+    height: 19px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-section-title {
+    margin-bottom: 3px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-performer {
+    grid-template-columns: 58px minmax(0, 1fr) 76px !important;
+    gap: 5px !important;
+    margin: 3px 0 !important;
+    min-height: 18px !important;
+    font-size: 10px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-performer em {
+    font-size: 10px !important;
+  }
+
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-risk-bar {
+    grid-template-columns: 100px minmax(0, 1fr) 34px !important;
+    gap: 5px !important;
+    margin: 4px 0 !important;
+    font-size: 10px !important;
+  }
+
+  /* Label columns above were narrower than their own content, so the rail wrapped
+     every row onto two lines: a 32px symbol track split "BTC-USDT" and a 60px risk
+     track broke "Concentration Risk" mid-word into "Concentrati / on Risk". The
+     width came out of the purely decorative bar track, which still keeps ~111px.
+     nowrap + ellipsis pins the single-line row rhythm for any longer symbol. */
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-performer > span,
+  :root[data-apex-theme-resolved="light"] .v20-analytics-page .v20-risk-bar > span {
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+}

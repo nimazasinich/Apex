@@ -1,0 +1,78 @@
+Read the project `scripts/` folder and the capability map I provide.
+
+Persist a durable tooling memory in:
+
+Doc/CLAUDE_SCRIPTS_TOOLING_MEMORY.md
+
+and ensure root `CLAUDE.md` contains exactly one import:
+
+@Doc/CLAUDE_SCRIPTS_TOOLING_MEMORY.md
+
+Memory rules:
+
+- Treat `scripts/` as the existing APEX toolbelt. Before inventing a new diagnostic or QA script, check whether an appropriate script already exists.
+- Prefer the narrowest existing script for the task.
+- Before running a script, inspect its current CLI arguments/env vars and prefer the corresponding `package.json` npm alias when one exists.
+- Run browser/Windows release tools on the native Windows surface when required; do not confuse session-tool gating with project/browser failure.
+- Never claim PASS from source reasoning alone: run the relevant verifier/capture and read its evidence.
+
+Remember these high-value choices:
+
+UI/visual:
+- scripts/qa/verifyUi1368.mjs — canonical 1368x753 real-browser UI gate
+- scripts/capture/capture-dashboard.mts — configurable route/viewport screenshots + console/page/request diagnostics + layout metrics
+- scripts/capture/_run_viewport_matrix.ps1 — multi-viewport regression captures
+- scripts/capture/buildContactSheet.mts — visual contact sheets
+- scripts/utilities/apex_visual_diff.py — screenshot visual diff
+- scripts/utilities/auditOverviewLayout.mts — targeted Overview geometry audit
+- scripts/qa/_qa_metric_audit.mts — metric-card diagnostic
+- scripts/qa/_qa_range_probe.mts — market range diagnostic
+- scripts/_audit_theme_watchlist.mts / _audit_watchlist2.mts — Watchlist/theme diagnostics
+
+Workspace/accessibility:
+- scripts/qa/verifyWorkspaceRuntime.mts
+- scripts/qa/workspaceGeometry.spec.mts
+- scripts/qa/accessibilitySmoke.spec.mts
+- scripts/capture/verifySplitDockHeaded.mts
+- scripts/capture/verifyStep1Chrome.mts
+
+Development/source navigation:
+- scripts/utilities/devWithFunctionIndex.mts — dev server + function-index watcher
+- scripts/utilities/generateFunctionIndex.mts — rebuild symbol/function index
+- scripts/utilities/queryFunctionIndex.mts — query index before broad searching
+- scripts/utilities/portTakeover.mts — safe APEX-specific busy-port handling
+
+Build/release:
+- scripts/utilities/buildAndBundle.mts — canonical production build pipeline
+- scripts/windows/VERIFY-WINDOWS.ps1 — Windows verification sequence
+- scripts/windows/RUN-REMAINING-GATES.ps1 — authoritative remaining release gates/evidence
+- scripts/gates/checkBuildIdentity.mjs
+- scripts/gates/checkVersionIdentity.mjs
+- scripts/gates/checkRootContract.mjs
+- scripts/gates/checkNoSecretsInRelease.mjs
+- scripts/gates/checkReleaseArtifacts.mjs
+- scripts/utilities/createReleaseArchive.mts
+
+Subsystem QA:
+- `verify*` = named static/source or browser contract gate
+- `run*Runtime` = executable runtime contract validation
+- `benchmark*` = deterministic benchmark/evidence
+- `generate*Synthetic*` = QA-only fixture generation, never real production data
+- Liquidity Hunter, Strategy, Backtesting, Trading, Autopilot and Multi-Agent each already have dedicated QA scripts; use those before ad-hoc testing.
+
+Safety:
+- NEVER use scripts/utilities/KILL-ALL-NODE-PROCESSES.bat for normal port conflicts; it kills every node.exe.
+- `windows/RUN-REMAINING-GATES.ps1 -ReinstallDeps` removes/recreates node_modules; use only for proven dependency corruption.
+- `scripts/utilities/windows/fix-apex-fileops-install.ps1` contains an old hard-coded APEX root; do not run unchanged.
+- `scripts/utilities/windows/PATCH_RAIL_CLIPPING.ps1` is a defect-specific mutating patch, not a general QA tool.
+- Network/provider scripts can fail because of connectivity; do not label that a source regression without evidence.
+
+Also copy the full per-file capability inventory from the supplied capability map into the memory file under a section named `Full scripts inventory`.
+
+After writing:
+1. reread the memory file,
+2. verify the CLAUDE.md import exists exactly once,
+3. make no other source changes.
+
+Reply only:
+SCRIPTS TOOLING MEMORY READY

@@ -1,0 +1,21 @@
+{
+  "sourceViewport": { "width": 1672, "height": 941 },
+  "targetViewport": { "width": 1368, "height": 753 },
+  "horizontalScale": 0.8181818181818182,
+  "verticalDensityScale": 0.8002125398512221,
+  "qaReferenceTransform": {
+    "resize": { "width": 1368, "height": 770 },
+    "centerCrop": { "top": 8, "bottom": 9, "width": 1368, "height": 753 }
+  },
+  "layout": {
+    "leftSidebar": 184,
+    "header": 56,
+    "rightContextSidebar": 280,
+    "pagePaddingX": 12,
+    "columnGap": 10,
+    "metricCardHeight": 94,
+    "tableRowHeight": 42,
+    "cardRadius": 11
+  },
+  "pages": ["watchlist", "orders", "positions", "alerts", "history", "analytics", "settings", "help"]
+}

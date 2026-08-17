@@ -1,0 +1,136 @@
+{
+  "artifact": "APEX Unified Maximal Integration Candidate",
+  "artifactId": "apex-unified-maximal-v1.0.56-r2-merged",
+  "packageVersionPreserved": "1.0.56",
+  "integrationRevision": 1,
+  "generatedDate": "2026-08-08",
+  "releaseCertified": false,
+  "releaseCertificationReason": "The environment package mirror could not install the locked vitest@4.1.10 tarball, so full tsc/Vitest/build/Playwright/accessibility/release-gate execution was not available. Source/runtime evidence below passed independently.",
+  "mergePolicy": {
+    "baseline": "v1.0.56 UI Completeness R2",
+    "backendParityReference": "v1.0.56 Multi-Futures Context Safe",
+    "selectiveRestorationSource": "v1.0.52 UI Completeness Visual Hardened",
+    "principle": "Preserve the newest working/safety architecture; selectively restore unique research capabilities; do not restore obsolete or weaker execution/governance paths; harden known historical defects during restoration."
+  },
+  "sourceArchives": [
+    {
+      "name": "APEX-complete-integrated-v1.0.56-ui-completeness-r2-source(3).zip",
+      "role": "baseline",
+      "sha256": "f1d3bc87e9b13764326b0b0f5196d8832e7b57bea22f912f860340ec91c265aa"
+    },
+    {
+      "name": "APEX-complete-integrated-v1.0.56-multi-futures-context-safe(3).zip",
+      "role": "backend-parity-reference",
+      "sha256": "eebe35b952b91b4ccb286f41b05b7f92e85d37a5cb23731fd9d122cce653e6bf"
+    },
+    {
+      "name": "APEX-complete-integrated-v1.0.52-ui-completeness-visual-hard(1).zip",
+      "role": "selective-restoration-source",
+      "sha256": "903178e0c8aea0794e5580ab43690825c225aa3b5d4e89c24362d96996a0eab1"
+    }
+  ],
+  "restoredAndHardenedCapabilities": [
+    "Multi-Strategy Research Orchestrator with bounded concurrency and exact-history semantics",
+    "Five-role Multi-Agent Research Council (PERFORMANCE, RISK, CONFLICT, PORTFOLIO, EXECUTION_GUARDIAN)",
+    "Paper Multi-Trade sizing with literal no-live-execution safety contracts",
+    "Server-bound council receipt and exact plan-set fingerprint integrity",
+    "Research Matrix UI integrated into the active R2 Backtesting page",
+    "Research-only two-tier replay (fast replay plus authoritative microstructure replay)",
+    "Liquidity Hunter normalized read-plane view model",
+    "Reduce-only PositionProtectionCoordinator restored as a non-executing planning helper"
+  ],
+  "currentVersionHardening": [
+    "Execution readiness now distinguishes namespace/testnet/manual-live/autonomous capabilities truthfully",
+    "Live Risk Governor input now derives measured open-risk and history metrics when trustworthy data exists and otherwise remains explicitly UNKNOWN/null",
+    "Live risk telemetry extracted into an exchange-agnostic, no-network/no-order module",
+    "Liquidity Hunter Funding/OI reads use an explicit read-only public exchange provider module",
+    "Provider priority is constrained by registered executable capabilities; Bitget/OKX remain planned rather than falsely advertised as working failovers",
+    "Stale/unreachable prototype UI source removed or reduced so fake timer/alert behavior cannot be accidentally reconnected",
+    "R2 completeness, Research Matrix, Multi-Agent research, and maximal-merge safety verifiers are wired into package gate scripts"
+  ],
+  "historicalDefectsNotRestored": [
+    "Unbound council-fingerprint-to-plan paper sizing",
+    "20,000 requested bars silently running on a 5,000-bar history cap",
+    "Non-finite multi-route controls",
+    "Loose multi-strategy parameter validation",
+    "Internal strategy definition/runFn leakage in multi-research responses",
+    "Direct/legacy edge-threshold promote HTTP semantics"
+  ],
+  "intentionallyNotRestoredOrFaked": [
+    "Legacy external meta-evaluator sidecar, because current deterministic historicalSimilarityMetaModel is the canonical replacement",
+    "Legacy EdgeThresholdGovernancePanel/direct promote routes; current staged optimize -> stage -> Paper Canary evidence -> approve/rollback lifecycle is retained",
+    "Autonomous live multi-order execution",
+    "Executable implementations for blocked Dynamic Cointegration Basket, L2 Liquidity-State Scalper, Cross-Exchange Market Making, and Funding-Aware Avellaneda Market Maker without their required authoritative data/execution contracts",
+    "Bitget/OKX adapters that do not actually exist in the supplied source trees"
+  ],
+  "safetyBoundaries": {
+    "multiAgentResearch": {
+      "researchOnly": true,
+      "paperOnly": true,
+      "authoritative": false,
+      "executionAuthorized": false,
+      "automaticOrderSubmission": false,
+      "autonomousLiveExecutionEnabled": false,
+      "riskGovernorBypassAllowed": false,
+      "manualConfirmationRequired": true
+    },
+    "liquidityHunter": {
+      "shadowOnly": true,
+      "authoritative": false,
+      "automaticPromotionEnabled": false,
+      "autonomousLiveExecutionEnabled": false,
+      "orderSubmissionAllowed": false
+    },
+    "liveExecution": "Remains under the existing verified-session -> preview -> explicit confirmation -> fresh TradePlan/Risk Governor revalidation -> durable intent -> KuCoin adapter path. No research subsystem was wired directly to this path."
+  },
+  "verification": {
+    "syntaxAndRelativeImports": {
+      "files": 434,
+      "syntaxFailures": 0,
+      "relativeImportFailures": 0
+    },
+    "nodeVerifierSweep": {
+      "executed": 30,
+      "failed": 0,
+      "note": "Browser-dependent verifyUi1368 was intentionally excluded because installable browser/build dependencies were unavailable."
+    },
+    "runtimeHarnessSweep": {
+      "executed": 14,
+      "failed": 0
+    },
+    "testInventory": {
+      "files": 76,
+      "tests": 277,
+      "inventoryGatePassed": true
+    },
+    "selectedRuntimeEvidence": {
+      "multiAgentPaperMultiTrading": "12/12 PASS",
+      "twoTierReplayReadPlane": "8/8 PASS",
+      "unifiedSafety": "11/11 PASS",
+      "liquidityHunterFoundation": "26/26 PASS",
+      "liquidityHunterSafeCompletion": "29/29 PASS",
+      "liquidityHunterResearchCompletion": "23/23 PASS",
+      "publicFeeds": "17/17 PASS",
+      "executionPositionStateMachine": "6/6 PASS"
+    },
+    "gitDiffCheck": "PASS",
+    "versionIdentity": "PASS: package/lock/manifest/service-worker remain 1.0.56"
+  },
+  "notExecutedInThisEnvironment": [
+    "clean npm ci (environment mirror returned 404 for locked vitest@4.1.10)",
+    "full tsc --noEmit with installed dependency types",
+    "full Vitest suite",
+    "Vite/esbuild production build",
+    "Playwright/browser runtime suites",
+    "axe/accessibility browser scan",
+    "pixel/reference visual regression",
+    "real exchange order submission",
+    "release gate against freshly generated dist artifacts"
+  ],
+  "knownFollowUps": [
+    "Use a shared or signed council-receipt mechanism before multi-instance/load-balanced deployment; current receipt store is intentionally short-lived and in-process and fails closed when missing.",
+    "Feed an authoritative drawdown value into live risk telemetry if/when the exchange/account history contract exposes enough complete data; current implementation refuses to fabricate it.",
+    "Run the complete clean-install/build/Vitest/Playwright/accessibility/release pipeline in a working dependency environment before release certification.",
+    "Only unblock the four research strategies after their required historical L2/multi-venue/fill-latency/data contracts exist and have deterministic tests."
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-03T10:03:18.108Z",
+  "sourcePath": null,
+  "gate": {
+    "status": "INSUFFICIENT_DATA",
+    "datasetGateStatus": "INSUFFICIENT_DATA",
+    "minLabeledRows": 300,
+    "minMinorityClass": 30,
+    "completeRows": 0,
+    "minorityClassRows": 0,
+    "trainRows": 0,
+    "trainMinorityClassRows": 0,
+    "reason": "dataset_gate_failed"
+  },
+  "ruleBaseline": {
+    "sampleCount": 0,
+    "winRate": null,
+    "alwaysAcceptAccuracy": null
+  },
+  "limitations": [
+    "Supervised ML v1 uses only accepted WIN/LOSS rows with feature-complete decision-time inputs.",
+    "Rejected candidates, UNKNOWN, EXPIRED, and BREAKEVEN outcomes are never imputed.",
+    "Chronological splits are deterministic; random splitting is not used.",
+    "Shadow ML output must not become a live scanner or execution gate without separate approval.",
+    "Shadow ML training never writes into scannerCore.ts, adaptiveThresholdEngine.ts, or live execution gates.",
+    "Walk-forward metrics are descriptive until a separate safety review approves any behavior change."
+  ],
+  "model": null,
+  "splitMetrics": [],
+  "walkForwardMetrics": []
+}

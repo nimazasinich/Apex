@@ -1,0 +1,585 @@
+/* Watchlist page — scoped visual contract for the 1368×753 workspace. */
+.apex-v3-watchlist-page {
+  grid-template-columns: minmax(0, 1fr) 286px;
+  gap: 10px;
+}
+
+.apex-v3-watchlist-page .apex-page-main {
+  overflow: hidden;
+}
+
+.apex-v3-watchlist-main {
+  display: grid;
+  grid-template-rows: 96px 30px 34px minmax(0, 1fr);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.apex-v3-watchlist-page .apex-v3-heading {
+  padding: 0 2px;
+}
+
+.apex-v3-watchlist-page .watchlist-summary .apex-v3-metric {
+  min-height: 96px;
+  background: linear-gradient(180deg, var(--apex-surface) 0%, var(--apex-surface-soft) 100%);
+}
+
+.apex-v3-watchlist-page .apex-v3-chip-row {
+  padding: 2px;
+  border: 1px solid var(--apex-border);
+  border-radius: 10px;
+  background: var(--apex-surface-soft);
+}
+
+.apex-v3-watchlist-page .apex-v3-chip-row button {
+  height: 26px;
+  border: 0;
+  background: transparent;
+}
+
+.apex-v3-watchlist-page .apex-v3-chip-row button.active {
+  background: var(--apex-surface);
+  box-shadow: 0 1px 5px rgba(17, 77, 37, .08);
+}
+
+.apex-v3-watchlist-page .apex-v3-toolbar {
+  min-height: 34px;
+}
+
+.apex-v3-watchlist-page .apex-v3-search-field {
+  width: min(360px, 43%);
+}
+
+.apex-v3-watchlist-page .watchlist-table {
+  min-height: 0;
+  border-top: 2px solid var(--apex-green-500);
+}
+
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(1) { width: 34px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(2) { width: 164px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(3) { width: 92px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(4) { width: 86px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(5) { width: 88px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(6) { width: 76px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(7) { width: 90px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(8) { width: 98px; }
+
+.apex-v3-watchlist-page .apex-v3-table tbody tr.selected {
+  background: linear-gradient(90deg, #eefaf1 0%, #fbfefc 100%);
+  box-shadow: inset 3px 0 0 var(--apex-green-500);
+}
+
+.watchlist-context {
+  grid-template-rows: 238px 108px auto 146px auto;
+  align-content: start;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.apex-v3-watchlist-page .context-asset-card {
+  background: linear-gradient(180deg, var(--apex-surface) 0%, var(--apex-surface-soft) 100%);
+}
+
+.apex-v3-asset-identity {
+  padding: 10px 12px 4px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.apex-v3-asset-identity strong,
+.apex-v3-asset-identity span {
+  display: block;
+}
+
+.apex-v3-asset-identity strong { font-size: 11px; }
+.apex-v3-asset-identity span { color: var(--apex-muted-600); font-size: 8px; }
+.apex-v3-asset-identity em { font-size: 9px; font-style: normal; font-weight: 750; }
+
+.apex-v3-selected-price {
+  padding: 0 12px 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.apex-v3-selected-price strong { font-size: 18px; }
+.apex-v3-selected-price span { color: var(--apex-muted-600); font-size: 7px; }
+.context-asset-card > .apex-v3-sparkline { height: 100px; padding: 0 10px 8px; }
+.context-sentiment-card .apex-v3-donut { width: 70px; height: 70px; margin: 2px auto; }
+.context-sentiment-card .apex-v3-donut::before { width: 50px; height: 50px; }
+.context-sentiment-card .apex-v3-donut > div { width: 46px; }
+.context-sentiment-card .apex-v3-donut strong { font-size: 12px; }
+.context-sentiment-card .apex-v3-donut span { font-size: 6px; }
+.context-sentiment-card .apex-v3-donut small { display: none; }
+.context-actions-card { padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+.apex-v3-tag-row { display: flex; gap: 5px; }
+
+@media (max-width: 1119px) {
+  .apex-v3-watchlist-page { grid-template-columns: 1fr; }
+  .apex-v3-watchlist-main { height: auto; grid-template-rows: auto auto auto auto minmax(420px, 1fr); }
+}
+
+.apex-v3-watchlist-empty {
+  min-height: 220px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--apex-muted-600);
+  text-align: center;
+}
+.apex-v3-watchlist-empty > svg { color: var(--apex-green-600); }
+.apex-v3-watchlist-empty strong { color: var(--apex-ink-900); font-size: 12px; }
+.apex-v3-watchlist-empty span { max-width: 360px; font-size: 9px; line-height: 1.5; }
+.apex-v3-watchlist-star-cell { width: 34px; }
+.apex-v3-watchlist-star-cell button,
+.apex-v3-icon-button {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #e4a72f;
+}
+.apex-v3-watchlist-star-cell button:hover,
+.apex-v3-icon-button:hover { background: rgba(228, 167, 47, .10); }
+
+/* Shadow signal observability — additive only; never alters scanner ranking. */
+.context-signal-intelligence {
+  min-width: 0;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--apex-green-500) 20%, var(--apex-border));
+  background: linear-gradient(180deg, var(--apex-surface) 0%, color-mix(in srgb, var(--apex-green-050) 44%, var(--apex-surface)) 100%);
+}
+.context-signal-intelligence > .apex-v3-panel-head { min-height: 48px; padding: 8px 10px; }
+
+.apex-v3-signal-intelligence-head {
+  padding: 9px 10px 7px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+.apex-v3-signal-intelligence-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--apex-green-200);
+  border-radius: 9px;
+  color: var(--apex-green-700);
+  background: var(--apex-green-050);
+}
+.apex-v3-signal-intelligence-head > span:nth-child(2),
+.apex-v3-signal-intelligence-head strong,
+.apex-v3-signal-intelligence-head small { display: block; min-width: 0; }
+.apex-v3-signal-intelligence-head strong { color: var(--apex-ink-900); font-size: 8.5px; }
+.apex-v3-signal-intelligence-head small { margin-top: 2px; overflow: hidden; color: var(--apex-muted-600); font-size: 6px; text-overflow: ellipsis; white-space: nowrap; }
+
+.apex-v3-signal-metrics {
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.apex-v3-signal-metrics > div {
+  min-width: 0;
+  padding: 6px 7px;
+  border: 1px solid var(--apex-border);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+}
+.apex-v3-signal-metrics > div > span { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.apex-v3-signal-metrics small { color: var(--apex-muted-600); font-size: 6px; }
+.apex-v3-signal-metrics b { color: var(--apex-ink-900); font-size: 7px; }
+.apex-v3-signal-metrics i { height: 3px; margin-top: 5px; display: block; overflow: hidden; border-radius: 999px; background: var(--apex-border); }
+.apex-v3-signal-metrics em { height: 100%; display: block; border-radius: inherit; background: var(--apex-green-500); }
+
+.apex-v3-timeframe-evidence {
+  padding: 7px 10px 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.apex-v3-timeframe-evidence > span {
+  min-width: 0;
+  padding: 5px 3px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  border: 1px solid var(--apex-border);
+  border-radius: 7px;
+  background: var(--apex-surface);
+}
+.apex-v3-timeframe-evidence b { color: var(--apex-ink-900); font-size: 6.5px; }
+.apex-v3-timeframe-evidence small { max-width: 100%; overflow: hidden; color: var(--apex-muted-600); font-size: 5.3px; text-overflow: ellipsis; }
+.apex-v3-timeframe-evidence em { color: var(--apex-green-700); font-size: 5.5px; font-style: normal; font-weight: 750; }
+.apex-v3-shadow-note { margin: 7px 10px 9px; color: var(--apex-muted-600); font-size: 5.8px; line-height: 1.4; }
+
+:root[data-apex-theme-resolved="dark"] .context-signal-intelligence,
+:root[data-apex-theme-resolved="dark"] .apex-v3-signal-metrics > div,
+:root[data-apex-theme-resolved="dark"] .apex-v3-timeframe-evidence > span {
+  background: var(--apex-surface-soft);
+  border-color: var(--apex-border);
+}
+
+@media (max-width: 1119px) {
+  .watchlist-context { grid-template-rows: none; grid-auto-rows: auto; overflow: visible; }
+}
+
+
+/* Reference pass: Watchlist begins directly with the summary strip, matching
+   the supplied dashboard hierarchy while keeping the semantic h1 available
+   to assistive technology. */
+.apex-v3-watchlist-page .watchlist-summary { margin-top: 0; }
+.apex-v3-watchlist-page .watchlist-summary .apex-v3-metric { border-radius: 12px; }
+.apex-v3-watchlist-page .watchlist-summary .apex-v3-metric > strong { font-size: 18px; }
+.apex-v3-watchlist-page .watchlist-summary .apex-v3-metric > small { font-size: 9px; }
+
+
+/* Final Watchlist reference polish: keep symbol metadata legible inside the
+   real table and preserve the selected row hierarchy without synthetic data. */
+.apex-v3-watchlist-page .apex-v3-symbol > span { display: grid; gap: 2px; }
+.apex-v3-watchlist-page .apex-v3-symbol > span > strong,
+.apex-v3-watchlist-page .apex-v3-symbol > span > small { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-watchlist-page .apex-v3-symbol > span > small { color: var(--apex-muted-600); font-size: 10px; }
+.apex-v3-watchlist-page .watchlist-summary .apex-v3-metric > small { font-size: 10px; }
+
+/* Reference-aligned Watchlist information architecture.
+   Optional fields such as marketCapUsd/sparkline7d remain blank in production
+   unless the active provider supplies them; browser QA may inject labelled lab data. */
+.apex-v3-watchlist-page {
+  grid-template-columns: minmax(0, 1fr) 300px !important;
+  gap: 12px !important;
+}
+
+.apex-v3-watchlist-main {
+  grid-template-rows: 100px 32px 38px minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+.apex-v3-watchlist-page .watchlist-summary {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  min-height: 0;
+}
+
+.apex-watch-summary-card {
+  min-width: 0;
+  min-height: 100px;
+  padding: 11px 12px;
+  overflow: hidden;
+  border: 1px solid var(--apex-border);
+  border-radius: 12px;
+  background: var(--apex-surface);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .035);
+}
+.apex-watch-summary-card > header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.apex-watch-summary-card > header strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--apex-ink-900);
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.apex-watch-summary-icon {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--apex-green-700);
+  background: var(--apex-green-050);
+}
+.apex-watch-summary-card.tone-negative .apex-watch-summary-icon { color: #e5484d; background: #fff1f1; }
+.apex-watch-summary-card.tone-violet .apex-watch-summary-icon { color: #7c3aed; background: #f5f1ff; }
+.apex-watch-summary-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  align-items: end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.apex-watch-summary-copy { min-width: 0; display: grid; gap: 2px; }
+.apex-watch-summary-copy > em {
+  color: var(--apex-ink-900);
+  font-size: 17px;
+  line-height: 20px;
+  font-style: normal;
+  font-weight: 760;
+  white-space: nowrap;
+}
+.apex-watch-summary-card.tone-positive .apex-watch-summary-copy > em { color: #00a65a; }
+.apex-watch-summary-card.tone-negative .apex-watch-summary-copy > em { color: #e5484d; }
+.apex-watch-summary-copy > small { color: var(--apex-muted-600); font-size: 10px; line-height: 12px; }
+.apex-watch-summary-asset {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  min-width: 0;
+}
+.apex-watch-summary-asset > svg,
+.apex-watch-summary-asset > span:first-child { grid-row: 1 / 3; }
+.apex-watch-summary-asset b { min-width: 0; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.apex-watch-summary-asset small { min-width: 0; overflow: hidden; color: var(--apex-muted-600); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.apex-watch-summary-card .apex-v3-sparkline { width: 92px; height: 42px; align-self: end; }
+
+.apex-v3-watchlist-page .apex-v3-chip-row {
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 2px !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+.apex-v3-watchlist-page .apex-v3-chip-row button {
+  min-width: 0;
+  height: 28px !important;
+  padding: 0 12px;
+  border: 1px solid var(--apex-border) !important;
+  border-radius: 8px;
+  background: var(--apex-surface) !important;
+  color: var(--apex-muted-700);
+  font-size: 10px;
+  font-weight: 650;
+}
+.apex-v3-watchlist-page .apex-v3-chip-row button.active {
+  color: var(--apex-green-700) !important;
+  border-color: var(--apex-green-200) !important;
+  background: var(--apex-green-050) !important;
+  box-shadow: none !important;
+}
+
+.apex-v3-watchlist-page .watchlist-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(230px, 1fr) 150px 174px 34px;
+  align-items: center;
+  gap: 8px;
+}
+.apex-v3-watchlist-page .watchlist-toolbar .apex-v3-search-field { width: 100% !important; }
+.apex-v3-watchlist-page .watchlist-toolbar select {
+  width: 100%;
+  height: 34px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--apex-border);
+  border-radius: 8px;
+  color: var(--apex-ink-800);
+  background: var(--apex-surface);
+  font: inherit;
+  font-size: 10px;
+}
+.apex-v3-watchlist-page .watchlist-refresh {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--apex-border);
+  background: var(--apex-surface);
+  color: var(--apex-ink-700);
+}
+
+.apex-v3-watchlist-page .watchlist-table {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 32px;
+  min-height: 0;
+  overflow: hidden;
+  border-top: 1px solid var(--apex-border) !important;
+  border-radius: 11px;
+  box-shadow: none;
+}
+.apex-v3-watchlist-page .watchlist-table > .apex-v3-table-scroll { min-height: 0; overflow: auto; }
+.apex-v3-watchlist-page .apex-v3-table { table-layout: fixed; }
+.apex-v3-watchlist-page .apex-v3-table thead th {
+  height: 34px;
+  padding: 0 8px;
+  color: var(--apex-muted-600);
+  font-size: 9px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.apex-v3-watchlist-page .apex-v3-table tbody td { height: 43px; padding: 4px 8px; font-size: 10px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(1) { width: 34px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(2) { width: 132px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(3) { width: 82px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(4) { width: 84px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(5) { width: 96px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(6) { width: 92px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(7) { width: 92px; }
+.apex-v3-watchlist-page .apex-v3-table th:nth-child(8) { width: 96px; }
+.apex-v3-watchlist-page .apex-v3-table tbody tr.selected {
+  background: #f2fbf5 !important;
+  box-shadow: inset 0 0 0 1px #8fd9ae !important;
+}
+.apex-v3-watchlist-page .apex-v3-symbol { gap: 7px; }
+.apex-v3-watchlist-page .apex-v3-symbol > span > strong { font-size: 10px; }
+.apex-v3-watchlist-page .apex-v3-symbol > span > small { font-size: 9px !important; }
+.apex-watchlist-table-footer {
+  min-height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--apex-border);
+  color: var(--apex-muted-600);
+  font-size: 9px;
+  background: var(--apex-surface);
+}
+.apex-watchlist-table-footer button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--apex-ink-700);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.apex-v3-watchlist-page .watchlist-context {
+  display: grid;
+  grid-template-rows: 286px 114px 162px auto auto;
+  gap: 10px;
+  align-content: start;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.apex-v3-watchlist-page .context-asset-card,
+.apex-v3-watchlist-page .context-sentiment-card,
+.apex-v3-watchlist-page .context-facts-card,
+.apex-v3-watchlist-page .context-actions-card,
+.apex-v3-watchlist-page .apex-watch-signal-details { border-radius: 11px; box-shadow: none; }
+.apex-v3-watchlist-page .apex-v3-asset-identity { padding: 8px 12px 2px; }
+.apex-v3-watchlist-page .apex-v3-asset-identity strong { font-size: 11px; }
+.apex-v3-watchlist-page .apex-v3-asset-identity span { font-size: 9px; }
+.apex-v3-watchlist-page .apex-v3-asset-identity em { font-size: 10px; }
+.apex-v3-watchlist-page .apex-v3-selected-price { padding: 4px 12px 2px; justify-content: flex-start; gap: 6px; }
+.apex-v3-watchlist-page .apex-v3-selected-price strong { font-size: 21px; }
+.apex-v3-watchlist-page .apex-v3-selected-price span { font-size: 9px; }
+.apex-watch-assistant-range {
+  display: flex;
+  gap: 4px;
+  padding: 4px 12px 2px;
+}
+.apex-watch-assistant-range span {
+  min-width: 34px;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--apex-muted-600);
+  font-size: 9px;
+  text-align: center;
+}
+.apex-watch-assistant-range .active { color: var(--apex-green-700); border-color: var(--apex-green-200); background: var(--apex-green-050); }
+.apex-v3-watchlist-page .context-asset-card > .apex-v3-sparkline { height: 94px !important; padding: 2px 12px 8px; }
+.apex-v3-watchlist-page .context-sentiment-card .apex-v3-donut { width: 68px; height: 68px; margin: -2px auto 0; }
+.apex-v3-watchlist-page .context-sentiment-card .apex-v3-donut::before { width: 50px; height: 50px; }
+.apex-v3-watchlist-page .context-sentiment-card .apex-v3-donut > div { width: 46px; }
+.apex-v3-watchlist-page .context-sentiment-card .apex-v3-donut strong { font-size: 12px; }
+.apex-v3-watchlist-page .context-sentiment-card .apex-v3-donut span { font-size: 8px; }
+.apex-v3-watchlist-page .context-sentiment-card .apex-v3-donut small { display: none; }
+.apex-watch-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px 10px; }
+.apex-watch-tags span { padding: 3px 6px; border-radius: 6px; color: var(--apex-green-700); background: var(--apex-green-050); font-size: 8px; }
+.apex-watch-signal-details {
+  border: 1px solid var(--apex-border);
+  background: var(--apex-surface);
+}
+.apex-watch-signal-details > summary {
+  min-height: 42px;
+  padding: 7px 10px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  list-style: none;
+}
+.apex-watch-signal-details > summary::-webkit-details-marker { display: none; }
+.apex-watch-signal-details > summary span { display: grid; gap: 1px; }
+.apex-watch-signal-details > summary strong { font-size: 9px; }
+.apex-watch-signal-details > summary small { color: var(--apex-muted-600); font-size: 8px; }
+.apex-v3-watchlist-page .context-actions-card { padding: 8px 10px; }
+
+@media (max-width: 1180px) {
+  .apex-v3-watchlist-page { grid-template-columns: 1fr !important; }
+  .apex-v3-watchlist-main { height: auto; grid-template-rows: auto auto auto minmax(420px, 1fr) !important; }
+  .apex-v3-watchlist-page .watchlist-context { grid-template-rows: none; grid-auto-rows: auto; overflow: visible; }
+}
+
+/* 1368 reference rail calibration: keep the primary Trade action above the
+   fold while retaining sentiment, verified facts and optional signal context. */
+@media (min-width: 1181px) and (max-width: 1500px) and (min-height: 700px) and (max-height: 820px) {
+  .apex-v3-watchlist-page .watchlist-context {
+    grid-template-rows: 252px 100px 146px 38px 96px !important;
+    gap: 8px !important;
+    overflow-y: hidden !important;
+  }
+
+  .apex-v3-watchlist-page .context-asset-card > .apex-v3-sparkline {
+    height: 72px !important;
+    padding: 0 12px 4px !important;
+  }
+
+  .apex-v3-watchlist-page .apex-v3-asset-identity {
+    padding-block: 5px 1px !important;
+  }
+
+  .apex-v3-watchlist-page .apex-watch-assistant-range {
+    padding-block: 2px 0 !important;
+  }
+
+  .apex-v3-watchlist-page .apex-watch-assistant-range span,
+  .apex-v3-watchlist-page .apex-v3-asset-identity span,
+  .apex-v3-watchlist-page .apex-v3-selected-price span,
+  .apex-v3-watchlist-page .apex-watch-tags span,
+  .apex-v3-watchlist-page .apex-watch-signal-details > summary strong,
+  .apex-v3-watchlist-page .apex-watch-signal-details > summary small {
+    font-size: 10px !important;
+  }
+
+  .apex-v3-watchlist-page .apex-watch-tags {
+    padding: 4px 8px 6px !important;
+  }
+
+  .apex-v3-watchlist-page .apex-watch-signal-details > summary {
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 5px 8px !important;
+  }
+
+  .apex-v3-watchlist-page .context-actions-card {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto 34px !important;
+    align-content: center !important;
+    gap: 6px !important;
+    padding: 7px 8px !important;
+  }
+
+  .apex-v3-watchlist-page .context-actions-card .apex-v3-tag-row {
+    grid-column: 1 / -1 !important;
+    min-height: 20px !important;
+  }
+
+  .apex-v3-watchlist-page .context-actions-card .apex-v3-button {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding-inline: 6px !important;
+    font-size: 10px !important;
+  }
+}

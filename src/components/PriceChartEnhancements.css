@@ -1,0 +1,864 @@
+.apex-candle-svg-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.apex-chart-structure-group button {
+  min-width: 62px;
+}
+
+.apex-auto-level-zone {
+  fill: color-mix(in srgb, var(--apex-blue, #3478f6) 8%, transparent);
+}
+
+.apex-auto-level-zone.primary {
+  fill: color-mix(in srgb, var(--apex-blue, #3478f6) 13%, transparent);
+}
+
+.apex-auto-level-line {
+  stroke: color-mix(in srgb, var(--apex-blue, #3478f6) 55%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+
+.apex-auto-level-line.primary {
+  stroke: color-mix(in srgb, var(--apex-blue, #3478f6) 82%, transparent);
+  stroke-width: 1.25;
+}
+
+.apex-chart-axis-label.structure {
+  fill: color-mix(in srgb, var(--apex-blue, #3478f6) 72%, #25334d);
+  font-weight: 750;
+}
+
+.apex-chart-axis-label.structure.primary {
+  fill: color-mix(in srgb, var(--apex-blue, #3478f6) 92%, #142038);
+}
+
+.apex-breakout-zone {
+  fill: color-mix(in srgb, var(--apex-green, #2dbb45) 9%, transparent);
+}
+
+.apex-breakout-zone.state-failed {
+  fill: color-mix(in srgb, var(--apex-red, #f23b4f) 9%, transparent);
+}
+
+.apex-breakout-zone.state-watching,
+.apex-breakout-zone.state-building {
+  fill: rgba(237, 164, 33, .08);
+}
+
+.apex-breakout-line {
+  stroke: color-mix(in srgb, var(--apex-green, #2dbb45) 78%, transparent);
+  stroke-width: 1.15;
+  stroke-dasharray: 3 3;
+}
+
+.apex-breakout-line.state-failed {
+  stroke: color-mix(in srgb, var(--apex-red, #f23b4f) 80%, transparent);
+}
+
+.apex-breakout-line.state-watching,
+.apex-breakout-line.state-building {
+  stroke: rgba(220, 145, 22, .8);
+}
+
+.apex-auto-trendline {
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: .96;
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, .12));
+}
+
+.apex-auto-trendline.support {
+  stroke: color-mix(in srgb, var(--apex-green, #2dbb45) 92%, #0d7d31);
+}
+
+.apex-auto-trendline.resistance {
+  stroke: color-mix(in srgb, var(--apex-red, #f23b4f) 88%, #d86b28);
+}
+
+.apex-chart-structure-pills {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: min(58%, 510px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.apex-chart-structure-pills span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .9);
+  border: 1px solid color-mix(in srgb, var(--apex-border, #e2e8ef) 92%, #fff);
+  box-shadow: 0 7px 16px rgba(20, 32, 56, .07);
+  backdrop-filter: blur(10px);
+  font-size: 10px;
+  font-weight: 750;
+  color: var(--apex-ink, #142038);
+}
+
+.apex-chart-structure-pills .trend.support { color: var(--apex-green-dark, #178f36); }
+.apex-chart-structure-pills .trend.resistance { color: color-mix(in srgb, var(--apex-red, #f23b4f) 82%, #9a4f18); }
+.apex-chart-structure-pills .breakout.state-confirmed,
+.apex-chart-structure-pills .breakout.state-retest { color: var(--apex-green-dark, #178f36); }
+.apex-chart-structure-pills .breakout.state-failed { color: var(--apex-red, #f23b4f); }
+.apex-chart-structure-pills .breakout.state-watching,
+.apex-chart-structure-pills .breakout.state-building { color: #936200; }
+
+.apex-chart-insight-dock {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  width: min(276px, 33%);
+  min-width: 242px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 9px 9px 11px;
+  border-radius: 15px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .97), rgba(250, 252, 255, .94));
+  border: 1px solid color-mix(in srgb, var(--apex-border, #e2e8ef) 88%, #fff);
+  box-shadow: 0 18px 38px rgba(20, 32, 56, .12), inset 0 1px 0 rgba(255, 255, 255, .85);
+  backdrop-filter: blur(16px);
+  z-index: 4;
+  transition: width var(--apex-dur, .24s) var(--apex-ease, ease), transform var(--apex-dur, .24s) var(--apex-ease, ease);
+}
+
+.apex-chart-insight-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 15px 0 0 15px;
+  background: linear-gradient(180deg, var(--apex-green-bright, #4dce50), var(--apex-green-dark, #178f36));
+  opacity: .9;
+}
+
+.apex-chart-insight-dock.collapsed {
+  width: 74px;
+  min-width: 74px;
+  padding: 8px;
+  align-items: center;
+}
+
+.apex-chart-dock-toggle {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 999px;
+  border: 1px solid var(--apex-border, #e2e8ef);
+  background: #fff;
+  color: var(--apex-ink, #142038);
+  box-shadow: 0 4px 10px rgba(20, 32, 56, .08);
+  cursor: pointer;
+  transition: .16s var(--apex-ease, ease);
+}
+
+.apex-chart-dock-toggle:hover {
+  color: var(--apex-green-dark, #178f36);
+  border-color: color-mix(in srgb, var(--apex-green, #2dbb45) 38%, var(--apex-border, #e2e8ef));
+  transform: translateY(-1px);
+}
+
+.apex-chart-dock-mini {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.apex-chart-dock-mini span {
+  font-size: 10px;
+  font-weight: 850;
+  color: var(--apex-muted, #6b7688);
+  letter-spacing: .06em;
+}
+
+.apex-chart-dock-mini strong {
+  font-size: 11px;
+  color: var(--apex-ink, #142038);
+}
+
+.apex-chart-profile-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--apex-canvas, #f7f9fc) 92%, #eef2f6);
+  border: 1px solid var(--apex-border, #e2e8ef);
+}
+
+.apex-chart-profile-switch button {
+  min-width: 0;
+  min-height: 27px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--apex-muted, #6b7688);
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.apex-chart-profile-switch button.active {
+  background: #fff;
+  color: var(--apex-green-dark, #178f36);
+  box-shadow: 0 2px 7px rgba(20, 32, 56, .09);
+}
+
+.apex-chart-profile-note {
+  padding: 0 2px;
+  color: var(--apex-muted, #6b7688);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.apex-chart-dock-tabs,
+.apex-chart-toggle-pills {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.apex-chart-dock-tabs button,
+.apex-chart-toggle-pills button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 9px;
+  border: 1px solid var(--apex-border, #e2e8ef);
+  background: color-mix(in srgb, var(--apex-canvas, #f7f9fc) 94%, #fff);
+  color: #42516a;
+  font-size: 10px;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.apex-chart-dock-tabs button.active,
+.apex-chart-toggle-pills button.active {
+  border-color: color-mix(in srgb, var(--apex-green, #2dbb45) 36%, var(--apex-border, #e2e8ef));
+  background: color-mix(in srgb, var(--apex-green-soft, #eff9e9) 88%, #fff);
+  color: var(--apex-green-dark, #178f36);
+}
+
+.apex-chart-dock-body,
+.apex-chart-level-list,
+.apex-chart-dock-summary,
+.apex-chart-meter-list,
+.apex-chart-dock-stat-grid,
+.apex-chart-bias-card {
+  display: grid;
+  gap: 7px;
+}
+
+.apex-chart-level-list > div,
+.apex-chart-dock-summary > div,
+.apex-chart-dock-stat-grid > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(247, 249, 252, .92);
+  border: 1px solid color-mix(in srgb, var(--apex-border, #e2e8ef) 86%, #fff);
+}
+
+.apex-chart-level-list > div {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.apex-chart-level-list > div span,
+.apex-chart-dock-summary span,
+.apex-chart-dock-stat-grid span,
+.apex-chart-bias-card small {
+  font-size: 10px;
+  color: var(--apex-muted, #6b7688);
+}
+
+.apex-chart-level-list > div strong,
+.apex-chart-dock-summary strong,
+.apex-chart-dock-stat-grid strong,
+.apex-chart-bias-card strong {
+  color: var(--apex-ink, #142038);
+  font-size: 12px;
+}
+
+.apex-chart-level-list > div small {
+  justify-self: end;
+  color: #7d899a;
+  font-size: 10px;
+}
+
+.apex-chart-level-list .empty {
+  padding: 9px;
+  border-radius: 10px;
+  background: rgba(247, 249, 252, .92);
+  color: var(--apex-muted, #6b7688);
+  font-size: 10px;
+  text-align: center;
+}
+
+.apex-chart-dock-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.apex-chart-dock-stat-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.apex-chart-meter-list > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.apex-chart-meter-list span,
+.apex-chart-meter-list em {
+  font-size: 10px;
+  color: var(--apex-muted, #6b7688);
+  font-style: normal;
+}
+
+.apex-chart-meter-list i {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--apex-border, #e2e8ef) 88%, #dfe5ec);
+  overflow: hidden;
+}
+
+.apex-chart-meter-list i::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--meter, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--apex-green, #2dbb45), var(--apex-blue, #3478f6));
+}
+
+.apex-chart-bias-card {
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .98), color-mix(in srgb, var(--apex-green-soft, #eff9e9) 34%, #f7f9fc));
+  border: 1px solid var(--apex-border, #e2e8ef);
+}
+
+.apex-chart-bias-card .bias {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.apex-chart-bias-card .bias.bullish {
+  background: color-mix(in srgb, var(--apex-green-soft, #eff9e9) 92%, #fff);
+  color: var(--apex-green-dark, #178f36);
+}
+
+.apex-chart-bias-card .bias.bearish {
+  background: color-mix(in srgb, var(--apex-red-soft, #fff2f4) 92%, #fff);
+  color: var(--apex-red, #f23b4f);
+}
+
+.apex-chart-bias-card .bias.neutral {
+  background: color-mix(in srgb, var(--apex-blue, #3478f6) 10%, #fff);
+  color: color-mix(in srgb, var(--apex-blue, #3478f6) 82%, #233b6f);
+}
+
+@media (max-width: 1120px) {
+  .apex-chart-insight-dock {
+    width: min(248px, 38%);
+    min-width: 218px;
+  }
+
+  .apex-chart-profile-switch button {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1450px) and (min-height: 680px) and (max-height: 820px) {
+  .apex-chart-insight-dock.collapsed {
+    width: 46px;
+    min-width: 46px;
+    padding: 6px;
+    border-radius: 12px;
+  }
+
+  .apex-chart-insight-dock.collapsed .apex-chart-dock-mini { display: none; }
+  .apex-chart-dock-toggle {
+    color: var(--apex-green-dark, #178f36);
+    border-color: color-mix(in srgb, var(--apex-green, #2dbb45) 28%, var(--apex-border, #e2e8ef));
+    background: color-mix(in srgb, var(--apex-green, #2dbb45) 8%, #fff);
+  }
+}
+
+@media (max-width: 720px) {
+  .apex-chart-structure-pills {
+    position: static;
+    max-width: none;
+    padding: 8px 8px 0;
+  }
+
+  .apex-chart-insight-dock {
+    position: static;
+    width: auto;
+    min-width: 0;
+    margin: 8px;
+  }
+}
+
+/* Trading chart refinement — workstation reference alignment */
+.apex-trading-modern .apex-chart-panel.apex-chart-panel-pro {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  padding: 0;
+  overflow: hidden;
+}
+
+.apex-trading-modern .apex-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid #e5eaf0;
+  background: #ffffff;
+}
+
+.apex-trading-modern .apex-chart-title-group {
+  display: grid;
+  gap: 2px;
+}
+
+.apex-trading-modern .apex-chart-header .apex-eyebrow {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.apex-trading-modern .apex-chart-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+.apex-trading-modern .apex-tf-tabs {
+  gap: 6px;
+}
+
+.apex-trading-modern .apex-tf-tabs button,
+.apex-trading-modern .apex-chart-toolbar-group button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.apex-trading-modern .apex-tf-tabs button.active,
+.apex-trading-modern .apex-chart-toolbar-group button.active {
+  border-color: rgba(0, 155, 122, 0.22);
+  background: #eafbf5;
+  color: #009b7a;
+}
+
+.apex-trading-modern .apex-chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #e5eaf0;
+  background: #ffffff;
+}
+
+.apex-trading-modern .apex-chart-toolbar-group {
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.apex-trading-modern .apex-chart-body {
+  min-height: 0;
+  padding: 0;
+}
+
+.apex-trading-modern .apex-candle-svg-wrap {
+  min-height: 0;
+}
+
+.apex-trading-modern .apex-chart-structure-pills {
+  top: 12px;
+  left: 12px;
+}
+
+.apex-trading-modern .apex-chart-insight-dock {
+  right: 12px;
+  top: 46px;
+}
+
+@container trading-workspace (max-width: 1040px) {
+  .apex-trading-modern .apex-chart-header,
+  .apex-trading-modern .apex-chart-toolbar {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+}
+
+/* Trading reference pass 2 — compact chart workstation chrome. */
+.apex-trading-modern .apex-chart-panel.apex-chart-panel-pro {
+  display: grid;
+  grid-template-rows: 42px 34px minmax(0, 1fr);
+  min-height: 0;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.apex-trading-modern .apex-chart-header {
+  min-height: 42px;
+  height: 42px;
+  padding: 6px 10px;
+  gap: 10px;
+  border-bottom: 1px solid #e5eaf0;
+}
+
+.apex-trading-modern .apex-chart-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.apex-trading-modern .apex-chart-header h1 {
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.apex-trading-modern .apex-chart-feed-label {
+  max-width: 220px;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apex-trading-modern .apex-chart-header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.apex-trading-modern .apex-tf-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.apex-trading-modern .apex-tf-tabs button {
+  min-width: 30px;
+  min-height: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.apex-trading-modern .apex-chart-menu {
+  position: relative;
+}
+
+.apex-trading-modern .apex-chart-menu > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.apex-trading-modern .apex-chart-menu > summary::-webkit-details-marker { display: none; }
+.apex-trading-modern .apex-chart-menu[open] > summary,
+.apex-trading-modern .apex-chart-menu > summary:hover,
+.apex-trading-modern .apex-chart-menu > summary:focus-visible {
+  border-color: rgba(0,155,122,.2);
+  background: #eafbf5;
+  color: #00866a;
+  outline: none;
+}
+
+.apex-trading-modern .apex-chart-menu-panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
+  gap: 5px;
+  width: 214px;
+  padding: 8px;
+  border: 1px solid #e5eaf0;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15,23,42,.12);
+}
+
+.apex-trading-modern .apex-chart-menu-panel button {
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid #e5eaf0;
+  border-radius: 7px;
+  background: #fff;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apex-trading-modern .apex-chart-menu-panel button.active {
+  border-color: rgba(0,155,122,.24);
+  background: #eafbf5;
+  color: #00866a;
+}
+
+.apex-trading-modern .apex-chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 4px 10px 4px 44px;
+  border: 0;
+  border-bottom: 1px solid #e5eaf0;
+  background: #fff;
+}
+
+.apex-trading-modern .apex-chart-ohlc {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.apex-trading-modern .apex-chart-ohlc > strong {
+  flex: 0 0 auto;
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.apex-trading-modern .apex-chart-ohlc > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.apex-trading-modern .apex-chart-ohlc em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.apex-trading-modern .apex-chart-ohlc em.positive { color: #00a86b; }
+.apex-trading-modern .apex-chart-ohlc em.negative { color: #ef4444; }
+
+.apex-trading-modern .apex-chart-type-switch {
+  display: inline-flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.apex-trading-modern .apex-chart-type-switch button {
+  min-height: 24px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apex-trading-modern .apex-chart-type-switch button.active {
+  border-color: rgba(0,155,122,.2);
+  background: #eafbf5;
+  color: #00866a;
+}
+
+.apex-trading-modern .apex-chart-body {
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.apex-trading-modern .apex-candle-svg-wrap {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+}
+
+.apex-trading-modern .apex-chart-side-tools {
+  position: absolute;
+  z-index: 12;
+  top: 6px;
+  bottom: 8px;
+  left: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 28px;
+  padding: 3px 0;
+  border-right: 1px solid #edf2f4;
+  pointer-events: auto;
+}
+
+.apex-trading-modern .apex-chart-side-tools button {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.apex-trading-modern .apex-chart-side-tools button:hover,
+.apex-trading-modern .apex-chart-side-tools button:focus-visible,
+.apex-trading-modern .apex-chart-side-tools button.active {
+  border-color: rgba(0,155,122,.18);
+  background: #eafbf5;
+  color: #00866a;
+  outline: none;
+}
+
+.apex-trading-modern .apex-candle-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.apex-trading-modern .apex-chart-grid-line {
+  stroke: #edf2f4;
+  stroke-width: .8;
+}
+
+.apex-trading-modern .apex-chart-axis-label {
+  fill: #64748b;
+  font-size: 10px;
+}
+
+.apex-trading-modern .apex-chart-structure-pills {
+  top: 7px;
+  left: 44px;
+  gap: 4px;
+}
+
+.apex-trading-modern .apex-chart-structure-pills span {
+  min-height: 20px;
+  padding: 0 7px;
+  font-size: 10px;
+}
+
+.apex-trading-modern .apex-chart-insight-dock {
+  top: 40px;
+  right: 8px;
+}
+
+.apex-trading-modern .apex-chart-insight-dock.collapsed {
+  width: 34px;
+}
+
+@media (max-width: 1450px) and (min-width: 1180px) {
+  .apex-trading-modern .apex-chart-feed-label {
+    display: none;
+  }
+
+  .apex-trading-modern .apex-chart-header {
+    padding-inline: 8px;
+  }
+
+  .apex-trading-modern .apex-chart-header-controls {
+    gap: 4px;
+  }
+
+  .apex-trading-modern .apex-tf-tabs button {
+    min-width: 27px;
+    padding-inline: 5px;
+  }
+
+  .apex-trading-modern .apex-chart-menu > summary {
+    padding-inline: 6px;
+  }
+
+  .apex-trading-modern .apex-chart-toolbar {
+    padding-right: 8px;
+  }
+
+  .apex-trading-modern .apex-chart-ohlc > span {
+    gap: 4px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apex-trading-modern .apex-chart-menu-panel,
+  .apex-trading-modern .apex-chart-side-tools button,
+  .apex-trading-modern .apex-chart-type-switch button {
+    transition: none;
+  }
+}

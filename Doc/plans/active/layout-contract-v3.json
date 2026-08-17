@@ -1,0 +1,193 @@
+{
+  "version": "3.0",
+  "canonicalViewport": {
+    "width": 1368,
+    "height": 753,
+    "zoom": 1
+  },
+  "referenceViewport": {
+    "width": 1672,
+    "height": 941
+  },
+  "normalization": {
+    "horizontalRatio": 0.818182,
+    "verticalRatio": 0.800213,
+    "primaryScale": 0.800213,
+    "strategy": "height-led uniform normalization with horizontal surplus distributed to flexible content",
+    "normalizedReferenceWidth": 1337.96,
+    "horizontalSurplus": 30.04,
+    "prohibitNonUniformRasterStretch": true
+  },
+  "shell": {
+    "sidebarWidth": 180,
+    "headerHeight": 52,
+    "stagePadding": 12,
+    "mainContextGap": 12,
+    "contextWidth": 300,
+    "mainWidth": 852,
+    "usableHeight": 677,
+    "bodyOverflow": "hidden"
+  },
+  "tokens": {
+    "radius": {
+      "control": 9,
+      "card": 12,
+      "panel": 14,
+      "drawer": 16
+    },
+    "colors": {
+      "green500": "#2DBE45",
+      "green600": "#18A83A",
+      "positive": "#18A83A",
+      "negative": "#F04452",
+      "warning": "#FB921A",
+      "info": "#2890EA",
+      "violet": "#775CE6",
+      "ink950": "#091720",
+      "ink900": "#17233A",
+      "muted600": "#6E7C91",
+      "canvas": "#F8FAF9",
+      "surface": "#FFFFFF",
+      "border": "#DDE7E1",
+      "divider": "#EDF2EE"
+    }
+  },
+  "pageLayouts": {
+    "watchlist": {
+      "mainRows": [
+        132,
+        10,
+        34,
+        10,
+        36,
+        10,
+        445
+      ],
+      "contextWidth": 300
+    },
+    "orders": {
+      "mainRows": [
+        48,
+        8,
+        108,
+        10,
+        34,
+        36,
+        8,
+        425
+      ],
+      "contextRows": [
+        42,
+        172,
+        126,
+        124,
+        164,
+        49
+      ]
+    },
+    "positions": {
+      "mainRows": [
+        44,
+        8,
+        104,
+        10,
+        511
+      ],
+      "contextRows": [
+        198,
+        10,
+        142,
+        10,
+        317
+      ]
+    },
+    "alerts": {
+      "mainRows": [
+        44,
+        8,
+        118,
+        10,
+        497
+      ],
+      "contextRows": [
+        290,
+        10,
+        150,
+        10,
+        217
+      ]
+    },
+    "history": {
+      "mainRows": [
+        44,
+        8,
+        104,
+        10,
+        34,
+        38,
+        8,
+        431
+      ],
+      "contextRows": [
+        260,
+        10,
+        145,
+        10,
+        252
+      ]
+    },
+    "analytics": {
+      "mainRows": [
+        44,
+        8,
+        124,
+        10,
+        218,
+        10,
+        263
+      ]
+    },
+    "settings": {
+      "mainColumns": [
+        198,
+        10,
+        644
+      ],
+      "contextRows": [
+        294,
+        10,
+        170,
+        10,
+        193
+      ]
+    },
+    "help": {
+      "mainRows": [
+        54,
+        42,
+        12,
+        132,
+        12,
+        172,
+        12,
+        241
+      ],
+      "contextRows": [
+        264,
+        10,
+        176,
+        10,
+        217
+      ]
+    }
+  },
+  "quality": {
+    "noPageScrollbar": true,
+    "shellTolerancePx": 1,
+    "majorPanelTolerancePx": 2,
+    "requiredDpr": [
+      1.0,
+      1.25
+    ]
+  }
+}

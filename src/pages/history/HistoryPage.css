@@ -1,0 +1,673 @@
+/* History page — compact audit ledger at the 1368×753 desktop contract. */
+.apex-v3-history-page {
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  background:
+    radial-gradient(circle at 12% 4%, rgba(72, 220, 168, .045), transparent 28%),
+    linear-gradient(180deg, #fbfdfc 0%, #f7faf9 100%);
+}
+
+.apex-v3-history-main {
+  display: grid;
+  grid-template-rows: 52px 118px 34px 42px minmax(0, 1fr);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.history-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.history-metric-card {
+  --history-accent: #34c994;
+  --history-soft: #effcf7;
+  position: relative;
+  min-width: 0;
+  height: 118px;
+  padding: 11px 11px 9px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--history-accent) 22%, rgba(146, 164, 181, .25));
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--history-accent) 7%, transparent), transparent 42%),
+    linear-gradient(180deg, #fff, #fcfefd);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .052);
+  outline: none;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.history-metric-card.tone-info { --history-accent: #2689df; --history-soft: #eaf5ff; }
+.history-metric-card.tone-violet { --history-accent: #8b66f0; --history-soft: #f2edff; }
+.history-metric-card.tone-warning { --history-accent: #f49a22; --history-soft: #fff4df; }
+.history-metric-card.tone-negative { --history-accent: #ff4d5b; --history-soft: #fff0f1; }
+.history-metric-card.tone-neutral { --history-accent: #6f8299; --history-soft: #f4f7f9; }
+
+.history-metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--history-accent), color-mix(in srgb, var(--history-accent) 16%, transparent));
+}
+
+.history-metric-card:hover,
+.history-metric-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--history-accent) 34%, rgba(146, 164, 181, .25));
+  box-shadow: 0 18px 38px rgba(15, 23, 42, .075), 0 0 0 3px color-mix(in srgb, var(--history-accent) 7%, transparent);
+}
+
+.history-metric-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.history-metric-head > span {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--history-accent);
+  background: var(--history-soft);
+}
+
+.history-metric-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #53657c;
+  font-size: 10px;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-metric-card > b {
+  position: relative;
+  z-index: 2;
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+  color: #10233b;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-metric-card > svg {
+  position: absolute;
+  right: 10px;
+  bottom: 24px;
+  left: 10px;
+  width: calc(100% - 20px);
+  height: 24px;
+  color: var(--history-accent);
+  overflow: visible;
+}
+
+.history-metric-card > svg path {
+  fill: currentColor;
+  opacity: .05;
+}
+
+.history-metric-card > svg polyline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.history-metric-card > small {
+  position: absolute;
+  right: 11px;
+  bottom: 8px;
+  left: 11px;
+  overflow: hidden;
+  color: #6c7d93;
+  font-size: 10px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apex-v3-history-tabs {
+  padding: 3px;
+  overflow-x: auto;
+  border: 1px solid rgba(146, 164, 181, .24);
+  border-radius: 12px;
+  background: #f7fbfa;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+}
+
+.apex-v3-history-tabs button {
+  height: 26px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #586a84;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: capitalize;
+  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.apex-v3-history-tabs button.active {
+  color: #21a879;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(72, 220, 168, .08);
+}
+
+.apex-v3-history-tabs button.history-tab-position:hover {
+  color: #4867d8;
+  background: #f4f7ff;
+}
+
+.apex-v3-history-tabs button.history-tab-position.active {
+  color: #4867d8;
+  background: #f5f7ff;
+  box-shadow: 0 6px 14px rgba(72, 103, 216, .1);
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-history-tabs button.history-tab-position.active {
+  color: #4867d8 !important;
+  background: #f5f7ff !important;
+  box-shadow: 0 6px 14px rgba(72, 103, 216, .1) !important;
+}
+
+.apex-v3-history-page .history-table {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(146, 164, 181, .24);
+  border-top: 0;
+  border-radius: 16px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, .055);
+}
+
+.apex-v3-history-page .apex-v3-table th:nth-child(1) { width: 128px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(2) { width: 88px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(3) { width: 158px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(4) { width: 80px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(5) { width: 92px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(6) { width: 92px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(7) { width: 82px; }
+.apex-v3-history-page .apex-v3-table th:nth-child(8) { width: 84px; }
+
+.apex-v3-pagination {
+  min-height: 40px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid var(--apex-divider);
+  color: var(--apex-muted-600);
+  font-size: 10px;
+}
+
+.apex-v3-pagination button {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--apex-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--apex-ink-700);
+}
+
+.apex-v3-pagination button:disabled { opacity: .45; }
+
+.history-context {
+  grid-template-rows: 152px 202px 124px minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+}
+
+.history-context > .apex-v3-panel {
+  overflow: hidden;
+  border: 1px solid rgba(146, 164, 181, .24);
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(72, 220, 168, .035), transparent 45%),
+    rgba(255,255,255,.96);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .045);
+}
+
+.apex-v3-timeline {
+  padding: 8px 12px;
+  display: grid;
+  gap: 4px;
+  overflow: auto;
+}
+
+.apex-v3-timeline button {
+  min-height: 32px;
+  padding: 4px 6px;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+  transition: background .15s ease, transform .15s ease;
+}
+
+.apex-v3-timeline button:hover,
+.apex-v3-timeline button.active {
+  background: #f2fcf8;
+  transform: translateX(2px);
+}
+.apex-v3-timeline button > i { width: 7px; height: 7px; border-radius: 50%; background: var(--apex-muted-400); }
+.apex-v3-timeline button > i.tone-positive { background: #34c994; }
+.apex-v3-timeline button > i.tone-negative { background: var(--apex-red-500); }
+.apex-v3-timeline button > i.tone-warning { background: var(--apex-orange-500); }
+.apex-v3-timeline button > i.tone-info { background: var(--apex-blue-500); }
+.apex-v3-timeline strong,
+.apex-v3-timeline small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-timeline strong { font-size: 10px; }
+.apex-v3-timeline small { color: var(--apex-muted-600); font-size: 10px; }
+.activity-detail-card .apex-v3-key-values {
+  padding: 4px 12px 10px;
+}
+
+.history-selected-detail {
+  display: grid;
+  gap: 6px;
+  min-height: 0;
+}
+
+.history-selected-title {
+  margin: 9px 12px 2px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border-radius: 11px;
+  background: #f6fdf9;
+}
+
+.history-selected-title i,
+.history-empty-visual i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #6f8299;
+}
+
+.history-selected-title i.tone-positive { background: #34c994; }
+.history-selected-title i.tone-negative { background: var(--apex-red-500); }
+.history-selected-title i.tone-warning { background: var(--apex-orange-500); }
+.history-selected-title i.tone-info { background: var(--apex-blue-500); }
+.history-selected-title strong,
+.history-selected-title small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-selected-title strong { color: #10233b; font-size: 10px; font-weight: 780; }
+.history-selected-title small { color: #64748b; font-size: 10px; }
+
+.history-empty-visual {
+  min-height: 116px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 12px;
+  color: #6f8299;
+  text-align: center;
+}
+
+.timeline-card .history-empty-visual {
+  min-height: 96px;
+}
+
+.history-empty-visual.compact {
+  min-height: 150px;
+}
+
+.history-empty-visual svg {
+  color: #34c994;
+  filter: drop-shadow(0 8px 14px rgba(72,220,168,.12));
+}
+
+.history-empty-visual strong {
+  color: #10233b;
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.history-empty-visual span {
+  max-width: 220px;
+  color: #6f8299;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.export-card { padding-bottom: 8px; }
+.export-card > .apex-v3-button,
+.export-card > p { width: calc(100% - 24px); margin: 6px 12px 0; }
+.export-card > .apex-v3-button {
+  min-height: 34px;
+}
+
+.history-export-button {
+  position: relative;
+  overflow: hidden;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(45, 194, 141, .38) !important;
+  border-radius: 11px !important;
+  color: #0f5f49 !important;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255,255,255,.9), transparent 38%),
+    linear-gradient(135deg, #e7fbf3, #c8f1dc) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.82),
+    0 9px 18px rgba(72, 220, 168, .11) !important;
+  font-size: 10px !important;
+  font-weight: 860 !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, opacity .16s ease;
+}
+
+.history-export-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0 34%, rgba(255,255,255,.34) 46%, transparent 60% 100%);
+  transform: translateX(-100%);
+  transition: transform .45s ease;
+}
+
+.history-export-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: rgba(52, 201, 148, .42) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.78),
+    0 12px 24px rgba(72, 220, 168, .18) !important;
+}
+
+.history-export-button:not(:disabled):hover::after {
+  transform: translateX(100%);
+}
+
+.history-export-button:disabled {
+  color: #2d735b !important;
+  border-color: rgba(45, 194, 141, .2) !important;
+  background:
+    linear-gradient(135deg, #f3fbf7, #e2f3ea) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.78) !important;
+  opacity: 1 !important;
+}
+
+.history-export-button > svg,
+.history-export-button > span {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-history-page .history-export-button {
+  color: #0f5f49 !important;
+  border-color: rgba(45, 194, 141, .38) !important;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255,255,255,.9), transparent 38%),
+    linear-gradient(135deg, #e7fbf3, #c8f1dc) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.82),
+    0 9px 18px rgba(72, 220, 168, .11) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-history-page .history-export-button:disabled {
+  color: #2d735b !important;
+  border-color: rgba(45, 194, 141, .2) !important;
+  background: linear-gradient(135deg, #f3fbf7, #e2f3ea) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.78) !important;
+  opacity: 1 !important;
+}
+.export-card > p {
+  display: none;
+  color: var(--apex-muted-600);
+  height: 16px;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.history-export-status {
+  width: calc(100% - 24px);
+  min-height: 24px;
+  margin: 4px 12px 0;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(52, 201, 148, .14);
+  border-radius: 10px;
+  color: #23946f;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(72, 220, 168, .09), transparent 46%),
+    #f6fdf9;
+  font-size: 7.3px;
+  font-weight: 720;
+  line-height: 1.2;
+}
+
+.history-source-bars {
+  display: grid;
+  gap: 4px;
+  padding: 6px 12px 3px;
+}
+
+.history-source-bars span {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 6px;
+  color: #6f8299;
+  font-size: 7.2px;
+}
+
+.history-report-note {
+  width: calc(100% - 24px);
+  min-height: 28px;
+  margin: 4px 12px 0;
+  padding: 4px 8px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(98, 170, 240, .16);
+  border-radius: 10px;
+  color: #3579be;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(98, 170, 240, .08), transparent 48%),
+    #f7fbff;
+}
+
+.history-report-note > svg {
+  justify-self: center;
+}
+
+.history-report-note span,
+.history-report-note strong,
+.history-report-note small {
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-report-note strong {
+  color: #183a5e;
+  font-size: 7.2px;
+  font-weight: 820;
+}
+
+.history-report-note small {
+  margin-top: 1px;
+  color: #6684a3;
+  font-size: 6.1px;
+}
+
+.history-source-bars b {
+  color: #53657c;
+  font-weight: 740;
+}
+
+.history-source-bars i {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf3f1;
+}
+
+.history-source-bars i::before {
+  content: "";
+  display: block;
+  width: calc(var(--bar, 0) * 1%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #45d6a0, #62aaf0);
+}
+
+.history-source-bars span:nth-child(3) b {
+  color: #5066cf;
+}
+
+.history-source-bars span:nth-child(3) i::before {
+  background: linear-gradient(90deg, #7f96f3, #b58bff);
+}
+
+.history-source-bars em {
+  color: #10233b;
+  font-style: normal;
+  font-weight: 780;
+  text-align: right;
+}
+
+.history-report-generated {
+  width: calc(100% - 24px);
+  min-height: 20px;
+  margin: 5px 12px 0;
+  padding-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid rgba(146, 164, 181, .18);
+  color: #73839a;
+  font-size: 10px;
+}
+
+.history-report-generated b {
+  min-width: 0;
+  overflow: hidden;
+  color: #10233b;
+  font-size: 7px;
+  font-weight: 780;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-table .apex-v3-data-state {
+  position: relative;
+}
+
+.history-table .apex-v3-data-state::before {
+  content: "";
+  position: absolute;
+  width: 112px;
+  height: 112px;
+  left: 50%;
+  top: calc(50% - 42px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 52% 48%, rgba(72, 220, 168, .13), transparent 50%),
+    radial-gradient(circle, rgba(72, 220, 168, .045), transparent 68%);
+  pointer-events: none;
+}
+
+.history-table .apex-v3-data-state > svg {
+  position: relative;
+  z-index: 1;
+  color: #34c994;
+  filter: drop-shadow(0 8px 14px rgba(72, 220, 168, .12));
+}
+
+@media (max-width: 1119px) {
+  .apex-v3-history-page { grid-template-columns: 1fr; }
+  .apex-v3-history-main {
+    height: auto;
+    grid-template-rows: auto auto auto auto minmax(460px, 1fr);
+  }
+  .history-context { grid-template-rows: auto auto auto; }
+}
+
+@media (max-width: 520px) {
+  .apex-v3-history-main { grid-template-rows: auto auto auto auto minmax(420px, 1fr); }
+
+  .apex-v3-history-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    height: auto;
+    gap: 8px;
+  }
+
+  .apex-v3-history-toolbar .apex-v3-search-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .apex-v3-history-toolbar > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .apex-v3-history-page .apex-v3-table {
+    min-width: 780px;
+  }
+
+  .apex-v3-pagination {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-size: 10px;
+  }
+}
+
+
+/* History reference pass: real ledger metrics, no synthetic sparklines, and a
+   three-card context rail matching the supplied hierarchy. */
+.apex-v3-history-page .history-metric-card > svg { display: none; }
+.apex-v3-history-page .history-metric-card { border-radius: 12px; box-shadow: none; }
+.apex-v3-history-page .history-metric-card > small { position: static; display: block; margin-top: 12px; font-size: 10px; }
+.apex-v3-history-page .history-table,
+.apex-v3-history-page .history-context > .apex-v3-panel { border-radius: 12px; box-shadow: none; }
+.apex-v3-history-page .history-context { grid-template-rows: minmax(150px, .9fr) 126px minmax(0, 1fr); gap: 10px; }
+.apex-v3-history-page .timeline-card { min-height: 0; }
+.apex-v3-history-page .activity-insights-card { min-height: 0; }

@@ -1,0 +1,36 @@
+APEX V13 changed files versus APEX V11 Smooth
+
++ Doc/V13_INPUT_POLISH_REQUIREMENTS.md
++ MERGED_FILES_V13.txt
++ MERGE_REPORT_V13.md
++ QA/css-parse-test.json
++ QA/demo-order-flow-test.json
++ QA/drawer-scroll-test.json
++ QA/layout-overflow-test.json
++ QA/npm-ci-status.txt
++ QA/npm-ci.log
++ QA/order-ticket-layout-test.json
++ QA/typescript-transpile-check.json
+M package-lock.json
+M public/crypto-icons/README.md
++ public/crypto-icons/aave.png
++ public/crypto-icons/algo.png
++ public/crypto-icons/atom.png
++ public/crypto-icons/bch.png
++ public/crypto-icons/bsv.png
++ public/crypto-icons/dash.png
++ public/crypto-icons/eos.png
++ public/crypto-icons/etc.png
++ public/crypto-icons/ltc.png
++ public/crypto-icons/trx.png
++ public/crypto-icons/uni.png
++ public/crypto-icons/xlm.png
++ public/crypto-icons/xmr.png
++ public/crypto-icons/xtz.png
+M src/components/CoinIcon.tsx
+M src/components/ColoredGauge.tsx
+M src/components/workspace/AccountViews.tsx
+M src/components/workspace/GeneralViews.tsx
+M src/index.css
+M src/lib/marketPresentation.ts
++ vendor/yallist-3.1.1.tgz

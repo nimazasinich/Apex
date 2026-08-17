@@ -1,0 +1,63 @@
+.apex-overview-v2 {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 58px 58px minmax(0, 1fr);
+  gap: 8px;
+  overflow: hidden;
+}
+.apex-overview-v2 .apex-market-strip { min-height: 0; height: 58px; }
+.apex-overview-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0; overflow: hidden; border: 1px solid var(--apex-border); border-radius: 11px; background: var(--apex-surface); }
+.apex-overview-kpis > button { --overview-kpi-accent: var(--apex-green-600); position: relative; min-width: 0; border: 0; border-right: 1px solid var(--apex-divider); border-radius: 0; background: transparent; padding: 7px 11px; display: grid; grid-template-columns: 22px minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "icon label" "icon value"; align-content: center; gap: 2px 7px; text-align: left; box-shadow: none; }
+.apex-overview-kpis > button:last-child { border-right: 0; }
+.apex-overview-kpis > button:nth-child(2) { --overview-kpi-accent: var(--apex-blue-500); }
+.apex-overview-kpis > button:nth-child(3) { --overview-kpi-accent: var(--apex-violet-500); }
+.apex-overview-kpis > button:nth-child(4) { --overview-kpi-accent: var(--apex-orange-500); }
+.apex-overview-kpis > button::before { content: ''; position: absolute; inset: 8px auto 8px 0; width: 2px; border-radius: 2px; background: var(--overview-kpi-accent); opacity: .75; }
+.apex-overview-kpis > button:hover { background: var(--apex-surface-soft); }
+.apex-overview-kpis svg { grid-area: icon; align-self: center; color: var(--overview-kpi-accent); }
+.apex-overview-kpis span { grid-area: label; font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-kpis strong { grid-area: value; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 700 14px/1.15 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
+.apex-overview-kpis small { display: none; }
+.apex-overview-command-grid { display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 8px; min-height: 0; }
+.apex-overview-primary-stack { display: grid; grid-template-rows: minmax(248px, .92fr) minmax(210px, 1.08fr); gap: 8px; min-width: 0; min-height: 0; }
+.apex-overview-summary, .apex-overview-attention, .apex-overview-activity { min-width: 0; min-height: 0; overflow: hidden; }
+.apex-overview-summary { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 11px 12px; }
+.apex-overview-summary > header, .apex-overview-attention > header, .apex-overview-activity > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.apex-overview-summary h2, .apex-overview-attention h2, .apex-overview-activity h2 { margin: 2px 0 0; display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--apex-ink-950); }
+.apex-overview-summary p { margin: 4px 0 0; font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-summary-body { display: grid; grid-template-columns: 154px minmax(0, 1fr) 146px; align-items: center; gap: 14px; min-height: 0; }
+.apex-overview-summary-price strong { display: block; font: 700 24px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
+.apex-overview-summary-price span, .apex-overview-summary-price small { display: block; margin-top: 7px; font-size: 10px; }
+.apex-overview-summary-price small { color: var(--apex-muted-600); }
+.apex-overview-summary-chart { height: 112px; min-width: 0; }
+.apex-overview-summary-chart .apex-mini-sparkline { width: 100%; height: 100%; }
+.apex-overview-summary dl { margin: 0; display: grid; gap: 10px; }
+.apex-overview-summary dl div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--apex-divider); padding-bottom: 7px; }
+.apex-overview-summary dt { color: var(--apex-muted-600); font-size: 10px; }
+.apex-overview-summary dd { margin: 0; color: var(--apex-ink-900); font: 600 10px var(--apex-font-mono, "JetBrains Mono", monospace); }
+.apex-overview-summary footer { display: flex; justify-content: flex-end; gap: 8px; }
+.apex-overview-summary-empty { min-height: 100px; display: grid; place-items: center; color: var(--apex-muted-600); font-size: 11px; }
+.apex-overview-attention { padding: 12px; display: grid; grid-template-rows: auto minmax(0, 1fr); border-top: 3px solid var(--apex-orange-500); }
+.apex-overview-attention > header > strong { display: grid; place-items: center; min-width: 28px; height: 28px; border-radius: 999px; background: var(--apex-surface-selected); color: var(--apex-green-700); }
+.apex-overview-attention-list { margin-top: 9px; display: grid; align-content: start; gap: 6px; overflow: auto; }
+.apex-overview-attention-list button { min-height: 47px; display: grid; grid-template-columns: 22px minmax(0, 1fr) 16px; align-items: center; gap: 8px; border: 1px solid var(--apex-divider); border-radius: 9px; background: var(--apex-surface-soft); padding: 7px 8px; text-align: left; }
+.apex-overview-attention-list button.tone-danger svg:first-child { color: var(--apex-negative); }
+.apex-overview-attention-list button.tone-warning svg:first-child { color: var(--apex-orange-500); }
+.apex-overview-attention-list button.tone-info svg:first-child { color: var(--apex-blue-500); }
+.apex-overview-attention-list span { min-width: 0; }
+.apex-overview-attention-list strong, .apex-overview-attention-list small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apex-overview-attention-list strong { font-size: 11px; }
+.apex-overview-attention-list small { margin-top: 2px; color: var(--apex-muted-600); font-size: 10px; }
+.apex-overview-calm { align-self: center; display: grid; justify-items: center; text-align: center; gap: 7px; padding: 18px; color: var(--apex-muted-600); }
+.apex-overview-calm svg { color: var(--apex-positive); }
+.apex-overview-calm strong { color: var(--apex-ink-900); }
+.apex-overview-activity { padding: 9px 11px; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.apex-overview-activity .apex-tabs { min-height: 0; overflow: hidden; }
+.apex-overview-activity .apex-tabs-panel { min-height: 0; overflow: auto; }
+@container workspace-region (max-width: 900px) {
+  .apex-overview-v2 { height: auto; overflow: visible; grid-template-rows: auto; }
+  .apex-overview-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-overview-command-grid { grid-template-columns: 1fr; }
+  .apex-overview-primary-stack { grid-template-rows: auto; }
+}

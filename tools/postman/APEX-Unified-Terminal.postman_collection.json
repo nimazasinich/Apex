@@ -1,0 +1,1006 @@
+{
+  "info": {
+    "name": "APEX Unified Terminal — Operations & Market API",
+    "description": "Safe operational collection for the current APEX unified terminal. It contains no credentials. Live-order submission is intentionally excluded.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "5f35ae4a-6b6a-4f0c-8fd0-0f67a607a934"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3000",
+      "type": "string"
+    },
+    {
+      "key": "kucoin_symbol",
+      "value": "XBTUSDTM",
+      "type": "string"
+    },
+    {
+      "key": "binance_symbol",
+      "value": "BTCUSDT",
+      "type": "string"
+    },
+    {
+      "key": "operatorToken",
+      "value": "",
+      "type": "secret"
+    }
+  ],
+  "item": [
+    {
+      "name": "System & Operations",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Server and provider readiness."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Trading Module Registry",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/operations/trading-modules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operations",
+                "trading-modules"
+              ]
+            },
+            "description": "Current strategy and execution module registry."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Adaptive Threshold Governance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/operations/adaptive-thresholds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operations",
+                "adaptive-thresholds"
+              ]
+            },
+            "description": "Active revision, proposals and policy."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fast Adaptive Shadow Recommendation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/operations/adaptive-thresholds/fast-shadow?minSamples=24",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operations",
+                "adaptive-thresholds",
+                "fast-shadow"
+              ],
+              "query": [
+                {
+                  "key": "minSamples",
+                  "value": "24"
+                }
+              ]
+            },
+            "description": "1–5 minute shadow-only recommendation. Never applies configuration."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Market Streaming Capability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/operations/market-streaming",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operations",
+                "market-streaming"
+              ]
+            },
+            "description": "Reports whether optional KuCoin public streaming is enabled and its gap policy."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Online Market Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/operations/market-statistics?limit=12",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operations",
+                "market-statistics"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "12"
+                }
+              ]
+            },
+            "description": "Returns bounded, shadow-only EWMA/Welford statistics for recently observed symbols. It is not used by execution."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Decision Memory Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/decision-memory/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "decision-memory",
+                "status"
+              ]
+            },
+            "description": "Decision-memory mirror health and row counts."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ML Governance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/operations/ml-governance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operations",
+                "ml-governance"
+              ]
+            },
+            "description": "Shadow model governance report when configured."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KuCoin Futures — Public",
+      "item": [
+        {
+          "name": "Ticker",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/ticker?symbol={{kucoin_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "ticker"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{kucoin_symbol}}"
+                }
+              ]
+            },
+            "description": "Current contract ticker."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Level 2 Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/level2?symbol={{kucoin_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "level2"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{kucoin_symbol}}"
+                }
+              ]
+            },
+            "description": "Verified REST seed for sequence-validated streaming."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Candles 1m",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/candles?symbol={{kucoin_symbol}}&granularity=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "candles"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{kucoin_symbol}}"
+                },
+                {
+                  "key": "granularity",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Historical candles."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Funding Rate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/funding?symbol={{kucoin_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "funding"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{kucoin_symbol}}"
+                }
+              ]
+            },
+            "description": "Current funding rate."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Active Contracts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/contracts-active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "contracts-active"
+              ]
+            },
+            "description": "All active futures contracts."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contract Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/contract?symbol={{kucoin_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "contract"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{kucoin_symbol}}"
+                }
+              ]
+            },
+            "description": "Contract multiplier, tick size and limits."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recent Trades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/trades?symbol={{kucoin_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "trades"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{kucoin_symbol}}"
+                }
+              ]
+            },
+            "description": "Recent public trades."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Public WebSocket Bullet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-APEX-Operator-Token",
+                "value": "{{operatorToken}}",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kucoin/bullet-public",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kucoin",
+                "bullet-public"
+              ]
+            },
+            "description": "Obtains a public KuCoin WebSocket token. No API credentials required."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Binance Futures — Sentiment",
+      "item": [
+        {
+          "name": "Global Long/Short Ratio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/binance/sentiment-ls?symbol={{binance_symbol}}&period=5m&limit=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "binance",
+                "sentiment-ls"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{binance_symbol}}"
+                },
+                {
+                  "key": "period",
+                  "value": "5m"
+                },
+                {
+                  "key": "limit",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Public sentiment series."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Taker Buy/Sell Ratio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/binance/sentiment-taker?symbol={{binance_symbol}}&period=5m&limit=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "binance",
+                "sentiment-taker"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{binance_symbol}}"
+                },
+                {
+                  "key": "period",
+                  "value": "5m"
+                },
+                {
+                  "key": "limit",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Public aggressive-flow ratio."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supplemental Intelligence",
+      "item": [
+        {
+          "name": "News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplemental/news?symbol={{binance_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supplemental",
+                "news"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{binance_symbol}}"
+                }
+              ]
+            },
+            "description": "Configured news-provider result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sentiment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplemental/sentiment?symbol={{binance_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supplemental",
+                "sentiment"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{binance_symbol}}"
+                }
+              ]
+            },
+            "description": "Configured sentiment-provider result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "On-chain",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplemental/onchain?symbol=ETHUSDT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supplemental",
+                "onchain"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "ETHUSDT"
+                }
+              ]
+            },
+            "description": "Configured on-chain-provider result."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "All Supplemental",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplemental/all?symbol={{binance_symbol}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supplemental",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "{{binance_symbol}}"
+                }
+              ]
+            },
+            "description": "Orchestrated supplemental payload."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Provider Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplemental/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "supplemental",
+                "health"
+              ]
+            },
+            "description": "Provider health without revealing keys."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Telegram — Safe Checks",
+      "item": [
+        {
+          "name": "Telegram Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/telegram/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "telegram",
+                "status"
+              ]
+            },
+            "description": "Returns configuration booleans only; token is never returned."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-APEX-Operator-Token",
+                "value": "{{operatorToken}}",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/telegram/test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "telegram",
+                "test"
+              ]
+            },
+            "description": "Sends a test only when Telegram is configured. Requires normal mutation protections.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"APEX Postman connectivity test\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is below 500\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

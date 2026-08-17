@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-03T10:03:17.408Z",
+  "sourcePath": null,
+  "gate": {
+    "status": "INSUFFICIENT_DATA",
+    "minLabeledRows": 300,
+    "minMinorityClass": 30,
+    "resolvedRows": 0,
+    "minorityClassRows": 0,
+    "winCount": 0,
+    "lossCount": 0,
+    "breakevenCount": 0
+  },
+  "totals": {
+    "rowsLoaded": 0,
+    "rowsWithValidClassification": 0,
+    "resolvedAcceptedRows": 0,
+    "excludedRows": 0
+  },
+  "exclusions": [],
+  "categorySummaries": [
+    {
+      "category": "WITH_TREND",
+      "sampleCount": 0,
+      "winCount": 0,
+      "lossCount": 0,
+      "breakevenCount": 0,
+      "winRate": null,
+      "avgPnl": null,
+      "avgAlignmentScore": null,
+      "avgTrendStrength": null,
+      "avgTimeframeAgreement": null
+    },
+    {
+      "category": "RANGE",
+      "sampleCount": 0,
+      "winCount": 0,
+      "lossCount": 0,
+      "breakevenCount": 0,
+      "winRate": null,
+      "avgPnl": null,
+      "avgAlignmentScore": null,
+      "avgTrendStrength": null,
+      "avgTimeframeAgreement": null
+    },
+    {
+      "category": "COUNTER_TREND",
+      "sampleCount": 0,
+      "winCount": 0,
+      "lossCount": 0,
+      "breakevenCount": 0,
+      "winRate": null,
+      "avgPnl": null,
+      "avgAlignmentScore": null,
+      "avgTrendStrength": null,
+      "avgTimeframeAgreement": null
+    }
+  ],
+  "chronologicalSplits": [
+    {
+      "split": "train",
+      "rowCount": 0,
+      "winCount": 0,
+      "lossCount": 0,
+      "breakevenCount": 0,
+      "startTimestamp": null,
+      "endTimestamp": null,
+      "categoryCounts": {
+        "WITH_TREND": 0,
+        "RANGE": 0,
+        "COUNTER_TREND": 0
+      }
+    },
+    {
+      "split": "validation",
+      "rowCount": 0,
+      "winCount": 0,
+      "lossCount": 0,
+      "breakevenCount": 0,
+      "startTimestamp": null,
+      "endTimestamp": null,
+      "categoryCounts": {
+        "WITH_TREND": 0,
+        "RANGE": 0,
+        "COUNTER_TREND": 0
+      }
+    },
+    {
+      "split": "test",
+      "rowCount": 0,
+      "winCount": 0,
+      "lossCount": 0,
+      "breakevenCount": 0,
+      "startTimestamp": null,
+      "endTimestamp": null,
+      "categoryCounts": {
+        "WITH_TREND": 0,
+        "RANGE": 0,
+        "COUNTER_TREND": 0
+      }
+    }
+  ],
+  "dataCompleteness": {
+    "avg": null,
+    "min": null,
+    "max": null
+  },
+  "limitations": [
+    "Direction-divergence analysis is shadow-only and does not change scanner gates, lifecycle behavior, or execution.",
+    "qStructDirectional is a scanner-structure proxy, not an independently validated multi-timeframe trend indicator.",
+    "Classification is direction-aware: negative structure aligns with SHORT and positive structure aligns with LONG.",
+    "Rejected candidates and unresolved outcomes are excluded from realized outcome conclusions.",
+    "Chronological splits are deterministic; random splitting is not used.",
+    "Category thresholds are fixed audit heuristics and must not be treated as fitted decision boundaries."
+  ]
+}

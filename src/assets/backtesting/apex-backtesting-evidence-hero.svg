@@ -1,0 +1,57 @@
+<svg width="330" height="150" viewBox="0 0 330 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="25" y1="15" x2="305" y2="140" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#F8FDFA"/>
+    <stop offset="1" stop-color="#EEF9F2"/>
+  </linearGradient>
+  <linearGradient id="liquid" x1="70" y1="75" x2="110" y2="130" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#72DB91"/>
+    <stop offset="1" stop-color="#16A34A"/>
+  </linearGradient>
+</defs>
+<rect width="330" height="150" rx="18" fill="url(#bg)"/>
+<g opacity=".45">
+  <path d="M15 121C66 71 122 137 178 82C220 41 270 60 321 25" stroke="#D4EBDD" stroke-width="1.5" stroke-dasharray="3 4"/>
+  <circle cx="52" cy="101" r="2.5" fill="#16A34A"/>
+  <circle cx="174" cy="85" r="2.5" fill="#2563EB"/>
+  <circle cx="278" cy="52" r="2.5" fill="#16A34A"/>
+</g>
+
+<!-- flask -->
+<g transform="translate(48 39)">
+  <path d="M30 0H50" stroke="#9FB9A8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M34 2V31L9 72C5 79 10 88 19 88H61C70 88 75 79 71 72L46 31V2" fill="white" fill-opacity=".78" stroke="#B8CFBF" stroke-width="2.5"/>
+  <path d="M17 67L31 44H49L63 67C67 74 63 80 56 80H24C17 80 13 74 17 67Z" fill="url(#liquid)"/>
+  <path d="M26 61C36 57 47 66 56 60" stroke="white" stroke-opacity=".65" stroke-width="2"/>
+  <circle cx="31" cy="69" r="3" fill="white" fill-opacity=".55"/>
+  <circle cx="49" cy="72" r="2.5" fill="white" fill-opacity=".55"/>
+</g>
+
+<!-- dashboard panel -->
+<g transform="translate(137 25)">
+  <rect x="4" y="5" width="120" height="87" rx="11" fill="#D9E4DC" fill-opacity=".38"/>
+  <rect width="120" height="87" rx="11" fill="white" stroke="#DCE5ED" stroke-width="2"/>
+  <rect x="11" y="11" width="98" height="8" rx="4" fill="#F0F5F2"/>
+  <circle cx="17" cy="15" r="2" fill="#B7C9BD"/>
+  <circle cx="24" cy="15" r="2" fill="#B7C9BD"/>
+  <circle cx="31" cy="15" r="2" fill="#B7C9BD"/>
+  <rect x="12" y="28" width="36" height="44" rx="7" fill="#F5F8F6"/>
+  <rect x="19" y="36" width="22" height="18" rx="4" fill="#E3ECE6"/>
+  <rect x="19" y="60" width="17" height="4" rx="2" fill="#C8D7CD"/>
+  <path d="M60 61L70 52L80 56L91 39L105 44" stroke="#16A34A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="70" cy="52" r="2.5" fill="#16A34A"/>
+  <circle cx="91" cy="39" r="2.5" fill="#16A34A"/>
+  <path d="M60 30H103" stroke="#D8E3DB" stroke-width="4" stroke-linecap="round"/>
+  <path d="M60 37H81" stroke="#E4ECE7" stroke-width="3" stroke-linecap="round"/>
+  <path d="M60 70H104" stroke="#E4ECE7" stroke-width="3" stroke-linecap="round"/>
+</g>
+
+<!-- bars -->
+<g transform="translate(263 57)">
+  <rect x="0" y="47" width="14" height="28" rx="3" fill="#8ED9A5"/>
+  <rect x="18" y="31" width="14" height="44" rx="3" fill="#49C46E"/>
+  <rect x="36" y="12" width="14" height="63" rx="3" fill="#16A34A"/>
+  <path d="M4 39L22 25L40 7" stroke="#A6CDB2" stroke-width="2" stroke-linecap="round"/>
+  <path d="M36 7L40 7L40 11" stroke="#A6CDB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

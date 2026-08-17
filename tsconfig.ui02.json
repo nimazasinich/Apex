@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [],
+  "files": [
+    "src/types.ts",
+    "src/lib/dataProvenance.ts",
+    "src/components/ui/ProvenanceChip.tsx",
+    "src/components/SentimentGaugeCard.tsx",
+    "src/components/CorrelationMatrixCard.tsx",
+    "src/tests/dataProvenance.test.ts"
+  ]
+}

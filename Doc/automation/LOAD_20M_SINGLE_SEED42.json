@@ -1,0 +1,1120 @@
+{
+  "seed": 42,
+  "simulatedMinutes": 15,
+  "cycles": 200,
+  "candidates": 6400,
+  "accepted": 60,
+  "rejected": 6340,
+  "acceptanceRate": 0.009375,
+  "winRate": 0.65,
+  "avgPnl": 0.8303077251726575,
+  "netPnl": 49.81846351035945,
+  "avgConfidence": 0.910770261942351,
+  "calibrationGap": 0.260770261942351,
+  "rejectQuality": 0.7373817034700316,
+  "selectivityScore": 0.49375,
+  "smartScore": 69,
+  "reasonCounts": {
+    "GATE_OBI_FAILED": 2291,
+    "GATE_QSTRUCT_FAILED": 1479,
+    "ACCEPTED_BEST_CANDIDATE": 60,
+    "WEAK_MICROSTRUCTURE_CONFIRMATION": 291,
+    "LOWER_RANK_THAN_BEST": 746,
+    "LOW_CONFIDENCE": 131,
+    "LOW_LIQUIDITY_QUALITY": 735,
+    "GATE_VOLUME_FAILED": 630,
+    "HIGH_SQUEEZE_RISK": 31,
+    "LOW_EVIDENCE_AGREEMENT": 6
+  },
+  "regimeOutcomes": [
+    {
+      "regime": "trend_down",
+      "trades": 54,
+      "winRate": 0.7037037037037037,
+      "avgPnl": 1.0225066609351794
+    },
+    {
+      "regime": "trend_up",
+      "trades": 0,
+      "winRate": 0,
+      "avgPnl": 0
+    },
+    {
+      "regime": "chop",
+      "trades": 3,
+      "winRate": 0.3333333333333333,
+      "avgPnl": -0.4766575634498689
+    },
+    {
+      "regime": "squeeze_risk",
+      "trades": 0,
+      "winRate": 0,
+      "avgPnl": 0
+    },
+    {
+      "regime": "thin_book",
+      "trades": 3,
+      "winRate": 0,
+      "avgPnl": -1.322307829930206
+    }
+  ],
+  "finalConfig": {
+    "intervalMs": 6005,
+    "obiThreshold": -0.1,
+    "volumeThreshold": 0,
+    "qStructThreshold": -0.3,
+    "fundingThreshold": 0.0001,
+    "oiExpansionThresholdPct": 0.3,
+    "atrExpansionThreshold": 0.005,
+    "maxSqueezeRisk": 0.42,
+    "minEvidenceAgreement": 0.672,
+    "scoreWeights": {
+      "obi": 0.166,
+      "qStruct": 0.2875,
+      "volume": 0.1622,
+      "funding": 0.0699,
+      "openInterest": 0.0699,
+      "atr": 0.0437,
+      "microstructure": 0.0873,
+      "liquidity": 0.1135
+    },
+    "minConfidence": 0.814,
+    "directionBias": "SHORT_ONLY",
+    "topRankSkip": 10,
+    "minVolume24hUsd": 5000000,
+    "thresholdMode": "ADAPTIVE_GUARDRAILS",
+    "adaptiveLearningRate": 0.04,
+    "adaptiveMinSamples": 60
+  },
+  "adaptations": [
+    {
+      "id": "ADAPT-1782013028807-wnhtr",
+      "timestamp": 1782013028807,
+      "isoTime": "2026-06-21T03:37:08.807Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "TREND_DOWN",
+      "confidenceInAdjustment": 0.717,
+      "experienceSummary": {
+        "accepted": 7,
+        "rejected": 233,
+        "acceptanceRate": 0.0292,
+        "resolvedAccepted": 7,
+        "winRate": 0.8571,
+        "avgPnl": 1.4115,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 1
+      },
+      "reason": "Autonomous threshold cycle: regime=TREND_DOWN; accepted=7/240; rejected=233; gates=101; squeeze=0; evidence=0; confidence=11; resolved=7; winRate=86%; avgPnl=1.411; missedWinners=0; savedLosses=0; adjustmentConfidence=0.72.",
+      "changes": [
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.27,
+          "newValue": 0.278,
+          "reason": "Downtrend regime; emphasize structure while allowing high-quality shorts."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.16,
+          "newValue": 0.166,
+          "reason": "Downtrend regime; emphasize active sell flow."
+        },
+        {
+          "key": "minConfidence",
+          "oldValue": 0.78,
+          "newValue": 0.774,
+          "reason": "Strong downtrend with good outcomes; slightly reduce friction."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.19,
+          "newValue": 0.1874,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.278,
+          "newValue": 0.2742,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.166,
+          "newValue": 0.1637,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.08,
+          "newValue": 0.0789,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.08,
+          "newValue": 0.0789,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.05,
+          "newValue": 0.0493,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.1,
+          "newValue": 0.0986,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.07,
+          "newValue": 0.069,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028816-zjvoi",
+      "timestamp": 1782013028816,
+      "isoTime": "2026-06-21T03:37:08.816Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "MIXED",
+      "confidenceInAdjustment": 0.683,
+      "experienceSummary": {
+        "accepted": 5,
+        "rejected": 235,
+        "acceptanceRate": 0.0208,
+        "resolvedAccepted": 5,
+        "winRate": 1,
+        "avgPnl": 1.9842,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=MIXED; accepted=5/240; rejected=235; gates=155; squeeze=0; evidence=0; confidence=2; resolved=5; winRate=100%; avgPnl=1.984; missedWinners=0; savedLosses=0; adjustmentConfidence=0.68.",
+      "changes": [
+        {
+          "key": "obiThreshold",
+          "oldValue": -0.15,
+          "newValue": -0.138,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen OBI carefully."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028821-3q0mi",
+      "timestamp": 1782013028822,
+      "isoTime": "2026-06-21T03:37:08.822Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "CHOP",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=CHOP; accepted=0/240; rejected=240; gates=240; squeeze=0; evidence=0; confidence=0; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "obiThreshold",
+          "oldValue": -0.138,
+          "newValue": -0.126,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen OBI carefully."
+        },
+        {
+          "key": "minEvidenceAgreement",
+          "oldValue": 0.64,
+          "newValue": 0.656,
+          "reason": "Choppy regime; require broader evidence agreement."
+        },
+        {
+          "key": "qStructThreshold",
+          "oldValue": -0.3,
+          "newValue": -0.312,
+          "reason": "Choppy regime; require clearer structural direction."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2742,
+          "newValue": 0.2862,
+          "reason": "Choppy regime; rely more on multi-timeframe structure."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1874,
+          "newValue": 0.1852,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2862,
+          "newValue": 0.2828,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1637,
+          "newValue": 0.1618,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0789,
+          "newValue": 0.078,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0789,
+          "newValue": 0.078,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0493,
+          "newValue": 0.0487,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0986,
+          "newValue": 0.0974,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.069,
+          "newValue": 0.0682,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028827-in9oo",
+      "timestamp": 1782013028827,
+      "isoTime": "2026-06-21T03:37:08.827Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "MIXED",
+      "confidenceInAdjustment": 0.617,
+      "experienceSummary": {
+        "accepted": 1,
+        "rejected": 239,
+        "acceptanceRate": 0.0042,
+        "resolvedAccepted": 1,
+        "winRate": 0,
+        "avgPnl": -1.6198,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 1
+      },
+      "reason": "Autonomous threshold cycle: regime=MIXED; accepted=1/240; rejected=239; gates=237; squeeze=0; evidence=0; confidence=1; resolved=1; winRate=0%; avgPnl=-1.62; missedWinners=0; savedLosses=0; adjustmentConfidence=0.62.",
+      "changes": [
+        {
+          "key": "obiThreshold",
+          "oldValue": -0.126,
+          "newValue": -0.114,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen OBI carefully."
+        },
+        {
+          "key": "qStructThreshold",
+          "oldValue": -0.312,
+          "newValue": -0.3,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen QStruct carefully."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028833-ezg8p",
+      "timestamp": 1782013028833,
+      "isoTime": "2026-06-21T03:37:08.833Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "MIXED",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=MIXED; accepted=0/240; rejected=240; gates=229; squeeze=0; evidence=0; confidence=3; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "obiThreshold",
+          "oldValue": -0.114,
+          "newValue": -0.102,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen OBI carefully."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028839-den3f",
+      "timestamp": 1782013028839,
+      "isoTime": "2026-06-21T03:37:08.839Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "MIXED",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=MIXED; accepted=0/240; rejected=240; gates=168; squeeze=3; evidence=1; confidence=10; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "obiThreshold",
+          "oldValue": -0.102,
+          "newValue": -0.1,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen OBI carefully."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028855-3e2eg",
+      "timestamp": 1782013028855,
+      "isoTime": "2026-06-21T03:37:08.855Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "THIN_BOOK",
+      "confidenceInAdjustment": 0.617,
+      "experienceSummary": {
+        "accepted": 1,
+        "rejected": 239,
+        "acceptanceRate": 0.0042,
+        "resolvedAccepted": 1,
+        "winRate": 0,
+        "avgPnl": -1.1135,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 1
+      },
+      "reason": "Autonomous threshold cycle: regime=THIN_BOOK; accepted=1/240; rejected=239; gates=140; squeeze=0; evidence=0; confidence=0; resolved=1; winRate=0%; avgPnl=-1.113; missedWinners=0; savedLosses=0; adjustmentConfidence=0.62.",
+      "changes": [
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0682,
+          "newValue": 0.0822,
+          "reason": "Thin-book regime; prioritize executable setups."
+        },
+        {
+          "key": "minConfidence",
+          "oldValue": 0.774,
+          "newValue": 0.784,
+          "reason": "Thin-book regime; require more confidence before dispatch."
+        },
+        {
+          "key": "maxSqueezeRisk",
+          "oldValue": 0.46,
+          "newValue": 0.45,
+          "reason": "Thin-book regime; reduce trap tolerance."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1852,
+          "newValue": 0.1826,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2828,
+          "newValue": 0.2789,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1618,
+          "newValue": 0.1596,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.078,
+          "newValue": 0.0769,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.078,
+          "newValue": 0.0769,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0487,
+          "newValue": 0.048,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0974,
+          "newValue": 0.096,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0822,
+          "newValue": 0.0811,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028862-hu9w2",
+      "timestamp": 1782013028862,
+      "isoTime": "2026-06-21T03:37:08.862Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "THIN_BOOK",
+      "confidenceInAdjustment": 0.633,
+      "experienceSummary": {
+        "accepted": 2,
+        "rejected": 238,
+        "acceptanceRate": 0.0083,
+        "resolvedAccepted": 2,
+        "winRate": 0.5,
+        "avgPnl": 0.3702,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 1
+      },
+      "reason": "Autonomous threshold cycle: regime=THIN_BOOK; accepted=2/240; rejected=238; gates=127; squeeze=0; evidence=1; confidence=3; resolved=2; winRate=50%; avgPnl=0.37; missedWinners=0; savedLosses=0; adjustmentConfidence=0.63.",
+      "changes": [
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0811,
+          "newValue": 0.0951,
+          "reason": "Thin-book regime; prioritize executable setups."
+        },
+        {
+          "key": "minConfidence",
+          "oldValue": 0.784,
+          "newValue": 0.794,
+          "reason": "Thin-book regime; require more confidence before dispatch."
+        },
+        {
+          "key": "maxSqueezeRisk",
+          "oldValue": 0.45,
+          "newValue": 0.44,
+          "reason": "Thin-book regime; reduce trap tolerance."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1826,
+          "newValue": 0.1801,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2789,
+          "newValue": 0.275,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1596,
+          "newValue": 0.1574,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0769,
+          "newValue": 0.0758,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0769,
+          "newValue": 0.0758,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.048,
+          "newValue": 0.0473,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.096,
+          "newValue": 0.0947,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0951,
+          "newValue": 0.0938,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028870-nlwov",
+      "timestamp": 1782013028870,
+      "isoTime": "2026-06-21T03:37:08.870Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "TREND_DOWN",
+      "confidenceInAdjustment": 0.733,
+      "experienceSummary": {
+        "accepted": 8,
+        "rejected": 232,
+        "acceptanceRate": 0.0333,
+        "resolvedAccepted": 8,
+        "winRate": 0.375,
+        "avgPnl": 0.2017,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 4
+      },
+      "reason": "Autonomous threshold cycle: regime=TREND_DOWN; accepted=8/240; rejected=232; gates=84; squeeze=0; evidence=2; confidence=6; resolved=8; winRate=38%; avgPnl=0.202; missedWinners=0; savedLosses=0; adjustmentConfidence=0.73.",
+      "changes": [
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.275,
+          "newValue": 0.283,
+          "reason": "Downtrend regime; emphasize structure while allowing high-quality shorts."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1574,
+          "newValue": 0.1634,
+          "reason": "Downtrend regime; emphasize active sell flow."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1801,
+          "newValue": 0.1776,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.283,
+          "newValue": 0.2791,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1634,
+          "newValue": 0.1612,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0758,
+          "newValue": 0.0748,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0758,
+          "newValue": 0.0748,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0473,
+          "newValue": 0.0467,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0947,
+          "newValue": 0.0934,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0938,
+          "newValue": 0.0925,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028883-olri1",
+      "timestamp": 1782013028883,
+      "isoTime": "2026-06-21T03:37:08.883Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "CHOP",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=CHOP; accepted=0/240; rejected=240; gates=240; squeeze=0; evidence=0; confidence=0; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "minEvidenceAgreement",
+          "oldValue": 0.656,
+          "newValue": 0.672,
+          "reason": "Choppy regime; require broader evidence agreement."
+        },
+        {
+          "key": "qStructThreshold",
+          "oldValue": -0.3,
+          "newValue": -0.312,
+          "reason": "Choppy regime; require clearer structural direction."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2791,
+          "newValue": 0.2911,
+          "reason": "Choppy regime; rely more on multi-timeframe structure."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1776,
+          "newValue": 0.1755,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2911,
+          "newValue": 0.2876,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1612,
+          "newValue": 0.1593,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0748,
+          "newValue": 0.0739,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0748,
+          "newValue": 0.0739,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0467,
+          "newValue": 0.0461,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0934,
+          "newValue": 0.0923,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0925,
+          "newValue": 0.0914,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028887-92ykz",
+      "timestamp": 1782013028887,
+      "isoTime": "2026-06-21T03:37:08.887Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "MIXED",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=MIXED; accepted=0/240; rejected=240; gates=237; squeeze=0; evidence=0; confidence=0; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "qStructThreshold",
+          "oldValue": -0.312,
+          "newValue": -0.3,
+          "reason": "Too few accepted decisions and many hard-gate rejects; loosen QStruct carefully."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028902-x26cp",
+      "timestamp": 1782013028902,
+      "isoTime": "2026-06-21T03:37:08.902Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "TREND_DOWN",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=TREND_DOWN; accepted=0/240; rejected=240; gates=140; squeeze=8; evidence=0; confidence=4; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2876,
+          "newValue": 0.2956,
+          "reason": "Downtrend regime; emphasize structure while allowing high-quality shorts."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1593,
+          "newValue": 0.1653,
+          "reason": "Downtrend regime; emphasize active sell flow."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1755,
+          "newValue": 0.1731,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2956,
+          "newValue": 0.2915,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1653,
+          "newValue": 0.163,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0739,
+          "newValue": 0.0729,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0739,
+          "newValue": 0.0729,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0461,
+          "newValue": 0.0455,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0923,
+          "newValue": 0.091,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0914,
+          "newValue": 0.0901,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028912-21091",
+      "timestamp": 1782013028912,
+      "isoTime": "2026-06-21T03:37:08.912Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "THIN_BOOK",
+      "confidenceInAdjustment": 0.6,
+      "experienceSummary": {
+        "accepted": 0,
+        "rejected": 240,
+        "acceptanceRate": 0,
+        "resolvedAccepted": 0,
+        "winRate": null,
+        "avgPnl": null,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 0
+      },
+      "reason": "Autonomous threshold cycle: regime=THIN_BOOK; accepted=0/240; rejected=240; gates=140; squeeze=0; evidence=0; confidence=0; resolved=0; winRate=n/a; avgPnl=n/a; missedWinners=0; savedLosses=0; adjustmentConfidence=0.6.",
+      "changes": [
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.0901,
+          "newValue": 0.1041,
+          "reason": "Thin-book regime; prioritize executable setups."
+        },
+        {
+          "key": "minConfidence",
+          "oldValue": 0.794,
+          "newValue": 0.804,
+          "reason": "Thin-book regime; require more confidence before dispatch."
+        },
+        {
+          "key": "maxSqueezeRisk",
+          "oldValue": 0.44,
+          "newValue": 0.43,
+          "reason": "Thin-book regime; reduce trap tolerance."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1731,
+          "newValue": 0.1707,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2915,
+          "newValue": 0.2875,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.163,
+          "newValue": 0.1607,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0729,
+          "newValue": 0.0719,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0729,
+          "newValue": 0.0719,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0455,
+          "newValue": 0.0449,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.091,
+          "newValue": 0.0897,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.1041,
+          "newValue": 0.1027,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028919-7galj",
+      "timestamp": 1782013028919,
+      "isoTime": "2026-06-21T03:37:08.919Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "THIN_BOOK",
+      "confidenceInAdjustment": 0.617,
+      "experienceSummary": {
+        "accepted": 1,
+        "rejected": 239,
+        "acceptanceRate": 0.0042,
+        "resolvedAccepted": 1,
+        "winRate": 0,
+        "avgPnl": -2.0399,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 1
+      },
+      "reason": "Autonomous threshold cycle: regime=THIN_BOOK; accepted=1/240; rejected=239; gates=126; squeeze=0; evidence=0; confidence=2; resolved=1; winRate=0%; avgPnl=-2.04; missedWinners=0; savedLosses=0; adjustmentConfidence=0.62.",
+      "changes": [
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.1027,
+          "newValue": 0.1167,
+          "reason": "Thin-book regime; prioritize executable setups."
+        },
+        {
+          "key": "minConfidence",
+          "oldValue": 0.804,
+          "newValue": 0.814,
+          "reason": "Thin-book regime; require more confidence before dispatch."
+        },
+        {
+          "key": "maxSqueezeRisk",
+          "oldValue": 0.43,
+          "newValue": 0.42,
+          "reason": "Thin-book regime; reduce trap tolerance."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1707,
+          "newValue": 0.1683,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2875,
+          "newValue": 0.2835,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1607,
+          "newValue": 0.1585,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0719,
+          "newValue": 0.0709,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0719,
+          "newValue": 0.0709,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0449,
+          "newValue": 0.0443,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0897,
+          "newValue": 0.0885,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.1167,
+          "newValue": 0.1151,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    },
+    {
+      "id": "ADAPT-1782013028928-hn6j4",
+      "timestamp": 1782013028928,
+      "isoTime": "2026-06-21T03:37:08.928Z",
+      "mode": "ADAPTIVE_GUARDRAILS",
+      "sampleSize": 240,
+      "marketRegime": "TREND_DOWN",
+      "confidenceInAdjustment": 0.733,
+      "experienceSummary": {
+        "accepted": 8,
+        "rejected": 232,
+        "acceptanceRate": 0.0333,
+        "resolvedAccepted": 8,
+        "winRate": 0.5,
+        "avgPnl": 0.3874,
+        "missedWinners": 0,
+        "savedLosses": 0,
+        "harmfulAcceptedLosses": 4
+      },
+      "reason": "Autonomous threshold cycle: regime=TREND_DOWN; accepted=8/240; rejected=232; gates=93; squeeze=0; evidence=0; confidence=11; resolved=8; winRate=50%; avgPnl=0.387; missedWinners=0; savedLosses=0; adjustmentConfidence=0.73.",
+      "changes": [
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2835,
+          "newValue": 0.2915,
+          "reason": "Downtrend regime; emphasize structure while allowing high-quality shorts."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1585,
+          "newValue": 0.1645,
+          "reason": "Downtrend regime; emphasize active sell flow."
+        },
+        {
+          "key": "scoreWeights.obi",
+          "oldValue": 0.1683,
+          "newValue": 0.166,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.qStruct",
+          "oldValue": 0.2915,
+          "newValue": 0.2875,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.volume",
+          "oldValue": 0.1645,
+          "newValue": 0.1622,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.funding",
+          "oldValue": 0.0709,
+          "newValue": 0.0699,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.openInterest",
+          "oldValue": 0.0709,
+          "newValue": 0.0699,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.atr",
+          "oldValue": 0.0443,
+          "newValue": 0.0437,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.microstructure",
+          "oldValue": 0.0885,
+          "newValue": 0.0873,
+          "reason": "Normalize scoring weights after adaptive updates."
+        },
+        {
+          "key": "scoreWeights.liquidity",
+          "oldValue": 0.1151,
+          "newValue": 0.1135,
+          "reason": "Normalize scoring weights after adaptive updates."
+        }
+      ]
+    }
+  ]
+}

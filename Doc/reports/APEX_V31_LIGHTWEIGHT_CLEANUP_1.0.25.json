@@ -1,0 +1,859 @@
+{
+  "generatedAt": "2026-08-04T14:49:50.357910+00:00",
+  "baseline": "1.0.24 Reference UI + Project Hub",
+  "result": "1.0.25 Lightweight Source",
+  "original": {
+    "files": 505,
+    "bytes": 41393649
+  },
+  "cleanedBeforeReportManifest": {
+    "files": 313,
+    "bytes": 7433607
+  },
+  "removed": {
+    "files": 193,
+    "bytes": 33953691,
+    "percentOfOriginalBytes": 82.03
+  },
+  "categories": {
+    "regenerated index/report output": {
+      "files": 7,
+      "bytes": 2112154
+    },
+    "duplicate or superseded project file": {
+      "files": 28,
+      "bytes": 426912
+    },
+    "generated automation/audit output": {
+      "files": 46,
+      "bytes": 3865167
+    },
+    "large visual/reference evidence": {
+      "files": 40,
+      "bytes": 27186473
+    },
+    "historical/archive documentation": {
+      "files": 32,
+      "bytes": 228830
+    },
+    "generated QA evidence": {
+      "files": 32,
+      "bytes": 108059
+    },
+    "legacy/unreferenced test tooling": {
+      "files": 8,
+      "bytes": 26096
+    }
+  },
+  "removedFiles": [
+    {
+      "path": "DELIVERY_MANIFEST.json",
+      "bytes": 87690
+    },
+    {
+      "path": "Doc/repository/UNTRACKED_FILES_AUDIT.md",
+      "bytes": 86825
+    },
+    {
+      "path": "Doc/architecture/Refrence.md",
+      "bytes": 70963
+    },
+    {
+      "path": "APEX_STRATEGY_LIBRARY_EXECUTION_PLAN.md",
+      "bytes": 39191
+    },
+    {
+      "path": "APEX_STRATEGY_STUDIO_IMPLEMENTATION_SPEC.md",
+      "bytes": 33542
+    },
+    {
+      "path": "Doc/plans/active/V20_VISUAL_PARITY_REMEDIATION_PLAN.md",
+      "bytes": 15641
+    },
+    {
+      "path": "Doc/V13_INPUT_POLISH_REQUIREMENTS.md",
+      "bytes": 11335
+    },
+    {
+      "path": "Doc/architecture/SUPPLEMENTAL_INTELLIGENCE.md",
+      "bytes": 10891
+    },
+    {
+      "path": "Doc/UPGRADE_COMPLETION_REPORT.md",
+      "bytes": 9634
+    },
+    {
+      "path": "Doc/APEX_TRADING_LOGIC_INVENTORY_V3.md",
+      "bytes": 9201
+    },
+    {
+      "path": "Doc/repository/ROOT_CLEANUP_REPORT.md",
+      "bytes": 5707
+    },
+    {
+      "path": "Doc/repository/REPOSITORY_STATE_AFTER_RELEASE_FREEZE.md",
+      "bytes": 5431
+    },
+    {
+      "path": "Doc/APEX_INCREMENTAL_UPGRADE_IMPLEMENTATION_REPORT_V3.md",
+      "bytes": 5338
+    },
+    {
+      "path": "Doc/ARCHIVE_CHECKSUMS.json",
+      "bytes": 3832
+    },
+    {
+      "path": "apex_dashboard_layout_1368x753.json",
+      "bytes": 3601
+    },
+    {
+      "path": "Doc/repository/REFERENCE_SCALE_1368x753.md",
+      "bytes": 3019
+    },
+    {
+      "path": "Doc/APEX_INCREMENTAL_UPGRADE_GAPS_FOUND_AND_FIXED.md",
+      "bytes": 2983
+    },
+    {
+      "path": "Doc/BACKTESTING_REFERENCE_1368x753_COMPLETION.md",
+      "bytes": 2946
+    },
+    {
+      "path": "Doc/strategy-library/APEX_V29_IMPLEMENTATION_REPORT.md",
+      "bytes": 2849
+    },
+    {
+      "path": "apex_dashboard_implementation_spec.md",
+      "bytes": 2610
+    },
+    {
+      "path": "Doc/BACKTESTING_WORKSPACE_UPGRADE.md",
+      "bytes": 2396
+    },
+    {
+      "path": "Doc/CONSOLIDATION_MANIFEST.json",
+      "bytes": 2197
+    },
+    {
+      "path": "Doc/backend/MARKET_DATA_RECOVERY_V19.md",
+      "bytes": 2181
+    },
+    {
+      "path": "Doc/backend/WORKSPACE_VIEW_MODEL_V20.md",
+      "bytes": 2064
+    },
+    {
+      "path": "REDESIGN_NOTES.md",
+      "bytes": 1879
+    },
+    {
+      "path": "Doc/SOURCE_DELIVERY_STATUS.md",
+      "bytes": 1485
+    },
+    {
+      "path": "Doc/STRATEGY_STUDIO_UI_IMPLEMENTATION.md",
+      "bytes": 1229
+    },
+    {
+      "path": "Doc/repository/metadata.json",
+      "bytes": 252
+    },
+    {
+      "path": "QA/fixtures/strategy_studio_1368.html",
+      "bytes": 31976
+    },
+    {
+      "path": "QA/backtesting-ui-preview.html",
+      "bytes": 24985
+    },
+    {
+      "path": "QA/fixtures/backtesting_1368.html",
+      "bytes": 13139
+    },
+    {
+      "path": "QA/screenshots/apex-1368-geometry-report.json",
+      "bytes": 6579
+    },
+    {
+      "path": "QA/backtesting-workspace-qa.json",
+      "bytes": 3735
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/README.md",
+      "bytes": 2996
+    },
+    {
+      "path": "QA/layout-overflow-test.json",
+      "bytes": 2638
+    },
+    {
+      "path": "Doc/qa/cleanup-dry-run-summary.txt",
+      "bytes": 2410
+    },
+    {
+      "path": "Doc/qa/V20_VISUAL_ACCEPTANCE.md",
+      "bytes": 2229
+    },
+    {
+      "path": "QA/order-ticket-layout-test.json",
+      "bytes": 1811
+    },
+    {
+      "path": "QA/demo-order-flow-test.json",
+      "bytes": 1711
+    },
+    {
+      "path": "QA/consolidation-integration-qa.json",
+      "bytes": 1522
+    },
+    {
+      "path": "QA/consolidation-baseline/verification-summary.json",
+      "bytes": 1505
+    },
+    {
+      "path": "QA/reference-ui-redesign-qa.json",
+      "bytes": 1470
+    },
+    {
+      "path": "QA/REDESIGN_QA.md",
+      "bytes": 1464
+    },
+    {
+      "path": "QA/layout-regression-metrics.json",
+      "bytes": 1153
+    },
+    {
+      "path": "QA/screenshots/strategy-library-verification.json",
+      "bytes": 1006
+    },
+    {
+      "path": "QA/V31_STRATEGY_INTEGRATION_NOTES.md",
+      "bytes": 977
+    },
+    {
+      "path": "QA/strategy-integration-qa.json",
+      "bytes": 855
+    },
+    {
+      "path": "QA/npm-ci.log",
+      "bytes": 649
+    },
+    {
+      "path": "QA/screenshots/strategy-engine-smoke.json",
+      "bytes": 599
+    },
+    {
+      "path": "QA/backtesting-layout-metrics.json",
+      "bytes": 474
+    },
+    {
+      "path": "QA/drawer-scroll-test.json",
+      "bytes": 440
+    },
+    {
+      "path": "QA/source-package-safety.json",
+      "bytes": 397
+    },
+    {
+      "path": "QA/npm-ci-status.txt",
+      "bytes": 370
+    },
+    {
+      "path": "QA/consolidation-baseline/npm-ci-public.log",
+      "bytes": 304
+    },
+    {
+      "path": "QA/typescript-transpile-check.json",
+      "bytes": 196
+    },
+    {
+      "path": "QA/preview-interaction-test.json",
+      "bytes": 194
+    },
+    {
+      "path": "QA/css-parse-test.json",
+      "bytes": 156
+    },
+    {
+      "path": "QA/consolidation-baseline/release-gate.log",
+      "bytes": 113
+    },
+    {
+      "path": "QA/consolidation-baseline/npm-ci-public.exitcode",
+      "bytes": 4
+    },
+    {
+      "path": "QA/consolidation-baseline/release-gate.exitcode",
+      "bytes": 2
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/FAST_MINUTE_MATRIX_SUMMARY.json",
+      "bytes": 1297231
+    },
+    {
+      "path": "Doc/automation/load_matrix_100/LOAD_MATRIX_100_SUMMARY.json",
+      "bytes": 627513
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/1m_warmup_plus_5m_100.json",
+      "bytes": 199305
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/5m_100.json",
+      "bytes": 193539
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/4m_100.json",
+      "bytes": 190733
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/3m_100.json",
+      "bytes": 188696
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/2m_100.json",
+      "bytes": 187769
+    },
+    {
+      "path": "Doc/automation/load_matrix_100/15m_100.json",
+      "bytes": 186918
+    },
+    {
+      "path": "Doc/automation/load_matrix_100/5m_warmup_plus_15m_100.json",
+      "bytes": 186868
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/1m_100.json",
+      "bytes": 183635
+    },
+    {
+      "path": "Doc/automation/load_matrix_100/5m_100.json",
+      "bytes": 179716
+    },
+    {
+      "path": "Doc/provider-audits/2026-08-01-hf-space4-btc/round-1-snapshot.json",
+      "bytes": 54401
+    },
+    {
+      "path": "Doc/provider-audits/2026-08-01-hf-space4-btc/round-2-snapshot.json",
+      "bytes": 54387
+    },
+    {
+      "path": "Doc/automation/LOAD_20M_SINGLE_SEED42.json",
+      "bytes": 36667
+    },
+    {
+      "path": "Doc/provider-audits/2026-08-01-hf-spaces-deep-audit.md",
+      "bytes": 10201
+    },
+    {
+      "path": "Doc/automation/ml_dataset/VALIDATION_REPORT_v1.md",
+      "bytes": 8988
+    },
+    {
+      "path": "Doc/automation/provider_routing/PROVIDER_ROUTING_STRESS_v1.json",
+      "bytes": 7398
+    },
+    {
+      "path": "Doc/automation/DECISION_MEMORY_DATA_CONTRACT.md",
+      "bytes": 4841
+    },
+    {
+      "path": "Doc/automation/SMART_MONEY_CONTEXT_ENGINE_RESULT.md",
+      "bytes": 4555
+    },
+    {
+      "path": "Doc/automation/LOAD_20M_HARDENED_ACCEPTANCE_RESULT.md",
+      "bytes": 4381
+    },
+    {
+      "path": "Doc/automation/AUTONOMOUS_THRESHOLD_LEARNING_ENGINE.md",
+      "bytes": 4286
+    },
+    {
+      "path": "Doc/automation/ml_dataset/decision_dataset_v1.json",
+      "bytes": 4256
+    },
+    {
+      "path": "Doc/automation/load_matrix_fast_1m_5m/FAST_MINUTE_MATRIX_RESULT.md",
+      "bytes": 4029
+    },
+    {
+      "path": "Doc/automation/DIRECTION_DIVERGENCE_POSITION_DETECTOR.md",
+      "bytes": 4024
+    },
+    {
+      "path": "Doc/automation/ML_SIGNAL_MODEL_METHODOLOGY.md",
+      "bytes": 3951
+    },
+    {
+      "path": "Doc/automation/provider_routing/PROVIDER_ROUTING_STRESS_v1.md",
+      "bytes": 3442
+    },
+    {
+      "path": "Doc/automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.md",
+      "bytes": 3368
+    },
+    {
+      "path": "Doc/automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.json",
+      "bytes": 3205
+    },
+    {
+      "path": "Doc/automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.json",
+      "bytes": 2998
+    },
+    {
+      "path": "Doc/automation/LOAD_AND_AUTOMATION_STRESS_PLAN.md",
+      "bytes": 2655
+    },
+    {
+      "path": "Doc/automation/load_matrix_100/LOAD_MATRIX_100_RESULT.md",
+      "bytes": 2477
+    },
+    {
+      "path": "Doc/automation/LOAD_20M_HARDENED_SUMMARY.json",
+      "bytes": 2260
+    },
+    {
+      "path": "Doc/automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.md",
+      "bytes": 1640
+    },
+    {
+      "path": "Doc/provider-audits/2026-08-01-hf-space4-btc/round-2-orderbook.json",
+      "bytes": 1621
+    },
+    {
+      "path": "Doc/provider-audits/2026-08-01-hf-space4-btc/round-1-orderbook.json",
+      "bytes": 1617
+    },
+    {
+      "path": "Doc/automation/FAST_MINUTE_SELF_ADAPTATION_ENGINE.md",
+      "bytes": 1616
+    },
+    {
+      "path": "Doc/automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md",
+      "bytes": 1533
+    },
+    {
+      "path": "Doc/automation/AUTONOMOUS_LEARNING_STRESS_RESULT.md",
+      "bytes": 1477
+    },
+    {
+      "path": "Doc/automation/ml_shadow/SHADOW_ML_COMPARISON_REPORT_v1.md",
+      "bytes": 1319
+    },
+    {
+      "path": "Doc/automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md",
+      "bytes": 1254
+    },
+    {
+      "path": "Doc/automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.json",
+      "bytes": 1153
+    },
+    {
+      "path": "Doc/automation/ml_shadow/SHADOW_ML_COMPARISON_REPORT_v1.json",
+      "bytes": 978
+    },
+    {
+      "path": "Doc/automation/operations_status/OPERATIONS_PANEL_AUDIT_v1.json",
+      "bytes": 615
+    },
+    {
+      "path": "Doc/automation/operations_status/OPERATIONS_STATUS_SMOKE_v1.md",
+      "bytes": 595
+    },
+    {
+      "path": "Doc/automation/operations_status/OPERATIONS_STATUS_SMOKE_v1.json",
+      "bytes": 591
+    },
+    {
+      "path": "Doc/automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json",
+      "bytes": 465
+    },
+    {
+      "path": "Doc/plans/archive/APEX_DEFINITIVE_DESKTOP_UX_UI_CSS_MASTER_PLAN.md",
+      "bytes": 57378
+    },
+    {
+      "path": "Doc/plans/archive/APEX_UI_UNIFICATION_EXECUTION_PROMPT_V3.md",
+      "bytes": 35128
+    },
+    {
+      "path": "Doc/plans/archive/APEX_UNIFIED_DESKTOP_UX_UI_MASTER_PLAN.md",
+      "bytes": 26791
+    },
+    {
+      "path": "Doc/plans/archive/UX_IA_IMPROVEMENT_PLAN_v1.md",
+      "bytes": 16583
+    },
+    {
+      "path": "Doc/reports/historical/dev_log_2026-08-03.txt",
+      "bytes": 16298
+    },
+    {
+      "path": "Doc/plans/archive/FRONTEND_MASTER_REDESIGN_PLAN.md",
+      "bytes": 13676
+    },
+    {
+      "path": "Doc/plans/archive/UPGRADE_UI.md",
+      "bytes": 7884
+    },
+    {
+      "path": "Doc/reports/final/DESKTOP_VISUAL_UNIFICATION_FINAL_REPORT.md",
+      "bytes": 6581
+    },
+    {
+      "path": "Doc/reports/final/MERGE_REPORT_V13.md",
+      "bytes": 6320
+    },
+    {
+      "path": "Doc/reports/historical/CHANGES.md",
+      "bytes": 5014
+    },
+    {
+      "path": "Doc/release-history/v19/MERGE_REPORT.md",
+      "bytes": 4389
+    },
+    {
+      "path": "Doc/reports/historical/MERGE_REPORT_V7.md",
+      "bytes": 2885
+    },
+    {
+      "path": "Doc/reports/historical/BEYOND_PROPOSAL_SHORT_INTELLIGENCE.md",
+      "bytes": 2805
+    },
+    {
+      "path": "Doc/reports/historical/MERGE_REPORT_V11.md",
+      "bytes": 2680
+    },
+    {
+      "path": "Doc/reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md",
+      "bytes": 2619
+    },
+    {
+      "path": "Doc/plans/archive/UI_UPGRADE_V2.md",
+      "bytes": 2571
+    },
+    {
+      "path": "Doc/release-history/v20/MERGE_REPORT.md",
+      "bytes": 2482
+    },
+    {
+      "path": "Doc/reports/final/RELEASE_NOTES.md",
+      "bytes": 2207
+    },
+    {
+      "path": "Doc/reports/historical/MERGE_REPORT_V9.md",
+      "bytes": 2149
+    },
+    {
+      "path": "Doc/reports/historical/MERGE_REPORT_V8.md",
+      "bytes": 1964
+    },
+    {
+      "path": "Doc/reports/historical/MERGE_REPORT_V10.md",
+      "bytes": 1690
+    },
+    {
+      "path": "Doc/reports/historical/ui-evolution/SMOOTH_PASS_3_NOTES.md",
+      "bytes": 1184
+    },
+    {
+      "path": "Doc/release-history/v19/FILE_ORGANIZATION.md",
+      "bytes": 1171
+    },
+    {
+      "path": "Doc/reports/final/reference-normalization-report-v3.json",
+      "bytes": 1113
+    },
+    {
+      "path": "Doc/reports/final/MERGED_FILES_V13.txt",
+      "bytes": 1061
+    },
+    {
+      "path": "Doc/plans/archive/UI_UNIFICATION_V6.md",
+      "bytes": 1041
+    },
+    {
+      "path": "Doc/release-history/v19/VALIDATION_RESULTS.md",
+      "bytes": 839
+    },
+    {
+      "path": "Doc/plans/archive/UI_SPACING_V3.md",
+      "bytes": 697
+    },
+    {
+      "path": "Doc/release-history/v20/VALIDATION_RESULTS.txt",
+      "bytes": 528
+    },
+    {
+      "path": "Doc/reports/final/APEX_V3_VERIFICATION_LOG.txt",
+      "bytes": 461
+    },
+    {
+      "path": "Doc/reports/historical/MERGED_FILES_V7.txt",
+      "bytes": 458
+    },
+    {
+      "path": "Doc/reports/historical/MERGED_FILES_V11.txt",
+      "bytes": 183
+    },
+    {
+      "path": "Doc/reference/v31-ui-targets/orders-reference.png",
+      "bytes": 1848186
+    },
+    {
+      "path": "Doc/reference/v31-ui-targets/analytics-reference.png",
+      "bytes": 1818738
+    },
+    {
+      "path": "Doc/reference/v31-ui-targets/portfolio-reference.png",
+      "bytes": 1765388
+    },
+    {
+      "path": "Doc/reference/v31-ui-targets/positions-reference.png",
+      "bytes": 1753710
+    },
+    {
+      "path": "sstrateghytabstyle.png",
+      "bytes": 1199415
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/history_compare.png",
+      "bytes": 1063743
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/analytics_compare.png",
+      "bytes": 1014875
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/help_compare.png",
+      "bytes": 987462
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/alerts_compare.png",
+      "bytes": 968007
+    },
+    {
+      "path": "Doc/reference/v20/history-1368x753.png",
+      "bytes": 944776
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/watchlist_compare.png",
+      "bytes": 944702
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/positions_compare.png",
+      "bytes": 910893
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/orders_compare.png",
+      "bytes": 901218
+    },
+    {
+      "path": "QA/reference/backtesting-reference-1368x753.png",
+      "bytes": 861715
+    },
+    {
+      "path": "Doc/reference/v20/analytics-1368x753.png",
+      "bytes": 855780
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/settings_compare.png",
+      "bytes": 846895
+    },
+    {
+      "path": "Doc/reference/v20/alerts-1368x753.png",
+      "bytes": 837312
+    },
+    {
+      "path": "Doc/reference/v20/watchlist-1368x753.png",
+      "bytes": 834699
+    },
+    {
+      "path": "Doc/reference/v20/help-1368x753.png",
+      "bytes": 808602
+    },
+    {
+      "path": "Doc/reference/v20/orders-1368x753.png",
+      "bytes": 804933
+    },
+    {
+      "path": "Doc/reference/v20/positions-1368x753.png",
+      "bytes": 792988
+    },
+    {
+      "path": "Doc/reference/v20/settings-1368x753.png",
+      "bytes": 726361
+    },
+    {
+      "path": "Doc/automation/operations_status/screenshots/provider_routing_evidence_ops_tab.png",
+      "bytes": 708447
+    },
+    {
+      "path": "Doc/release-history/v19/reference/current-overview-before-v19.png",
+      "bytes": 515882
+    },
+    {
+      "path": "QA/backtesting-ui-preview.png",
+      "bytes": 247313
+    },
+    {
+      "path": "Doc/automation/operations_status/screenshots/operations_panel_ops_tab.png",
+      "bytes": 245030
+    },
+    {
+      "path": "QA/screenshots/strategy-studio-1368x753.png",
+      "bytes": 219279
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/header_cluster_all_pages.png",
+      "bytes": 211047
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/help_tutorials_zoom.png",
+      "bytes": 209559
+    },
+    {
+      "path": "QA/screenshots/backtesting-1368x753.png",
+      "bytes": 198259
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/help.png",
+      "bytes": 172912
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/analytics_heatmap_zoom.png",
+      "bytes": 153392
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/analytics.png",
+      "bytes": 152826
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/alerts.png",
+      "bytes": 125053
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/settings.png",
+      "bytes": 115213
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/history.png",
+      "bytes": 112849
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/positions.png",
+      "bytes": 112462
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/watchlist.png",
+      "bytes": 105067
+    },
+    {
+      "path": "Doc/qa/v20-parity-review/raw-implementation-captures/orders.png",
+      "bytes": 90816
+    },
+    {
+      "path": "Doc/reference/v20/scale-manifest.json",
+      "bytes": 669
+    },
+    {
+      "path": "tests/visual-layout.mjs",
+      "bytes": 8416
+    },
+    {
+      "path": "tests/v3-visual-layout.mjs",
+      "bytes": 3325
+    },
+    {
+      "path": "scripts/qa/verifyV20ReferenceContract.mjs",
+      "bytes": 3135
+    },
+    {
+      "path": "tests/v3-contract-static.mjs",
+      "bytes": 3073
+    },
+    {
+      "path": "scripts/qa/verifyV19Contract.mjs",
+      "bytes": 2657
+    },
+    {
+      "path": "scripts/qa/_qa_metric_audit.mts",
+      "bytes": 2183
+    },
+    {
+      "path": "scripts/qa/_qa_cdp_matched.mts",
+      "bytes": 1796
+    },
+    {
+      "path": "scripts/qa/_qa_range_probe.mts",
+      "bytes": 1511
+    },
+    {
+      "path": "Doc/FUNCTION_INDEX.json",
+      "bytes": 795811
+    },
+    {
+      "path": ".agent-index/functions_index.json",
+      "bytes": 653398
+    },
+    {
+      "path": "APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html",
+      "bytes": 440518
+    },
+    {
+      "path": "Doc/FUNCTION_INDEX.md",
+      "bytes": 129514
+    },
+    {
+      "path": "Doc/DOCUMENTATION_INDEX.md",
+      "bytes": 51356
+    },
+    {
+      "path": "Doc/DOCUMENTATION_INDEX.json",
+      "bytes": 39861
+    },
+    {
+      "path": "Doc/FUNCTION_INDEX_AUTOMATION.md",
+      "bytes": 1696
+    }
+  ],
+  "retainedActiveTests": [
+    "scripts/qa/smokeStrategyEngines.mjs",
+    "scripts/qa/verifyBacktestingWorkspace.mjs",
+    "scripts/qa/verifyConsolidationIntegration.mjs",
+    "scripts/qa/verifyReferenceUiRedesign.mjs",
+    "scripts/qa/verifyStrategyIntegration.mjs",
+    "scripts/qa/verifyStrategyLibrary.mjs",
+    "src/test/correlation.test.ts",
+    "src/test/levels.test.ts",
+    "src/test/ranking.test.ts",
+    "src/test/scoring.test.ts",
+    "src/test/sentiment.test.ts",
+    "src/test/sizing.test.ts",
+    "src/tests/apiMutate.test.ts",
+    "src/tests/canonicalDecisionAdapter.test.ts",
+    "src/tests/cliConfig.test.ts",
+    "src/tests/decisionMemoryPatch.test.ts",
+    "src/tests/decisionSnapshotLogger.test.ts",
+    "src/tests/demoAccount.test.ts",
+    "src/tests/directionPolicy.test.ts",
+    "src/tests/hfSpacesClient.test.ts",
+    "src/tests/marketDataService.hfSpace.test.ts",
+    "src/tests/portTakeover.test.ts",
+    "src/tests/restoredDecisionSubsystems.test.ts",
+    "src/tests/scannerConfigPolicy.test.ts",
+    "src/tests/scoringConfluence.test.ts",
+    "src/tests/theme.test.ts",
+    "src/tests/tradePlan.test.ts",
+    "src/tests/workspaceUi.test.ts",
+    "src/utils/cliConfig.test.ts",
+    "tests/adaptiveThresholdGovernance.test.ts",
+    "tests/adaptiveThresholdGovernanceGuardrail.test.ts",
+    "tests/canonicalReplayUpgrade.test.ts",
+    "tests/intelligence.test.ts",
+    "tests/riskGovernor.test.ts",
+    "tests/trackingDisplay.test.ts"
+  ]
+}

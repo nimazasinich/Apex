@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-03T10:03:18.440Z",
+  "sourcePath": null,
+  "modelId": null,
+  "limitations": [
+    "Shadow ML comparison is audit-only and does not change scanner gates, lifecycle, or execution.",
+    "Rule baseline uses the recorded decision status; ML uses the frozen shadow model file.",
+    "Rows with incomplete features are skipped rather than imputed.",
+    "Outcome counts are descriptive and are only available for rows with resolved accepted outcomes."
+  ],
+  "gate": {
+    "status": "NO_MODEL",
+    "completeLabeledRows": 0,
+    "modelValidationErrors": [
+      "No shadow ML model file was available."
+    ]
+  },
+  "summary": {
+    "rowsScored": 0,
+    "rowsSkipped": 0,
+    "agreementCount": 0,
+    "disagreementCount": 0,
+    "mlRejectRuleAcceptCount": 0,
+    "mlAcceptRuleRejectCount": 0,
+    "disagreementsWithLossOutcome": 0,
+    "disagreementsWithWinOutcome": 0,
+    "avgConfidenceOnDisagreements": null
+  },
+  "disagreements": []
+}

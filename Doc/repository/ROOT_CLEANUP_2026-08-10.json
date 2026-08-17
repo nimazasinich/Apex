@@ -1,0 +1,572 @@
+{
+  "moved": [
+    {
+      "from": "PROJECT_HANDOFF.md",
+      "to": "Doc/handoff/PROJECT_HANDOFF.md"
+    },
+    {
+      "from": "DELIVERY_INTEGRATION_MANIFEST.md",
+      "to": "Doc/handoff/DELIVERY_INTEGRATION_MANIFEST.md"
+    },
+    {
+      "from": "SMART_AUTOPILOT_IMPLEMENTATION_REPORT_FA.md",
+      "to": "Doc/reports/final/SMART_AUTOPILOT_IMPLEMENTATION_REPORT_FA.md"
+    },
+    {
+      "from": "SMART_AUTOPILOT_BUILD_NOTE.md",
+      "to": "Doc/reports/final/SMART_AUTOPILOT_BUILD_NOTE.md"
+    },
+    {
+      "from": "APEX_v1.0.56_MULTI_FUTURES_CONTEXT_REPORT.md",
+      "to": "Doc/reports/final/APEX_v1.0.56_MULTI_FUTURES_CONTEXT_REPORT.md"
+    },
+    {
+      "from": "APEX_Backtesting_Claude_Desktop_1368x753_REFACTOR.md",
+      "to": "Doc/plans/archive/legacy-root-2026-08-09/APEX_Backtesting_Claude_Desktop_1368x753_REFACTOR.md"
+    },
+    {
+      "from": "apex_dashboard_implementation_spec.md",
+      "to": "Doc/plans/archive/legacy-root-2026-08-09/apex_dashboard_implementation_spec.md"
+    },
+    {
+      "from": "REDESIGN_NOTES.md",
+      "to": "Doc/plans/archive/legacy-root-2026-08-09/REDESIGN_NOTES.md"
+    },
+    {
+      "from": "APEX_AGENT_SAFE_MERGE_REPORT_v1.0.46_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_AGENT_SAFE_MERGE_REPORT_v1.0.46_FA.md"
+    },
+    {
+      "from": "APEX_ATTACHED_VERSION_SAFE_MERGE_REPORT_v1.0.43_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_ATTACHED_VERSION_SAFE_MERGE_REPORT_v1.0.43_FA.md"
+    },
+    {
+      "from": "APEX_BACKTESTING_LEARNING_OPTIMIZATION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_BACKTESTING_LEARNING_OPTIMIZATION_REPORT.md"
+    },
+    {
+      "from": "APEX_BACKTESTING_REFERENCE_OPTIMIZATION_REPORT_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_BACKTESTING_REFERENCE_OPTIMIZATION_REPORT_FA.md"
+    },
+    {
+      "from": "APEX_CONTINUATION_AUDIT_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_CONTINUATION_AUDIT_REPORT.md"
+    },
+    {
+      "from": "APEX_FEATURE_PRESERVATION_AUDIT_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_FEATURE_PRESERVATION_AUDIT_REPORT.md"
+    },
+    {
+      "from": "APEX_INDEPENDENT_AUDIT_2026-08-08.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_INDEPENDENT_AUDIT_2026-08-08.md"
+    },
+    {
+      "from": "APEX_INTELLIGENT_THRESHOLD_OPTIMIZATION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_INTELLIGENT_THRESHOLD_OPTIMIZATION_REPORT.md"
+    },
+    {
+      "from": "APEX_LIGHT_THEME_RELEASE_REPORT_v1.0.41_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_LIGHT_THEME_RELEASE_REPORT_v1.0.41_FA.md"
+    },
+    {
+      "from": "APEX_LIGHT_THEME_RELEASE_REPORT_v1.0.42_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_LIGHT_THEME_RELEASE_REPORT_v1.0.42_FA.md"
+    },
+    {
+      "from": "APEX_LIQUIDITY_HUNTER_CORE_SAFE_IMPLEMENTATION_REPORT_v1.0.49.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_CORE_SAFE_IMPLEMENTATION_REPORT_v1.0.49.md"
+    },
+    {
+      "from": "APEX_LIQUIDITY_HUNTER_EVIDENCE_SIMULATION_REPORT_v1.0.51.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_EVIDENCE_SIMULATION_REPORT_v1.0.51.md"
+    },
+    {
+      "from": "APEX_LIQUIDITY_HUNTER_RESEARCH_COMPLETION_REPORT_v1.0.52.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_RESEARCH_COMPLETION_REPORT_v1.0.52.md"
+    },
+    {
+      "from": "APEX_LIQUIDITY_HUNTER_VALIDATION_CANARY_REPORT_v1.0.50.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_VALIDATION_CANARY_REPORT_v1.0.50.md"
+    },
+    {
+      "from": "APEX_MERGED_STAGE_SEC_UI_IMPLEMENTATION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_MERGED_STAGE_SEC_UI_IMPLEMENTATION_REPORT.md"
+    },
+    {
+      "from": "APEX_OPERATIONS_OBSERVABILITY_RUNTIME_QA_REPORT_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_OPERATIONS_OBSERVABILITY_RUNTIME_QA_REPORT_FA.md"
+    },
+    {
+      "from": "APEX_PROJECT_COMPARISON_AND_IMPLEMENTATION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_PROJECT_COMPARISON_AND_IMPLEMENTATION_REPORT.md"
+    },
+    {
+      "from": "APEX_SAFE_UI_MERGE_REPORT_v1.0.40.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_SAFE_UI_MERGE_REPORT_v1.0.40.md"
+    },
+    {
+      "from": "APEX_STRATEGY_BACKTEST_PRODUCTION_REPORT_v1.0.45_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_STRATEGY_BACKTEST_PRODUCTION_REPORT_v1.0.45_FA.md"
+    },
+    {
+      "from": "APEX_TRADING_DRAWER_DOCKING_REPORT_v1.0.44_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_TRADING_DRAWER_DOCKING_REPORT_v1.0.44_FA.md"
+    },
+    {
+      "from": "APEX_TRADING_ENGINE_UTILITY_INTEGRATION_REPORT_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_TRADING_ENGINE_UTILITY_INTEGRATION_REPORT_FA.md"
+    },
+    {
+      "from": "APEX_TRADING_SUBMENU_RELOCATION_REPORT_v1.0.47_FA.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_TRADING_SUBMENU_RELOCATION_REPORT_v1.0.47_FA.md"
+    },
+    {
+      "from": "APEX_UI_INTERACTION_POLISH_REPORT_v1.0.37.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_UI_INTERACTION_POLISH_REPORT_v1.0.37.md"
+    },
+    {
+      "from": "APEX_UI_TOKEN_FIX_REPORT_v1.0.38.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_UI_TOKEN_FIX_REPORT_v1.0.38.md"
+    },
+    {
+      "from": "APEX_v1.0.53_SAFE_COMPLETION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_v1.0.53_SAFE_COMPLETION_REPORT.md"
+    },
+    {
+      "from": "APEX_v1.0.54_VERIFIED_UI_COMPLETION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/APEX_v1.0.54_VERIFIED_UI_COMPLETION_REPORT.md"
+    },
+    {
+      "from": "REFERENCE_SUBSYSTEM_INTEGRATION_REPORT.md",
+      "to": "Doc/reports/historical/legacy-root-2026-08-09/REFERENCE_SUBSYSTEM_INTEGRATION_REPORT.md"
+    },
+    {
+      "from": "APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html",
+      "to": "Doc/generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html"
+    },
+    {
+      "from": "apex_backtesting_lab_dashboard (1).png",
+      "to": "Doc/references/backtesting/apex-backtesting-lab-dashboard.png"
+    },
+    {
+      "from": "baseline-landing.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/baseline-landing.png"
+    },
+    {
+      "from": "baseline-markets.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/baseline-markets.png"
+    },
+    {
+      "from": "history-1368x753-light-green-functional.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/history-1368x753-light-green-functional.png"
+    },
+    {
+      "from": "history-1368x753-refined-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/history-1368x753-refined-final.png"
+    },
+    {
+      "from": "history-export-report-css-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/history-export-report-css-final.png"
+    },
+    {
+      "from": "history-page-export-position-verify-v2.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/history-page-export-position-verify-v2.png"
+    },
+    {
+      "from": "history-page-export-position-verify.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/history-page-export-position-verify.png"
+    },
+    {
+      "from": "markets-v2.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/markets-v2.png"
+    },
+    {
+      "from": "markets-v3.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/markets-v3.png"
+    },
+    {
+      "from": "markets-v4.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/markets-v4.png"
+    },
+    {
+      "from": "orders-1368x753-assistant-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/orders-1368x753-assistant-final.png"
+    },
+    {
+      "from": "portfolio-1368x753-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-1368x753-final.png"
+    },
+    {
+      "from": "portfolio-1368x753-verify.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-1368x753-verify.png"
+    },
+    {
+      "from": "portfolio-font-wallet-fix.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-font-wallet-fix.png"
+    },
+    {
+      "from": "portfolio-metric-svg-scale-fix.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-metric-svg-scale-fix.png"
+    },
+    {
+      "from": "portfolio-metrics-icons-final-v2.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-metrics-icons-final-v2.png"
+    },
+    {
+      "from": "portfolio-metrics-icons-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-metrics-icons-final.png"
+    },
+    {
+      "from": "portfolio-target-final-v2.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-target-final-v2.png"
+    },
+    {
+      "from": "portfolio-target-final-v3.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-target-final-v3.png"
+    },
+    {
+      "from": "portfolio-target-pass.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-target-pass.png"
+    },
+    {
+      "from": "portfolio-watercolor-pass.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/portfolio-watercolor-pass.png"
+    },
+    {
+      "from": "positions-1368x753-continuous-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/positions-1368x753-continuous-final.png"
+    },
+    {
+      "from": "positions-1368x753-continuous-pass.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/positions-1368x753-continuous-pass.png"
+    },
+    {
+      "from": "positions-1368x753-in-frame.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/positions-1368x753-in-frame.png"
+    },
+    {
+      "from": "positions-1368x753-metric-cards-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/positions-1368x753-metric-cards-final.png"
+    },
+    {
+      "from": "positions-1368x753-svg-sort-final.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/positions-1368x753-svg-sort-final.png"
+    },
+    {
+      "from": "positions-1368x753-svg-sort-pass.png",
+      "to": "_qa/archive/root-cleanup-2026-08-10/screenshots/positions-1368x753-svg-sort-pass.png"
+    },
+    {
+      "from": "markets-v4-a11y.yml",
+      "to": "_qa/archive/root-cleanup-2026-08-10/metadata/markets-v4-a11y.yml"
+    },
+    {
+      "from": "apex_dashboard_layout_1368x753.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/metadata/apex_dashboard_layout_1368x753.json"
+    },
+    {
+      "from": ".codex-historical-candles.json",
+      "to": "tests/fixtures/strategy/historical-candles.json"
+    },
+    {
+      "from": ".codex-backtest-adaptive-long-short-trend-portfolio-v1.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-backtest-adaptive-long-short-trend-portfolio-v1.json"
+    },
+    {
+      "from": ".codex-backtest-multi-timeframe-vwap-pullback-reacceleration-v1.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-backtest-multi-timeframe-vwap-pullback-reacceleration-v1.json"
+    },
+    {
+      "from": ".codex-backtest-opening-range-vwap-rvol-breakout-v1.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-backtest-opening-range-vwap-rvol-breakout-v1.json"
+    },
+    {
+      "from": ".codex-backtest-volatility-squeeze-trend-volume-expansion-v1.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-backtest-volatility-squeeze-trend-volume-expansion-v1.json"
+    },
+    {
+      "from": ".codex-build-preflight.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-build-preflight.log"
+    },
+    {
+      "from": ".codex-final-1-npm-ci.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-final-1-npm-ci.log"
+    },
+    {
+      "from": ".codex-final-3-vitest.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-final-3-vitest.log"
+    },
+    {
+      "from": ".codex-final-4-build.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-final-4-build.log"
+    },
+    {
+      "from": ".codex-focused-strategy-tests-final.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-focused-strategy-tests-final.log"
+    },
+    {
+      "from": ".codex-focused-strategy-tests-pass2.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-focused-strategy-tests-pass2.log"
+    },
+    {
+      "from": ".codex-focused-strategy-tests.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-focused-strategy-tests.log"
+    },
+    {
+      "from": ".codex-four-strategy-backtests-after.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-four-strategy-backtests-after.json"
+    },
+    {
+      "from": ".codex-four-strategy-fill-bias-comparison.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-four-strategy-fill-bias-comparison.log"
+    },
+    {
+      "from": ".codex-kucoin-candles.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-kucoin-candles.json"
+    },
+    {
+      "from": ".codex-live-btc-regime-metrics.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-live-btc-regime-metrics.json"
+    },
+    {
+      "from": ".codex-live-validate-btc-1h-orb.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-live-validate-btc-1h-orb.json"
+    },
+    {
+      "from": ".codex-live-validate-eth-15m-squeeze.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-live-validate-eth-15m-squeeze.json"
+    },
+    {
+      "from": ".codex-live-validation-after.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-live-validation-after.json"
+    },
+    {
+      "from": ".codex-live-validation-build.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-live-validation-build.log"
+    },
+    {
+      "from": ".codex-live-validation-vitest.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-live-validation-vitest.log"
+    },
+    {
+      "from": ".codex-npm-ci-baseline.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-npm-ci-baseline.log"
+    },
+    {
+      "from": ".codex-strategy-engine-after.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-strategy-engine-after.log"
+    },
+    {
+      "from": ".codex-strategy-engine-before.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-strategy-engine-before.log"
+    },
+    {
+      "from": ".codex-task1-3-unit-tests.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-task1-3-unit-tests.log"
+    },
+    {
+      "from": ".codex-tsc-implementation-pass1.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-tsc-implementation-pass1.log"
+    },
+    {
+      "from": ".codex-vitest-preflight-full-pass2.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-vitest-preflight-full-pass2.log"
+    },
+    {
+      "from": ".codex-vitest-preflight-full.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/codex/.codex-vitest-preflight-full.log"
+    },
+    {
+      "from": "qa-backtesting-browser-interactions.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-backtesting-browser-interactions.json"
+    },
+    {
+      "from": "qa-backtesting-controls-inspect.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-backtesting-controls-inspect.log"
+    },
+    {
+      "from": "qa-browser-pages-fast.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-browser-pages-fast.log"
+    },
+    {
+      "from": "qa-browser-pages.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-browser-pages.json"
+    },
+    {
+      "from": "qa-browser-pages.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-browser-pages.log"
+    },
+    {
+      "from": "qa-chromium-backtesting.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-chromium-backtesting.log"
+    },
+    {
+      "from": "qa-install-direct-registry.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-install-direct-registry.log"
+    },
+    {
+      "from": "qa-install-prod.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-install-prod.log"
+    },
+    {
+      "from": "qa-install.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-install.log"
+    },
+    {
+      "from": "qa-multi-agent-benchmark-current.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-multi-agent-benchmark-current.json"
+    },
+    {
+      "from": "qa-multi-agent-runtime-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-multi-agent-runtime-current.log"
+    },
+    {
+      "from": "qa-multi-targeted-tsc.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-multi-targeted-tsc.log"
+    },
+    {
+      "from": "qa-parameter-sensitivity-current.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-parameter-sensitivity-current.json"
+    },
+    {
+      "from": "qa-parameter-sensitivity-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-parameter-sensitivity-current.log"
+    },
+    {
+      "from": "qa-parameter-validation-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-parameter-validation-current.log"
+    },
+    {
+      "from": "qa-scanner-adapter-tsc.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-scanner-adapter-tsc.log"
+    },
+    {
+      "from": "qa-scanner-preset-matrix-current.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-scanner-preset-matrix-current.json"
+    },
+    {
+      "from": "qa-scanner-preset-matrix-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-scanner-preset-matrix-current.log"
+    },
+    {
+      "from": "qa-scanner-preset-rejections-current.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-scanner-preset-rejections-current.json"
+    },
+    {
+      "from": "qa-scanner-preset-rejections-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-scanner-preset-rejections-current.log"
+    },
+    {
+      "from": "qa-server-3188.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-server-3188.log"
+    },
+    {
+      "from": "qa-server-start.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-server-start.log"
+    },
+    {
+      "from": "qa-setcontent-test.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-setcontent-test.log"
+    },
+    {
+      "from": "qa-setcontent-test2.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-setcontent-test2.log"
+    },
+    {
+      "from": "qa-source-contracts-run.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-source-contracts-run.log"
+    },
+    {
+      "from": "qa-static-server.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-static-server.log"
+    },
+    {
+      "from": "qa-strategy-matrix-current.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-strategy-matrix-current.json"
+    },
+    {
+      "from": "qa-strategy-matrix-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-strategy-matrix-current.log"
+    },
+    {
+      "from": "qa-strategy-stress5000-current.json",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-strategy-stress5000-current.json"
+    },
+    {
+      "from": "qa-targeted-tsc.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-targeted-tsc.log"
+    },
+    {
+      "from": "qa-unified-safety-current.log",
+      "to": "_qa/archive/root-cleanup-2026-08-10/qa-root/qa-unified-safety-current.log"
+    },
+    {
+      "from": "SMART_AUTOPILOT_REGRESSION_FINAL.log",
+      "to": "_qa/accepted/smart-autopilot/SMART_AUTOPILOT_REGRESSION_FINAL.log"
+    },
+    {
+      "from": "SMART_AUTOPILOT_RUNTIME_EVIDENCE.json",
+      "to": "_qa/accepted/smart-autopilot/SMART_AUTOPILOT_RUNTIME_EVIDENCE.json"
+    },
+    {
+      "from": "MERGE_MANIFEST.json",
+      "to": "Doc/repository/manifests/MERGE_MANIFEST.json"
+    },
+    {
+      "from": "TEST_APEX_PROJECT_HUB_WINDOWS.ps1",
+      "to": "tools/windows/TEST_APEX_PROJECT_HUB_WINDOWS.ps1"
+    },
+    {
+      "from": "deliverables/",
+      "to": "_archive/legacy-deliverables-2026-08-09/"
+    }
+  ],
+  "deletedDuplicates": [
+    {
+      "path": "APEX_STRATEGY_LIBRARY_EXECUTION_PLAN.md",
+      "canonical": "Doc/strategy-library/APEX_STRATEGY_LIBRARY_EXECUTION_PLAN.md"
+    },
+    {
+      "path": "APEX_STRATEGY_STUDIO_IMPLEMENTATION_SPEC.md",
+      "canonical": "Doc/strategy-library/APEX_STRATEGY_STUDIO_IMPLEMENTATION_SPEC.md"
+    },
+    {
+      "path": "apex-backtesting-evidence-hero.svg",
+      "canonical": "src/assets/backtesting/apex-backtesting-evidence-hero.svg"
+    },
+    {
+      "path": "qa-server-3188.pid",
+      "canonical": "discarded stale PID"
+    },
+    {
+      "path": "qa-static-server.pid",
+      "canonical": "discarded stale PID"
+    }
+  ],
+  "copiedIn": [
+    {
+      "from": "/mnt/data/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md",
+      "to": "Doc/reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md"
+    },
+    {
+      "from": "/mnt/data/APEX_STRATEGY_STUDIO_FINAL_REGRESSION.log",
+      "to": "_qa/accepted/strategy-studio/APEX_STRATEGY_STUDIO_FINAL_REGRESSION.log"
+    },
+    {
+      "from": "/mnt/data/strategy_studio_npm_ci.log",
+      "to": "_qa/accepted/strategy-studio/strategy_studio_npm_ci.log"
+    }
+  ],
+  "updatedFiles": [
+    "scripts/utilities/updateVisualProjectDocumentation.mjs",
+    "scripts/utilities/cleanGeneratedArtifacts.mjs",
+    "scripts/qa/compareStrategyFillBias.mjs",
+    "Doc/README.md",
+    ".gitignore",
+    "README.md",
+    "scripts/utilities/generateDocumentationIndex.mts",
+    "Doc/DOCUMENTATION_INDEX.md",
+    "Doc/DOCUMENTATION_INDEX.json",
+    "Doc/repository/ROOT_SURFACE_AFTER_2026-08-10.md"
+  ]
+}

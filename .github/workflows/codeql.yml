@@ -1,0 +1,50 @@
+name: CodeQL
+
+# Static security analysis for the TypeScript/JavaScript sources. This is a
+# separate workflow from ci.yml on purpose: it needs `security-events: write`,
+# runs on a schedule as well as on changes, and must keep reporting even when a
+# functional check in CI is red. It does not duplicate any CI step.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly re-scan so newly published query updates still surface findings on
+    # code that has not changed.
+    - cron: '17 5 * * 1'
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: CodeQL (javascript-typescript)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          # JavaScript/TypeScript is analysed directly from source, so no
+          # project build is required. Avoiding a build here also keeps this
+          # workflow independent of the npm ci / vite build path already
+          # exercised by ci.yml.
+          build-mode: none
+          queries: security-and-quality
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript

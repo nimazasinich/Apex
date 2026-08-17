@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "apex-host-runner": {
+      "command": "node",
+      "args": [
+        "C:\\project\\APEX-frontend-phase31\\APEX-unified-maximal-v1.0.56-r2-merged-source\\APEX-unified-maximal-v1.0.56-r2-merged\\tools\\mcp\\apex-host-runner\\server.mjs",
+        "--repo",
+        "C:\\project\\APEX-frontend-phase31\\APEX-unified-maximal-v1.0.56-r2-merged-source\\APEX-unified-maximal-v1.0.56-r2-merged"
+      ]
+    }
+  }
+}

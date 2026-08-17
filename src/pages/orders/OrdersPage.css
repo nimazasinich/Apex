@@ -1,0 +1,337 @@
+/* Orders reference pass.
+   Scoped overrides intentionally win over the older global v20 light-theme
+   layer so the real Orders implementation can follow the supplied reference
+   without rebuilding the shared shell or inventing account data. */
+:root[data-apex-theme-resolved="light"] .v20-orders-page {
+  gap: 14px !important;
+  background: transparent !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page::before { display: none !important; }
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page > .v20-main-column {
+  grid-template-rows: 58px auto 112px minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-hero {
+  min-height: 58px !important;
+  padding: 0 2px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-hero-copy {
+  gap: 0 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-hero h1 {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: -.025em !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-hero p {
+  margin-top: 5px !important;
+  font-size: 11px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-refresh-action {
+  min-height: 38px !important;
+  min-width: 96px !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-grid {
+  min-height: 112px !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-card {
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 10px !important;
+  height: 112px !important;
+  min-height: 112px !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-card::before {
+  top: 14px !important;
+  bottom: 14px !important;
+  width: 2px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-icon {
+  position: static !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 11px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy {
+  display: grid !important;
+  align-content: start !important;
+  min-width: 0 !important;
+  gap: 5px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-label {
+  font-size: 10px !important;
+  font-weight: 650 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy > strong {
+  margin: 0 !important;
+  color: #0f172a !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy > small {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-trend,
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-spark {
+  display: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-table-card,
+:root[data-apex-theme-resolved="light"] .v20-orders-page > .v20-context-sidebar {
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-orders-table {
+  grid-template-rows: 52px 54px 40px minmax(0, 1fr) auto auto !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-table-tabs {
+  gap: 22px !important;
+  padding: 0 16px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-table-tabs button {
+  min-height: 42px !important;
+  font-size: 11px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row {
+  min-height: 54px !important;
+  padding: 9px 14px !important;
+  gap: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row label,
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row select,
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row button {
+  height: 36px !important;
+  min-height: 36px !important;
+  border-radius: 9px !important;
+  font-size: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .v20-context-title {
+  min-height: 52px !important;
+  padding: 0 14px !important;
+  font-size: 15px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-assistant-empty {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  height: calc(100% - 52px) !important;
+  min-height: 0 !important;
+  padding: 0 12px 12px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .assistant-mode-tabs {
+  min-height: 38px !important;
+  margin: 0 0 10px !important;
+  padding: 3px !important;
+  border: 1px solid #e5eaf0 !important;
+  border-radius: 10px !important;
+  background: #f9fbfd !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-assistant-honest-empty {
+  display: grid !important;
+  place-content: center !important;
+  justify-items: center !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  padding: 24px 18px !important;
+  text-align: center !important;
+  color: #64748b !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-assistant-empty-icon {
+  width: 58px !important;
+  height: 58px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(0, 155, 122, .18) !important;
+  border-radius: 16px !important;
+  background: #eafbf5 !important;
+  color: #009b7a !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-assistant-honest-empty > strong {
+  color: #0f172a !important;
+  font-size: 14px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-assistant-honest-empty > span:not(.orders-assistant-empty-icon) {
+  max-width: 230px !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-assistant-honest-empty > small {
+  padding: 5px 8px !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-size: 10px !important;
+}
+
+@media (max-width: 1120px) {
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    min-height: auto !important;
+  }
+}
+
+/* Narrow workstation card fit: retain five real KPI cards without forcing
+   labels into unreadable 3–4 line stacks. */
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-card {
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+  gap: 8px !important;
+  padding: 12px !important;
+}
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-icon {
+  width: 34px !important;
+  height: 34px !important;
+}
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy > small {
+  max-width: 100% !important;
+}
+:root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-unit {
+  white-space: nowrap !important;
+}
+
+/* 1368 reference-density calibration: keep all eight canonical rows and the
+   pagination controls visible without shrinking text into unreadable sizes. */
+@media (min-width: 1181px) and (max-width: 1500px) and (min-height: 700px) and (max-height: 820px) {
+  :root[data-apex-theme-resolved="light"] .v20-orders-page > .v20-main-column {
+    grid-template-rows: 50px auto 96px minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-hero {
+    min-height: 50px !important;
+    height: 50px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-grid {
+    min-height: 96px !important;
+    height: 96px !important;
+    gap: 10px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-card {
+    height: 96px !important;
+    min-height: 96px !important;
+    padding: 11px !important;
+    grid-template-columns: 32px minmax(0, 1fr) !important;
+    gap: 7px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-label {
+    overflow: visible !important;
+    font-size: 9.5px !important;
+    line-height: 11px !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy > strong {
+    font-size: 18px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy > small {
+    font-size: 9px !important;
+    line-height: 11px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-orders-table {
+    grid-template-rows: 42px 44px 34px minmax(0, 1fr) 34px auto !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-table-tabs {
+    min-height: 42px !important;
+    padding: 0 14px !important;
+    gap: 18px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-table-tabs button {
+    min-height: 36px !important;
+    font-size: 10px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row {
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 5px 12px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row label,
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row select,
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-filter-row button {
+    height: 32px !important;
+    min-height: 32px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-orders-table thead th {
+    height: 34px !important;
+    padding-block: 0 !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-orders-table tbody td {
+    height: 40px !important;
+    padding-block: 3px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-pagination {
+    min-height: 34px !important;
+    height: 34px !important;
+  }
+}
+@media (min-width: 1181px) and (max-width: 1500px) and (min-height: 700px) and (max-height: 820px) {
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-copy {
+    width: auto !important;
+    overflow: visible !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .orders-kpi-label {
+    max-width: none !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-orders-table tbody td {
+    height: 34px !important;
+    min-height: 34px !important;
+    padding-block: 2px !important;
+    font-size: 9px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-pagination {
+    padding: 0 10px !important;
+    gap: 8px !important;
+  }
+  :root[data-apex-theme-resolved="light"] .v20-orders-page .v20-pagination button {
+    min-width: 26px !important;
+    height: 26px !important;
+    padding: 0 7px !important;
+  }
+}

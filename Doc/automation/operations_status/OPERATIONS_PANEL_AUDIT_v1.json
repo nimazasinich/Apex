@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-07-27T18:00:17.994Z",
+  "baseUrl": "http://127.0.0.1:46336",
+  "screenshot": "Doc/automation/operations_status/screenshots/operations_panel_ops_tab.png",
+  "checks": {
+    "providerHealthVisible": true,
+    "decisionMemoryVisible": true,
+    "adaptiveAuditVisible": true,
+    "adaptiveStressVisible": true,
+    "providerRoutingVisible": true,
+    "loadMatrixVisible": true,
+    "shadowMlTrainingVisible": true,
+    "shadowMlComparisonVisible": true,
+    "localOnlyOrDegradedVisible": true,
+    "auditOnlyVisible": true
+  },
+  "errors": [],
+  "ok": true,
+  "environmentUnavailable": false
+}

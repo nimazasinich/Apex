@@ -1,0 +1,8 @@
+APEX V3 verification
+2026-08-03T08:15:38Z
+
+APEX V3 static contract checks passed.
+Checked 106 TS/TSX files; syntax errors=0
+CSS structural validation: passed (tokens, v3 workspace, legacy compatibility balanced)
+Visual Playwright test: not executed in this environment because npm dependencies/browser package were unavailable
+Fresh production build: not executed because internal npm registry lacked required locked packages and public npm DNS was unavailable

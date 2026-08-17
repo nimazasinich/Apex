@@ -1,0 +1,13 @@
+APEX V20 VALIDATION
+===================
+
+PASS 23/23 V20 contract checks
+PASS 8/8 reference images at 1368x753
+PASS 149/149 TypeScript/TSX/MTS files syntax-transpiled
+PASS strict semantic check for ReferenceViews, WorkspaceShell and App integration using external-module stubs
+PASS workspaceInsights runtime normalization test
+PASS CSS brace balance = 0
+PASS package.json parsed and qa:v20-contract executed
+
+NOT RUN: full npm ci / npm run build
+Reason: internal registry missing why-is-node-running@2.3.0 and @fontsource/inter.

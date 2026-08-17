@@ -1,0 +1,405 @@
+/* APEX Trading drawer docking — chart-first terminal (v1.0.44) */
+.apex-trading-terminal {
+  --apex-trading-rail-w: 82px;
+  --apex-trading-drawer-w: clamp(340px, 27vw, 400px);
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) var(--apex-trading-rail-w) !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transition: grid-template-columns .22s var(--apex-ease, ease) !important;
+}
+
+.apex-trading-terminal.tool-open {
+  grid-template-columns: minmax(620px, 1fr) calc(var(--apex-trading-drawer-w) + var(--apex-trading-rail-w)) !important;
+}
+
+.apex-trading-terminal > .trading-page {
+  grid-column: 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.apex-trading-terminal .apex-trading-cockpit {
+  grid-template-columns: minmax(0, 1fr) clamp(220px, 20%, 280px) clamp(210px, 19%, 270px) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.apex-trading-terminal .apex-trading-chart-column {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.apex-trading-terminal .apex-trading-chart-column .apex-chart-panel {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+.apex-trading-terminal .apex-trading-activity-panel {
+  flex: 0 0 clamp(150px, 22vh, 190px) !important;
+}
+
+/* Toolbox occupies only the compact rail unless a drawer is explicitly docked. */
+.apex-trading-terminal > .apex-trading-toolbox,
+.apex-trading-terminal > .apex-trading-toolbox.open {
+  grid-column: 2 !important;
+  position: relative !important;
+  inset: auto !important;
+  z-index: 40 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) var(--apex-trading-rail-w) !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  background: transparent !important;
+}
+
+.apex-trading-terminal > .apex-trading-toolbox:not(.open) {
+  grid-template-columns: 0 var(--apex-trading-rail-w) !important;
+}
+
+.apex-trading-terminal > .apex-trading-toolbox.open,
+.apex-trading-terminal > .apex-trading-toolbox.open.docked,
+.apex-trading-terminal > .apex-trading-toolbox.open.undocked {
+  grid-template-columns: minmax(0, var(--apex-trading-drawer-w)) var(--apex-trading-rail-w) !important;
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-toolbox-rail {
+  grid-column: 2 !important;
+  position: relative !important;
+  inset: auto !important;
+  width: var(--apex-trading-rail-w) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 10px 6px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-left: 1px solid var(--apex-border, #dde7e1) !important;
+  background: rgba(247, 250, 248, .98) !important;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, .035) !important;
+  backdrop-filter: blur(16px);
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-rail-button {
+  position: relative !important;
+  width: 68px !important;
+  min-width: 68px !important;
+  height: 68px !important;
+  min-height: 68px !important;
+  padding: 8px 5px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  flex: 0 0 auto !important;
+  border: 1px solid rgba(137, 153, 169, .25) !important;
+  border-radius: 21px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f8f6 100%) !important;
+  color: #52647e !important;
+  box-shadow: 0 9px 22px rgba(15, 23, 42, .06) !important;
+  cursor: pointer !important;
+  transition: transform .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, background .16s ease !important;
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-rail-button::after {
+  content: none !important;
+  display: none !important;
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-rail-button > span {
+  display: block !important;
+  max-width: 60px !important;
+  color: inherit !important;
+  font-size: 9.5px !important;
+  font-weight: 740 !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-rail-button:hover,
+.apex-trading-terminal .apex-trading-toolbox .apex-rail-button.active {
+  transform: translateY(-1px) !important;
+  border-color: rgba(39, 168, 76, .38) !important;
+  color: #17743a !important;
+  background: linear-gradient(180deg, #fbfffc 0%, #eaf7ee 100%) !important;
+  box-shadow: 0 13px 28px rgba(34, 125, 63, .13) !important;
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-rail-button.active::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: #2fbd49;
+}
+
+.apex-trading-terminal .apex-trading-toolbox .apex-drawer {
+  grid-column: 1 !important;
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  border-left: 1px solid var(--apex-border, #dde7e1) !important;
+  border-radius: 0 !important;
+  background: #f8fbf9 !important;
+  box-shadow: -18px 0 38px rgba(15, 23, 42, .10) !important;
+  overflow: hidden !important;
+  animation: apex-trading-drawer-in .2s var(--apex-ease, ease) !important;
+}
+
+.apex-trading-terminal .apex-trading-toolbox.open.undocked .apex-drawer,
+.apex-trading-terminal .apex-trading-toolbox.open.docked .apex-drawer {
+  position: relative !important;
+  inset: auto !important;
+  right: auto !important;
+  width: 100% !important;
+}
+
+@keyframes apex-trading-drawer-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.apex-trading-terminal .apex-drawer-head {
+  min-height: 52px !important;
+  padding: 9px 10px 9px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border-bottom: 1px solid rgba(137, 153, 169, .20) !important;
+  background: rgba(255, 255, 255, .96) !important;
+}
+
+.apex-trading-terminal .apex-drawer-head > span {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  font-size: 12px !important;
+  font-weight: 780 !important;
+  color: #17243a !important;
+}
+
+.apex-trading-terminal .apex-drawer-head-actions {
+  margin-left: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.apex-trading-terminal .apex-drawer-dock,
+.apex-trading-terminal .apex-drawer-close {
+  width: 30px !important;
+  height: 30px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(137, 153, 169, .22) !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  color: #596a80 !important;
+  cursor: pointer !important;
+}
+
+.apex-trading-terminal .apex-drawer-dock:hover,
+.apex-trading-terminal .apex-drawer-dock[aria-pressed="true"] {
+  border-color: rgba(39, 168, 76, .34) !important;
+  background: #edf8f0 !important;
+  color: #17743a !important;
+}
+
+.apex-trading-terminal .apex-drawer-close:hover {
+  border-color: rgba(231, 76, 88, .30) !important;
+  background: #fff2f3 !important;
+  color: #cf3041 !important;
+}
+
+.apex-trading-terminal .apex-drawer-body {
+  height: calc(100% - 52px) !important;
+  min-height: 0 !important;
+  padding: 10px !important;
+  overflow: auto !important;
+  scrollbar-width: thin !important;
+}
+
+.apex-trading-order-drawer-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+.apex-trading-order-drawer-stack > .apex-order-ticket,
+.apex-trading-order-drawer-stack > .apex-panel,
+.apex-trading-toolbox .apex-drawer-body > .apex-panel {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(137, 153, 169, .23) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%) !important;
+  box-shadow: 0 9px 24px rgba(15, 23, 42, .06) !important;
+}
+
+
+.apex-trading-subpanel-drawer {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+.apex-trading-drawer-kpis {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.apex-trading-drawer-kpis.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.apex-trading-drawer-kpis > div {
+  min-width: 0 !important;
+  padding: 10px !important;
+  border: 1px solid rgba(137, 153, 169, .20) !important;
+  border-radius: 12px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8f5 100%) !important;
+}
+
+.apex-trading-drawer-kpis span {
+  display: block !important;
+  color: #78879a !important;
+  font-size: 8.5px !important;
+}
+
+.apex-trading-drawer-kpis strong {
+  display: block !important;
+  margin-top: 4px !important;
+  color: #17243a !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.apex-trading-drawer-primary-action {
+  width: 100% !important;
+  min-height: 38px !important;
+  border: 1px solid rgba(39, 168, 76, .28) !important;
+  border-radius: 11px !important;
+  background: linear-gradient(180deg, #f9fffb 0%, #eaf7ee 100%) !important;
+  color: #17743a !important;
+  font-size: 10px !important;
+  font-weight: 760 !important;
+  cursor: pointer !important;
+}
+
+.apex-trading-drawer-primary-action:hover {
+  border-color: rgba(39, 168, 76, .45) !important;
+  box-shadow: 0 8px 18px rgba(34, 125, 63, .10) !important;
+}
+
+.apex-trading-positions-drawer-card,
+.apex-trading-subpanel-drawer .apex-open-orders-card {
+  min-height: 220px !important;
+  overflow: auto !important;
+}
+
+/* Light theme is the release priority. */
+:root[data-apex-theme-resolved="light"] .apex-trading-terminal {
+  background: linear-gradient(180deg, #f7faf8 0%, #f1f5f3 100%) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-content:has(.apex-trading-terminal) {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+:root[data-apex-theme-resolved="light"] .trading-page.apex-trading-page-enhanced {
+  grid-template-rows: 72px minmax(0, 1fr) !important;
+  gap: 9px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .trading-page > .apex-trading-cockpit {
+  padding: 0 10px 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-trading-chart-column .apex-chart-panel,
+:root[data-apex-theme-resolved="light"] .apex-trading-activity-panel {
+  border-radius: 18px !important;
+  border-color: rgba(137, 153, 169, .24) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfa 100%) !important;
+  box-shadow: 0 10px 27px rgba(15, 23, 42, .055) !important;
+}
+
+@media (max-width: 1180px) {
+  .apex-trading-terminal,
+  .apex-trading-terminal.tool-open.tool-docked {
+    display: block !important;
+    overflow: auto !important;
+  }
+
+  .apex-trading-terminal > .apex-trading-toolbox,
+  .apex-trading-terminal > .apex-trading-toolbox.open,
+  .apex-trading-terminal > .apex-trading-toolbox.open.docked,
+  .apex-trading-terminal > .apex-trading-toolbox.open.undocked {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .apex-trading-terminal .apex-trading-toolbox .apex-toolbox-rail {
+    grid-column: 1 !important;
+    order: -1 !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 8px !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    border-left: 0 !important;
+    border-top: 1px solid var(--apex-border, #dde7e1) !important;
+  }
+
+  .apex-trading-terminal .apex-trading-toolbox .apex-rail-button {
+    width: 88px !important;
+    min-width: 88px !important;
+    height: 66px !important;
+    min-height: 66px !important;
+  }
+
+  .apex-trading-terminal .apex-trading-toolbox.open.undocked .apex-drawer,
+  .apex-trading-terminal .apex-trading-toolbox.open.docked .apex-drawer {
+    grid-column: 1 !important;
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}

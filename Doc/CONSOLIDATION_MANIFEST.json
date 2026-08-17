@@ -1,0 +1,47 @@
+{
+  "consolidatedAt": "2026-07-27T15:50:00+03:30",
+  "canonicalPath": "C:\\project\\APEX-Trading-Engine",
+  "renamedAt": "2026-07-27T16:05:00+03:30",
+  "docsCleanupAt": "2026-07-27T15:55:00+03:30",
+  "compressedAt": "2026-07-27T16:02:00+03:30",
+  "docsArchivePath": "Doc/archive/sprints-2026-06-21",
+  "archiveZip": "_archive_20260727_consolidated.zip",
+  "tempZip": "temp_20260727.zip",
+  "sourceLineage": "apex-atlas-control-parity-2026-06-21/final_scan_check + derived-analytics imports",
+  "transferFormula": {
+    "P0_missingRequiredByServer": "IMPORT if file referenced by server.ts/build but absent from winner",
+    "P1_sameArchitectureOperationalHardening": "IMPORT if candidate adds edge-case handling without architecture change and passes tsc+vitest",
+    "KEEP_atlasIntentionalFixes": "KEEP winner when Atlas parity sprint made deliberate changes (e.g. scannerCore qStruct cap)",
+    "KEEP_identicalOrWinnerMoreComplete": "KEEP when MD5-identical or winner has more complete same-architecture logic",
+    "SKIP_architectureMismatch": "SKIP opportunity/*, paper/*, phase14 HF stack, execution/risk files",
+    "SKIP_bundleWithoutWiring": "SKIP supplemental V4 bundles unless imported as full wired set"
+  },
+  "filesImported": [
+    {
+      "file": "src/services/exchangeClient.ts",
+      "from": "derived-analytics",
+      "reason": "P0 — missing, required by server.ts; tsc blocker",
+      "action": "new"
+    },
+    {
+      "file": "src/services/proxyFetch.ts",
+      "from": "derived-analytics",
+      "reason": "P1 — DNS quick-retry + describeFetchError; same architecture",
+      "action": "replace",
+      "backup": "temp/pre-transfer-backup_20260727_154927 (now in temp_20260727.zip)"
+    },
+    {
+      "file": "src/services/providerRouter.ts",
+      "from": "derived-analytics",
+      "reason": "P1 — BINANCE_SENTIMENT env gates and configurable timeout",
+      "action": "replace",
+      "backup": "temp/pre-transfer-backup_20260727_154927 (now in temp_20260727.zip)"
+    }
+  ],
+  "verificationAfterTransfer": {
+    "tsc": "0 errors",
+    "vitest": "129 passed / 129 total",
+    "build": "success"
+  },
+  "archivedVersions": "See _archive_20260727_consolidated.zip"
+}

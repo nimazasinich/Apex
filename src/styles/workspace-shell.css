@@ -1,0 +1,751 @@
+/* APEX V3 canonical shell and page system. New page classes are isolated from legacy terminal CSS. */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--apex-ink-900);
+  background: var(--apex-canvas);
+}
+
+button,
+input,
+select,
+textarea { font: inherit; }
+button { color: inherit; }
+
+.apex-shell.apex-workspace {
+  display: grid !important;
+  grid-template-columns: 180px minmax(0, 1fr) !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: var(--apex-canvas) !important;
+}
+
+.apex-shell > .apex-sidebar {
+  position: relative !important;
+  z-index: 30 !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  height: 100% !important;
+  padding: 0 10px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-right: 1px solid var(--apex-border) !important;
+  background: var(--apex-surface) !important;
+  box-shadow: none !important;
+}
+
+.apex-shell .apex-logo {
+  width: 100% !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  padding: 0 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.apex-shell .apex-logo > svg,
+.apex-shell .apex-logo > img { width: 30px !important; height: 30px !important; object-fit: contain; }
+.apex-shell .apex-logo > span { font-size: 20px !important; line-height: 1 !important; font-weight: 800 !important; letter-spacing: .12em !important; color: var(--apex-ink-950) !important; }
+
+.apex-shell .apex-nav,
+.apex-shell .apex-sidebar-bottom { display: flex !important; flex-direction: column !important; gap: 2px !important; }
+.apex-shell .apex-nav { padding-top: 4px !important; }
+.apex-shell .apex-nav button,
+.apex-shell .apex-sidebar-bottom > button {
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--apex-ink-700) !important;
+  font-size: 10.5px !important;
+  line-height: 1 !important;
+  font-weight: 650 !important;
+  text-align: left !important;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast) !important;
+}
+.apex-shell .apex-nav-icon { width: 18px !important; height: 18px !important; flex: 0 0 18px !important; display: grid !important; place-items: center !important; color: var(--apex-muted-600) !important; }
+.apex-shell .apex-nav-icon svg { width: 18px !important; height: 18px !important; stroke-width: 1.7 !important; }
+.apex-shell .apex-nav button:hover,
+.apex-shell .apex-sidebar-bottom > button:hover { background: var(--apex-surface-soft) !important; color: var(--apex-ink-900) !important; }
+.apex-shell .apex-nav button.active,
+.apex-shell .apex-sidebar-bottom > button.active {
+  color: var(--apex-green-700) !important;
+  border-color: var(--apex-green-200) !important;
+  background: var(--apex-green-050) !important;
+}
+.apex-shell .apex-nav button.active .apex-nav-icon,
+.apex-shell .apex-sidebar-bottom > button.active .apex-nav-icon { color: var(--apex-green-600) !important; }
+.apex-shell .apex-sidebar-bottom { margin-top: auto !important; }
+.apex-shell .apex-system-card {
+  width: 156px !important;
+  height: 74px !important;
+  min-height: 74px !important;
+  margin: 8px 2px 0 !important;
+  padding: 9px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--apex-border) !important;
+  border-radius: 12px !important;
+  background: var(--apex-surface-soft) !important;
+  box-shadow: none !important;
+}
+.apex-shell .apex-system-card-label { display: flex; align-items: center; gap: 6px; font-size: 8.5px; color: var(--apex-muted-600); }
+.apex-shell .apex-system-card strong { font-size: 10px !important; color: var(--apex-ink-900) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-shell .apex-system-card small { font-size: 8px !important; line-height: 1.25 !important; color: var(--apex-muted-600) !important; }
+
+.apex-shell > .apex-stage {
+  display: grid !important;
+  grid-template-rows: 52px minmax(0, 1fr) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: var(--apex-canvas) !important;
+}
+
+.apex-shell .apex-header {
+  position: relative !important;
+  z-index: 30 !important;
+  width: 100% !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  padding: 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  border-bottom: 1px solid var(--apex-border) !important;
+  background: rgba(255, 255, 255, .98) !important;
+  box-shadow: none !important;
+}
+.apex-global-search { position: relative; width: 360px; min-width: 0; }
+.apex-shell .apex-search {
+  width: 360px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border: 1px solid var(--apex-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--apex-surface) !important;
+  box-shadow: var(--apex-shadow-xs) !important;
+}
+.apex-shell .apex-search:focus-within { border-color: var(--apex-green-500) !important; box-shadow: 0 0 0 3px rgba(45, 190, 69, .1) !important; }
+.apex-shell .apex-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--apex-ink-900); font-size: 10px; }
+.apex-shell .apex-search input::placeholder { color: var(--apex-muted-400); }
+.apex-shell .apex-search kbd { padding: 2px 5px; border: 1px solid var(--apex-border); border-radius: 5px; background: var(--apex-surface-soft); color: var(--apex-muted-600); font-size: 8px; }
+.apex-search-popover {
+  position: absolute;
+  z-index: 40;
+  top: 39px;
+  left: 0;
+  width: 360px;
+  max-height: 330px;
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid var(--apex-border);
+  border-radius: 12px;
+  background: var(--apex-surface);
+  box-shadow: var(--apex-shadow-md);
+}
+.apex-search-popover > button { width: 100%; min-height: 42px; padding: 6px 8px; display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 8px; border: 0; border-radius: 8px; background: transparent; text-align: left; }
+.apex-search-popover > button.active,
+.apex-search-popover > button:hover { background: var(--apex-green-050); }
+.apex-search-popover > button span { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.apex-search-popover strong { font-size: 10px; }
+.apex-search-popover small,
+.apex-search-popover em { font-size: 8px; color: var(--apex-muted-600); font-style: normal; }
+
+.apex-shell .apex-header-status { display: flex !important; align-items: center !important; gap: 10px !important; color: var(--apex-muted-600) !important; font-size: 9px !important; white-space: nowrap; }
+.apex-shell .apex-mode-badge { width: 104px !important; height: 32px !important; min-height: 32px !important; padding: 0 8px !important; border: 1px solid var(--apex-green-200) !important; border-radius: 9px !important; background: var(--apex-green-050) !important; color: var(--apex-green-700) !important; font-size: 8.5px !important; font-weight: 750 !important; }
+.apex-shell .apex-mode-badge.live { border-color: var(--apex-green-500) !important; background: var(--apex-green-600) !important; color: #fff !important; }
+.apex-clock { color: var(--apex-ink-700); font-size: 9px; }
+.apex-data-status { display: flex; align-items: center; gap: 6px; }
+.apex-dot { width: 7px !important; height: 7px !important; flex: 0 0 7px; border-radius: 50%; background: var(--apex-muted-400); }
+.apex-dot.good { background: var(--apex-green-500); box-shadow: 0 0 0 3px var(--apex-green-100); }
+.apex-dot.warn { background: var(--apex-orange-500); box-shadow: 0 0 0 3px rgba(251, 146, 26, .12); }
+.apex-header-icon,
+.apex-shell .apex-avatar { width: 32px !important; height: 32px !important; min-width: 32px !important; min-height: 32px !important; display: grid !important; place-items: center !important; border: 1px solid transparent !important; border-radius: 9px !important; background: transparent !important; color: var(--apex-ink-700) !important; }
+.apex-header-icon:hover { border-color: var(--apex-border) !important; background: var(--apex-surface-soft) !important; }
+.apex-shell .apex-avatar { width: 30px !important; height: 30px !important; min-width: 30px !important; min-height: 30px !important; border-radius: 50% !important; background: var(--apex-ink-900) !important; color: #fff !important; font-size: 9px !important; font-weight: 750 !important; }
+
+.apex-stage-body {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--apex-canvas);
+}
+.apex-stage-body.data-workspace { padding: 12px; }
+.apex-stage-body.terminal-workspace { padding: 0; }
+.apex-stage-body.terminal-workspace > * { width: 100%; height: 100%; min-width: 0; min-height: 0; }
+
+.apex-page-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.apex-page-main,
+.apex-context-panel { min-width: 0; min-height: 0; overflow: hidden; }
+.apex-context-panel { border: 1px solid var(--apex-border); border-radius: var(--radius-panel); background: var(--apex-surface-soft); box-shadow: var(--apex-shadow-xs); }
+
+.apex-v3-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--apex-border);
+  border-radius: var(--radius-panel);
+  background: var(--apex-surface);
+  box-shadow: var(--apex-shadow-xs);
+}
+.apex-v3-panel-head { min-height: 44px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--apex-divider); }
+.apex-v3-panel-head > div { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.apex-v3-panel-head strong { font-size: 12px; line-height: 1.2; font-weight: 700; color: var(--apex-ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-panel-head small { font-size: 8.5px; line-height: 1.25; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.apex-v3-heading { height: 100%; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.apex-v3-heading > div:first-child { min-width: 0; }
+.apex-v3-eyebrow { display: block; margin-bottom: 2px; color: var(--apex-green-700); font-size: 8px; line-height: 1; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.apex-v3-heading h1 { margin: 0; color: var(--apex-ink-950); font-size: 20px; line-height: 1.15; font-weight: 720; }
+.apex-v3-heading p { margin: 3px 0 0; color: var(--apex-muted-600); font-size: 9px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apex-v3-heading-actions { display: flex; align-items: center; gap: 6px; }
+
+.apex-v3-button,
+.apex-v3-icon-button { min-height: 32px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--apex-border); border-radius: var(--radius-control); background: var(--apex-surface); color: var(--apex-ink-700); font-size: 9px; font-weight: 650; transition: transform var(--duration-fast), border-color var(--duration-fast), background-color var(--duration-fast); }
+.apex-v3-button:hover,
+.apex-v3-icon-button:hover { border-color: var(--apex-green-200); background: var(--apex-green-050); }
+.apex-v3-button:active,
+.apex-v3-icon-button:active { transform: translateY(1px); }
+.apex-v3-button.primary { border-color: var(--apex-green-600); background: var(--apex-green-600); color: #fff; }
+.apex-v3-button.primary:hover { background: var(--apex-green-700); }
+.apex-v3-button.danger,
+.apex-v3-icon-button.danger { border-color: #f8c8ce; background: var(--apex-red-050); color: var(--apex-red-500); }
+.apex-v3-button.full { width: 100%; }
+.apex-v3-button-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.apex-v3-icon-button { width: 32px; padding: 0; }
+.apex-v3-button:disabled,
+.apex-v3-icon-button:disabled { opacity: .46; cursor: not-allowed; transform: none; }
+
+.apex-v3-metrics { display: grid; gap: 8px; min-width: 0; min-height: 0; }
+.apex-v3-metrics.four { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.apex-v3-metrics.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.apex-v3-metric { position: relative; min-width: 0; height: 100%; padding: 11px 12px; overflow: hidden; border: 1px solid var(--apex-border); border-radius: var(--radius-panel); background: var(--apex-surface); box-shadow: var(--apex-shadow-xs); }
+.apex-v3-metric::after { content: ""; position: absolute; inset: auto 0 0; height: 2px; background: var(--metric-tone, var(--apex-border)); }
+.apex-v3-metric.tone-positive { --metric-tone: var(--apex-green-500); }
+.apex-v3-metric.tone-negative { --metric-tone: var(--apex-red-500); }
+.apex-v3-metric.tone-warning { --metric-tone: var(--apex-orange-500); }
+.apex-v3-metric.tone-info { --metric-tone: var(--apex-blue-500); }
+.apex-v3-metric.tone-violet { --metric-tone: var(--apex-violet-500); }
+.apex-v3-metric-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.apex-v3-metric-top > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--apex-muted-600); font-size: 9.5px; font-weight: 650; }
+.apex-v3-metric-top i { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--apex-surface-soft); color: var(--metric-tone, var(--apex-muted-600)); }
+.apex-v3-metric > strong { display: block; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--apex-ink-950); font-size: 19px; line-height: 1.05; font-weight: 720; }
+.apex-v3-metric > small { display: block; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--apex-muted-600); font-size: 8.5px; }
+
+.apex-v3-status { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; min-height: 22px; padding: 0 7px; border: 1px solid var(--apex-border); border-radius: 999px; background: var(--apex-surface-soft); color: var(--apex-muted-600); font-size: 8px; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+.apex-v3-status.tone-positive { border-color: var(--apex-green-200); background: var(--apex-green-050); color: var(--apex-green-700); }
+.apex-v3-status.tone-negative { border-color: #f8c8ce; background: var(--apex-red-050); color: var(--apex-red-500); }
+.apex-v3-status.tone-warning { border-color: #f8d8a8; background: #fff8ed; color: #a96108; }
+.apex-v3-status.tone-info { border-color: #cbe5fb; background: #f1f8fe; color: #1474bd; }
+.apex-v3-status.tone-violet { border-color: #dcd5fa; background: #f7f5ff; color: #6148c6; }
+
+.apex-v3-chip-row,
+.apex-v3-tabs { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.apex-v3-chip-row { overflow: hidden; }
+.apex-v3-chip-row button,
+.apex-v3-tabs button { height: 30px; padding: 0 10px; border: 1px solid var(--apex-border); border-radius: 8px; background: var(--apex-surface); color: var(--apex-muted-600); font-size: 8.5px; font-weight: 650; white-space: nowrap; }
+.apex-v3-chip-row button.active,
+.apex-v3-tabs button.active { border-color: var(--apex-green-200); background: var(--apex-green-050); color: var(--apex-green-700); }
+.apex-v3-tabs.compact button { height: 28px; padding-inline: 8px; }
+.apex-v3-toolbar,
+.apex-v3-tab-toolbar { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.apex-v3-toolbar > span { margin-left: auto; color: var(--apex-muted-600); font-size: 8.5px; }
+.apex-v3-search-field { width: 240px; height: 34px; padding: 0 9px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--apex-border); border-radius: var(--radius-control); background: var(--apex-surface); color: var(--apex-muted-600); }
+.apex-v3-search-field.compact { width: 190px; height: 30px; }
+.apex-v3-search-field:focus-within { border-color: var(--apex-green-500); box-shadow: 0 0 0 3px rgba(45,190,69,.08); }
+.apex-v3-search-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--apex-ink-900); font-size: 9px; }
+
+.apex-v3-table-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.apex-v3-table-scroll { min-width: 0; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: #cbd5df transparent; }
+.apex-v3-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; color: var(--apex-ink-700); font-size: 10.5px; line-height: 1.3; }
+.apex-v3-table thead { position: sticky; top: 0; z-index: 20; background: var(--apex-surface-soft); }
+.apex-v3-table th { height: 34px; padding: 0 9px; border-bottom: 1px solid var(--apex-divider); color: var(--apex-muted-600); font-size: 9.5px; font-weight: 700; text-align: left; white-space: nowrap; }
+.apex-v3-table td { height: 46px; padding: 5px 9px; border-bottom: 1px solid var(--apex-divider); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.apex-v3-table tbody tr { cursor: pointer; outline: none; transition: background-color var(--duration-fast), box-shadow var(--duration-fast); }
+.apex-v3-table tbody tr:hover { background: var(--apex-surface-soft); }
+.apex-v3-table tbody tr.selected { background: var(--apex-surface-selected); box-shadow: inset 2px 0 0 var(--apex-green-500); }
+.apex-v3-table td > strong,
+.apex-v3-table td > small { display: block; overflow: hidden; text-overflow: ellipsis; }
+.apex-v3-table td > strong { color: var(--apex-ink-900); font-size: 10px; }
+.apex-v3-table td > small { margin-top: 2px; color: var(--apex-muted-600); font-size: 8px; }
+.apex-v3-symbol { display: flex; align-items: center; gap: 8px; }
+.apex-v3-symbol img { object-fit: contain; }
+.apex-v3-symbol span { min-width: 0; }
+.positive { color: var(--apex-green-700) !important; }
+.negative { color: var(--apex-red-500) !important; }
+.warning { color: var(--apex-orange-500) !important; }
+
+.apex-v3-data-state { width: 100%; height: 100%; min-height: 90px; padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--apex-muted-600); text-align: center; }
+.apex-v3-data-state > strong { color: var(--apex-ink-900); font-size: 11px; }
+.apex-v3-data-state > span { max-width: 360px; font-size: 8.5px; line-height: 1.4; }
+.apex-v3-data-state.state-error > svg { color: var(--apex-red-500); }
+.apex-v3-data-state.state-locked > svg { color: var(--apex-orange-500); }
+.apex-v3-data-state.state-loading > svg { color: var(--apex-blue-500); }
+
+.apex-v3-context-stack { width: 100%; height: 100%; padding: 0; display: grid; min-width: 0; min-height: 0; overflow: hidden; }
+.apex-v3-context-stack > .apex-v3-panel { border-width: 0 0 1px; border-radius: 0; box-shadow: none; }
+.apex-v3-context-stack > .apex-v3-panel:last-child { border-bottom: 0; }
+.apex-v3-kv-list { margin: 0; padding: 8px 12px; display: grid; gap: 0; }
+.apex-v3-kv-list > div { min-height: 29px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--apex-divider); }
+.apex-v3-kv-list > div:last-child { border-bottom: 0; }
+.apex-v3-kv-list dt { color: var(--apex-muted-600); font-size: 8.5px; }
+.apex-v3-kv-list dd { max-width: 62%; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--apex-ink-900); font-size: 9px; font-weight: 650; text-align: right; }
+
+.apex-v3-sparkline { width: 100%; height: 100%; color: var(--apex-green-500); }
+.apex-v3-sparkline polyline { stroke: currentColor; stroke-width: 1.5px; stroke-linecap: round; stroke-linejoin: round; }
+.apex-v3-sparkline.tone-negative { color: var(--apex-red-500); }
+.apex-v3-sparkline.tone-info { color: var(--apex-blue-500); }
+.apex-v3-sparkline.tone-violet { color: var(--apex-violet-500); }
+.apex-v3-sparkline.tone-warning { color: var(--apex-orange-500); }
+.apex-v3-donut { --donut-color: var(--apex-green-500); width: 108px; height: 108px; margin: 8px auto; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--donut-color) var(--donut-value), var(--apex-divider) 0); }
+.apex-v3-donut::before { content: ""; width: 78px; height: 78px; border-radius: 50%; background: var(--apex-surface); }
+.apex-v3-donut > div { position: absolute; width: 70px; text-align: center; }
+.apex-v3-donut strong,
+.apex-v3-donut span,
+.apex-v3-donut small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-donut strong { color: var(--apex-ink-950); font-size: 17px; }
+.apex-v3-donut span { margin-top: 2px; color: var(--apex-ink-700); font-size: 8px; font-weight: 650; }
+.apex-v3-donut small { margin-top: 2px; color: var(--apex-muted-600); font-size: 6.5px; }
+.apex-v3-donut.tone-negative { --donut-color: var(--apex-red-500); }
+.apex-v3-donut.tone-warning { --donut-color: var(--apex-orange-500); }
+.apex-v3-donut.tone-info { --donut-color: var(--apex-blue-500); }
+.apex-v3-donut.tone-violet { --donut-color: var(--apex-violet-500); }
+
+/* Orders */
+.apex-v3-orders-main { display: grid; grid-template-rows: 48px 8px 108px 10px 34px 36px 8px minmax(0,1fr); height: 100%; min-height: 0; }
+.apex-v3-orders-main > :nth-child(1) { grid-row: 1; }
+.apex-v3-orders-main > :nth-child(2) { grid-row: 3; }
+.apex-v3-orders-main > :nth-child(3) { grid-row: 5; }
+.apex-v3-orders-main > :nth-child(4) { grid-row: 6; }
+.apex-v3-orders-main > :nth-child(5) { grid-row: 8; }
+.orders-context { grid-template-rows: 154px 110px 108px 146px minmax(0,1fr); }
+.apex-v3-order-identity { padding: 8px 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.apex-v3-order-identity > div { min-width: 0; }
+.apex-v3-order-identity span { display: block; color: var(--apex-muted-600); font-size: 8px; }
+.apex-v3-order-identity strong { display: block; margin-top: 2px; font-size: 10px; }
+.apex-v3-progress-cell { display: grid; grid-template-columns: minmax(40px,1fr) 30px; align-items: center; gap: 6px; }
+.apex-v3-progress-cell > span,
+.apex-v3-big-progress > span { height: 5px; overflow: hidden; border-radius: 999px; background: var(--apex-divider); }
+.apex-v3-progress-cell i,
+.apex-v3-big-progress i { display: block; height: 100%; border-radius: inherit; background: var(--apex-green-500); }
+.apex-v3-progress-cell em { font-size: 8px; font-style: normal; }
+.apex-v3-big-progress { padding: 8px 12px 2px; display: grid; gap: 6px; }
+.apex-v3-big-progress strong { font-size: 18px; }
+.order-actions-card { padding-bottom: 8px; }
+.order-actions-card > .apex-v3-button,
+.order-actions-card > p,
+.order-actions-card > .apex-v3-inline-message { width: calc(100% - 24px); margin: 6px 12px 0; }
+.order-actions-card > p { color: var(--apex-muted-600); font-size: 7.5px; line-height: 1.35; }
+.apex-v3-live-line { height: 100%; padding: 9px 12px; display: flex; align-items: center; gap: 8px; }
+.apex-v3-live-line > i { width: 7px; height: 7px; border-radius: 50%; background: var(--apex-muted-400); }
+.apex-v3-live-line > i.good { background: var(--apex-green-500); }
+.apex-v3-live-line > i.warn { background: var(--apex-orange-500); }
+.apex-v3-live-line span { min-width: 0; }
+.apex-v3-live-line strong,
+.apex-v3-live-line small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-live-line strong { font-size: 9px; }
+.apex-v3-live-line small { margin-top: 2px; color: var(--apex-muted-600); font-size: 7px; }
+
+/* Positions */
+.apex-v3-positions-main { display: grid; grid-template-rows: 44px 8px 104px 10px minmax(0,1fr); height: 100%; min-height: 0; }
+.apex-v3-positions-main > :nth-child(1) { grid-row: 1; }
+.apex-v3-positions-main > :nth-child(2) { grid-row: 3; }
+.apex-v3-positions-main > :nth-child(3) { grid-row: 5; }
+.positions-context { grid-template-rows: 198px 152px minmax(0,1fr); }
+.apex-v3-table-tip { min-height: 42px; padding: 0 12px; display: flex; align-items: center; gap: 7px; border-top: 1px solid var(--apex-divider); color: var(--apex-muted-600); font-size: 8px; }
+.apex-v3-allocation-list { padding: 8px 12px; display: grid; gap: 8px; }
+.apex-v3-allocation-list > div { display: grid; gap: 4px; }
+.apex-v3-allocation-list > div > span { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.apex-v3-allocation-list strong,
+.apex-v3-allocation-list em { font-size: 8.5px; font-style: normal; }
+.apex-v3-allocation-list i { height: 5px; overflow: hidden; border-radius: 999px; background: var(--apex-divider); }
+.apex-v3-allocation-list b { display: block; height: 100%; border-radius: inherit; background: var(--apex-blue-500); }
+.leverage-card .apex-v3-donut { width: 82px; height: 82px; margin: 6px auto; }
+.leverage-card .apex-v3-donut::before { width: 58px; height: 58px; }
+.leverage-card .apex-v3-donut > div { width: 54px; }
+.leverage-card .apex-v3-donut strong { font-size: 13px; }
+.account-risk-card .apex-v3-donut { width: 100px; height: 100px; }
+.account-risk-card .apex-v3-donut::before { width: 72px; height: 72px; }
+
+/* Analytics */
+.apex-v3-analytics-main { display: grid; grid-template-rows: 44px 8px 124px 10px 218px 10px minmax(0,1fr); height: 100%; min-height: 0; }
+.apex-v3-analytics-main > :nth-child(1) { grid-row: 1; }
+.apex-v3-analytics-main > :nth-child(2) { grid-row: 3; }
+.apex-v3-analytics-main > :nth-child(3) { grid-row: 5; }
+.apex-v3-analytics-main > :nth-child(4) { grid-row: 7; }
+.apex-v3-analytics-grid { display: grid; grid-template-columns: 506px minmax(0,1fr); gap: 10px; min-width: 0; min-height: 0; }
+.apex-v3-analytics-grid > .apex-v3-panel { min-width: 0; display: grid; grid-template-rows: auto minmax(0,1fr); }
+.analytics-context { grid-template-rows: 174px 118px 118px minmax(0,1fr); }
+.apex-v3-line-chart { width: 100%; height: 100%; min-height: 0; padding: 8px 12px; }
+.apex-v3-line-chart line { stroke: var(--apex-divider); stroke-width: 1; stroke-dasharray: 3 4; }
+.apex-v3-line-chart path { stroke: var(--apex-green-500); stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
+.analytics-allocation { padding-top: 10px; }
+.analytics-allocation small { color: var(--apex-muted-600); font-size: 6.8px; }
+.apex-v3-bar-chart { height: 100%; padding: 12px; display: flex; align-items: end; justify-content: space-around; gap: 7px; }
+.apex-v3-bar-chart > div { height: 100%; min-width: 0; flex: 1; display: grid; grid-template-rows: 14px minmax(0,1fr) 14px; text-align: center; }
+.apex-v3-bar-chart span,
+.apex-v3-bar-chart em { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--apex-muted-600); font-size: 6.8px; font-style: normal; }
+.apex-v3-bar-chart i { display: flex; align-items: end; justify-content: center; border-bottom: 1px solid var(--apex-divider); }
+.apex-v3-bar-chart b { width: 58%; min-height: 4px; border-radius: 4px 4px 0 0; background: var(--apex-green-500); }
+.apex-v3-bar-chart b.negative { background: var(--apex-red-500); }
+.apex-v3-heatmap { padding: 14px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; align-content: center; }
+.apex-v3-heatmap span { aspect-ratio: 1; border-radius: 4px; background: var(--apex-green-500); }
+.apex-v3-heatmap span.negative { background: var(--apex-red-500); }
+.apex-v3-insight-message { padding: 12px; display: grid; gap: 7px; }
+.apex-v3-insight-message strong { font-size: 11px; line-height: 1.35; }
+.apex-v3-insight-message span { color: var(--apex-muted-600); font-size: 8px; line-height: 1.45; }
+.analytics-risk-card > .apex-v3-button { width: calc(100% - 24px); margin: 7px 12px; }
+
+.apex-v3-inline-message { padding: 7px 9px; border: 1px solid #cbe5fb; border-radius: 8px; background: #f3f9fe; color: #176ca9; font-size: 7.5px; line-height: 1.35; }
+.apex-v3-inline-message.warning { border-color: #f8d8a8; background: #fff8ed; color: #a96108; }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible { outline: 2px solid var(--apex-green-500) !important; outline-offset: 2px !important; }
+
+@media (max-width: 1367px) and (min-width: 1280px) {
+  .apex-shell.apex-workspace { grid-template-columns: 172px minmax(0,1fr) !important; }
+  .apex-shell > .apex-sidebar { width: 172px !important; min-width: 172px !important; }
+  .apex-shell .apex-system-card { width: 148px !important; }
+  .apex-page-frame { grid-template-columns: minmax(0,1fr) 284px; gap: 10px; }
+  .apex-stage-body.data-workspace { padding: 10px; }
+  .apex-v3-analytics-grid { grid-template-columns: minmax(0,3fr) minmax(0,2fr); }
+}
+
+@media (max-width: 1279px) and (min-width: 1120px) {
+  .apex-shell.apex-workspace { grid-template-columns: 72px minmax(0,1fr) !important; }
+  .apex-shell > .apex-sidebar { width: 72px !important; min-width: 72px !important; padding-inline: 8px !important; }
+  .apex-shell .apex-logo { justify-content: center !important; padding: 0 !important; }
+  .apex-shell .apex-logo > span,
+  .apex-shell .apex-nav button > span:last-child,
+  .apex-shell .apex-sidebar-bottom > button > span:last-child,
+  .apex-shell .apex-system-card { display: none !important; }
+  .apex-shell .apex-nav button,
+  .apex-shell .apex-sidebar-bottom > button { justify-content: center !important; padding: 0 !important; }
+  .apex-page-frame { grid-template-columns: minmax(0,1fr); }
+  .apex-context-panel { position: fixed; z-index: 50; top: 64px; right: 12px; bottom: 12px; width: 300px; transform: translateX(calc(100% + 24px)); box-shadow: var(--apex-shadow-md); }
+  .apex-v3-metrics.five { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+@media (max-height: 752px) and (min-width: 1181px) {
+  .apex-stage-body.data-workspace { padding-block: 10px; }
+  .apex-context-panel { overflow-y: auto; }
+  .apex-v3-context-stack { height: auto; min-height: 100%; overflow: visible; }
+}
+
+@media (max-width: 1119px) {
+  .apex-shell.apex-workspace { grid-template-columns: 64px minmax(0,1fr) !important; }
+  .apex-shell > .apex-sidebar { width: 64px !important; min-width: 64px !important; padding-inline: 6px !important; }
+  .apex-shell .apex-logo { justify-content: center !important; padding: 0 !important; }
+  .apex-shell .apex-logo > span,
+  .apex-shell .apex-nav button > span:last-child,
+  .apex-shell .apex-sidebar-bottom > button > span:last-child,
+  .apex-shell .apex-system-card,
+  .apex-clock,
+  .apex-data-status { display: none !important; }
+  .apex-shell .apex-nav button,
+  .apex-shell .apex-sidebar-bottom > button { justify-content: center !important; padding: 0 !important; }
+  .apex-global-search,
+  .apex-shell .apex-search { width: min(360px, 48vw) !important; }
+  .apex-page-frame {
+    display: block;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .apex-page-main { height: auto; overflow: visible; }
+  .apex-context-panel { min-height: 500px; margin-top: 10px; overflow: visible; }
+  .apex-v3-metrics.four,
+  .apex-v3-metrics.five { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .apex-v3-analytics-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 80ms !important; }
+}
+
+/* Accessibility helpers remain unscoped because the merged release keeps the
+   richer legacy shell geometry while using this file for V3 page primitives. */
+.apex-skip-link {
+  position: fixed;
+  z-index: 3000;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-160%);
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #17314a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 120ms ease;
+}
+.apex-skip-link:focus { transform: translateY(0); }
+.apex-content:focus { outline: none; }
+.apex-search input[role="combobox"]:focus-visible { outline: none; }
+
+/* v2.3 navigation grouping and controlled service-worker update surface. */
+.apex-shell .apex-nav-group { display: grid; gap: 3px; margin: 0 0 8px; }
+.apex-shell .apex-nav-group > h2 { margin: 0; padding: 5px 12px 3px; color: var(--apex-muted-600); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.apex-shell .apex-nav-group > div { display: grid; gap: 2px; }
+.apex-update-banner { position: fixed; z-index: 1000; right: 18px; bottom: 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; width: min(560px, calc(100vw - 36px)); padding: 12px 14px; border: 1px solid var(--apex-border); border-radius: 14px; background: color-mix(in srgb, var(--apex-surface, #111a16) 94%, transparent); box-shadow: 0 18px 50px rgba(0,0,0,.28); backdrop-filter: blur(18px); }
+.apex-update-banner strong,.apex-update-banner span { display: block; }
+.apex-update-banner span { margin-top: 2px; color: var(--apex-muted-600); font-size: 11px; }
+@media (max-width: 680px) { .apex-update-banner { grid-template-columns: 1fr auto; } .apex-update-banner .apex-primary-button { grid-column: 1 / -1; grid-row: 2; } }
+
+
+/* Phone shell hardening: keep the stage at the actual remaining viewport width.
+   The desktop header control set has a larger intrinsic width than a phone stage;
+   collapse non-essential header actions rather than letting the entire page size
+   itself from the header and then clip page content behind overflow:hidden. */
+@media (max-width: 620px) {
+  .apex-shell .apex-header {
+    padding-inline: 8px !important;
+    gap: 7px !important;
+  }
+  .apex-global-search,
+  .apex-shell .apex-search,
+  .apex-shell.strategy-active .apex-global-search {
+    width: min(156px, 48vw) !important;
+  }
+  .apex-shell.strategy-active .apex-search-popover {
+    width: min(280px, calc(100vw - 88px)) !important;
+    max-width: calc(100vw - 88px) !important;
+  }
+  .apex-shell .apex-search kbd { display: none !important; }
+  .apex-shell .apex-header-status { gap: 4px !important; min-width: 0 !important; }
+  .apex-shell .apex-header-icon { display: none !important; }
+  .apex-shell .apex-header-icon[aria-label="Open system health"],
+  .apex-shell .apex-theme-toggle { display: grid !important; }
+  .apex-shell .apex-avatar { display: none !important; }
+  .apex-shell .apex-mode-badge {
+    width: 46px !important;
+    min-width: 46px !important;
+    padding-inline: 4px !important;
+    overflow: hidden !important;
+    font-size: 0 !important;
+  }
+  .apex-shell .apex-mode-badge.demo::after { content: "DEMO"; font-size: 8px; }
+  .apex-shell .apex-mode-badge.live::after { content: "LIVE"; font-size: 8px; }
+  .apex-shell > .apex-stage { width: 100% !important; max-width: 100% !important; }
+  .apex-page-frame { width: 100% !important; max-width: 100% !important; }
+  .apex-v3-metrics.four,
+  .apex-v3-metrics.five { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* Product-level Smart Autopilot control. The global shell is the authoritative
+   discovery/control surface; page-local toggles remain synchronized mirrors. */
+.apex-autopilot-header {
+  min-width: 164px;
+  height: 34px;
+  display: inline-grid;
+  grid-template-columns: 24px minmax(58px, 1fr) auto 24px;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px 3px 4px;
+  border: 1px solid var(--apex-border);
+  border-radius: 10px;
+  background: var(--apex-surface);
+  color: var(--apex-ink-700);
+  box-shadow: var(--apex-shadow-xs);
+  cursor: pointer;
+}
+.apex-autopilot-header:hover:not(:disabled) { border-color: var(--apex-green-300); background: var(--apex-green-050); }
+.apex-autopilot-header:focus-visible { outline: 2px solid var(--apex-green-300); outline-offset: 2px; }
+.apex-autopilot-header:disabled { cursor: not-allowed; opacity: .62; }
+.apex-autopilot-header.is-on { border-color: var(--apex-green-300); background: var(--apex-green-050); color: var(--apex-green-800); }
+.apex-autopilot-header.is-failed { border-color: #e5aaa4; background: #fff4f2; color: #a8342c; }
+.apex-autopilot-header-icon { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: var(--apex-surface-soft); }
+.apex-autopilot-header.is-on .apex-autopilot-header-icon { background: var(--apex-green-100); color: var(--apex-green-700); }
+.apex-autopilot-header.is-busy .apex-autopilot-header-icon { animation: apex-autopilot-pulse 1.45s ease-in-out infinite; }
+.apex-autopilot-header-copy { min-width: 0; display: grid; justify-items: start; line-height: 1; }
+.apex-autopilot-header-copy strong { font-size: 9px; font-weight: 850; letter-spacing: .055em; }
+.apex-autopilot-header-copy small { max-width: 76px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 7px; font-weight: 800; letter-spacing: .04em; color: var(--apex-muted-600); }
+.apex-autopilot-header-owner { display: inline-flex; align-items: center; gap: 2px; font-size: 6.5px; font-weight: 800; color: var(--apex-muted-600); }
+.apex-autopilot-header-switch { width: 22px; height: 13px; position: relative; border-radius: 999px; background: var(--apex-muted-300); }
+.apex-autopilot-header-switch i { width: 9px; height: 9px; position: absolute; top: 2px; left: 2px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(15,33,58,.2); transition: transform .16s ease; }
+.apex-autopilot-header.is-on .apex-autopilot-header-switch { background: var(--apex-green-600); }
+.apex-autopilot-header.is-on .apex-autopilot-header-switch i { transform: translateX(9px); }
+@keyframes apex-autopilot-pulse { 50% { transform: scale(.9); opacity: .68; } }
+
+.apex-build-identity { padding: 0 4px; color: var(--apex-muted-500); font-size: 7px; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 1180px) {
+  .apex-autopilot-header { min-width: 126px; grid-template-columns: 22px minmax(52px,1fr) 22px; }
+  .apex-autopilot-header-owner { display: none; }
+  .apex-build-identity, .apex-clock { display: none; }
+}
+@media (max-width: 820px) {
+  .apex-autopilot-header { min-width: 42px; width: 42px; grid-template-columns: 1fr; padding: 3px; }
+  .apex-autopilot-header-copy, .apex-autopilot-header-owner, .apex-autopilot-header-switch { display: none; }
+  .apex-autopilot-header-icon { margin: auto; }
+}
+@media (max-width: 620px) {
+  .apex-autopilot-header { min-width: 34px; width: 34px; height: 32px; }
+}
+
+/* Global viewport containment contract — shell/stage/content sizing.
+   This fixes clipped descendant overflow by making each owner calculate from
+   its actual parent width instead of relying on document overflow clipping. */
+.apex-shell.apex-workspace,
+.apex-shell.apex-workspace > .apex-stage,
+.apex-shell.apex-workspace .apex-header,
+.apex-shell.apex-workspace .apex-content {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+}
+
+.apex-shell.apex-workspace {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
+}
+
+.apex-shell.apex-workspace > .apex-stage {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.apex-shell.apex-workspace .apex-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.apex-shell.apex-workspace .apex-header > * {
+  min-width: 0 !important;
+}
+
+.apex-shell.apex-workspace .apex-global-search {
+  flex: 1 1 clamp(220px, 24vw, 340px) !important;
+  width: clamp(220px, 24vw, 340px) !important;
+  max-width: clamp(220px, 24vw, 340px) !important;
+  min-width: 180px !important;
+}
+
+.apex-shell.apex-workspace .apex-search,
+.apex-shell.apex-workspace.strategy-active .apex-search,
+.apex-shell.apex-workspace.strategy-active .apex-global-search {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.apex-shell.apex-workspace .apex-header-status {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  gap: clamp(6px, .62vw, 10px) !important;
+  overflow: hidden !important;
+}
+
+.apex-shell.apex-workspace .apex-build-identity {
+  max-width: 84px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.apex-shell.apex-workspace .apex-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.apex-shell.apex-workspace .apex-content > * {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.apex-shell.apex-workspace .apex-page-stack,
+.apex-shell.apex-workspace .apex-unified-page,
+.apex-shell.apex-workspace .v20-reference-page,
+.apex-shell.apex-workspace .apex-backtest-workspace,
+.apex-shell.apex-workspace .strategy-studio {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 1450px) {
+  .apex-shell.apex-workspace .apex-build-identity { display: none !important; }
+}
+
+@media (max-width: 1320px) {
+  .apex-shell.apex-workspace .apex-global-search {
+    flex-basis: clamp(180px, 20vw, 260px) !important;
+    width: clamp(180px, 20vw, 260px) !important;
+    max-width: clamp(180px, 20vw, 260px) !important;
+  }
+  .apex-shell.apex-workspace .apex-header-status { gap: 6px !important; }
+}
+
+/* Reference desktop shell calibration.
+   The supplied APEX desktop references use a ~156–160px navigation rail at
+   1368+ widths. The historical 180px rail reduced working space on every
+   dense workstation page. Keep tablet/mobile breakpoints unchanged. */
+@media (min-width: 1181px) {
+  .apex-shell.apex-workspace {
+    --apex-sidebar-w: 160px !important;
+    grid-template-columns: 160px minmax(0, 1fr) !important;
+  }
+
+  .apex-shell.apex-workspace > .apex-sidebar {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+  }
+
+  .apex-shell.apex-workspace > .apex-stage {
+    min-width: 0 !important;
+  }
+}

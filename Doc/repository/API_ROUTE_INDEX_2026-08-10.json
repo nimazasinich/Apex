@@ -1,0 +1,964 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-13T18:12:52.986Z",
+  "runtimeOperations": 136,
+  "openApiOperations": 136,
+  "documentedRuntimeOperations": 136,
+  "coverage": 1,
+  "minimumCoverage": 1,
+  "unknownOpenApiOperations": [],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/account/connect",
+      "source": "server.ts",
+      "line": 605,
+      "openapi": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/account/connection",
+      "source": "server.ts",
+      "line": 634,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/account/connection",
+      "source": "server.ts",
+      "line": 624,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/account/demo/reset",
+      "source": "server.ts",
+      "line": 668,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/account/mode",
+      "source": "server.ts",
+      "line": 645,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/account/orders",
+      "source": "server.ts",
+      "line": 762,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/account/orders/:id/cancel",
+      "source": "server.ts",
+      "line": 790,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/account/orders/preview",
+      "source": "server.ts",
+      "line": 741,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/account/portfolio",
+      "source": "server.ts",
+      "line": 683,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/account/workspace",
+      "source": "server.ts",
+      "line": 710,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/backtest/datasource/fetch",
+      "source": "server.ts",
+      "line": 2322,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/backtest/datasource/status",
+      "source": "server.ts",
+      "line": 2280,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/depth",
+      "source": "server.ts",
+      "line": 2668,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/klines",
+      "source": "server.ts",
+      "line": 2676,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/open-interest",
+      "source": "server.ts",
+      "line": 2692,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/premium-index",
+      "source": "server.ts",
+      "line": 2685,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/sentiment-ls",
+      "source": "server.ts",
+      "line": 2617,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/sentiment-taker",
+      "source": "server.ts",
+      "line": 2637,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/binance/ticker",
+      "source": "server.ts",
+      "line": 2661,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/decision-memory",
+      "source": "server.ts",
+      "line": 1207,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/decision-memory/batch",
+      "source": "server.ts",
+      "line": 1195,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/decision-memory/export",
+      "source": "server.ts",
+      "line": 1636,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/decision-memory/status",
+      "source": "server.ts",
+      "line": 1227,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/readiness",
+      "source": "server.ts",
+      "line": 897,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/testnet/account",
+      "source": "server.ts",
+      "line": 965,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/testnet/orders",
+      "source": "server.ts",
+      "line": 977,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/execution/testnet/orders",
+      "source": "server.ts",
+      "line": 1157,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/execution/testnet/orders/:id/cancel",
+      "source": "server.ts",
+      "line": 1170,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/validation/history",
+      "source": "server.ts",
+      "line": 935,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/execution/validation/orders",
+      "source": "server.ts",
+      "line": 942,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/validation/readiness",
+      "source": "server.ts",
+      "line": 925,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/external-sources/config",
+      "source": "server.ts",
+      "line": 3238,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/external-sources/config/defaults",
+      "source": "server.ts",
+      "line": 3210,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/external-sources/status",
+      "source": "server.ts",
+      "line": 3234,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/external-sources/test",
+      "source": "server.ts",
+      "line": 3248,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/feedback",
+      "source": "server.ts",
+      "line": 3460,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "source": "server.ts",
+      "line": 3505,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/historical/:symbol",
+      "source": "server.ts",
+      "line": 2757,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/intel/defi/protocols",
+      "source": "server.ts",
+      "line": 2743,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/intel/defi/yields",
+      "source": "server.ts",
+      "line": 2750,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/intel/news",
+      "source": "server.ts",
+      "line": 2712,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/intel/sentiment",
+      "source": "server.ts",
+      "line": 2722,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/hf-space/intel/sentiment/analyze",
+      "source": "server.ts",
+      "line": 2770,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/intel/whales",
+      "source": "server.ts",
+      "line": 2732,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/short-hunter/funding/:symbol",
+      "source": "server.ts",
+      "line": 2796,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/short-hunter/market/:symbol",
+      "source": "server.ts",
+      "line": 2783,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/short-hunter/open-interest/:symbol",
+      "source": "server.ts",
+      "line": 2802,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/short-hunter/orderbook/:symbol",
+      "source": "server.ts",
+      "line": 2789,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/short-hunter/snapshot/:symbol",
+      "source": "server.ts",
+      "line": 2808,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/hf-space/status",
+      "source": "server.ts",
+      "line": 2703,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/icon/:asset",
+      "source": "server.ts",
+      "line": 333,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/feeds",
+      "source": "server.ts",
+      "line": 3097,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/kucoin/account-overview",
+      "source": "server.ts",
+      "line": 2418,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/kucoin/bullet-public",
+      "source": "server.ts",
+      "line": 2565,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/candles",
+      "source": "server.ts",
+      "line": 2455,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/contract",
+      "source": "server.ts",
+      "line": 2541,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/contracts-active",
+      "source": "server.ts",
+      "line": 2519,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/contracts/active",
+      "source": "server.ts",
+      "line": 2530,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/funding",
+      "source": "server.ts",
+      "line": 2507,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/level2",
+      "source": "server.ts",
+      "line": 2443,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/ticker",
+      "source": "server.ts",
+      "line": 2431,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/kucoin/trades",
+      "source": "server.ts",
+      "line": 2553,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/edge-thresholds",
+      "source": "server.ts",
+      "line": 1388,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/liquidity-hunter/edge-thresholds/approve",
+      "source": "server.ts",
+      "line": 1419,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/liquidity-hunter/edge-thresholds/propose",
+      "source": "server.ts",
+      "line": 1406,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/liquidity-hunter/edge-thresholds/reject",
+      "source": "server.ts",
+      "line": 1431,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/evidence/:symbol",
+      "source": "server.ts",
+      "line": 1327,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/liquidity-hunter/manual-testnet/:setupId/submit",
+      "source": "server.ts",
+      "line": 1159,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/manual-testnet/plans",
+      "source": "server.ts",
+      "line": 1439,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/paper-canary",
+      "source": "server.ts",
+      "line": 1290,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/liquidity-hunter/replay",
+      "source": "server.ts",
+      "line": 1368,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/replay-datasets",
+      "source": "server.ts",
+      "line": 1354,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/replay-runs",
+      "source": "server.ts",
+      "line": 1362,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/replay-runs/:runId",
+      "source": "server.ts",
+      "line": 1363,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/setups",
+      "source": "server.ts",
+      "line": 1340,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/setups/:setupId",
+      "source": "server.ts",
+      "line": 1346,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/liquidity-hunter/shadow/evaluate",
+      "source": "server.ts",
+      "line": 1527,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/state/:symbol",
+      "source": "server.ts",
+      "line": 1302,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/liquidity-hunter/world-state/:symbol",
+      "source": "server.ts",
+      "line": 1318,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/backtest",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3150,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/market/backtest/production-input",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3339,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/candidates",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1196,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/correlation",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1154,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/gainers-losers",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1145,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/majors",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3313,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/open-interest-history",
+      "source": "server.ts",
+      "line": 3720,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/open-interest-history/:symbol",
+      "source": "server.ts",
+      "line": 3711,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/sentiment",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1179,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/symbol/:symbol",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1479,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/market/top-volume",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1137,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/adaptive-thresholds",
+      "source": "server.ts",
+      "line": 1239,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/operations/adaptive-thresholds/approve",
+      "source": "server.ts",
+      "line": 1587,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/adaptive-thresholds/fast-shadow",
+      "source": "server.ts",
+      "line": 1243,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/operations/adaptive-thresholds/propose",
+      "source": "server.ts",
+      "line": 1571,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/operations/adaptive-thresholds/reject",
+      "source": "server.ts",
+      "line": 1600,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/operations/adaptive-thresholds/rollback",
+      "source": "server.ts",
+      "line": 1612,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/liquidity-hunter",
+      "source": "server.ts",
+      "line": 1280,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/market-statistics",
+      "source": "server.ts",
+      "line": 1556,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/market-streaming",
+      "source": "server.ts",
+      "line": 1262,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/ml-governance",
+      "source": "server.ts",
+      "line": 1623,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/status",
+      "source": "server.ts",
+      "line": 1648,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/operations/trading-modules",
+      "source": "server.ts",
+      "line": 1235,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/readiness",
+      "source": "server.ts",
+      "line": 302,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/market-making/cross-venue/simulate",
+      "source": "server.ts",
+      "line": 3763,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/market-making/funding-aware/simulate",
+      "source": "server.ts",
+      "line": 3779,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/microstructure/l1/:symbol",
+      "source": "server.ts",
+      "line": 3737,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/microstructure/l2/:symbol",
+      "source": "server.ts",
+      "line": 3749,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/microstructure/status",
+      "source": "server.ts",
+      "line": 3731,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/bootstrap",
+      "source": "server.ts",
+      "line": 486,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/strategies",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1720,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/strategies/:strategyId",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2771,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/:strategyId/fusion-preview",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2789,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/strategies/:strategyId/optimization",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2874,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/:strategyId/optimization/promote",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3027,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/:strategyId/optimization/rollback",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3067,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/:strategyId/optimize",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2891,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/:strategyId/validate",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3086,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/autopilot/control",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2441,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/autopilot/cycle",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2407,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/strategies/autopilot/status",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 1734,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/multi-backtest",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2571,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/strategies/paper-multi-trade/size",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 2736,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/supplemental/all",
+      "source": "server.ts",
+      "line": 3397,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/supplemental/config",
+      "source": "server.ts",
+      "line": 3018,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/supplemental/config/defaults",
+      "source": "server.ts",
+      "line": 3043,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/supplemental/config/probe",
+      "source": "server.ts",
+      "line": 3058,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/supplemental/config/status",
+      "source": "server.ts",
+      "line": 3008,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/supplemental/health",
+      "source": "server.ts",
+      "line": 3427,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/supplemental/news",
+      "source": "server.ts",
+      "line": 3288,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/supplemental/onchain",
+      "source": "server.ts",
+      "line": 3360,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/supplemental/sentiment",
+      "source": "server.ts",
+      "line": 3324,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/health",
+      "source": "src/services/apexNextMarketRoutes.ts",
+      "line": 3322,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/telegram/config",
+      "source": "server.ts",
+      "line": 3690,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/telegram/send",
+      "source": "server.ts",
+      "line": 3802,
+      "openapi": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/telegram/status",
+      "source": "server.ts",
+      "line": 3676,
+      "openapi": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/telegram/test",
+      "source": "server.ts",
+      "line": 3794,
+      "openapi": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-08-03T10:03:38.892Z",
+  "mode": "pure",
+  "httpStatus": 200,
+  "httpFallbackReason": "operations status smoke server did not become ready",
+  "violations": [],
+  "ok": true,
+  "sample": {
+    "schemaVersion": 5,
+    "serviceStatus": "DEGRADED",
+    "configuredHealthyProviders": 0,
+    "decisionMemoryStatus": "LOCAL_ONLY",
+    "adaptiveStressStatus": "PASSED",
+    "providerRoutingStressStatus": "PASSED",
+    "loadMatrixStressStatus": "PASSED",
+    "shadowTrainingStatus": "INSUFFICIENT_DATA",
+    "shadowComparisonStatus": "NO_MODEL",
+    "auditOnly": true
+  }
+}

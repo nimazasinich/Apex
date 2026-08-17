@@ -1,0 +1,58 @@
+.apex-direction-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--apex-border, #dfe5ed);
+  border-radius: 9px;
+  background: var(--apex-soft, #f3f6f9);
+}
+
+.apex-direction-selector button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--apex-muted, #66758a);
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  cursor: pointer;
+}
+
+.apex-direction-selector button:hover:not(:disabled) {
+  color: var(--apex-text, #17243a);
+  background: rgba(255,255,255,.7);
+}
+
+.apex-direction-selector[data-direction="long"] button.active {
+  color: var(--apex-positive, #238a45);
+  background: #fff;
+  box-shadow: 0 1px 5px rgba(25, 85, 49, .12);
+}
+
+.apex-direction-selector[data-direction="short"] button.active {
+  color: var(--apex-negative, #c43c48);
+  background: #fff;
+  box-shadow: 0 1px 5px rgba(137, 37, 47, .12);
+}
+
+.apex-direction-selector button:focus-visible {
+  outline: 2px solid var(--apex-focus, #4d7cff);
+  outline-offset: 1px;
+}
+
+.apex-direction-selector button:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.apex-direction-selector.compact button {
+  min-height: 27px;
+  font-size: 9px;
+}

@@ -1,0 +1,2975 @@
+openapi: 3.1.0
+info:
+  title: APEX Same-Origin API
+  version: 1.0.56
+  description: Incremental contract for compute and mutation routes. Market read routes remain documented as they are migrated.
+servers:
+- url: /
+paths:
+  /api/account/connect:
+    post:
+      operationId: connectExchangeAccount
+      summary: Verify exchange credentials and create a short-lived server-held live account session.
+      description: Same-origin mutation. Credentials are retained only server-side and are never returned. In production deployment
+        profile, the global mutation policy also requires operator authentication and TLS.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - apiKey
+              - apiSecret
+              - apiPassphrase
+              properties:
+                apiKey:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                  writeOnly: true
+                apiSecret:
+                  type: string
+                  minLength: 1
+                  maxLength: 512
+                  writeOnly: true
+                apiPassphrase:
+                  type: string
+                  minLength: 1
+                  maxLength: 512
+                  writeOnly: true
+                apiKeyVersion:
+                  type: string
+                  maxLength: 16
+      responses:
+        '200':
+          description: Exchange session verified; public connection state and account snapshot returned
+        '401':
+          description: Exchange authentication failed
+        '422':
+          description: Credential or connection request validation failed
+        '502':
+          description: Exchange request failed
+  /api/account/connection:
+    get:
+      operationId: getAccountConnection
+      summary: Read public Demo/Live account connection state without exposing credentials.
+      responses:
+        '200':
+          description: Public connection state returned
+    delete:
+      operationId: disconnectExchangeAccount
+      summary: Destroy the live exchange session and return the workspace to Demo mode.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      responses:
+        '200':
+          description: Live session destroyed and Demo snapshot returned
+  /api/account/demo/reset:
+    post:
+      operationId: resetDemoAccount
+      summary: Reset the server-owned Demo account with bounded optional starting values.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                startingBalanceUsd:
+                  type: number
+                  exclusiveMinimum: 0
+                maxOrderNotionalUsd:
+                  type: number
+                  exclusiveMinimum: 0
+      responses:
+        '200':
+          description: Demo account reset and snapshot returned
+  /api/account/mode:
+    post:
+      operationId: setAccountMode
+      summary: Switch the workspace between Demo and an already verified Live session.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - mode
+              properties:
+                mode:
+                  type: string
+                  enum:
+                  - demo
+                  - live
+                startingBalanceUsd:
+                  type: number
+                  exclusiveMinimum: 0
+                maxOrderNotionalUsd:
+                  type: number
+                  exclusiveMinimum: 0
+      responses:
+        '200':
+          description: Mode switched and current snapshot returned
+        '409':
+          description: Live mode requested without a verified live connection
+        '422':
+          description: Invalid account mode
+  /api/account/orders:
+    post:
+      operationId: submitAccountOrder
+      summary: Submit an explicitly confirmed server-issued Demo or Live order preview.
+      description: Live submission remains manual, Risk-Governor-bound and idempotency/reconciliation protected. Autonomous
+        execution is not exposed by this route.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - previewId
+              - confirmation
+              properties:
+                previewId:
+                  type: string
+                  minLength: 1
+                  maxLength: 160
+                confirmation:
+                  type: string
+                  minLength: 1
+                  maxLength: 160
+      responses:
+        '201':
+          description: Confirmed preview submitted
+        '202':
+          description: Submission state uncertain; reconciliation required
+        '401':
+          description: Live exchange session required
+        '403':
+          description: Execution not armed
+        '410':
+          description: Preview expired
+        '422':
+          description: Explicit confirmation
+          risk: null
+          or order validation failed: null
+        '502':
+          description: Exchange submission failed
+  /api/account/orders/preview:
+    post:
+      operationId: previewAccountOrder
+      summary: Validate and risk-check a Demo or manually armed Live order before submission.
+      description: Preview only; cannot submit an exchange order. Live preview requires a verified session and server-side
+        execution arming.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Order draft validated by the server order/trade-plan validators; non-finite and unsupported values
+                are rejected.
+              additionalProperties: true
+      responses:
+        '200':
+          description: Server-owned preview returned
+        '401':
+          description: Live exchange session required
+        '403':
+          description: Live execution is not armed
+        '422':
+          description: Order
+          trade-plan: null
+          exchange-rule: null
+          or Risk Governor validation failed: null
+        '502':
+          description: Required exchange data unavailable
+  /api/account/orders/{id}/cancel:
+    post:
+      operationId: cancelAccountOrder
+      summary: Cancel a Demo order or explicitly armed Live exchange order.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{4,128}$
+      responses:
+        '200':
+          description: Cancellation accepted
+        '401':
+          description: Live exchange session required
+        '403':
+          description: Execution not armed
+        '422':
+          description: Invalid order identifier or cancellation state
+        '502':
+          description: Exchange cancellation failed
+  /api/account/portfolio:
+    get:
+      operationId: getAccountPortfolio
+      summary: Read the authoritative Demo or connected Live account snapshot.
+      responses:
+        '200':
+          description: Current portfolio snapshot returned
+        '401':
+          description: Live mode selected without a live exchange session
+        '502':
+          description: Live portfolio synchronization failed
+  /api/account/workspace:
+    get:
+      operationId: getAccountWorkspace
+      summary: Read normalized account workspace data and derived server-side insights.
+      responses:
+        '200':
+          description: Workspace snapshot and insights returned
+        '401':
+          description: Live mode selected without a live exchange session
+        '502':
+          description: Workspace synchronization failed
+  /api/backtest/datasource/fetch:
+    post:
+      operationId: postBacktestDatasourceFetch
+      tags:
+      - Backtest
+      summary: POST /api/backtest/datasource/fetch
+      description: Backtesting support route using bounded, provenance-bearing data requests.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/backtest/datasource/status:
+    get:
+      operationId: getBacktestDatasourceStatus
+      tags:
+      - Backtest
+      summary: GET /api/backtest/datasource/status
+      description: Backtesting support route using bounded, provenance-bearing data requests.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/depth:
+    get:
+      operationId: getBinanceDepth
+      tags:
+      - Binance
+      summary: GET /api/binance/depth
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/klines:
+    get:
+      operationId: getBinanceKlines
+      tags:
+      - Binance
+      summary: GET /api/binance/klines
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/open-interest:
+    get:
+      operationId: getBinanceOpenInterest
+      tags:
+      - Binance
+      summary: GET /api/binance/open-interest
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/premium-index:
+    get:
+      operationId: getBinancePremiumIndex
+      tags:
+      - Binance
+      summary: GET /api/binance/premium-index
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/sentiment-ls:
+    get:
+      operationId: getBinanceSentimentLs
+      tags:
+      - Binance
+      summary: GET /api/binance/sentiment-ls
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/sentiment-taker:
+    get:
+      operationId: getBinanceSentimentTaker
+      tags:
+      - Binance
+      summary: GET /api/binance/sentiment-taker
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/binance/ticker:
+    get:
+      operationId: getBinanceTicker
+      tags:
+      - Binance
+      summary: GET /api/binance/ticker
+      description: Binance public market-data wrapper route with provider degradation semantics.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/decision-memory:
+    get:
+      operationId: getDecisionMemory
+      summary: Read bounded persisted scanner decision-memory rows and resolved outcomes.
+      responses:
+        '200':
+          description: Decision-memory rows returned
+  /api/decision-memory/batch:
+    post:
+      operationId: writeDecisionMemoryBatch
+      summary: Persist a bounded batch of canonical scanner decisions/outcome patches.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Batch persisted
+        '422':
+          description: Invalid decision-memory payload
+  /api/decision-memory/export:
+    get:
+      operationId: exportDecisionMemory
+      summary: Export canonical decision-memory data for offline validation/training gates without imputing labels.
+      responses:
+        '200':
+          description: Canonical decision-memory export returned
+  /api/decision-memory/status:
+    get:
+      operationId: getDecisionMemoryStatus
+      summary: Read decision-memory durability/export/outcome-resolution status.
+      responses:
+        '200':
+          description: Decision-memory status returned
+  /api/execution/readiness:
+    get:
+      operationId: getExecutionReadiness
+      summary: Read server-owned execution capability truth across manual Live, validation and testnet namespaces.
+      description: Readiness is descriptive and never authorizes an order. Autonomous execution remains unavailable.
+      responses:
+        '200':
+          description: Capability/readiness snapshot returned
+  /api/execution/testnet/account:
+    get:
+      operationId: getTestnetAccount
+      summary: Read KuCoin Futures testnet account evidence only when the approved testnet adapter is configured.
+      responses:
+        '200':
+          description: Testnet account returned
+        '503':
+          description: Testnet unavailable or endpoint not approved
+  /api/execution/testnet/orders:
+    get:
+      operationId: listTestnetOrders
+      summary: Read durable testnet order/reconciliation records.
+      responses:
+        '200':
+          description: Testnet order records returned
+        '503':
+          description: Testnet store unavailable
+    post:
+      operationId: submitTestnetOrder
+      summary: Submit a manually confirmed Risk-Governor-approved order to the verified testnet adapter.
+      description: Testnet endpoint approval is deny-by-default; arbitrary operator hostnames are not accepted.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Testnet order submitted or submission reconciled
+        '409':
+          description: Testnet prerequisites unavailable
+        '422':
+          description: Risk
+          confirmation or order validation failed: null
+        '503':
+          description: Approved testnet adapter unavailable
+  /api/execution/testnet/orders/{id}/cancel:
+    post:
+      operationId: cancelTestnetOrder
+      summary: Cancel a known testnet order through the configured approved adapter.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 160
+      responses:
+        '200':
+          description: Cancellation/reconciliation result returned
+        '404':
+          description: Testnet order not found
+        '503':
+          description: Testnet unavailable
+  /api/execution/validation/history:
+    get:
+      operationId: getValidationExecutionHistory
+      summary: Read durable validation-order evidence.
+      responses:
+        '200':
+          description: Validation history returned
+        '503':
+          description: Validation store unavailable
+  /api/execution/validation/orders:
+    post:
+      operationId: submitValidationOrder
+      summary: Submit an explicitly confirmed order only to the configured validation environment.
+      description: Does not weaken live execution controls. Requires server-side validation credentials/store, explicit confirmation
+        and existing mutation security policy.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Validation order submitted
+        '409':
+          description: Validation environment not configured or not ready
+        '422':
+          description: Confirmation or order validation failed
+        '503':
+          description: Validation dependency unavailable
+  /api/execution/validation/readiness:
+    get:
+      operationId: getValidationExecutionReadiness
+      summary: Read validation-environment credentials/store readiness and safety state.
+      responses:
+        '200':
+          description: Validation readiness returned
+  /api/external-sources/config:
+    post:
+      operationId: updateExternalSourceConfig
+      summary: Persist validated operator provider configuration to the private runtime-data location.
+      description: Secret values are write-only and never returned; persistence is outside the repository root.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: Provider settings are validated and secret fields are redacted from responses/logs.
+      responses:
+        '200':
+          description: Configuration persisted with secret-redacted public state
+        '422':
+          description: Configuration validation failed
+  /api/external-sources/config/defaults:
+    post:
+      operationId: resetExternalSourceDefaults
+      summary: Reset non-secret external-source settings to supported defaults without fabricating provider availability.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      responses:
+        '200':
+          description: Defaults applied
+  /api/external-sources/status:
+    get:
+      operationId: getExternalSourceStatus
+      summary: Read secret-redacted operator-provider configuration and health state.
+      responses:
+        '200':
+          description: Redacted provider status returned
+  /api/external-sources/test:
+    post:
+      operationId: testExternalSource
+      summary: Probe one configured provider contract and return secret-redacted reachability/validation evidence.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Probe result returned
+        '422':
+          description: Invalid probe request
+  /api/feedback:
+    post:
+      operationId: postFeedback
+      tags:
+      - Feedback
+      summary: POST /api/feedback
+      description: Same-origin APEX API route.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/health:
+    get:
+      operationId: getApplicationHealth
+      summary: Read server health plus truthful provider/dependency degradation state.
+      responses:
+        '200':
+          description: Health snapshot returned
+  /api/hf-space/historical/{symbol}:
+    get:
+      operationId: getHfSpaceHistoricalSymbol
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/historical/{symbol}
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/intel/defi/protocols:
+    get:
+      operationId: getHfSpaceIntelDefiProtocols
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/intel/defi/protocols
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/intel/defi/yields:
+    get:
+      operationId: getHfSpaceIntelDefiYields
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/intel/defi/yields
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/intel/news:
+    get:
+      operationId: getHfSpaceIntelNews
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/intel/news
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/intel/sentiment:
+    get:
+      operationId: getHfSpaceIntelSentiment
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/intel/sentiment
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/intel/sentiment/analyze:
+    post:
+      operationId: postHfSpaceIntelSentimentAnalyze
+      tags:
+      - Hf Space
+      summary: POST /api/hf-space/intel/sentiment/analyze
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/intel/whales:
+    get:
+      operationId: getHfSpaceIntelWhales
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/intel/whales
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/short-hunter/funding/{symbol}:
+    get:
+      operationId: getHfSpaceShortHunterFundingSymbol
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/short-hunter/funding/{symbol}
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/short-hunter/market/{symbol}:
+    get:
+      operationId: getHfSpaceShortHunterMarketSymbol
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/short-hunter/market/{symbol}
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/short-hunter/open-interest/{symbol}:
+    get:
+      operationId: getHfSpaceShortHunterOpenInterestSymbol
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/short-hunter/open-interest/{symbol}
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/short-hunter/orderbook/{symbol}:
+    get:
+      operationId: getHfSpaceShortHunterOrderbookSymbol
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/short-hunter/orderbook/{symbol}
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/short-hunter/snapshot/{symbol}:
+    get:
+      operationId: getHfSpaceShortHunterSnapshotSymbol
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/short-hunter/snapshot/{symbol}
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/hf-space/status:
+    get:
+      operationId: getHfSpaceStatus
+      tags:
+      - Hf Space
+      summary: GET /api/hf-space/status
+      description: Owner-managed Hugging Face fallback/intelligence route. It is not authoritative when primary providers
+        are available.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/icon/{asset}:
+    get:
+      operationId: getIconAsset
+      tags:
+      - Icon
+      summary: GET /api/icon/{asset}
+      description: Same-origin APEX API route.
+      parameters:
+      - in: path
+        name: asset
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/intelligence/feeds:
+    get:
+      operationId: getIntelligenceFeeds
+      tags:
+      - Intelligence
+      summary: GET /api/intelligence/feeds
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/account-overview:
+    post:
+      operationId: postKucoinAccountOverview
+      tags:
+      - Kucoin
+      summary: POST /api/kucoin/account-overview
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/bullet-public:
+    post:
+      operationId: postKucoinBulletPublic
+      tags:
+      - Kucoin
+      summary: POST /api/kucoin/bullet-public
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/candles:
+    get:
+      operationId: getKucoinCandles
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/candles
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/contract:
+    get:
+      operationId: getKucoinContract
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/contract
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/contracts-active:
+    get:
+      operationId: getKucoinContractsActive
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/contracts-active
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/contracts/active:
+    get:
+      operationId: getKucoinContractsActive2
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/contracts/active
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/funding:
+    get:
+      operationId: getKucoinFunding
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/funding
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/level2:
+    get:
+      operationId: getKucoinLevel2
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/level2
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/ticker:
+    get:
+      operationId: getKucoinTicker
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/ticker
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/kucoin/trades:
+    get:
+      operationId: getKucoinTrades
+      tags:
+      - Kucoin
+      summary: GET /api/kucoin/trades
+      description: KuCoin public/read or validation route. This contract documents the same-origin API wrapper; exchange availability
+        may degrade.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/liquidity-hunter/edge-thresholds:
+    get:
+      operationId: getLiquidityHunterEdgeThresholds
+      summary: Read active profiles, proposals, and revision history.
+      responses:
+        '200':
+          description: Governance snapshot returned
+  /api/liquidity-hunter/edge-thresholds/approve:
+    post:
+      operationId: approveLiquidityHunterEdgeThreshold
+      summary: Manually approve a Paper-Canary-qualified proposal.
+      responses:
+        '200':
+          description: Revision created
+        '401':
+          description: Operator authentication required
+        '422':
+          description: Approval rejected
+  /api/liquidity-hunter/edge-thresholds/propose:
+    post:
+      operationId: proposeLiquidityHunterEdgeThreshold
+      summary: Stage a validated optimizer report for manual review.
+      description: Protected by the existing global operator mutation middleware; never promotes automatically.
+      responses:
+        '201':
+          description: Proposal staged
+        '401':
+          description: Operator authentication required
+        '422':
+          description: Proposal rejected
+  /api/liquidity-hunter/edge-thresholds/reject:
+    post:
+      operationId: rejectLiquidityHunterEdgeThreshold
+      summary: Manually reject a staged threshold proposal.
+      responses:
+        '200':
+          description: Proposal rejected
+        '401':
+          description: Operator authentication required
+        '422':
+          description: Rejection invalid
+  /api/liquidity-hunter/evidence/{symbol}:
+    get:
+      operationId: getLiquidityHunterEvidence
+      summary: Read all ten edge evidence rows and source ages for one symbol.
+      responses:
+        '200':
+          description: Edge evidence returned
+        '503':
+          description: Runtime unavailable
+  /api/liquidity-hunter/manual-testnet/plans:
+    get:
+      operationId: getLiquidityHunterManualTestnetPlans
+      tags:
+      - Liquidity Hunter
+      summary: GET /api/liquidity-hunter/manual-testnet/plans
+      description: Liquidity Hunter research/shadow route. It cannot bypass Risk Governor or create exchange orders.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/liquidity-hunter/manual-testnet/{setupId}/submit:
+    post:
+      operationId: submitLiquidityHunterManualTestnetCanary
+      summary: Submit an explicitly confirmed, Risk-Governor-approved Liquidity Hunter TradePlan to the verified Testnet adapter.
+      description: Requires both Liquidity Hunter testnet flags, the existing operator mutation middleware, and the exact
+        confirmation phrase. Autonomous and live execution remain unavailable.
+      responses:
+        '201':
+          description: Manual testnet canary submitted
+        '409':
+          description: Canary disabled or plan unavailable
+        '422':
+          description: Confirmation or risk validation failed
+        '503':
+          description: Testnet unavailable
+  /api/liquidity-hunter/paper-canary:
+    get:
+      operationId: getLiquidityHunterPaperCanary
+      summary: Read research-only Liquidity Hunter paper-canary outcomes.
+      description: Returns signal-price touch/outcome tracking only. The paper canary has no exchange dependency, cannot create
+        orders, and cannot authorize execution.
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+      responses:
+        '200':
+          description: Paper-canary snapshot and explicit non-execution safety state returned
+        '503':
+          description: Liquidity Hunter runtime unavailable
+  /api/liquidity-hunter/replay:
+    post:
+      operationId: runLiquidityHunterReplay
+      summary: Run deterministic shadow replay over the recorded dataset.
+      description: Operator-authenticated mutation/compute route. It cannot authorize execution.
+      responses:
+        '201':
+          description: Replay completed
+        '409':
+          description: Recording unavailable
+        '422':
+          description: Replay rejected
+  /api/liquidity-hunter/replay-datasets:
+    get:
+      operationId: listLiquidityHunterReplayDatasets
+      summary: List recorded event datasets and verified manifests.
+      responses:
+        '200':
+          description: Replay datasets returned
+  /api/liquidity-hunter/replay-runs:
+    get:
+      operationId: listLiquidityHunterReplayRuns
+      summary: Read bounded in-process replay run results.
+      responses:
+        '200':
+          description: Replay runs returned
+  /api/liquidity-hunter/replay-runs/{runId}:
+    get:
+      operationId: getLiquidityHunterReplayRunsRunId
+      tags:
+      - Liquidity Hunter
+      summary: GET /api/liquidity-hunter/replay-runs/{runId}
+      description: Liquidity Hunter research/shadow route. It cannot bypass Risk Governor or create exchange orders.
+      parameters:
+      - in: path
+        name: runId
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/liquidity-hunter/setups:
+    get:
+      operationId: listLiquidityHunterSetups
+      summary: List current and historical setup lifecycles restored from the durable event log.
+      responses:
+        '200':
+          description: Setup lifecycles returned
+  /api/liquidity-hunter/setups/{setupId}:
+    get:
+      operationId: getLiquidityHunterSetup
+      summary: Read one durable setup lifecycle.
+      responses:
+        '200':
+          description: Setup returned
+        '404':
+          description: Setup not found
+  /api/liquidity-hunter/shadow/evaluate:
+    post:
+      operationId: evaluateLiquidityHunterShadow
+      summary: Run the four-layer Liquidity Hunter core in shadow mode using server-held realtime evidence and server-fetched
+        public candle/funding/OI context.
+      description: This route can never authorize execution or promote thresholds. Independent public context requests and
+        edge evaluations are bounded and performed concurrently where safe. The feature must be explicitly enabled.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - symbol
+              properties:
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Shadow evaluation
+          context provenance: null
+          and safety state returned: null
+        '400':
+          description: Invalid symbol
+        '409':
+          description: Liquidity Hunter core is disabled by configuration
+        '503':
+          description: Liquidity Hunter runtime unavailable
+  /api/liquidity-hunter/state/{symbol}:
+    get:
+      operationId: getLiquidityHunterState
+      summary: Read the latest shadow-only Liquidity Hunter evaluation for one symbol.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Latest evaluation and safety state returned
+        '400':
+          description: Invalid symbol
+        '503':
+          description: Liquidity Hunter runtime unavailable
+  /api/liquidity-hunter/world-state/{symbol}:
+    get:
+      operationId: getLiquidityHunterWorldState
+      summary: Read quality-tagged realtime world-state entries for one symbol.
+      responses:
+        '200':
+          description: World-state entries returned
+        '503':
+          description: Runtime unavailable
+  /api/market/backtest:
+    get:
+      operationId: runBacktest
+      summary: Run a deterministic, cost-aware strategy replay over verified historical candles.
+      parameters:
+      - in: query
+        name: strategy
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      - in: query
+        name: symbol
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      - in: query
+        name: direction
+        schema:
+          type: string
+          enum:
+          - LONG
+          - SHORT
+      - in: query
+        name: interval
+        schema:
+          type: string
+          enum:
+          - 5m
+          - 15m
+          - 1h
+          - 4h
+          - 1d
+      - in: query
+        name: bars
+        schema:
+          type: integer
+          minimum: 200
+          maximum: 5000
+          default: 2000
+      - in: query
+        name: maxBars
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 240
+          default: 72
+      - in: query
+        name: commissionPct
+        schema:
+          type: number
+          minimum: 0
+          maximum: 5
+          default: 0.04
+      - in: query
+        name: slippagePct
+        schema:
+          type: number
+          minimum: 0
+          maximum: 5
+          default: 0.05
+      - in: query
+        name: fundingPct
+        schema:
+          type: number
+          minimum: 0
+          maximum: 5
+          default: 0.01
+      responses:
+        '200':
+          description: Replay completed
+        '409':
+          description: Strategy prerequisites are blocked
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Verified history is unavailable or insufficient
+  /api/market/backtest/production-input:
+    post:
+      operationId: postMarketBacktestProductionInput
+      tags:
+      - Market
+      summary: POST /api/market/backtest/production-input
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/candidates:
+    get:
+      operationId: getMarketCandidates
+      tags:
+      - Market
+      summary: GET /api/market/candidates
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/correlation:
+    get:
+      operationId: getMarketCorrelation
+      tags:
+      - Market
+      summary: GET /api/market/correlation
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/gainers-losers:
+    get:
+      operationId: getMarketGainersLosers
+      tags:
+      - Market
+      summary: GET /api/market/gainers-losers
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/majors:
+    get:
+      operationId: getMarketMajors
+      tags:
+      - Market
+      summary: GET /api/market/majors
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/open-interest-history:
+    get:
+      operationId: getMarketOpenInterestHistory
+      tags:
+      - Market
+      summary: GET /api/market/open-interest-history
+      description: Durable open-interest history route. It reports observed timestamped OI samples only and must not synthesize
+        deltas from one current value.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/market/open-interest-history/{symbol}:
+    get:
+      operationId: getMarketOpenInterestHistorySymbol
+      tags:
+      - Market
+      summary: GET /api/market/open-interest-history/{symbol}
+      description: Durable open-interest history route. It reports observed timestamped OI samples only and must not synthesize
+        deltas from one current value.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/market/sentiment:
+    get:
+      operationId: getMarketSentiment
+      tags:
+      - Market
+      summary: GET /api/market/sentiment
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/symbol/{symbol}:
+    get:
+      operationId: getMarketSymbolSymbol
+      tags:
+      - Market
+      summary: GET /api/market/symbol/{symbol}
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/market/top-volume:
+    get:
+      operationId: getMarketTopVolume
+      tags:
+      - Market
+      summary: GET /api/market/top-volume
+      description: Market-data or research route. Responses must preserve provider provenance and degraded-state metadata.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/operations/adaptive-thresholds:
+    get:
+      operationId: getAdaptiveThresholdStatus
+      summary: Read durable manual adaptive-threshold proposals/revisions/audit state.
+      responses:
+        '200':
+          description: Adaptive threshold governance returned
+  /api/operations/adaptive-thresholds/approve:
+    post:
+      operationId: approveAdaptiveThreshold
+      summary: Explicitly approve a qualified staged threshold revision.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Revision approved
+        '422':
+          description: Approval rejected
+  /api/operations/adaptive-thresholds/fast-shadow:
+    get:
+      operationId: getFastShadowThresholdStatus
+      summary: Read fast shadow-only threshold research state; never authorizes promotion.
+      responses:
+        '200':
+          description: Fast shadow threshold state returned
+  /api/operations/adaptive-thresholds/propose:
+    post:
+      operationId: proposeAdaptiveThreshold
+      summary: Stage a threshold change for manual review; never auto-applies.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Proposal staged
+        '422':
+          description: Proposal rejected
+  /api/operations/adaptive-thresholds/reject:
+    post:
+      operationId: rejectAdaptiveThreshold
+      summary: Explicitly reject a staged threshold proposal.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Proposal rejected
+        '422':
+          description: Rejection invalid
+  /api/operations/adaptive-thresholds/rollback:
+    post:
+      operationId: rollbackAdaptiveThreshold
+      summary: Create a durable manual rollback revision linked to prior governance state.
+      x-apex-mutation-guard: same-origin + deployment-profile operator authentication; TLS required in production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Rollback revision created
+        '422':
+          description: Rollback rejected
+  /api/operations/liquidity-hunter:
+    get:
+      operationId: getLiquidityHunterFoundationStatus
+      summary: Read default-off Liquidity Hunter core flags, ten-edge availability and realtime health.
+      description: Read-only shadow-core endpoint. It cannot mutate strategies, thresholds, risk state, or execution.
+      responses:
+        '200':
+          description: Foundation status and ten-edge catalog returned
+  /api/operations/market-statistics:
+    get:
+      operationId: getMarketStatisticsStatus
+      summary: Read market statistics pipeline status and provenance.
+      responses:
+        '200':
+          description: Market statistics status returned
+  /api/operations/market-streaming:
+    get:
+      operationId: getMarketStreamingStatus
+      summary: Read public realtime feed health, reconnect and degradation state.
+      responses:
+        '200':
+          description: Market streaming status returned
+  /api/operations/ml-governance:
+    get:
+      operationId: getMlGovernanceStatus
+      summary: Read shadow-ML dataset/model/calibration readiness and authority restrictions.
+      responses:
+        '200':
+          description: ML governance status returned
+  /api/operations/status:
+    get:
+      operationId: getOperationsStatus
+      summary: Read dependency-level operations state, including provider configuration/reachability/contract reasons.
+      responses:
+        '200':
+          description: Operations status returned
+  /api/operations/trading-modules:
+    get:
+      operationId: getTradingModuleStatus
+      summary: Read ACTIVE/SHADOW/REPLAY/PLANNED module roles without promoting planned modules.
+      responses:
+        '200':
+          description: Trading module capability registry returned
+  /api/readiness:
+    get:
+      operationId: getApplicationReadiness
+      summary: Read application readiness without collapsing optional dependency degradation into a fabricated global green
+        state.
+      responses:
+        '200':
+          description: Readiness and dependency reasons returned
+        '503':
+          description: Required application dependency is not ready
+  /api/research/market-making/cross-venue/simulate:
+    post:
+      operationId: postResearchMarketMakingCrossVenueSimulate
+      tags:
+      - Research
+      summary: POST /api/research/market-making/cross-venue/simulate
+      description: Simulation-only market-making research route. It cannot submit, authorize, or preview live exchange orders.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/research/market-making/funding-aware/simulate:
+    post:
+      operationId: postResearchMarketMakingFundingAwareSimulate
+      tags:
+      - Research
+      summary: POST /api/research/market-making/funding-aware/simulate
+      description: Simulation-only market-making research route. It cannot submit, authorize, or preview live exchange orders.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/research/microstructure/l1/{symbol}:
+    get:
+      operationId: getResearchMicrostructureL1Symbol
+      tags:
+      - Research
+      summary: GET /api/research/microstructure/l1/{symbol}
+      description: Research-only historical microstructure route. It exposes provenance and insufficiency states without execution
+        authority.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/research/microstructure/l2/{symbol}:
+    get:
+      operationId: getResearchMicrostructureL2Symbol
+      tags:
+      - Research
+      summary: GET /api/research/microstructure/l2/{symbol}
+      description: Research-only historical microstructure route. It exposes provenance and insufficiency states without execution
+        authority.
+      parameters:
+      - in: path
+        name: symbol
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/research/microstructure/status:
+    get:
+      operationId: getResearchMicrostructureStatus
+      tags:
+      - Research
+      summary: GET /api/research/microstructure/status
+      description: Research-only historical microstructure route. It exposes provenance and insufficiency states without execution
+        authority.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+      responses:
+        '200':
+          description: Request completed with explicit provenance and degraded-state details where applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider, dataset, or runtime capability unavailable.
+  /api/security/bootstrap:
+    get:
+      operationId: getSecurityBootstrap
+      summary: Read non-secret runtime security posture including deployment profile, TLS expectation and mutation hardening
+        state.
+      responses:
+        '200':
+          description: Safe security posture returned
+  /api/strategies:
+    get:
+      operationId: getStrategies
+      tags:
+      - Strategies
+      summary: GET /api/strategies
+      description: Strategy registry/research route. Live execution authority is not implied by this route.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/strategies/autopilot/cycle:
+    post:
+      operationId: runSmartAutopilotCycle
+      summary: Run one bounded Smart Autopilot champion/challenger auto-tuning cycle across strategy, market, timeframe and
+        direction contexts.
+      description: Research/paper-only. Each context starts from its active profile, runs chronological optimization with
+        untouched holdout, cost stress and neighbor stability, then requires a separate deterministic five-agent promotion
+        council. Approved revisions are re-tested through the existing multi-strategy research and five-role paper council.
+        No exchange order can be created or authorized.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                cycleIndex:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000
+                  default: 0
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+                  default: BTC-USDT
+                symbols:
+                  type: array
+                  maxItems: 6
+                  items:
+                    type: string
+                    pattern: ^[A-Z0-9_-]{2,32}$
+                preferredInterval:
+                  type: string
+                  enum:
+                  - 5m
+                  - 15m
+                  - 1h
+                  - 4h
+                  - 1d
+                  default: 1h
+                maxContexts:
+                  type: integer
+                  minimum: 1
+                  maximum: 8
+                  default: 6
+                bars:
+                  type: integer
+                  minimum: 1000
+                  maximum: 5000
+                  default: 3000
+                maxHoldBars:
+                  type: integer
+                  minimum: 1
+                  maximum: 240
+                  default: 72
+                optimizerConcurrency:
+                  type: integer
+                  minimum: 1
+                  maximum: 3
+                  default: 2
+                coarseCandidates:
+                  type: integer
+                  minimum: 8
+                  maximum: 48
+                  default: 20
+                refinementCandidates:
+                  type: integer
+                  minimum: 0
+                  maximum: 24
+                  default: 8
+                commissionPct:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  default: 0.04
+                slippagePct:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  default: 0.05
+                fundingPct:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  default: 0.01
+                paperCapitalUsd:
+                  type: number
+                  minimum: 100
+                  maximum: 1000000000
+                  default: 100000
+                portfolioRiskPct:
+                  type: number
+                  minimum: 0.05
+                  maximum: 5
+                  default: 1
+                maxDirectionalWeight:
+                  type: number
+                  minimum: 0.1
+                  maximum: 1
+                  default: 0.7
+      responses:
+        '200':
+          description: Optimization evidence
+          auto-promotion decisions: null
+          multi-strategy research and paper council output returned: null
+        '409':
+          description: No executable strategy contexts are available
+        '422':
+          description: Invalid or out-of-range bounded controls
+        '429':
+          description: Compute-heavy route rate limit exceeded
+  /api/strategies/autopilot/status:
+    get:
+      operationId: getSmartAutopilotStatus
+      summary: Read the latest Smart Autopilot research cycle and explicit non-execution safety state.
+      description: Read-only. Autopilot scheduling is explicit opt-in: the normal client path starts it through the control route, while
+        the optional server scheduler requires the explicit APEX_AUTOPILOT_SCHEDULER environment setting. Neither mode enables a
+        live-trading loop or grants exchange-order authority.
+      responses:
+        '200':
+          description: Latest cycle metadata and safety state returned
+  /api/strategies/autopilot/control:
+    post:
+      operationId: controlSmartAutopilot
+      summary: Start or stop the bounded Smart Autopilot research controller.
+      description: Research/paper-only control. START arms the explicit client or configured server scheduler; STOP disarms it.
+        Neither action grants execution authority, bypasses the Risk Governor, or submits an exchange order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum:
+                    - START
+                    - STOP
+      responses:
+        '200':
+          description: Controller and scheduler state returned with explicit non-execution safety state
+        '422':
+          description: Action must be START or STOP
+  /api/strategies/multi-backtest:
+    post:
+      operationId: runMultiStrategyResearchBacktest
+      summary: Run a bounded multi-strategy/multi-symbol research matrix and deterministic five-role paper council.
+      description: Research-only. Each job must receive its exact requested closed-candle horizon (maximum 5,000); shorter
+        histories fail that job. The response exposes requestedBars/candlesUsed/source provenance and cannot create exchange
+        orders.
+      responses:
+        '200':
+          description: Multi-strategy report
+          deterministic paper council: null
+          and short-lived server provenance receipt returned: null
+        '422':
+          description: Invalid/non-finite controls
+          unsupported strategy context: null
+          incomplete requested history: null
+          or research failure: null
+  /api/strategies/paper-multi-trade/size:
+    post:
+      operationId: sizePaperMultiTradePositions
+      summary: Convert an exact server-issued council paper plan into bounded paper quantities from explicit entry/stop prices.
+      description: Paper-only. The submitted plan set must match a short-lived server-side council receipt and canonical plan
+        fingerprint. No exchange client or order submission is used; Risk Governor approval and explicit confirmation remain
+        mandatory for any future execution path.
+      responses:
+        '200':
+          description: Provenance-bound paper-only quantity and risk sizing report returned
+        '422':
+          description: Missing/expired council receipt
+          plan tampering: null
+          unsafe plan contract: null
+          invalid stop side: null
+          or invalid sizing input: null
+  /api/strategies/{strategyId}:
+    get:
+      operationId: getStrategiesStrategyId
+      tags:
+      - Strategies
+      summary: GET /api/strategies/{strategyId}
+      description: Strategy registry/research route. Live execution authority is not implied by this route.
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/strategies/{strategyId}/fusion-preview:
+    post:
+      operationId: previewStrategyFusion
+      summary: Evaluate current technical, smart-money, flow, liquidity, derivatives, sentiment, news, whale-flow and regime
+        evidence without placing an order.
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+                  default: BTC-USDT
+                direction:
+                  type: string
+                  enum:
+                  - LONG
+                  - SHORT
+                  default: LONG
+                interval:
+                  type: string
+                  enum:
+                  - 5m
+                  - 15m
+                  - 1h
+                  - 4h
+                  - 1d
+                  default: 1h
+                parameters:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: number
+                    - type: string
+                      maxLength: 160
+      responses:
+        '200':
+          description: Current fusion evidence returned with provenance and missing-layer disclosure
+        '404':
+          description: Strategy not registered
+        '409':
+          description: Strategy has no fusion blueprint
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Current evidence providers or verified candles are unavailable
+  /api/strategies/{strategyId}/optimization:
+    get:
+      operationId: getStrategyOptimization
+      summary: Read the exact-context active optimization profile and latest report.
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      - in: query
+        name: symbol
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+          default: BTC-USDT
+      - in: query
+        name: direction
+        schema:
+          type: string
+          enum:
+          - LONG
+          - SHORT
+      - in: query
+        name: interval
+        schema:
+          type: string
+          enum:
+          - 5m
+          - 15m
+          - 1h
+          - 4h
+          - 1d
+      responses:
+        '200':
+          description: Optimization state returned
+        '404':
+          description: Strategy not registered
+  /api/strategies/{strategyId}/optimization/promote:
+    post:
+      operationId: promoteStrategyOptimization
+      summary: Explicitly promote the latest reviewed eligible optimization candidate for one exact strategy context.
+      description: Manual governance endpoint. The caller must provide the exact latest report timestamp; stale reviews fail
+        with HTTP 409. This does not modify Risk Governor rules or execution enablement.
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - symbol
+              - direction
+              - interval
+              - reportGeneratedAt
+              properties:
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+                direction:
+                  type: string
+                  enum:
+                  - LONG
+                  - SHORT
+                interval:
+                  type: string
+                  enum:
+                  - 5m
+                  - 15m
+                  - 1h
+                  - 4h
+                  - 1d
+                reportGeneratedAt:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Reviewed candidate was promoted as a new immutable active revision
+        '404':
+          description: Strategy or optimization report not found
+        '409':
+          description: Candidate is ineligible or the reviewed report is stale
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/strategies/{strategyId}/optimization/rollback:
+    post:
+      operationId: rollbackStrategyOptimization
+      summary: Create an immutable rollback revision for an exact strategy/symbol/interval/direction optimization profile.
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - symbol
+              - direction
+              - interval
+              properties:
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+                direction:
+                  type: string
+                  enum:
+                  - LONG
+                  - SHORT
+                interval:
+                  type: string
+                  enum:
+                  - 5m
+                  - 15m
+                  - 1h
+                  - 4h
+                  - 1d
+                targetRevision:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: A new rollback revision was created and activated
+        '404':
+          description: Strategy or rollback target not found
+  /api/strategies/{strategyId}/optimize:
+    post:
+      operationId: optimizeStrategy
+      summary: Run bounded purged/embargoed chronological optimization with successive halving, untouched holdout and cost
+        stress; eligible candidates require explicit manual promotion.
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+                  default: BTC-USDT
+                direction:
+                  type: string
+                  enum:
+                  - LONG
+                  - SHORT
+                  default: SHORT
+                interval:
+                  type: string
+                  enum:
+                  - 5m
+                  - 15m
+                  - 1h
+                  - 4h
+                  - 1d
+                  default: 1h
+                bars:
+                  type: integer
+                  minimum: 1000
+                  maximum: 5000
+                  default: 2500
+                maxBars:
+                  type: integer
+                  minimum: 1
+                  maximum: 240
+                  default: 72
+                coarseCandidates:
+                  type: integer
+                  minimum: 8
+                  maximum: 64
+                  default: 28
+                refinementCandidates:
+                  type: integer
+                  minimum: 0
+                  maximum: 32
+                  default: 12
+                maxConcurrent:
+                  type: integer
+                  minimum: 1
+                  maximum: 8
+                  default: 4
+                autoPromote:
+                  type: boolean
+                  default: false
+                  deprecated: true
+                  description: Accepted for backward compatibility but ignored; promotion is explicit and manual.
+                commissionPct:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  default: 0.04
+                slippagePct:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  default: 0.05
+                fundingPct:
+                  type: number
+                  minimum: 0
+                  maximum: 5
+                  default: 0.01
+      responses:
+        '200':
+          description: Optimization completed; eligible recommendations remain inactive until explicit manual promotion
+        '409':
+          description: Strategy is blocked or deprecated
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Verified history is insufficient
+        '504':
+          description: Optimization budget timed out
+  /api/strategies/{strategyId}/validate:
+    post:
+      operationId: validateStrategy
+      parameters:
+      - in: path
+        name: strategyId
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-]{2,96}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                symbol:
+                  type: string
+                  pattern: ^[A-Z0-9_-]{2,32}$
+                  default: BTC-USDT
+                direction:
+                  type: string
+                  enum:
+                  - LONG
+                  - SHORT
+                  default: LONG
+                interval:
+                  type: string
+                  enum:
+                  - 5m
+                  - 15m
+                  - 1h
+                  - 4h
+                  - 1d
+                  default: 1h
+                maxBars:
+                  type: integer
+                  minimum: 1
+                  maximum: 240
+                  default: 24
+      responses:
+        '200':
+          description: Validation completed
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/supplemental/all:
+    get:
+      operationId: getSupplementalAll
+      tags:
+      - Supplemental
+      summary: GET /api/supplemental/all
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/config:
+    post:
+      operationId: postSupplementalConfig
+      tags:
+      - Supplemental
+      summary: POST /api/supplemental/config
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/config/defaults:
+    post:
+      operationId: postSupplementalConfigDefaults
+      tags:
+      - Supplemental
+      summary: POST /api/supplemental/config/defaults
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/config/probe:
+    post:
+      operationId: postSupplementalConfigProbe
+      tags:
+      - Supplemental
+      summary: POST /api/supplemental/config/probe
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/config/status:
+    get:
+      operationId: getSupplementalConfigStatus
+      tags:
+      - Supplemental
+      summary: GET /api/supplemental/config/status
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/health:
+    get:
+      operationId: getSupplementalHealth
+      tags:
+      - Supplemental
+      summary: GET /api/supplemental/health
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/news:
+    get:
+      operationId: getSupplementalNews
+      tags:
+      - Supplemental
+      summary: GET /api/supplemental/news
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/onchain:
+    get:
+      operationId: getSupplementalOnchain
+      tags:
+      - Supplemental
+      summary: GET /api/supplemental/onchain
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/supplemental/sentiment:
+    get:
+      operationId: getSupplementalSentiment
+      tags:
+      - Supplemental
+      summary: GET /api/supplemental/sentiment
+      description: Supplemental intelligence route. Unconfigured providers must report explicit unavailable/not-configured
+        state instead of neutral synthetic evidence.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/system/health:
+    get:
+      operationId: getSystemHealth
+      summary: Read safe system/runtime health diagnostics.
+      responses:
+        '200':
+          description: System health returned
+  /api/telegram/config:
+    post:
+      operationId: postTelegramConfig
+      tags:
+      - Telegram
+      summary: POST /api/telegram/config
+      description: Telegram configuration or notification route. Server-side validation applies and secrets must not be returned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/telegram/send:
+    post:
+      operationId: postTelegramSend
+      tags:
+      - Telegram
+      summary: POST /api/telegram/send
+      description: Telegram configuration or notification route. Server-side validation applies and secrets must not be returned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/telegram/status:
+    get:
+      operationId: getTelegramStatus
+      tags:
+      - Telegram
+      summary: GET /api/telegram/status
+      description: Telegram configuration or notification route. Server-side validation applies and secrets must not be returned.
+      parameters:
+      - in: query
+        name: symbol
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z0-9_-]{2,32}$
+        description: Optional market symbol when supported by the route.
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+  /api/telegram/test:
+    post:
+      operationId: postTelegramTest
+      tags:
+      - Telegram
+      summary: POST /api/telegram/test
+      description: Telegram configuration or notification route. Server-side validation applies and secrets must not be returned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Request completed; inspect response payload for provider provenance and degraded-state details where
+            applicable.
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '503':
+          description: Required provider or runtime capability unavailable.
+components:
+  responses:
+    InvalidRequest:
+      description: Input failed finite, enum, range, shape, or workload validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+  schemas:
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - ok
+      - error
+      properties:
+        ok:
+          const: false
+        error:
+          type: object
+          additionalProperties: false
+          required:
+          - code
+          - message
+          - requestId
+          - retryable
+          - issues
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            requestId:
+              type:
+              - string
+              - 'null'
+            retryable:
+              type: boolean
+            issues:
+              type: array
+              items:
+                type: object
+                required:
+                - field
+                - code
+                - message
+                properties:
+                  field:
+                    type: string
+                  code:
+                    type: string
+                  message:
+                    type: string

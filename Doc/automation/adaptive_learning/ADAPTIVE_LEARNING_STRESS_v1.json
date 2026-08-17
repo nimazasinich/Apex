@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-03T10:03:04.052Z",
+  "verdict": "PASS",
+  "run": {
+    "seed": 42,
+    "cycles": 900,
+    "candidatesPerCycle": 6,
+    "totalCandidates": 5400,
+    "accepted": 884,
+    "rejected": 4516,
+    "wins": 596,
+    "losses": 288,
+    "pnl": 492.01934,
+    "acceptanceRate": 0.163704
+  },
+  "profile": {
+    "sampleSize": 2000,
+    "marketRegime": "TREND_DOWN",
+    "winRate": 0.6707317073170732,
+    "avgPnl": 0.5654913095788234,
+    "missedWinners": 1057,
+    "savedLosses": 615,
+    "adjustmentConfidence": 1
+  },
+  "finalConfig": {
+    "intervalMs": 6005,
+    "obiThreshold": -0.15,
+    "volumeThreshold": 0,
+    "qStructThreshold": -0.3,
+    "fundingThreshold": 0.0001,
+    "oiExpansionThresholdPct": 0.3,
+    "atrExpansionThreshold": 0.005,
+    "maxSqueezeRisk": 0.72,
+    "minEvidenceAgreement": 0.5,
+    "minSmartMoneyScore": 0.52,
+    "smcHardRejectThreshold": 0.22,
+    "thresholdMode": "ADAPTIVE_GUARDRAILS",
+    "scorePreset": "ATLAS_PLUS_V2",
+    "adaptiveLearningRate": 0.04,
+    "adaptiveMinSamples": 24,
+    "scoreWeights": {
+      "obi": 0.07631908,
+      "qStruct": 0.32522001,
+      "volume": 0.24230536,
+      "funding": 0.05087936,
+      "openInterest": 0.03815954,
+      "atr": 0.03179962,
+      "microstructure": 0.06995913,
+      "liquidity": 0.08267898,
+      "smc": 0.08267892
+    },
+    "minConfidence": 0.78,
+    "directionBias": "SHORT_ONLY",
+    "topRankSkip": 10,
+    "minVolume24hUsd": 5000000
+  },
+  "checks": [
+    {
+      "id": "guardrails_mode_preserved",
+      "pass": true,
+      "actual": "ADAPTIVE_GUARDRAILS",
+      "expected": "ADAPTIVE_GUARDRAILS"
+    },
+    {
+      "id": "short_only_preserved",
+      "pass": true,
+      "actual": "SHORT_ONLY",
+      "expected": "SHORT_ONLY"
+    },
+    {
+      "id": "confidence_guardrail_floor",
+      "pass": true,
+      "actual": 0.78,
+      "expected": "0.74 <= minConfidence <= 0.91"
+    },
+    {
+      "id": "obi_guardrail_bound",
+      "pass": true,
+      "actual": -0.15,
+      "expected": "-0.40 <= obiThreshold <= -0.10"
+    },
+    {
+      "id": "qstruct_guardrail_bound",
+      "pass": true,
+      "actual": -0.3,
+      "expected": "-0.52 <= qStructThreshold <= -0.30"
+    },
+    {
+      "id": "squeeze_guard_bound",
+      "pass": true,
+      "actual": 0.72,
+      "expected": "0.36 <= maxSqueezeRisk <= 0.86"
+    },
+    {
+      "id": "evidence_guard_bound",
+      "pass": true,
+      "actual": 0.5,
+      "expected": "0.32 <= minEvidenceAgreement <= 0.82"
+    },
+    {
+      "id": "weights_normalized",
+      "pass": true,
+      "actual": 1,
+      "expected": "abs(sum(weights) - 1) <= 0.002"
+    },
+    {
+      "id": "weights_bounded",
+      "pass": true,
+      "actual": true,
+      "expected": "all weights between 0.01 and 0.60"
+    },
+    {
+      "id": "acceptance_controlled",
+      "pass": true,
+      "actual": 0.163704,
+      "expected": "acceptanceRate <= 0.20"
+    },
+    {
+      "id": "profile_populated",
+      "pass": true,
+      "actual": 2000,
+      "expected": "profile sampleSize > 0 with finite adjustment confidence"
+    },
+    {
+      "id": "metrics_finite",
+      "pass": true,
+      "actual": true,
+      "expected": "all core metrics finite"
+    }
+  ]
+}

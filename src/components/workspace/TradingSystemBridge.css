@@ -1,0 +1,751 @@
+.apex-trading-system-bridge {
+  position: relative;
+  overflow: hidden;
+  padding: 11px !important;
+  border-color: rgba(55, 137, 255, .16) !important;
+  background:
+    radial-gradient(circle at 100% 0, rgba(55, 137, 255, .09), transparent 42%),
+    linear-gradient(180deg, #fff, #fbfdff) !important;
+}
+
+.apex-trading-system-bridge::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, #35b84a, #3789ff, #8b7dfb);
+  opacity: .66;
+}
+
+.apex-trading-system-bridge .apex-panel-head { margin-bottom: 9px; }
+.apex-trading-system-bridge .apex-panel-head > svg { color: #3977d8; }
+
+.apex-trading-bridge-context {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, .8fr);
+  gap: 7px;
+}
+
+.apex-trading-bridge-context > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px;
+  border-radius: 11px;
+  border: 1px solid #e8edf4;
+  background: rgba(248, 250, 253, .88);
+}
+
+.apex-trading-bridge-context small,
+.apex-trading-bridge-result span {
+  color: #74839a;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.apex-trading-bridge-context strong {
+  overflow: hidden;
+  color: #17243c;
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apex-trading-bridge-result {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.apex-trading-bridge-result > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  border-radius: 10px;
+  background: rgba(247, 249, 252, .9);
+  border: 1px solid #edf1f5;
+}
+
+.apex-trading-bridge-result strong {
+  color: #1b2a43;
+  font-size: 10.5px;
+}
+
+.apex-trading-bridge-empty {
+  margin: 7px 0 0;
+  padding: 8px 9px;
+  border-radius: 10px;
+  background: rgba(55, 137, 255, .055);
+  color: #65768f;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.apex-trading-bridge-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.apex-trading-bridge-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 29px;
+  border-radius: 9px;
+  border: 1px solid rgba(55, 137, 255, .18);
+  background: #fff;
+  color: #315fa7;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+
+/* Market-strip geometry is owned by the Trading reference section at the end
+   of this file. Keep only the shared text behavior here. */
+.apex-trading-terminal .apex-market-strip button span strong,
+.apex-trading-terminal .apex-market-strip button span small {
+  white-space: nowrap;
+}
+
+.apex-trading-bridge-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(55, 137, 255, .44);
+  box-shadow: 0 7px 16px rgba(55, 137, 255, .09);
+}
+
+.apex-ticket-defaults {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 2px 0 7px;
+}
+.apex-ticket-defaults > span {
+  min-width: 0;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--apex-divider, #edf1f5);
+  border-radius: 8px;
+  background: var(--apex-surface-soft, #f7f9fb);
+}
+.apex-ticket-defaults small { color: var(--apex-muted-600, #74839a); font-size: 10px; }
+.apex-ticket-defaults strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* ========================================================================== */
+/* Trading reference pass 2 — final component-level ownership                 */
+/* AccountViews imports this stylesheet with the Trading subtree, so these     */
+/* rules are the final owner for Trading-only geometry and avoid legacy drift. */
+/* ========================================================================== */
+@media (min-width: 1180px) and (max-width: 1459px) and (min-height: 680px) {
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich {
+    display: grid !important;
+    grid-template-columns: 104px repeat(3, 132px) 97px !important;
+    gap: 7px !important;
+    width: 625px !important;
+    max-width: 625px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    overflow: hidden !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button {
+    width: auto !important;
+    min-width: 0 !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+    border-radius: 9px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button .apex-coin-icon,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button > svg {
+    width: 16px !important;
+    height: 16px !important;
+    flex: 0 0 16px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button > span strong,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button > em strong {
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button > span small,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich > button > em small {
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-facts {
+    display: grid !important;
+    grid-template-columns: 174px 120px minmax(0, 1fr) 174px !important;
+    grid-template-rows: 1fr !important;
+    gap: 8px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 5px 10px !important;
+    overflow: hidden !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-identity,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-price-cluster,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-active-strategy-summary {
+    grid-column: auto !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics > div {
+    min-width: 0 !important;
+    padding: 4px 5px !important;
+    border-left: 1px solid var(--apex-trading-border, #e5eaf0) !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics dt {
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics dd {
+    margin-top: 3px !important;
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-active-strategy-summary {
+    padding: 5px 7px !important;
+    border-radius: 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-cockpit {
+    grid-template-columns: minmax(0, 1fr) 230px 220px !important;
+    grid-template-areas: 'chart order market' !important;
+    gap: 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-toolbox {
+    box-sizing: border-box !important;
+    padding: 60px 0 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-toolbox .apex-toolbox-rail {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 6px 4px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card {
+    height: 164px !important;
+    min-height: 164px !important;
+  }
+}
+
+@media (min-width: 1460px) and (min-height: 820px) {
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-market-strip-rich {
+    display: grid !important;
+    grid-template-columns: 126px repeat(3, minmax(154px, 1fr)) 116px !important;
+    gap: 10px !important;
+    width: min(870px, calc(100% - 500px)) !important;
+    max-width: 870px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-facts {
+    grid-template-columns: 190px 150px minmax(0, 1fr) 200px !important;
+    height: 70px !important;
+    min-height: 70px !important;
+    padding-block: 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-cockpit {
+    grid-template-columns: minmax(0, 1fr) 288px 270px !important;
+    gap: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card {
+    height: 208px !important;
+    min-height: 208px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-toolbox {
+    box-sizing: border-box !important;
+    padding: 84px 0 30px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-toolbox .apex-toolbox-rail {
+    position: relative !important;
+    inset: auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Trading reference pass 2 — ticket + activity density. */
+@media (min-width: 1180px) and (min-height: 680px) {
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact {
+    padding: 0 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-reference-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-height: 42px !important;
+    padding: 6px 8px !important;
+    border-bottom: 1px solid var(--apex-trading-border, #e5eaf0) !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-reference-title {
+    display: grid !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-reference-title strong {
+    overflow: hidden !important;
+    color: #0f172a !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-reference-title small {
+    overflow: hidden !important;
+    color: #64748b !important;
+    font-size: 10px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-top-tabs {
+    display: inline-flex !important;
+    gap: 2px !important;
+    min-height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-top-tabs button {
+    min-height: 24px !important;
+    padding: 0 7px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: #64748b !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-top-tabs button.active {
+    background: #eafbf5 !important;
+    color: #00866a !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-ticket-mode {
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-order-flow-steps,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-buy-sell,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-order-types,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-allocation-control,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-advanced-toggle,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-message,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-primary-button.full {
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-order-flow-steps {
+    min-height: 30px !important;
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+    gap: 4px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-order-flow-steps li {
+    min-height: 28px !important;
+    padding: 0 5px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-buy-sell {
+    min-height: 34px !important;
+    margin-top: 4px !important;
+    margin-bottom: 5px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-order-types {
+    min-height: 29px !important;
+    margin-bottom: 5px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair-ticket-first {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact label {
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-defaults {
+    display: none !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-allocation-control {
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-advanced-toggle {
+    min-height: 30px !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 3px 6px !important;
+    padding: 5px 7px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid > div span,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid > div strong {
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid > small {
+    grid-column: 1 / -1 !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-activity-slide-head {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    min-height: 34px !important;
+    padding: 5px 10px !important;
+    gap: 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-head-title > span {
+    font-size: 11px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-head-title > small,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-head-kpis {
+    display: none !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-slide-toggle {
+    min-height: 28px !important;
+    padding: 0 9px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-slide-body {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    height: calc(100% - 34px) !important;
+    padding: 0 10px 7px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tabs {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    gap: 0 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tabs-list,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tablist {
+    min-height: 28px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tabs-list > button,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tablist > button {
+    min-height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tabs-panel,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tab-panel {
+    flex: 1 1 auto !important;
+    min-height: 46px !important;
+    height: 46px !important;
+    padding-top: 0 !important;
+    overflow: auto !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-summary-strip {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    flex: 0 0 38px !important;
+    margin: 4px 0 0 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-summary-strip > span {
+    min-height: 38px !important;
+    padding: 5px 8px !important;
+    border-radius: 7px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-summary-strip small {
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-summary-strip strong {
+    font-size: 10px !important;
+  }
+}
+
+@media (min-width: 1180px) and (min-height: 680px) {
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-number-input,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-number-input input,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact select {
+    min-height: 28px !important;
+    height: 28px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-number-steppers button {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-advanced-toggle,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-advanced-options {
+    display: none !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid > small {
+    display: none !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-primary-button.full {
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 0 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Trading reference pass 2 — keep the safe review action visible in the compact
+   workstation ticket while the expanded drawer retains the full editor. */
+@media (min-width: 1180px) and (min-height: 680px) {
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid {
+    position: sticky !important;
+    z-index: 4 !important;
+    bottom: 34px !important;
+    margin-top: 4px !important;
+    margin-bottom: 2px !important;
+    border: 1px solid var(--apex-trading-border, #e5eaf0) !important;
+    background: rgba(255,255,255,.97) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-primary-button.full {
+    position: sticky !important;
+    z-index: 5 !important;
+    bottom: 4px !important;
+    margin-top: 2px !important;
+    box-shadow: 0 -6px 14px rgba(255,255,255,.86) !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-activity-slide-head {
+    min-height: 26px !important;
+    height: 26px !important;
+    padding: 3px 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-slide-toggle {
+    width: 28px !important;
+    min-width: 28px !important;
+    min-height: 22px !important;
+    height: 22px !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-slide-toggle > span {
+    display: none !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-head-title > span {
+    font-size: 10px !important;
+    font-weight: 650 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-activity-slide-body {
+    height: calc(100% - 26px) !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tabs-panel,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-trading-activity-card .apex-tab-panel {
+    min-height: 58px !important;
+    height: 58px !important;
+  }
+}
+
+/* Trading reference pass 2 — fit the complete safe order workflow in the
+   inline workstation ticket. The full editor remains available in the drawer. */
+@media (min-width: 1180px) and (min-height: 680px) {
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact fieldset {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding: 4px 0 4px !important;
+    overflow: hidden !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-buy-sell {
+    min-height: 32px !important;
+    height: 32px !important;
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-buy-sell button {
+    min-height: 30px !important;
+    height: 30px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-order-types {
+    min-height: 29px !important;
+    height: 29px !important;
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-order-types button {
+    min-height: 27px !important;
+    height: 27px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair-ticket-first {
+    flex: 0 0 76px !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(2, 36px) !important;
+    gap: 4px !important;
+    height: 76px !important;
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair-ticket-first label {
+    display: grid !important;
+    grid-template-rows: 9px 27px !important;
+    gap: 0 !important;
+    min-height: 36px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair-ticket-first .apex-number-input,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair-ticket-first .apex-number-input input {
+    min-height: 27px !important;
+    height: 27px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-allocation-control {
+    flex: 0 0 34px !important;
+    height: 34px !important;
+    gap: 1px !important;
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-allocation-control > input {
+    min-height: 8px !important;
+    height: 8px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-allocation-control button {
+    min-height: 17px !important;
+    height: 17px !important;
+    padding: 0 2px !important;
+    font-size: 10px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair:not(.apex-form-pair-ticket-first) {
+    flex: 0 0 36px !important;
+    height: 36px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair:not(.apex-form-pair-ticket-first) label {
+    display: grid !important;
+    grid-template-rows: 9px 27px !important;
+    gap: 0 !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair:not(.apex-form-pair-ticket-first) .apex-number-input,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair:not(.apex-form-pair-ticket-first) .apex-number-input input,
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-form-pair:not(.apex-form-pair-ticket-first) select {
+    min-height: 27px !important;
+    height: 27px !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-ticket-estimate-grid {
+    position: static !important;
+    flex: 0 0 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+    padding: 4px 6px !important;
+    overflow: hidden !important;
+  }
+
+  #root .apex-shell.apex-workspace[data-page="trading"] .apex-order-ticket.density-compact .apex-primary-button.full {
+    position: static !important;
+    flex: 0 0 30px !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* The supplied light reference uses a neutral canvas, not a decorative grid. */
+:root[data-apex-theme-resolved="light"] #root .apex-shell.apex-workspace[data-page="trading"] .trading-page.apex-trading-page-enhanced {
+  background: #f8fafc !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+:root[data-apex-theme-resolved="light"] #root .apex-shell.apex-workspace[data-page="trading"] .trading-page.apex-trading-page-enhanced::before,
+:root[data-apex-theme-resolved="light"] #root .apex-shell.apex-workspace[data-page="trading"] .trading-page.apex-trading-page-enhanced::after {
+  content: none !important;
+  display: none !important;
+}

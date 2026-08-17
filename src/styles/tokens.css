@@ -1,0 +1,83 @@
+:root {
+  --apex-green-050: #f2fbf3;
+  --apex-green-100: #e4f7e7;
+  --apex-green-200: #c7eccd;
+  --apex-green-300: #9fdfa9;
+  --apex-green-400: #5fd272;
+  --apex-green-500: #2dbe45;
+  --apex-green-600: #18a83a;
+  --apex-green-700: #148531;
+  --apex-green-800: #0f6927;
+  --apex-red-050: #fff3f4;
+  --apex-red-500: #f04452;
+  --apex-orange-500: #fb921a;
+  --apex-blue-500: #2890ea;
+  --apex-violet-500: #775ce6;
+  --apex-teal-500: #12afa1;
+  --apex-positive: var(--apex-green-600);
+  --apex-negative: var(--apex-red-500);
+  --apex-focus: #4d7cff;
+  --apex-ink-950: #091720;
+  --apex-ink-900: #17233a;
+  --apex-ink-700: #33425b;
+  --apex-muted-600: #6e7c91;
+  --apex-muted-400: #98a3b3;
+  --apex-canvas: #f7faf8;
+  --apex-surface: #fff;
+  --apex-surface-soft: #fbfcfb;
+  --apex-soft: var(--apex-surface-soft);
+  --apex-surface-selected: #f1faf2;
+  --apex-border: #dde7e1;
+  --apex-border-strong: #cbd8d0;
+  --apex-divider: #edf2ee;
+  --apex-shadow-xs: 0 1px 2px rgba(9, 23, 32, .025);
+  --apex-shadow-sm: 0 5px 18px rgba(9, 23, 32, .04);
+  --apex-shadow-md: 0 12px 32px rgba(9, 23, 32, .06);
+  --radius-xs: 6px;
+  --radius-control: 9px;
+  --radius-card: 12px;
+  --radius-panel: 14px;
+  --radius-drawer: 16px;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 190ms;
+  --duration-drawer: 240ms;
+  --duration-chart: 360ms;
+}
+
+
+/* Theme-aware overrides imported from the V20 extension. */
+:root[data-apex-theme-resolved="dark"] {
+  --apex-green-050: rgba(49, 198, 90, .11);
+  --apex-green-100: rgba(49, 198, 90, .16);
+  --apex-green-200: rgba(81, 216, 115, .30);
+  --apex-green-300: rgba(81, 216, 115, .42);
+  --apex-green-400: #56d978;
+  --apex-green-500: #31c65a;
+  --apex-green-600: #31c65a;
+  --apex-green-700: #56d978;
+  --apex-green-800: #9be7ad;
+  --apex-red-050: rgba(240, 68, 82, .12);
+  --apex-red-500: #f0616c;
+  --apex-orange-500: #ffab4d;
+  --apex-blue-500: #5aa8f3;
+  --apex-violet-500: #9d8bf0;
+  --apex-teal-500: #3ecdc0;
+  --apex-focus: #72a7ff;
+  --apex-ink-950: #f4f8fc;
+  --apex-ink-900: #e7eef7;
+  --apex-ink-700: #b4c2d2;
+  --apex-muted-600: #92a2b6;
+  --apex-muted-400: #7d8da2;
+  --apex-canvas: #0b131c;
+  --apex-surface: #101b28;
+  --apex-surface-soft: #142130;
+  --apex-surface-selected: rgba(49, 198, 90, .10);
+  --apex-border: #273647;
+  --apex-border-strong: #34465a;
+  --apex-divider: #273647;
+  --apex-shadow-xs: 0 1px 2px rgba(0, 0, 0, .18);
+  --apex-shadow-sm: 0 5px 18px rgba(0, 0, 0, .28);
+  --apex-shadow-md: 0 12px 32px rgba(0, 0, 0, .34);
+}

@@ -1,0 +1,57 @@
+name: Nightly checks
+
+# Stage SEC (APEX_MASTER_IMPLEMENTATION_PLAN §16A.2, item 6). Operationalizes
+# the SBOM/doc-drift evidence §16.2/§16.11 require: re-runs the generated-
+# documentation drift gate against current main and a dependency-vulnerability
+# scan on a nightly cadence, independent of whether a PR happened to trigger
+# CI that day.
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  doc-drift:
+    name: Documentation drift gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+      - run: npm ci
+      # Regenerates the function/doc indexes the same way `build` does, then
+      # fails if that regeneration produced a diff against what's committed —
+      # i.e. current main's generated docs have drifted from current source.
+      - run: npm run index:functions -- --if-changed
+      - run: npm run index:docs -- --if-changed
+      - run: npm run docs:check
+      - name: Fail if generated docs drifted from committed state
+        run: |
+          git diff --exit-code -- \
+            Doc/FUNCTION_INDEX.md \
+            Doc/FUNCTION_INDEX.json \
+            Doc/DOCUMENTATION_INDEX.md \
+            Doc/DOCUMENTATION_INDEX.json || \
+            (echo "::error::Generated documentation has drifted from source. Run 'npm run index:functions && npm run index:docs' locally and commit the result." && exit 1)
+
+  dependency-scan:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+      - run: npm ci
+      # Fails the job on new high/critical advisories; low/moderate are
+      # reported but do not block, consistent with "fail on new high/critical"
+      # in §16A.2 item 6.
+      - name: npm audit (production dependencies, high+ severity)
+        run: npm audit --omit=dev --audit-level=high

@@ -1,0 +1,245 @@
+/* Alerts page — isolated rule-builder and activity styling. */
+.apex-v3-alerts-page {
+  grid-template-columns: minmax(0, 1fr) 286px;
+  gap: 10px;
+}
+
+.apex-v3-alerts-main {
+  display: grid;
+  grid-template-rows: 44px 104px minmax(0, 1fr);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.apex-v3-alerts-page .alerts-summary .apex-v3-metric {
+  min-height: 104px;
+}
+
+.apex-v3-alerts-page .alerts-table {
+  min-height: 0;
+  border-top: 2px solid var(--apex-green-500);
+}
+
+.apex-v3-alert-toolbar {
+  height: 48px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--apex-divider);
+}
+
+.apex-v3-alert-toolbar > div { min-width: 0; }
+.apex-v3-alert-toolbar strong,
+.apex-v3-alert-toolbar small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-alert-toolbar strong { font-size: 11px; }
+.apex-v3-alert-toolbar small { color: var(--apex-muted-600); font-size: 10px; }
+
+.apex-v3-alerts-page .apex-v3-table th:nth-child(1) { width: 176px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(2) { width: 76px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(3) { width: 82px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(4) { width: 80px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(5) { width: 96px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(6) { width: 64px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(7) { width: 58px; }
+.apex-v3-alerts-page .apex-v3-table th:nth-child(8) { width: 42px; }
+
+.apex-v3-switch {
+  width: 30px;
+  height: 18px;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--apex-border);
+}
+
+.apex-v3-switch span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--apex-shadow-xs);
+  transition: transform var(--duration-fast);
+}
+
+.apex-v3-switch.on { background: var(--apex-green-500); }
+.apex-v3-switch.on span { transform: translateX(12px); }
+
+.alerts-context {
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* The builder owns its form contract locally. Previously these controls relied
+   on a class that only Settings styled, collapsing labels and inputs into one
+   line in Alerts. */
+.alert-builder-card .apex-v3-form-grid {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 8px;
+}
+.alert-builder-card .apex-v3-form-grid > label,
+.alert-builder-card .apex-v3-form-grid .two > label {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.alert-builder-card .apex-v3-form-grid label > span {
+  color: var(--apex-muted-600);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.alert-builder-card .apex-v3-form-grid .two {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, .72fr);
+  gap: 7px;
+}
+.alert-builder-card .apex-v3-form-grid input,
+.alert-builder-card .apex-v3-form-grid select {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--apex-border);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--apex-surface);
+  color: var(--apex-ink-900);
+  font-size: 10px;
+}
+.alert-builder-card .apex-v3-form-grid input:focus,
+.alert-builder-card .apex-v3-form-grid select:focus {
+  border-color: var(--apex-green-500);
+  box-shadow: 0 0 0 3px rgba(45, 190, 69, .08);
+}
+.alert-builder-card .apex-v3-form-grid .apex-v3-button.full { margin-top: 1px; }
+.alert-builder-card .apex-v3-form-note {
+  margin: 0;
+  padding: 0 12px 10px;
+  color: var(--apex-muted-600);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.apex-v3-compact-list {
+  padding: 6px 12px;
+  display: grid;
+  gap: 2px;
+}
+
+.apex-v3-compact-list > div {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--apex-divider);
+}
+
+.apex-v3-compact-list strong,
+.apex-v3-compact-list small { display: block; }
+.apex-v3-compact-list strong { font-size: 10px; }
+.apex-v3-compact-list small { color: var(--apex-muted-600); font-size: 10px; }
+
+.apex-v3-template-list {
+  padding: 8px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.apex-v3-template-list button {
+  min-height: 42px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--apex-divider);
+  border-radius: 9px;
+  background: var(--apex-surface-soft);
+  text-align: left;
+}
+
+.apex-v3-template-list button:hover {
+  border-color: var(--apex-green-200);
+  background: var(--apex-green-050);
+}
+
+.apex-v3-template-list span { min-width: 0; }
+.apex-v3-template-list strong,
+.apex-v3-template-list small { display: block; }
+.apex-v3-template-list strong { font-size: 10px; }
+.apex-v3-template-list small { margin-top: 2px; color: var(--apex-muted-600); font-size: 10px; }
+
+@media (max-width: 1119px) {
+  .apex-v3-alerts-page { grid-template-columns: 1fr; }
+  .apex-v3-alerts-main { height: auto; grid-template-rows: auto auto minmax(460px, 1fr); }
+  .alerts-context { grid-template-rows: auto auto auto; }
+}
+
+@media (max-width: 520px) {
+  .alert-builder-card .apex-v3-form-grid .two { grid-template-columns: 1fr; }
+  .apex-v3-alert-toolbar { height: auto; min-height: 48px; align-items: stretch; flex-direction: column; }
+  .apex-v3-alert-search,
+  .apex-v3-alert-search .apex-v3-search-field.compact { width: 100%; }
+}
+
+
+/* Reference hierarchy: calm light surfaces, compact readable controls. */
+.apex-v3-alerts-page .apex-v3-heading { padding: 0 2px; }
+.apex-v3-alerts-page .alerts-summary .apex-v3-metric { border-radius: 12px; box-shadow: none; }
+.apex-v3-alerts-page .alerts-table,
+.apex-v3-alerts-page .alerts-context > .apex-v3-panel { border-radius: 12px; box-shadow: none; }
+.apex-v3-alerts-page .apex-v3-alert-toolbar strong { font-size: 12px; }
+.apex-v3-alerts-page .apex-v3-alert-toolbar small { font-size: 10px; }
+
+/* Keep the complete alert builder reachable at workstation heights. Auto grid
+   tracks were allowed to shrink inside the fixed context rail, clipping the
+   readiness/symbol/action rows. max-content preserves the real form and lets
+   the rail itself scroll when the three context cards exceed its height. */
+.alerts-context {
+  grid-template-rows: max-content max-content max-content;
+  align-content: start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.alert-builder-card {
+  min-height: max-content;
+  overflow: visible;
+}
+
+@media (min-width: 1181px) and (max-width: 1500px) and (min-height: 700px) and (max-height: 820px) {
+  .alert-builder-card .apex-v3-form-grid {
+    gap: 5px;
+    padding: 7px 10px 6px;
+  }
+
+  .alert-builder-card .apex-v3-form-grid > label,
+  .alert-builder-card .apex-v3-form-grid .two > label {
+    gap: 3px;
+  }
+
+  .alert-builder-card .apex-v3-form-grid input,
+  .alert-builder-card .apex-v3-form-grid select {
+    height: 28px;
+    min-height: 28px;
+    font-size: 10px;
+  }
+
+  .alert-builder-card .apex-v3-form-grid .apex-v3-button.full {
+    min-height: 30px;
+    height: 30px;
+  }
+
+  .alert-builder-card .apex-v3-form-note {
+    padding: 0 10px 8px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+}

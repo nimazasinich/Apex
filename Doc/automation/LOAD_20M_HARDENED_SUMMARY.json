@@ -1,0 +1,92 @@
+{
+  "runs": 20,
+  "simulatedMinutesPerRun": 20,
+  "totalEquivalentMinutes": 400,
+  "cyclesPerRun": 200,
+  "candidatesPerRun": 6400,
+  "totalCandidates": 128000,
+  "totalAccepted": 1175,
+  "totalRejected": 126825,
+  "avgAcceptanceRate": 0.0091796875,
+  "winRate": {
+    "avg": 0.6485769279734692,
+    "median": 0.6379310344827587,
+    "min": 0.5573770491803278,
+    "max": 0.8245614035087719
+  },
+  "avgPnl": {
+    "avg": 0.7654511739188838,
+    "median": 0.7880781332759954,
+    "min": 0.3907953451813511,
+    "max": 1.2303672740180678
+  },
+  "netPnl": {
+    "avg": 44.81528956047845,
+    "median": 44.660116371012286,
+    "min": 23.838516056062417,
+    "max": 70.13093461902986
+  },
+  "avgConfidence": {
+    "avg": 0.9110327355907947,
+    "median": 0.9108981219217397,
+    "min": 0.9046182521489424,
+    "max": 0.9176984242314258
+  },
+  "calibrationGap": {
+    "avg": 0.2624558076173254,
+    "median": 0.27497979015567814,
+    "min": 0.0892544114980256,
+    "max": 0.35475475073104634
+  },
+  "rejectQuality": {
+    "avg": 0.7368816424828245,
+    "median": 0.7348048860144898,
+    "min": 0.7300961690052026,
+    "max": 0.7475942577693643
+  },
+  "smartScore": {
+    "avg": 68.9,
+    "median": 68.0,
+    "min": 64,
+    "max": 78
+  },
+  "regimes": {
+    "chop": {
+      "trades": 37,
+      "weightedWinRate": 0.43243243243243246,
+      "weightedAvgPnl": 0.19471073145917883
+    },
+    "squeeze_risk": {
+      "trades": 14,
+      "weightedWinRate": 0.35714285714285715,
+      "weightedAvgPnl": 0.012204317636858237
+    },
+    "thin_book": {
+      "trades": 44,
+      "weightedWinRate": 0.3409090909090909,
+      "weightedAvgPnl": -0.18748399538642035
+    },
+    "trend_down": {
+      "trades": 1080,
+      "weightedWinRate": 0.6712962962962963,
+      "weightedAvgPnl": 0.8307221569404313
+    },
+    "trend_up": {
+      "trades": 0,
+      "weightedWinRate": 0,
+      "weightedAvgPnl": 0
+    }
+  },
+  "reasonCounts": {
+    "GATE_OBI_FAILED": 46025,
+    "GATE_QSTRUCT_FAILED": 28683,
+    "LOW_LIQUIDITY_QUALITY": 15680,
+    "LOWER_RANK_THAN_BEST": 14308,
+    "GATE_VOLUME_FAILED": 13636,
+    "WEAK_MICROSTRUCTURE_CONFIRMATION": 5286,
+    "LOW_CONFIDENCE": 2610,
+    "ACCEPTED_BEST_CANDIDATE": 1175,
+    "HIGH_SQUEEZE_RISK": 529,
+    "LOW_EVIDENCE_AGREEMENT": 68
+  }
+}

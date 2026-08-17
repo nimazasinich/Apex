@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-03T10:03:16.851Z",
+  "verdict": "PASS",
+  "run": {
+    "seed": 42,
+    "scenarioCount": 12,
+    "passedChecks": 16,
+    "totalChecks": 16
+  },
+  "scenarios": [
+    {
+      "id": "direct_success",
+      "failureMode": "DIRECT_SUCCESS",
+      "opsState": "READY",
+      "envelopeStatus": "live",
+      "reason": null,
+      "valueIsNull": false,
+      "fabricated": false
+    },
+    {
+      "id": "timeout",
+      "failureMode": "TIMEOUT",
+      "opsState": "UNAVAILABLE",
+      "envelopeStatus": "unavailable",
+      "reason": "timeout_aborted",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "geo_blocked_gate",
+      "failureMode": "GEO_BLOCKED",
+      "opsState": "GEO_BLOCKED",
+      "envelopeStatus": "unavailable",
+      "reason": "symbol_gate_unavailable",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "rate_limited",
+      "failureMode": "RATE_LIMITED",
+      "opsState": "RATE_LIMITED",
+      "envelopeStatus": "unavailable",
+      "reason": "rate_limited",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "upstream_5xx",
+      "failureMode": "UPSTREAM_5XX",
+      "opsState": "UNAVAILABLE",
+      "envelopeStatus": "unavailable",
+      "reason": "bad_gateway",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "malformed_response",
+      "failureMode": "MALFORMED_RESPONSE",
+      "opsState": "UNAVAILABLE",
+      "envelopeStatus": "unavailable",
+      "reason": "malformed_json",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "unsupported_symbol",
+      "failureMode": "UNSUPPORTED_SYMBOL",
+      "opsState": "UNSUPPORTED",
+      "envelopeStatus": "unavailable",
+      "reason": "symbol_not_supported_by_binance_usdm",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "proxy_unavailable",
+      "failureMode": "PROXY_UNAVAILABLE",
+      "opsState": "UNAVAILABLE",
+      "envelopeStatus": "unavailable",
+      "reason": "unscripted_or_proxy_unavailable",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "all_routes_unavailable",
+      "failureMode": "ALL_ROUTES_UNAVAILABLE",
+      "opsState": "UNAVAILABLE",
+      "envelopeStatus": "unavailable",
+      "reason": "symbol_gate_unavailable",
+      "valueIsNull": true,
+      "fabricated": false
+    },
+    {
+      "id": "degraded_lkg",
+      "failureMode": "DEGRADED_LKG",
+      "opsState": "DEGRADED",
+      "envelopeStatus": "degraded",
+      "reason": "fresh_failed_lkg",
+      "valueIsNull": false,
+      "fabricated": false
+    },
+    {
+      "id": "cooldown_active",
+      "failureMode": "COOLDOWN_ACTIVE",
+      "opsState": "DEGRADED",
+      "envelopeStatus": "degraded",
+      "reason": "cooldown_active_lkg",
+      "valueIsNull": false,
+      "fabricated": false
+    },
+    {
+      "id": "recovery_after_cooldown",
+      "failureMode": "RECOVERY_AFTER_COOLDOWN",
+      "opsState": "READY",
+      "envelopeStatus": "live",
+      "reason": null,
+      "valueIsNull": false,
+      "fabricated": false
+    }
+  ],
+  "checks": [
+    {
+      "id": "direct_success_live",
+      "pass": true,
+      "actual": "live",
+      "expected": "live with non-null value",
+      "failureMode": "DIRECT_SUCCESS",
+      "opsState": "READY"
+    },
+    {
+      "id": "timeout_unavailable_null",
+      "pass": true,
+      "actual": "unavailable:true",
+      "expected": "unavailable with null value",
+      "failureMode": "TIMEOUT",
+      "opsState": "UNAVAILABLE"
+    },
+    {
+      "id": "geo_blocked_gate_unavailable",
+      "pass": true,
+      "actual": "unavailable:symbol_gate_unavailable",
+      "expected": "unavailable (gate geo-blocked) with null value",
+      "failureMode": "GEO_BLOCKED",
+      "opsState": "GEO_BLOCKED"
+    },
+    {
+      "id": "rate_limit_not_live_null",
+      "pass": true,
+      "actual": "unavailable:null",
+      "expected": "unavailable with null value",
+      "failureMode": "RATE_LIMITED",
+      "opsState": "RATE_LIMITED"
+    },
+    {
+      "id": "upstream_5xx_unavailable_null",
+      "pass": true,
+      "actual": "unavailable:null",
+      "expected": "unavailable with null value",
+      "failureMode": "UPSTREAM_5XX",
+      "opsState": "UNAVAILABLE"
+    },
+    {
+      "id": "malformed_unavailable_null",
+      "pass": true,
+      "actual": "unavailable:null",
+      "expected": "unavailable with null value (no fabricated payload)",
+      "failureMode": "MALFORMED_RESPONSE",
+      "opsState": "UNAVAILABLE"
+    },
+    {
+      "id": "unsupported_symbol_no_cooldown",
+      "pass": true,
+      "actual": "symbol_not_supported_by_binance_usdm:false",
+      "expected": "unavailable + symbol_not_supported + no cooldown",
+      "failureMode": "UNSUPPORTED_SYMBOL",
+      "opsState": "UNSUPPORTED"
+    },
+    {
+      "id": "proxy_unavailable_null",
+      "pass": true,
+      "actual": "unavailable:null",
+      "expected": "unavailable with null value",
+      "failureMode": "PROXY_UNAVAILABLE",
+      "opsState": "UNAVAILABLE"
+    },
+    {
+      "id": "all_routes_unavailable_null",
+      "pass": true,
+      "actual": "unavailable:null",
+      "expected": "unavailable with null value",
+      "failureMode": "ALL_ROUTES_UNAVAILABLE",
+      "opsState": "UNAVAILABLE"
+    },
+    {
+      "id": "fresh_fail_degrades_to_authentic_lkg",
+      "pass": true,
+      "actual": "degraded:fresh_failed_lkg",
+      "expected": "degraded with authentic LKG (never reported live)",
+      "failureMode": "DEGRADED_LKG",
+      "opsState": "DEGRADED"
+    },
+    {
+      "id": "cooldown_serves_lkg_degraded",
+      "pass": true,
+      "actual": "degraded:cooldown_active_lkg",
+      "expected": "degraded cooldown_active_lkg",
+      "failureMode": "COOLDOWN_ACTIVE",
+      "opsState": "DEGRADED"
+    },
+    {
+      "id": "recovery_after_cooldown_live",
+      "pass": true,
+      "actual": "true:live",
+      "expected": "cooldown cleared + live",
+      "failureMode": "RECOVERY_AFTER_COOLDOWN",
+      "opsState": "READY"
+    },
+    {
+      "id": "no_fabricated_unavailable_values",
+      "pass": true,
+      "actual": 0,
+      "expected": "0 fabricated unavailable payloads",
+      "failureMode": "ALL_ROUTES_UNAVAILABLE",
+      "opsState": "UNAVAILABLE"
+    },
+    {
+      "id": "cooldown_scoped_per_symbol",
+      "pass": true,
+      "actual": "true:false",
+      "expected": "BTC cooling, ETH free",
+      "failureMode": "COOLDOWN_ACTIVE",
+      "opsState": "DEGRADED"
+    },
+    {
+      "id": "deterministic_seed_recorded",
+      "pass": true,
+      "actual": 42,
+      "expected": "finite seed (default 42)",
+      "failureMode": "DIRECT_SUCCESS",
+      "opsState": "READY"
+    },
+    {
+      "id": "scenario_contract_complete",
+      "pass": true,
+      "actual": 12,
+      "expected": "12 fully classified scenarios",
+      "failureMode": "DIRECT_SUCCESS",
+      "opsState": "READY"
+    }
+  ],
+  "limitations": [
+    "Deterministic synthetic provider-routing evidence only; no live provider availability is inferred.",
+    "The harness exercises the production router through its injected FetchJson boundary and in-memory LKG/cooldown state.",
+    "Unavailable responses remain null and are never replaced with a fabricated neutral sentiment value.",
+    "This report does not enable authenticated exchange access, live execution, or scanner behavior changes."
+  ]
+}

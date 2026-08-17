@@ -1,0 +1,67 @@
+{
+  "sourceImages": 8,
+  "sourceDimensions": [
+    1672,
+    941
+  ],
+  "targetDimensions": [
+    1368,
+    753
+  ],
+  "measuredBands": {
+    "sidebar": {
+      "source": [
+        220,
+        226
+      ],
+      "canonical": 180
+    },
+    "header": {
+      "source": [
+        60,
+        64
+      ],
+      "canonical": 52
+    },
+    "contextPanel": {
+      "source": [
+        350,
+        372
+      ],
+      "canonical": 300
+    },
+    "outerGutter": {
+      "source": [
+        14,
+        18
+      ],
+      "canonical": 12
+    },
+    "panelGap": {
+      "source": [
+        13,
+        16
+      ],
+      "canonical": 12
+    },
+    "navigationRow": {
+      "source": [
+        43,
+        48
+      ],
+      "canonical": 38
+    },
+    "tableRow": {
+      "source": [
+        52,
+        60
+      ],
+      "canonical": 46
+    }
+  },
+  "notes": [
+    "Measurements are normalized visual bands across the supplied screenshots.",
+    "Canonical values are rounded to the production token system.",
+    "Flexible content widths are computed from the final shell rather than stretched from the raster images."
+  ]
+}

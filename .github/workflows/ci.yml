@@ -1,0 +1,161 @@
+name: CI
+
+# Stage SEC (APEX_MASTER_IMPLEMENTATION_PLAN §16A.2). Runs the project's
+# `verify` tier structure (§4.4.3: lint -> unit -> runtime -> build -> QA
+# suites -> docs -> release gate) on every push/PR and blocks merge on
+# failure. A registry mirror 404 must be a red check here, not a silently
+# skipped step — see AUDIT_REPORT_v1.0.47 for why prior sessions could not
+# execute this at all.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same PR/branch instead of queuing stale ones.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify (lint + unit + runtime + build + QA + docs + release-gate)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.x', '24.x']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      # A registry mirror outage must fail the build, not be swallowed.
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      # Keep dependency-backed source/unit/runtime/build/release evidence in
+      # this job. Browser and visual gates belong exclusively to verify-visual
+      # below, where Chromium is installed explicitly.
+      - name: verify (non-visual pipeline)
+        run: |
+          npm run lint
+          npm run check:test-inventory
+          npm run test:unit
+          npm run build
+          npm run test:runtime
+          npm run check:source-contracts
+          npm run docs:visual
+          npm run docs:check
+          npm run release:gate
+
+      - name: npm audit (production dependencies, high+ severity)
+        if: matrix.node == '24.x'
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Regenerate generated documentation indexes
+        if: matrix.node == '24.x'
+        run: |
+          npm run index:functions -- --if-changed
+          npm run index:docs -- --if-changed
+          npm run docs:check
+
+      - name: Fail if generated docs drifted from committed state
+        if: matrix.node == '24.x'
+        shell: bash
+        run: |
+          git diff --exit-code -- \
+            Doc/FUNCTION_INDEX.md \
+            Doc/FUNCTION_INDEX.json \
+            Doc/DOCUMENTATION_INDEX.md \
+            Doc/DOCUMENTATION_INDEX.json || \
+            (echo "::error::Generated documentation has drifted from source. Regenerate and commit the indexes." && exit 1)
+
+      - name: Upload function index / audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-verify-artifacts-node-${{ matrix.node }}
+          path: |
+            Doc/FUNCTION_INDEX.md
+            Doc/FUNCTION_INDEX.json
+            dist/server.cjs
+          if-no-files-found: ignore
+          retention-days: 14
+
+  dependency-review:
+    name: dependency review (new vulnerable dependencies)
+    runs-on: ubuntu-latest
+    # Pull requests only: the action compares the PR head against its base, so
+    # there is no meaningful diff to review on a direct push to main.
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fails the check when a PR introduces a dependency with a known high or
+      # critical advisory. The threshold matches `npm audit --audit-level=high`
+      # in the verify job so the two do not disagree about what is acceptable.
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  verify-visual:
+    name: verify:visual (Playwright browser + 1368x753 screenshot QA)
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      # qa:ui-1368 uses Python Playwright while qa:workspace-runtime uses the
+      # package-locked JavaScript Playwright. Install matching runtimes so both
+      # use the same Chromium revision and browser cache.
+      - name: Install Python and JavaScript Playwright browsers
+        shell: bash
+        run: |
+          playwright_version="$(node -p "require('./package-lock.json').packages['node_modules/playwright'].version")"
+          python -m pip install "playwright==${playwright_version}"
+          python -m playwright install --with-deps chromium
+          npx playwright install chromium
+
+      - name: Build (visual QA runs against the built app)
+        run: npm run build
+
+      - name: qa:ui-1368 (pinned 1368x753 screenshot/geometry QA)
+        run: npm run qa:ui-1368
+
+      - name: qa:workspace-runtime (workspace runtime browser QA)
+        run: npm run qa:workspace-runtime
+
+      - name: Upload visual QA diff artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-visual-qa-artifacts
+          path: |
+            QA/**
+            **/*-diff.png
+            **/*-actual.png
+          if-no-files-found: ignore
+          retention-days: 14

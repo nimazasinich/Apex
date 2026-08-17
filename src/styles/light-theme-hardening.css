@@ -1,0 +1,396 @@
+/* APEX light-theme release hardening — v1.0.41
+   Loaded last from src/main.tsx so the light contract wins predictably.
+   Baseline viewport: 1368 × 753. Dark mode is intentionally untouched. */
+
+:root[data-apex-theme-resolved="light"] {
+  color-scheme: light;
+
+  /* Canonical APEX surfaces */
+  --apex-canvas: #f7faf8;
+  --apex-surface: #ffffff;
+  --apex-surface-soft: #f3f7f4;
+  --apex-soft: #f3f7f4;
+  --apex-surface-selected: #eaf6ed;
+  --apex-border: #dce6e0;
+  --apex-border-strong: #cbd8d0;
+  --apex-divider: #e9efeb;
+
+  /* Readable text */
+  --apex-ink-950: #07151f;
+  --apex-ink-900: #14233a;
+  --apex-ink-700: #35455d;
+  --apex-muted-600: #627087;
+  --apex-muted-400: #8996a7;
+
+  /* Brand/semantic text colors are deliberately darker than decorative fills. */
+  --apex-green-text: #14752e;
+  --apex-red-text: #bd2f3c;
+  --apex-amber-text: #805500;
+  --apex-blue-text: #1f63b7;
+  --apex-violet-text: #6540bd;
+  --apex-focus: #245dcc;
+
+  --apex-shadow-xs: 0 1px 2px rgba(9, 23, 32, .035);
+  --apex-shadow-sm: 0 6px 20px rgba(9, 23, 32, .055);
+  --apex-shadow-md: 0 16px 42px rgba(9, 23, 32, .09);
+
+  /* V20 pages share the same visual contract. */
+  --v20-bg: #f7faf8;
+  --v20-canvas: #f7faf8;
+  --v20-surface: #ffffff;
+  --v20-surface-soft: #f3f7f4;
+  --v20-border: #dce6e0;
+  --v20-border-strong: #cbd8d0;
+  --v20-text: #14233a;
+  --v20-muted: #627087;
+  --v20-green: #178238;
+  --v20-green-2: #24a849;
+  --v20-green-soft: #e8f6eb;
+  --v20-blue: #276fca;
+  --v20-blue-soft: #eaf2fd;
+  --v20-violet: #7049c8;
+  --v20-violet-soft: #f1ecfb;
+  --v20-amber: #8a5b00;
+  --v20-amber-soft: #fff4d9;
+  --v20-red: #c43442;
+  --v20-red-soft: #fcecef;
+  --v20-shadow: 0 1px 2px rgba(16, 42, 27, .035), 0 8px 24px rgba(16, 42, 27, .04);
+
+  /* Older generic tokens still used by a few terminal modules. */
+  --canvas: #f7faf8;
+  --canvas-mid: #f7faf8;
+  --canvas-end: #eef4f0;
+  --surface-1: #ffffff;
+  --surface-2: #f7faf8;
+  --surface-3: #f1f6f3;
+  --surface: #ffffff;
+  --border: #dce6e0;
+  --border-subtle: #e9efeb;
+  --text-primary: #14233a;
+  --text-muted: #627087;
+  --neutral-subtle: #627087;
+  --bullish: #14752e;
+  --bullish-bg: #e8f6eb;
+  --bearish: #bd2f3c;
+  --bearish-bg: #fcecef;
+  --warning: #805500;
+  --warning-bg: #fff4d9;
+}
+
+:root[data-apex-theme-resolved="light"] body,
+:root[data-apex-theme-resolved="light"] #root,
+:root[data-apex-theme-resolved="light"] .app-shell,
+:root[data-apex-theme-resolved="light"] .apex-shell,
+:root[data-apex-theme-resolved="light"] .apex-stage,
+:root[data-apex-theme-resolved="light"] .apex-stage-body,
+:root[data-apex-theme-resolved="light"] .apex-content {
+  color: var(--apex-ink-900);
+  background: var(--apex-canvas);
+}
+
+/* The ambient dark-dashboard blobs belong to the legacy terminal skin. They
+   reduce clarity behind the institutional light workspace and are disabled. */
+:root[data-apex-theme-resolved="light"] .app-shell::before,
+:root[data-apex-theme-resolved="light"] .app-shell::after {
+  display: none;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell > .apex-sidebar,
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-header {
+  background: var(--apex-surface) !important;
+  border-color: var(--apex-border) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-header {
+  box-shadow: 0 1px 0 rgba(9, 23, 32, .018) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-search,
+:root[data-apex-theme-resolved="light"] .apex-search-popover,
+:root[data-apex-theme-resolved="light"] .apex-context-panel,
+:root[data-apex-theme-resolved="light"] .apex-v3-panel,
+:root[data-apex-theme-resolved="light"] .v20-table-card,
+:root[data-apex-theme-resolved="light"] .v20-context-section,
+:root[data-apex-theme-resolved="light"] .v20-metric {
+  background-color: var(--apex-surface);
+  border-color: var(--apex-border);
+}
+
+/* Avatar must remain branded, not a black disc inherited from the old skin. */
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-avatar {
+  color: var(--apex-green-text) !important;
+  background: var(--apex-green-100) !important;
+  border-color: var(--apex-green-200) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-logo > span,
+:root[data-apex-theme-resolved="light"] .apex-v3-heading h1,
+:root[data-apex-theme-resolved="light"] .v20-page-title h1,
+:root[data-apex-theme-resolved="light"] .v20-section-title,
+:root[data-apex-theme-resolved="light"] .v20-card-head strong {
+  color: var(--apex-ink-950) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-v3-heading p,
+:root[data-apex-theme-resolved="light"] .v20-page-title p,
+:root[data-apex-theme-resolved="light"] .v20-context-section > p,
+:root[data-apex-theme-resolved="light"] .v20-table-card th,
+:root[data-apex-theme-resolved="light"] .v20-metric > small {
+  color: var(--apex-muted-600) !important;
+}
+
+/* Semantic values use accessible text colors while keeping tinted fills. */
+:root[data-apex-theme-resolved="light"] .positive,
+:root[data-apex-theme-resolved="light"] .apex-positive,
+:root[data-apex-theme-resolved="light"] .v20-reference-page .positive,
+:root[data-apex-theme-resolved="light"] .v20-pill.filled,
+:root[data-apex-theme-resolved="light"] .v20-pill.active,
+:root[data-apex-theme-resolved="light"] .v20-pill.connected {
+  color: var(--apex-green-text) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .negative,
+:root[data-apex-theme-resolved="light"] .apex-negative,
+:root[data-apex-theme-resolved="light"] .v20-reference-page .negative,
+:root[data-apex-theme-resolved="light"] .v20-pill.rejected,
+:root[data-apex-theme-resolved="light"] .v20-pill.cancelled,
+:root[data-apex-theme-resolved="light"] .v20-pill.failed {
+  color: var(--apex-red-text) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .warning,
+:root[data-apex-theme-resolved="light"] .v20-pill.pending,
+:root[data-apex-theme-resolved="light"] .v20-pill.caution {
+  color: var(--apex-amber-text) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-pill.unknown,
+:root[data-apex-theme-resolved="light"] .v20-pill.info {
+  color: var(--apex-blue-text) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-mode-badge {
+  color: var(--apex-green-text) !important;
+  border-color: var(--apex-green-200) !important;
+  background: var(--apex-green-050) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-nav button.active,
+:root[data-apex-theme-resolved="light"] .apex-shell .apex-sidebar-bottom > button.active {
+  color: var(--apex-green-text) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell input,
+:root[data-apex-theme-resolved="light"] .apex-shell select,
+:root[data-apex-theme-resolved="light"] .apex-shell textarea {
+  color: var(--apex-ink-900);
+  caret-color: var(--apex-green-text);
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell input::placeholder,
+:root[data-apex-theme-resolved="light"] .apex-shell textarea::placeholder {
+  color: var(--apex-muted-400);
+  opacity: 1;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell button:focus-visible,
+:root[data-apex-theme-resolved="light"] .apex-shell [role="button"]:focus-visible,
+:root[data-apex-theme-resolved="light"] .apex-shell input:focus-visible,
+:root[data-apex-theme-resolved="light"] .apex-shell select:focus-visible,
+:root[data-apex-theme-resolved="light"] .apex-shell textarea:focus-visible,
+:root[data-apex-theme-resolved="light"] .apex-shell tr[tabindex]:focus-visible {
+  outline: 2px solid var(--apex-focus) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(36, 93, 204, .12) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-v3-table tbody tr:hover,
+:root[data-apex-theme-resolved="light"] .v20-table-card tbody tr:hover {
+  background: #f5f9f6;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-v3-table tbody tr.selected,
+:root[data-apex-theme-resolved="light"] .v20-table-card tbody tr.selected,
+:root[data-apex-theme-resolved="light"] .v20-position-table-scroll tbody tr.selected {
+  background: linear-gradient(90deg, var(--apex-green-050), #ffffff) !important;
+}
+
+/* Remove hardcoded near-white fragments that otherwise look disconnected. */
+:root[data-apex-theme-resolved="light"] .v20-context-sidebar,
+:root[data-apex-theme-resolved="light"] .apex-v3-settings-context,
+:root[data-apex-theme-resolved="light"] .apex-v3-help-context,
+:root[data-apex-theme-resolved="light"] .apex-v3-watchlist-context {
+  background: var(--apex-surface-soft) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-side-values span,
+:root[data-apex-theme-resolved="light"] .v20-table-card th,
+:root[data-apex-theme-resolved="light"] .v20-position-focus,
+:root[data-apex-theme-resolved="light"] .v20-focus-pnl > span,
+:root[data-apex-theme-resolved="light"] .apex-settings-status-row,
+:root[data-apex-theme-resolved="light"] .apex-help-topic-card,
+:root[data-apex-theme-resolved="light"] .apex-help-tutorial-card {
+  background-color: var(--apex-surface-soft) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-alert-builder > button.primary,
+:root[data-apex-theme-resolved="light"] .apex-v3-button.primary,
+:root[data-apex-theme-resolved="light"] .apex-primary-action {
+  color: #ffffff !important;
+  border-color: #14752e !important;
+  background: linear-gradient(180deg, #1a8a3b, #14752e) !important;
+  box-shadow: 0 5px 14px rgba(20, 117, 46, .16) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-alert-builder > button.primary:hover,
+:root[data-apex-theme-resolved="light"] .apex-v3-button.primary:hover,
+:root[data-apex-theme-resolved="light"] .apex-primary-action:hover {
+  background: #106326 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-shell button:disabled,
+:root[data-apex-theme-resolved="light"] .apex-shell [aria-disabled="true"] {
+  color: #788598 !important;
+  opacity: .62;
+}
+
+/* Protect layout and text at the 1368 × 753 baseline and high zoom. */
+:root[data-apex-theme-resolved="light"] .apex-v3-panel,
+:root[data-apex-theme-resolved="light"] .v20-context-section,
+:root[data-apex-theme-resolved="light"] .v20-metric,
+:root[data-apex-theme-resolved="light"] .v20-table-card {
+  min-width: 0;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-v3-panel strong,
+:root[data-apex-theme-resolved="light"] .v20-metric strong,
+:root[data-apex-theme-resolved="light"] .v20-table-card td,
+:root[data-apex-theme-resolved="light"] .v20-context-section {
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-contrast: more) {
+  :root[data-apex-theme-resolved="light"] {
+    --apex-border: #aebdb4;
+    --apex-border-strong: #8fa197;
+    --apex-muted-600: #435269;
+    --v20-border: #aebdb4;
+    --v20-muted: #435269;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-apex-theme-resolved="light"] .apex-shell button:focus-visible,
+  :root[data-apex-theme-resolved="light"] .apex-shell input:focus-visible,
+  :root[data-apex-theme-resolved="light"] .apex-shell select:focus-visible,
+  :root[data-apex-theme-resolved="light"] .apex-shell textarea:focus-visible {
+    outline: 2px solid Highlight !important;
+  }
+}
+
+/* Normalize secondary copy that legacy layers rendered too faintly on white.
+   Decorative stars/sparklines retain their original accent colors. */
+:root[data-apex-theme-resolved="light"] :is(
+  .apex-system-card small,
+  .apex-panel-head small,
+  .apex-metric-card small,
+  .apex-candidate-row small,
+  .apex-sentiment-score span,
+  .apex-mover-list span,
+  .apex-alert-list small,
+  .apex-activity-row small,
+  .apex-market-facts span,
+  .apex-signal-grid span,
+  .apex-signal-grid small,
+  .apex-ticket-head small,
+  .apex-confirm-summary span,
+  .apex-drawer-subhead em,
+  .apex-drawer-footer,
+  .apex-drawer-meta,
+  .apex-perf-grid span,
+  .apex-risk-donut span,
+  .apex-watchlist-symbol-wrap > small,
+  .apex-watchlist-panel .apex-panel-head small,
+  .apex-page-mini-stats small,
+  .apex-unified-page .apex-panel-head small
+) {
+  color: var(--apex-muted-600) !important;
+}
+
+:root[data-apex-theme-resolved="light"] :is(
+  .apex-mkt2-metric small,
+  .apex-mkt2-range-cell-values,
+  .apex-mkt2-sentiment-legend span,
+  .apex-mkt2-breadth-legend span,
+  .apex-mkt2-pagination > span,
+  .apex-mkt2-page-ellipsis,
+  .apex-mkt2-empty-row td,
+  .apex-mkt2-watchlist-count,
+  .apex-mkt2-chevron
+) {
+  color: var(--apex-muted-600) !important;
+}
+
+:root[data-apex-theme-resolved="light"] :is(
+  .strategy-column-heading p,
+  .strategy-side-card p,
+  .strategy-insight-card p,
+  .strategy-compare-panel header p,
+  .strategy-compare-panel dt,
+  .strategy-detail-meta small,
+  .strategy-parameter-panel label small,
+  .strategy-no-parameters
+) {
+  color: var(--apex-muted-600) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  scrollbar-width: thin !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich > button {
+  flex: 1 1 0px !important;
+  min-width: 140px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich > button > span {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich > button > span strong {
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  color: var(--apex-ink-950) !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich > button > span small {
+  font-size: 9px !important;
+  color: var(--apex-muted-600) !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich > button > em {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  margin-left: auto !important;
+  white-space: nowrap !important;
+}
+
+:root[data-apex-theme-resolved="light"] .apex-market-strip-rich .apex-market-strip-more {
+  flex: 0 0 auto !important;
+  min-width: 110px !important;
+}

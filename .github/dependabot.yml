@@ -1,0 +1,45 @@
+version: 2
+
+# Only two package managers actually exist in this repository: npm (package.json
+# + package-lock.json at the root) and the GitHub Actions used by the workflows
+# in .github/workflows. Nothing else is declared here, because Dependabot
+# silently produces no updates for an ecosystem that is not really present.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+    groups:
+      # `applies-to: version-updates` is the important part. Routine minor/patch
+      # bumps collapse into one PR to keep the queue quiet, while Dependabot
+      # *security* updates stay ungrouped — one PR per advisory, so a real
+      # vulnerability is never buried inside a large housekeeping PR.
+      npm-minor-and-patch:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    labels: [dependencies, github-actions]
+    commit-message:
+      prefix: chore(actions)
+    groups:
+      actions-minor-and-patch:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [minor, patch]

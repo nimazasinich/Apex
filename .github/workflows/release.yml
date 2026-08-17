@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish a GitHub release (requires a matching v<package.version> tag)'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Verify and package release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Python and JavaScript Playwright browsers
+        shell: bash
+        run: |
+          playwright_version="$(node -p "require('./package-lock.json').packages['node_modules/playwright'].version")"
+          python -m pip install "playwright==${playwright_version}"
+          python -m playwright install --with-deps chromium
+          npx playwright install chromium
+
+      - name: Validate release tag against package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="v$(node -p "require('./package.json').version")"
+          if [[ "${GITHUB_REF_NAME}" != "$expected" ]]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${expected}."
+            exit 1
+          fi
+
+      - name: Run full verification and create allowlisted archive
+        run: npm run release:package
+
+      - name: Verify generated SHA-256 sidecar
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          cd _release
+          sha256sum --check "apex-unified-terminal-v${version}.zip.sha256"
+
+      - name: Upload release package evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-release-${{ github.run_id }}
+          path: |
+            _release/apex-unified-terminal-v*.zip
+            _release/apex-unified-terminal-v*.zip.sha256
+            _release/release-manifest.json
+            _release/CHECKSUMS.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish_release == true)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          tag="v${version}"
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" && "${GITHUB_REF_NAME}" != "$tag" ]]; then
+            echo "::error::Ref tag ${GITHUB_REF_NAME} does not match ${tag}."
+            exit 1
+          fi
+          if [[ "${GITHUB_REF_TYPE:-}" != "tag" ]]; then
+            git fetch --tags --force
+            tag_commit="$(git rev-list -n 1 "$tag" 2>/dev/null || true)"
+            if [[ -z "$tag_commit" ]]; then
+              echo "::error::Manual release requires an existing ${tag} tag."
+              exit 1
+            fi
+            head_commit="$(git rev-parse HEAD)"
+            if [[ "$head_commit" != "$tag_commit" ]]; then
+              echo "::error::Manual release must run from the commit referenced by ${tag}."
+              exit 1
+            fi
+          fi
+          archive="_release/apex-unified-terminal-v${version}.zip"
+          sidecar="${archive}.sha256"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$archive" "$sidecar" --clobber
+          else
+            gh release create "$tag" \
+              "$archive" \
+              "$sidecar" \
+              --verify-tag \
+              --generate-notes \
+              --title "APEX v${version}"
+          fi

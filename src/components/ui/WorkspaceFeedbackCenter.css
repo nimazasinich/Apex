@@ -1,0 +1,84 @@
+.apex-feedback-center {
+  position: fixed;
+  z-index: 1300;
+  top: 64px;
+  right: 16px;
+  width: min(360px, calc(100vw - 32px));
+  display: grid;
+  gap: 9px;
+  pointer-events: none;
+}
+
+.apex-feedback-toast {
+  --feedback-accent: var(--apex-blue-500, #2f7eea);
+  position: relative;
+  min-height: 68px;
+  padding: 12px 38px 12px 12px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--feedback-accent) 24%, var(--apex-border, #dfe6e2));
+  border-radius: 14px;
+  color: var(--apex-ink-900, #17243a);
+  background: color-mix(in srgb, var(--apex-surface, #fff) 96%, var(--feedback-accent));
+  box-shadow: 0 16px 42px rgba(12, 29, 20, .14), 0 3px 10px rgba(12, 29, 20, .08);
+  pointer-events: auto;
+  animation: apex-feedback-enter .22s cubic-bezier(.22, 1, .36, 1) both;
+}
+.apex-feedback-toast.tone-success { --feedback-accent: var(--apex-green-500, #2bb34d); }
+.apex-feedback-toast.tone-warning { --feedback-accent: var(--apex-orange-500, #e49a1f); }
+.apex-feedback-toast.tone-error { --feedback-accent: var(--apex-red-500, #df4b55); }
+.apex-feedback-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--feedback-accent);
+  background: color-mix(in srgb, var(--feedback-accent) 11%, transparent);
+}
+.apex-feedback-copy { min-width: 0; display: grid; gap: 4px; }
+.apex-feedback-copy strong { font-size: 12px; line-height: 1.35; }
+.apex-feedback-copy small { color: var(--apex-muted-600, #68788e); font-size: 10.5px; line-height: 1.45; }
+.apex-feedback-copy button {
+  width: fit-content;
+  margin-top: 3px;
+  padding: 0;
+  border: 0;
+  color: var(--feedback-accent);
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.apex-feedback-dismiss {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--apex-muted-600, #68788e);
+  background: transparent;
+  cursor: pointer;
+}
+.apex-feedback-dismiss:hover { background: var(--apex-surface-soft, #f3f7f4); color: var(--apex-ink-900, #17243a); }
+.apex-feedback-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--feedback-accent);
+  transform-origin: left;
+  animation: apex-feedback-progress linear both;
+}
+@keyframes apex-feedback-enter { from { opacity: 0; transform: translate3d(14px, -6px, 0) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes apex-feedback-progress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (max-width: 720px) { .apex-feedback-center { top: 58px; right: 10px; width: calc(100vw - 20px); } }
+@media (prefers-reduced-motion: reduce) { .apex-feedback-toast, .apex-feedback-progress { animation: none; } }

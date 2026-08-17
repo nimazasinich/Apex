@@ -1,0 +1,390 @@
+/* APEX interaction and detail pass — v1.0.37
+   Contract viewport: 1368 × 753. This layer is intentionally additive. */
+
+.apex-shell button,
+.apex-shell [role="button"],
+.apex-shell input,
+.apex-shell select,
+.apex-shell textarea {
+  transition: border-color .16s ease, background-color .16s ease, color .16s ease, box-shadow .16s ease, transform .16s ease, opacity .16s ease;
+}
+
+.apex-shell button:not(:disabled):active { transform: translateY(1px); }
+.apex-shell button:focus-visible,
+.apex-shell [role="button"]:focus-visible,
+.apex-shell input:focus-visible,
+.apex-shell select:focus-visible,
+.apex-shell textarea:focus-visible,
+.apex-shell tr[tabindex]:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--apex-green-500, #2bb34d) 18%, transparent) !important;
+}
+
+.apex-shell .apex-header-icon {
+  position: relative;
+  overflow: visible;
+}
+.apex-shell .apex-header-icon:hover {
+  border-color: var(--apex-border-strong, #cfd9d3) !important;
+  color: var(--apex-green-700, #237b3c) !important;
+  background: var(--apex-green-050, #effaf1) !important;
+}
+.apex-shell .apex-theme-toggle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--apex-green-500, #2bb34d);
+  box-shadow: 0 0 0 2px var(--apex-surface, #fff);
+}
+
+.apex-shell .apex-search-popover {
+  padding: 6px !important;
+  border-radius: 13px !important;
+  box-shadow: 0 18px 48px rgba(20, 37, 27, .16), 0 4px 12px rgba(20, 37, 27, .08) !important;
+}
+.apex-shell .apex-search-popover button {
+  min-height: 46px !important;
+  padding: 7px 9px !important;
+  border-radius: 9px !important;
+}
+.apex-shell .apex-search-popover button.active {
+  background: linear-gradient(90deg, var(--apex-green-050, #effaf1), color-mix(in srgb, var(--apex-green-050, #effaf1) 45%, transparent)) !important;
+  box-shadow: inset 2px 0 0 var(--apex-green-500, #2bb34d);
+}
+.apex-shell .apex-search-popover button strong { font-size: 10px !important; }
+.apex-shell .apex-search-popover button small { font-size: 9px !important; }
+
+.apex-shell .apex-nav button:hover,
+.apex-shell .apex-sidebar-bottom > button:hover {
+  transform: translateX(2px);
+}
+.apex-shell .apex-nav button.active,
+.apex-shell .apex-sidebar-bottom > button.active {
+  box-shadow: inset 3px 0 0 var(--apex-green-500, #2bb34d) !important;
+}
+
+/* Shared V3 page refinement */
+.apex-shell .apex-v3-heading h1 { font-size: 20px; letter-spacing: -.02em; }
+.apex-shell .apex-v3-heading p { font-size: 10px; }
+.apex-shell .apex-v3-panel {
+  border-color: color-mix(in srgb, var(--apex-border, #dfe6e2) 90%, var(--apex-green-500, #2bb34d));
+}
+.apex-shell .apex-v3-panel-head strong { font-size: 11.5px; }
+.apex-shell .apex-v3-panel-head small { font-size: 9.2px; }
+.apex-shell .apex-v3-metric {
+  background: linear-gradient(180deg, var(--apex-surface, #fff), color-mix(in srgb, var(--metric-tone, var(--apex-green-500, #2bb34d)) 2.5%, var(--apex-surface, #fff)));
+}
+.apex-shell .apex-v3-metric:hover,
+.apex-shell .v20-metric:hover {
+  border-color: color-mix(in srgb, var(--metric-tone, var(--metric-color, var(--apex-green-500, #2bb34d))) 28%, var(--apex-border, #dfe6e2));
+  box-shadow: 0 9px 26px rgba(21, 45, 30, .07);
+  transform: translateY(-1px);
+}
+.apex-shell .apex-v3-table tbody tr:hover,
+.apex-shell .v20-table-card tbody tr:hover {
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--apex-green-500, #2bb34d) 48%, transparent);
+}
+.apex-shell .apex-v3-table tbody tr:focus-visible,
+.apex-shell .v20-table-card tbody tr:focus-visible {
+  background: var(--apex-surface-selected, #eff8f1);
+}
+.apex-shell .apex-v3-button:not(:disabled):hover,
+.apex-shell .v20-page-actions button:not(:disabled):hover,
+.apex-shell .v20-card-head button:not(:disabled):hover,
+.apex-shell .v20-context-section > button:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--apex-green-500, #2bb34d) 42%, var(--apex-border, #dfe6e2));
+  box-shadow: 0 5px 14px rgba(26, 84, 43, .08);
+}
+.apex-shell .apex-v3-button:disabled,
+.apex-shell .v20-reference-page button:disabled { cursor: not-allowed; opacity: .48; transform: none; }
+
+.apex-shell .apex-context-panel {
+  padding: 8px;
+  background: color-mix(in srgb, var(--apex-surface-soft, #f6f9f7) 86%, var(--apex-surface, #fff));
+}
+.apex-shell .apex-v3-context-stack {
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 1px;
+  scrollbar-width: thin;
+}
+.apex-shell .apex-v3-context-stack > .apex-v3-panel {
+  border: 1px solid var(--apex-border, #dfe6e2);
+  border-radius: 11px;
+  background: var(--apex-surface, #fff);
+  box-shadow: var(--apex-shadow-xs, 0 1px 2px rgba(0,0,0,.03));
+}
+
+.apex-shell .apex-v3-data-state,
+.apex-shell .v20-empty {
+  position: relative;
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--apex-green-050, #effaf1) 72%, transparent), transparent 60%);
+}
+.apex-shell .apex-v3-data-state > strong,
+.apex-shell .v20-empty strong { font-size: 11px; }
+.apex-shell .apex-v3-data-state > span,
+.apex-shell .v20-empty span { font-size: 9.2px; line-height: 1.5; }
+
+/* V20 Orders / Positions detail and interaction pass */
+.apex-shell .v20-reference-page { font-size: 10.2px; }
+.apex-shell .v20-page-title { min-height: 50px; }
+.apex-shell .v20-page-title h1 { font-size: 20px; }
+.apex-shell .v20-page-title p { font-size: 10px; }
+.apex-shell .v20-metric-top { font-size: 9.5px; }
+.apex-shell .v20-metric > strong { font-size: 16.5px; }
+.apex-shell .v20-metric > small { font-size: 9px; }
+.apex-shell .v20-table-card th { font-size: 9px; letter-spacing: .01em; }
+.apex-shell .v20-table-card td { font-size: 9.5px; }
+.apex-shell .v20-context-sidebar {
+  padding: 9px;
+  gap: 8px;
+  background: color-mix(in srgb, var(--apex-surface-soft, #f6f9f7) 55%, #fff);
+}
+.apex-shell .v20-context-section {
+  box-shadow: 0 2px 10px rgba(22, 52, 32, .035);
+}
+.apex-shell .v20-context-section:hover {
+  border-color: color-mix(in srgb, var(--v20-green, #13ad3d) 22%, var(--v20-border, #e1e8e4));
+}
+.apex-shell .v20-icon-button:not(:disabled):hover {
+  color: var(--v20-green, #13ad3d);
+  background: var(--v20-green-soft, #eaf8ed);
+}
+.apex-shell .v20-live-state {
+  min-height: 29px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--v20-border, #e1e8e4);
+  border-radius: 999px;
+  color: var(--v20-muted, #687991);
+  background: var(--v20-surface, #fff);
+  font-size: 9px;
+  font-weight: 700;
+}
+.apex-shell .v20-live-state i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--v20-green, #13ad3d);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v20-green, #13ad3d) 13%, transparent);
+}
+.apex-shell .v20-live-state.loading i { background: var(--v20-amber, #ff9914); }
+.apex-shell .v20-refresh-action { min-height: 30px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--v20-border, #e1e8e4); border-radius: 8px; background: var(--v20-surface, #fff); font-weight: 680; }
+.apex-shell .v20-position-toolbar > div:first-child { display: grid; gap: 2px; }
+.apex-shell .v20-position-toolbar > div:first-child small { color: var(--v20-muted, #687991); font-size: 9px; }
+.apex-shell .v20-sort-control { min-width: 126px; }
+.apex-shell .v20-sort-control select { width: 100%; border: 0; outline: 0; background: transparent; font-size: 9px; }
+.apex-shell .v20-position-table-scroll tbody tr { cursor: pointer; outline: 0; }
+.apex-shell .v20-position-table-scroll tbody tr.selected { background: linear-gradient(90deg, var(--v20-green-soft, #eaf8ed), #fff); box-shadow: inset 3px 0 0 var(--v20-green, #13ad3d); }
+.apex-shell .v20-position-focus { border-color: color-mix(in srgb, var(--v20-green, #13ad3d) 30%, var(--v20-border, #e1e8e4)); background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--v20-green-soft, #eaf8ed) 35%, #fff)); }
+.apex-shell .v20-focus-asset { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 8px; margin-top: 6px; }
+.apex-shell .v20-focus-asset > span:nth-child(2) { min-width: 0; }
+.apex-shell .v20-focus-asset strong,
+.apex-shell .v20-focus-asset small { display: block; }
+.apex-shell .v20-focus-asset strong { font-size: 10.5px; }
+.apex-shell .v20-focus-asset small { margin-top: 2px; color: var(--v20-muted, #687991); font-size: 9px; }
+.apex-shell .v20-focus-pnl { margin: 9px 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.apex-shell .v20-focus-pnl > span { padding: 7px 8px; border: 1px solid var(--v20-border, #e1e8e4); border-radius: 8px; background: rgba(255,255,255,.72); }
+.apex-shell .v20-focus-pnl small,
+.apex-shell .v20-focus-pnl strong { display: block; }
+.apex-shell .v20-focus-pnl small { color: var(--v20-muted, #687991); font-size: 8.8px; }
+.apex-shell .v20-focus-pnl strong { margin-top: 3px; font-size: 10px; }
+.apex-shell .v20-leverage-distribution { display:grid; gap:5px; margin:8px 0; }
+.apex-shell .v20-leverage-distribution > small { color:var(--v20-muted,#687991); font-size:10px; font-weight:700; }
+.apex-shell .v20-leverage-distribution > div { display:grid; gap:4px; }
+.apex-shell .v20-leverage-distribution span { display:grid; grid-template-columns:32px minmax(0,1fr) 18px; gap:6px; align-items:center; font-size:10px; }
+.apex-shell .v20-leverage-distribution span > i { height:5px; overflow:hidden; border-radius:99px; background:var(--v20-border,#e1e8e4); }
+.apex-shell .v20-leverage-distribution span > i > em { display:block; height:100%; border-radius:inherit; background:var(--v20-green,#13ad3d); }
+.apex-shell .v20-leverage-distribution span > strong { text-align:right; }
+.apex-shell .v20-detail-list.compact div { min-height: 27px; }
+.apex-shell .v20-risk-note { display: flex; align-items: flex-start; gap: 5px; }
+.apex-shell .v20-order-id-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.apex-shell .v20-order-id-row h2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-shell .v20-filter-row button.active-filters { color: var(--v20-green, #13ad3d); border-color: color-mix(in srgb, var(--v20-green, #13ad3d) 38%, var(--v20-border, #e1e8e4)); background: var(--v20-green-soft, #eaf8ed); }
+
+/* Alerts and history micro-interactions */
+.apex-shell .apex-v3-builder-actions { display: flex; align-items: center; gap: 4px; }
+.apex-shell .apex-v3-history-toolbar > div { display: flex; align-items: center; gap: 8px; }
+.apex-shell .apex-v3-history-toolbar > div > span { color: var(--apex-muted-600, #68788e); font-size: 9px; white-space: nowrap; }
+.apex-shell .apex-v3-history-toolbar .apex-v3-button { min-height: 29px; }
+.apex-shell .apex-v3-template-list button:hover,
+.apex-shell .apex-v3-topic-card:hover,
+.apex-shell .apex-v3-tutorial-card:hover,
+.apex-shell .apex-v3-next-step:hover {
+  border-color: color-mix(in srgb, var(--apex-green-500, #2bb34d) 32%, var(--apex-border, #dfe6e2));
+  box-shadow: 0 7px 20px rgba(23, 64, 36, .07);
+  transform: translateY(-1px);
+}
+
+/* Dark mode parity */
+:root[data-apex-theme-resolved="dark"] .apex-feedback-toast,
+:root[data-apex-theme-resolved="dark"] .apex-shell .v20-context-sidebar,
+:root[data-apex-theme-resolved="dark"] .apex-shell .v20-position-focus,
+:root[data-apex-theme-resolved="dark"] .apex-shell .v20-focus-pnl > span {
+  color: var(--apex-ink-900);
+  background: var(--apex-surface);
+}
+:root[data-apex-theme-resolved="dark"] .apex-shell .apex-context-panel { background: var(--apex-canvas); }
+:root[data-apex-theme-resolved="dark"] .apex-shell .apex-theme-toggle::after { box-shadow: 0 0 0 2px var(--apex-surface); }
+
+@media (max-width: 1199px) {
+  .apex-shell .apex-v3-context-stack { gap: 7px; }
+  .apex-shell .v20-reference-page { font-size: 9.8px; }
+  .apex-shell .v20-metric > strong { font-size: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apex-shell button,
+  .apex-shell [role="button"],
+  .apex-shell input,
+  .apex-shell select,
+  .apex-shell textarea { transition: none; }
+  .apex-shell .apex-nav button:hover,
+  .apex-shell .apex-sidebar-bottom > button:hover,
+  .apex-shell .apex-v3-metric:hover,
+  .apex-shell .v20-metric:hover,
+  .apex-shell .apex-v3-template-list button:hover,
+  .apex-shell .apex-v3-topic-card:hover,
+  .apex-shell .apex-v3-tutorial-card:hover,
+  .apex-shell .apex-v3-next-step:hover { transform: none; }
+}
+
+
+/* Interaction completion: actionable status, clearable feedback, and compact controls */
+.apex-shell .apex-data-status-action {
+  min-height: 28px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.apex-shell .apex-data-status-action:hover {
+  border-color: var(--apex-border, #dfe6e2);
+  background: var(--apex-surface-soft, #f6f9f7);
+}
+.apex-shell .v20-page-actions { align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.apex-shell .v20-live-state.error { color: var(--v20-red, #ff424c); border-color: color-mix(in srgb, var(--v20-red, #ff424c) 28%, var(--v20-border, #e1e8e4)); background: var(--v20-red-soft, #fff0f1); }
+.apex-shell .v20-live-state.error i { background: var(--v20-red, #ff424c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--v20-red, #ff424c) 12%, transparent); }
+.apex-shell .v20-message {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  font-size: 9.2px;
+}
+.apex-shell .v20-message > span { min-width: 0; line-height: 1.4; }
+.apex-shell .v20-message > button {
+  width: 25px;
+  height: 25px;
+  min-height: 25px;
+  flex: 0 0 25px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: currentColor;
+  background: transparent;
+}
+.apex-shell .v20-message > button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+
+.apex-shell .apex-v3-alert-search,
+.apex-shell .apex-v3-search-with-clear,
+.apex-shell .apex-v3-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.apex-shell .apex-v3-alert-search { width: min(292px, 46%); justify-content: flex-end; }
+.apex-shell .apex-v3-alert-search .apex-v3-search-field { min-width: 0; flex: 1; }
+.apex-shell .apex-v3-search-with-clear { width: min(390px, 48%); min-width: 0; }
+.apex-shell .apex-v3-search-with-clear .apex-v3-search-field { width: auto; min-width: 0; flex: 1; }
+.apex-shell .apex-v3-panel-actions { justify-content: flex-end; }
+.apex-shell .apex-v3-panel-actions .apex-v3-button { min-height: 28px; }
+.apex-shell .apex-v3-inline-message { font-size: 9px; }
+.apex-shell .apex-v3-table tbody tr[tabindex] { outline: 0; }
+.apex-shell .apex-v3-tabs [role="tab"][aria-selected="true"],
+.apex-shell .apex-v3-chip-row [role="tab"][aria-selected="true"],
+.apex-shell .v20-table-tabs [role="tab"][aria-selected="true"] { position: relative; }
+
+/* Better state legibility at the 1368×753 contract. */
+.apex-shell .apex-v3-table th { font-size: 9px; }
+.apex-shell .apex-v3-table td { font-size: 9.4px; }
+.apex-shell .apex-v3-table td small,
+.apex-shell .apex-v3-key-values dt,
+.apex-shell .apex-v3-key-values dd { font-size: 9px; }
+.apex-shell .apex-v3-alert-toolbar small,
+.apex-shell .apex-v3-asset-identity span { font-size: 9px; }
+
+:root[data-apex-theme-resolved="dark"] .apex-shell .v20-position-table-scroll tbody tr.selected,
+:root[data-apex-theme-resolved="dark"] .apex-shell .apex-v3-table tbody tr.selected {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--apex-green-500, #2bb34d) 14%, var(--apex-surface)), var(--apex-surface));
+}
+:root[data-apex-theme-resolved="dark"] .apex-shell .v20-message { background: color-mix(in srgb, var(--v20-green, #13ad3d) 14%, var(--apex-surface)); color: var(--apex-green-400, #59d875); }
+
+@media (max-width: 1100px) {
+  .apex-shell .apex-v3-alert-search,
+  .apex-shell .apex-v3-search-with-clear { width: min(330px, 52%); }
+}
+
+
+/* Shell completion: search clearing and actionable sidebar health card. */
+.apex-shell .apex-search-clear {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: var(--apex-muted-600, #68788e);
+  background: transparent;
+  cursor: pointer;
+}
+.apex-shell .apex-search-clear:hover {
+  color: var(--apex-ink-900, #17243a);
+  background: var(--apex-surface-soft, #f3f7f4);
+}
+.apex-shell .apex-system-card {
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.apex-shell .apex-system-card:hover {
+  border-color: color-mix(in srgb, var(--apex-green-500, #2bb34d) 30%, var(--apex-border, #dfe6e2)) !important;
+  background: color-mix(in srgb, var(--apex-green-050, #effaf1) 45%, var(--apex-surface-soft, #f6f9f7)) !important;
+  box-shadow: 0 7px 18px rgba(19, 61, 31, .07) !important;
+  transform: translateY(-1px);
+}
+.apex-shell .apex-system-card-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .apex-shell .apex-system-card:hover { transform: none; }
+}
+/* GAP UI-01: a cached or unverifiable account snapshot must never read as live.
+   These only restyle the chip - page content stays visible and usable. */
+.apex-shell .v20-live-state.stale { color: var(--v20-amber, #ff9914); border-color: color-mix(in srgb, var(--v20-amber, #ff9914) 32%, var(--v20-border, #e1e8e4)); background: color-mix(in srgb, var(--v20-amber, #ff9914) 10%, transparent); }
+.apex-shell .v20-live-state.stale i { background: var(--v20-amber, #ff9914); box-shadow: 0 0 0 3px color-mix(in srgb, var(--v20-amber, #ff9914) 14%, transparent); }
+.apex-shell .v20-live-state.unknown { color: var(--v20-muted, #6b7a72); border-color: var(--v20-border, #e1e8e4); background: color-mix(in srgb, var(--v20-muted, #6b7a72) 8%, transparent); }
+.apex-shell .v20-live-state.unknown i { background: var(--v20-muted, #6b7a72); box-shadow: none; }
+
+/* GAP UI-02: show WHERE an account snapshot came from beside how fresh it is.
+   Secondary weight so the freshness label stays primary; the chip remains
+   metadata only and never gates page content. */
+.apex-shell .v20-live-state-source { font-weight: 600; opacity: 0.72; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; }
+.apex-shell .v20-live-state-source::before { content: '· '; opacity: 0.65; }

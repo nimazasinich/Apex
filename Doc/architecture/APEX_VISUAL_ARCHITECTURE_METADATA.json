@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-08-10",
+  "sourceTreeFiles": 1125,
+  "liveCodeStyleFiles": 551,
+  "staticHttpOperations": 129,
+  "openapiOperations": 27,
+  "canonicalHtml": "Doc/generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html",
+  "canonicalMarkdown": "Doc/architecture/APEX_SYSTEM_LAYERS.md",
+  "requiredNext": [
+    "Persistent server-side Smart Autopilot scheduler",
+    "Synchronized multi-symbol universe identity",
+    "Single provider-policy registry",
+    "Private runtime configuration directory",
+    "Complete OpenAPI coverage",
+    "Route/composition decomposition",
+    "Fresh production build + boot + load verification",
+    "Architecture drift automation"
+  ],
+  "integratedCompleteArchitecture": {
+    "submittedArtifact": "Doc/architecture/APEX_v1.0.56_ARCHITECTURE_COMPLETE_SUBMITTED.html",
+    "integrationNotes": "Doc/architecture/APEX_ARCHITECTURE_COMPLETE_INTEGRATION.md",
+    "canonicalTab": "Deep Audit",
+    "submittedFindingCount": 17,
+    "reconciliationRule": "Current source is implementation truth; historical/runtime claims require current evidence."
+  }
+}

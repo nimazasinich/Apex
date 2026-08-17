@@ -1,0 +1,116 @@
+/* Positions reference pass — scoped to the real Positions workspace. */
+:root[data-apex-theme-resolved="light"] .v20-positions-page {
+  gap: 14px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric {
+  min-height: 108px !important;
+  height: 108px !important;
+  padding: 14px !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric-head {
+  min-height: 34px !important;
+  gap: 8px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric-icon {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric-head > strong {
+  font-size: 10px !important;
+  font-weight: 650 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric-value {
+  margin-top: 8px !important;
+  font-size: 16px !important;
+  font-weight: 650 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-sparkline {
+  display: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric footer {
+  margin-top: 7px !important;
+  min-height: 18px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric footer > span {
+  display: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-reference-metric footer > small {
+  color: #64748b !important;
+  font-size: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .v20-table-card,
+:root[data-apex-theme-resolved="light"] .v20-positions-page .v20-context-section {
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .v20-context-sidebar {
+  grid-template-rows: minmax(0, 1.05fr) 170px minmax(0, 1fr) !important;
+  gap: 10px !important;
+  overflow: hidden !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .v20-context-section {
+  min-height: 0 !important;
+  padding: 14px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-exposure-empty {
+  height: calc(100% - 28px) !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars {
+  display: grid !important;
+  gap: 12px !important;
+  margin-top: 14px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars > div {
+  display: grid !important;
+  grid-template-columns: 44px minmax(0, 1fr) 36px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars i {
+  height: 8px !important;
+  overflow: hidden !important;
+  border-radius: 999px !important;
+  background: #eef2f6 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars em {
+  display: block !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  background: #22a447 !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars > div:nth-child(2) em { background: #8bd27a !important; }
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars > div:nth-child(3) em { background: #f2b826 !important; }
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .positions-leverage-bars strong {
+  color: #0f172a !important;
+  text-align: right !important;
+  font-size: 10px !important;
+}
+
+:root[data-apex-theme-resolved="light"] .v20-positions-page .v20-risk-note {
+  font-size: 10px !important;
+  white-space: normal !important;
+}

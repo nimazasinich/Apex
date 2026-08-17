@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "applicationVersion": "1.0.56",
+  "generatedAt": "2026-08-10",
+  "sourceWorkspace": "/mnt/data/APEX_work/apex_provider_hierarchy_v3",
+  "included": "latest project source + dist + QA/test evidence + documentation + verified _release artifacts",
+  "excluded": [
+    "node_modules/",
+    "runtime/private .env and secret config files",
+    ".apex-data/",
+    ".apex-private-data/",
+    ".claude/"
+  ],
+  "updatedMasterMd": "Doc/reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md",
+  "batch4Evidence": "Doc/reports/final/GAP_CLOSURE_SESSION_2026-08-10_batch4.md"
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "application": "apex-unified-terminal",
+  "version": "1.0.68",
+  "buildId": "5de12f735052",
+  "sourceHash": "5de12f735052",
+  "commit": null,
+  "dirtyTree": null,
+  "generatedAt": "2026-08-17T02:32:36.051Z",
+  "nodeVersion": "v22.22.0",
+  "platform": "win32",
+  "architecture": "x64"
+}
