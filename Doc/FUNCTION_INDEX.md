@@ -14,7 +14,7 @@ Use this index before opening large files. Search by function name, tag, or file
 ## Summary
 
 - Total indexed symbols: 3615
-- Generated at: 2026-08-22T19:40:53.719Z
+- Generated at: 2026-08-23T08:20:10.698Z
 
 ## Tag Index
 
@@ -625,7 +625,7 @@ Use this index before opening large files. Search by function name, tag, or file
 |---|---|---:|---|---|---|
 | `read` | arrow | 7-7 | no | no | `script` |
 | `exists` | arrow | 8-8 | no | no | `script` |
-| `check` | arrow | 30-34 | no | no | `script` |
+| `check` | arrow | 31-35 | no | no | `script` |
 
 ### scripts/qa/verifyAttachedFeatureParity.mjs
 

@@ -1,10 +1,10 @@
 # APEX Documentation Index
 
-Generated: 2026-08-17T09:57:05.619Z
+Generated: 2026-08-23T08:25:53.331Z
 
 This file is generated from the current `Doc/` tree. Use `Doc/README.md` for the short operating guide and `Refrence.md` for agent navigation rules.
 
-Documented files: 236
+Documented files: 237
 
 ## Active documentation
 
@@ -47,7 +47,7 @@ Documented files: 236
 | [`plans/active/PROJECT_UPGRADE_PLAN.md`](./plans/active/PROJECT_UPGRADE_PLAN.md) | APEX Central Project Plan | md | 2026-08-17 |
 | [`plans/active/TRADING_LOGIC_UPGRADE_PHASE1_INVENTORY.md`](./plans/active/TRADING_LOGIC_UPGRADE_PHASE1_INVENTORY.md) | APEX Trading Logic Upgrade — Phase 1 Inventory | md | 2026-08-17 |
 | [`plans/active/V20_VISUAL_PARITY_REMEDIATION_PLAN.md`](./plans/active/V20_VISUAL_PARITY_REMEDIATION_PLAN.md) | APEX V20 — Visual Parity Remediation Plan | md | 2026-08-17 |
-| [`PROJECT_README.md`](./PROJECT_README.md) | APEX Unified Terminal | md | 2026-08-17 |
+| [`PROJECT_README.md`](./PROJECT_README.md) | APEX Unified Terminal | md | 2026-08-18 |
 | [`provider-audits/2026-08-01-hf-space4-btc/round-1-orderbook.json`](./provider-audits/2026-08-01-hf-space4-btc/round-1-orderbook.json) | round 1 orderbook | json | 2026-08-17 |
 | [`provider-audits/2026-08-01-hf-space4-btc/round-1-snapshot.json`](./provider-audits/2026-08-01-hf-space4-btc/round-1-snapshot.json) | round 1 snapshot | json | 2026-08-17 |
 | [`provider-audits/2026-08-01-hf-space4-btc/round-2-orderbook.json`](./provider-audits/2026-08-01-hf-space4-btc/round-2-orderbook.json) | round 2 orderbook | json | 2026-08-17 |
@@ -72,8 +72,8 @@ Documented files: 236
 | [`reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md`](./reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md) | APEX V31 UI and Market-Data Recovery Report — 1.0.26 | md | 2026-08-17 |
 | [`reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md`](./reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md) | APEX V31 Verified UI and Backtesting Recovery — 1.0.28 | md | 2026-08-17 |
 | [`reports/CURRENT_STATUS.md`](./reports/CURRENT_STATUS.md) | APEX Unified Terminal — Current Status | md | 2026-08-17 |
-| [`repository/API_ROUTE_INDEX_2026-08-10.json`](./repository/API_ROUTE_INDEX_2026-08-10.json) | API ROUTE INDEX 2026 08 10 | json | 2026-08-17 |
-| [`repository/API_ROUTE_INDEX_2026-08-10.md`](./repository/API_ROUTE_INDEX_2026-08-10.md) | APEX API Route Index — 2026-08-10 | md | 2026-08-17 |
+| [`repository/API_ROUTE_INDEX_2026-08-10.json`](./repository/API_ROUTE_INDEX_2026-08-10.json) | API ROUTE INDEX 2026 08 10 | json | 2026-08-23 |
+| [`repository/API_ROUTE_INDEX_2026-08-10.md`](./repository/API_ROUTE_INDEX_2026-08-10.md) | APEX API Route Index — 2026-08-10 | md | 2026-08-23 |
 | [`repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md`](./repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md) | Documentation Relocation Manifest — 2026-08-10 | md | 2026-08-17 |
 | [`repository/FILE_INDEX_2026-08-10.json`](./repository/FILE_INDEX_2026-08-10.json) | FILE INDEX 2026 08 10 | json | 2026-08-17 |
 | [`repository/FILE_INDEX_2026-08-10.md`](./repository/FILE_INDEX_2026-08-10.md) | APEX Canonical File Index — 2026-08-10 | md | 2026-08-17 |
@@ -88,7 +88,7 @@ Documented files: 236
 | [`repository/ROOT_CLEANUP_2026-08-10.json`](./repository/ROOT_CLEANUP_2026-08-10.json) | ROOT CLEANUP 2026 08 10 | json | 2026-08-17 |
 | [`repository/ROOT_CLEANUP_2026-08-10.md`](./repository/ROOT_CLEANUP_2026-08-10.md) | Root Cleanup — 2026-08-10 | md | 2026-08-17 |
 | [`repository/ROOT_CLEANUP_REPORT.md`](./repository/ROOT_CLEANUP_REPORT.md) | Root Cleanup Report | md | 2026-08-17 |
-| [`repository/ROOT_CONTRACT.md`](./repository/ROOT_CONTRACT.md) | Root Contract | md | 2026-08-17 |
+| [`repository/ROOT_CONTRACT.md`](./repository/ROOT_CONTRACT.md) | Root Contract | md | 2026-08-23 |
 | [`repository/ROOT_SURFACE_AFTER_2026-08-10.md`](./repository/ROOT_SURFACE_AFTER_2026-08-10.md) | Root surface after cleanup — 2026-08-10 | md | 2026-08-17 |
 | [`repository/UNTRACKED_FILES_AUDIT.md`](./repository/UNTRACKED_FILES_AUDIT.md) | Untracked Files Audit | md | 2026-08-17 |
 | [`repository/VIEWPORT_1368x753_CONTRACT.md`](./repository/VIEWPORT_1368x753_CONTRACT.md) | APEX 1368×753 Desktop Viewport Contract | md | 2026-08-17 |
@@ -155,9 +155,9 @@ Documented files: 236
 | [`automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md`](./automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md) | APEX Shadow ML Training Report v1 | md | 2026-08-17 |
 | [`automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json`](./automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json) | REJECTED REPLAY REPORT v1 | json | 2026-08-17 |
 | [`automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md`](./automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md) | APEX Rejected Candidate Replay Report v1 | md | 2026-08-17 |
-| [`FUNCTION_INDEX.json`](./FUNCTION_INDEX.json) | FUNCTION INDEX | json | 2026-08-17 |
-| [`FUNCTION_INDEX.md`](./FUNCTION_INDEX.md) | APEX Function Atlas | md | 2026-08-17 |
-| [`generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html`](./generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html) | APEX v1.0.56 — Visual Architecture & File Layer Atlas | html | 2026-08-14 |
+| [`FUNCTION_INDEX.json`](./FUNCTION_INDEX.json) | FUNCTION INDEX | json | 2026-08-23 |
+| [`FUNCTION_INDEX.md`](./FUNCTION_INDEX.md) | APEX Function Atlas | md | 2026-08-23 |
+| [`generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html`](./generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html) | APEX v1.0.56 — Visual Architecture & File Layer Atlas | html | 2026-08-19 |
 
 ## Historical documentation
 
@@ -247,6 +247,7 @@ Documented files: 236
 | [`reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md`](./reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md) | APEX Comprehensive Project Architecture, File Index & Deficiency Audit — 2026-08-10 | md | 2026-08-17 |
 | [`reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md`](./reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md) | APEX v1.0.56 — Heavy Load / Stress Verification Report | md | 2026-08-17 |
 | [`reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md`](./reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md) | گزارش پیاده‌سازی APEX Strategy Studio Reference | md | 2026-08-17 |
+| [`reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md`](./reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md) | APEX structural profitability remediation — 2026-08-22 | md | 2026-08-22 |
 | [`reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md`](./reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md) | APEX UI Redesign V3 — Implementation Handoff | md | 2026-08-17 |
 | [`reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md`](./reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md) | APEX v1.0.56 — Master Project Gap-Closure Prompt | md | 2026-08-17 |
 | [`reports/final/APEX_V1_0_57_REMEDIATION_AND_DELIVERY.md`](./reports/final/APEX_V1_0_57_REMEDIATION_AND_DELIVERY.md) | APEX Unified Terminal v1.0.57 — Remediation and Delivery Status | md | 2026-08-17 |

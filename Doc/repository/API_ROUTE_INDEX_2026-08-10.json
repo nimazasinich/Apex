@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-17T21:45:18.767Z",
+  "generatedAt": "2026-08-23T08:25:31.091Z",
   "runtimeOperations": 136,
   "openApiOperations": 136,
   "documentedRuntimeOperations": 136,
@@ -565,42 +565,42 @@
       "method": "GET",
       "path": "/api/market/backtest",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3159,
+      "line": 3164,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/market/backtest/production-input",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3348,
+      "line": 3353,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/market/candidates",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1196,
+      "line": 1201,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/market/correlation",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1154,
+      "line": 1159,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/market/gainers-losers",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1145,
+      "line": 1150,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/market/majors",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3322,
+      "line": 3327,
       "openapi": true
     },
     {
@@ -621,21 +621,21 @@
       "method": "GET",
       "path": "/api/market/sentiment",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1179,
+      "line": 1184,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/market/symbol/:symbol",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1479,
+      "line": 1484,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/market/top-volume",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1137,
+      "line": 1142,
       "openapi": true
     },
     {
@@ -775,91 +775,91 @@
       "method": "GET",
       "path": "/api/strategies",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1720,
+      "line": 1725,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/:strategyId",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2776,
+      "line": 2781,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/:strategyId/fusion-preview",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2794,
+      "line": 2799,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/:strategyId/optimization",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2879,
+      "line": 2884,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/:strategyId/optimization/promote",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3036,
+      "line": 3041,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/:strategyId/optimization/rollback",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3076,
+      "line": 3081,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/:strategyId/optimize",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2900,
+      "line": 2905,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/:strategyId/validate",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3095,
+      "line": 3100,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/autopilot/control",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2446,
+      "line": 2451,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/autopilot/cycle",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2412,
+      "line": 2417,
       "openapi": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/autopilot/status",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 1734,
+      "line": 1739,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/multi-backtest",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2576,
+      "line": 2581,
       "openapi": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/paper-multi-trade/size",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 2741,
+      "line": 2746,
       "openapi": true
     },
     {
@@ -929,7 +929,7 @@
       "method": "GET",
       "path": "/api/system/health",
       "source": "src/services/apexNextMarketRoutes.ts",
-      "line": 3331,
+      "line": 3336,
       "openapi": true
     },
     {

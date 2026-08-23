@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const root = process.cwd();
 const classified = new Set([
   '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.github', '.gitignore',
-  '.mcp-recovered', '.node-version', '.nvmrc', 'apex-npm-tarballs.zip', 'CLAUDE.md', 'Doc', 'QA', 'README.md', 'README.txt', '_archive', '_qa', '_release', 'dist', 'index.html',
+  '.mcp-recovered', '.node-version', '.nvmrc', '.playwright-browsers', '.serena', 'apex-npm-tarballs.zip', 'CLAUDE.md', 'Doc', 'QA', 'README.md', 'README.txt', '_archive', '_qa', '_release', 'dist', 'index.html',
   'node_modules', 'openapi', 'package-lock.json', 'package.json', 'public', 'RUN-APEX.bat', 'scripts', 'server.ts', 'src', 'tests',
   'test-results', 'tools', 'tsconfig.json', 'tsconfig.ui02.json', 'vendor', 'VERSION', 'vite.config.ts',
 ]);

@@ -46,6 +46,8 @@ This contract classifies the repository root by **source ownership**, **generate
 | `_archive/` | Historical repository material retained for traceability | **No** |
 | `apex-npm-tarballs.zip` | Operator-supplied Windows offline npm tarball bundle. Must sit at the root because `scripts/windows/Restore-OfflineDependencies.ps1` defaults `-TarballZip` to `.\apex-npm-tarballs.zip` and fails with "Place apex-npm-tarballs.zip in the project root" otherwise. Regenerable convenience bundle, not a build input — `npm ci` resolves `file:vendor/*` from `vendor/` instead. | **No** |
 | `.mcp-recovered/` | Locally recovered MCP server installs (agent tooling, not product source) | **No** |
+| `.playwright-browsers/` | Local Playwright browser-registry cache created by the host `@playwright/mcp` server when it runs with this repository as its working directory (agent tooling, not product source). No npm script, config or workflow references it — the visual gates resolve browsers from the lockfile install instead. | **No** |
+| `.serena/` | Serena MCP project configuration and agent memories (agent tooling, not product source). Must sit at the root because the tool resolves its project directory as `<project>/.serena`; `project.yml` and `memories/` are versioned while `.serena/.gitignore` keeps the local symbol `cache/` untracked. | **No** |
 
 ## Runtime/private state that must not be source
 
