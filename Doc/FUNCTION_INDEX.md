@@ -14,7 +14,7 @@ Use this index before opening large files. Search by function name, tag, or file
 ## Summary
 
 - Total indexed symbols: 3630
-- Generated at: 2026-08-23T09:40:24.184Z
+- Generated at: 2026-08-23T10:07:27.842Z
 
 ## Tag Index
 
@@ -292,8 +292,8 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `globToRegExp` | function | 257-283 | yes | no | `script` |
-| `matchesAny` | function | 286-291 | yes | no | `script` |
+| `globToRegExp` | function | 270-296 | yes | no | `script` |
+| `matchesAny` | function | 299-304 | yes | no | `script` |
 
 ### scripts/gates/runAutopilotLifecycleRuntime.mjs
 

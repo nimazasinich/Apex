@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T09:40:24.165Z",
+  "generatedAt": "2026-08-23T10:07:27.828Z",
   "process": "Apex Function Atlas",
   "fileHashes": {
     "server.ts": "dc4ba382f58e2bda",
@@ -367,7 +367,7 @@
     "src/services/strategyCommander/strategyCompetence.ts": "bf6bf0a797c67b89",
     "src/services/strategyEngine/adaptiveTrendPortfolio.ts": "aaf1b8a3cf8b2e52",
     "src/services/strategyEngine/historicalSignals.ts": "26532d9ebb793a27",
-    "src/services/strategyEngine/index.ts": "a821a12d8dbc5739",
+    "src/services/strategyEngine/index.ts": "d33b190be2b290c7",
     "src/services/strategyEngine/orbVwapBreakout.ts": "fdc81065f50a3a8f",
     "src/services/strategyEngine/regimeRoutedComposite.ts": "7e99f9f0099389b6",
     "src/services/strategyEngine/replayHarness.ts": "05d989501d383292",
@@ -550,7 +550,7 @@
     "scripts/gates/checkTestInventory.mjs": "c6f548f3bad02bb1",
     "scripts/gates/checkVersionIdentity.mjs": "b5de86af5b1a975d",
     "scripts/gates/computeChangedScope.mjs": "9629d3d6af2d0f49",
-    "scripts/gates/gateDependencyMap.mjs": "e324afd08a9ac654",
+    "scripts/gates/gateDependencyMap.mjs": "2358a71a93eb55cc",
     "scripts/gates/runAutopilotLifecycleRuntime.mjs": "eff4dab830620a4c",
     "scripts/gates/verifyFast.mjs": "9397e3e2807c1d25",
     "scripts/lib/captureServer.mts": "3e2cd0ebcec1d489",
@@ -2846,8 +2846,8 @@
       "qualname": "globToRegExp",
       "kind": "function",
       "file": "scripts/gates/gateDependencyMap.mjs",
-      "line": 257,
-      "lineEnd": 283,
+      "line": 270,
+      "lineEnd": 296,
       "exported": true,
       "async": false,
       "params": [
@@ -2865,8 +2865,8 @@
       "qualname": "matchesAny",
       "kind": "function",
       "file": "scripts/gates/gateDependencyMap.mjs",
-      "line": 286,
-      "lineEnd": 291,
+      "line": 299,
+      "lineEnd": 304,
       "exported": true,
       "async": false,
       "params": [

@@ -166,6 +166,8 @@ out and why.
   `verify` chain. Runs the gates whose declared inputs changed since a recorded last-known-good
   baseline and reports the rest as **SKIPPED**, never as PASS. Mirrors the `&&` semantics of the
   real chain: the first failure stops the run and later gates are reported as NOT RUN.
+  Flags: `-- --dry-run` prints the decision table and executes nothing, `-- --keep-going` continues
+  past the first failure when triaging, `-- --base=<ref>` overrides the recorded baseline.
 - `scripts/gates/gateDependencyMap.mjs` — hand-maintained gate → input-glob map. Adding a gate to
   `verify`, or teaching an existing gate to read a new path, requires updating this map in the same
   change. A gate present in `verify` but absent from the map is reported as UNMAPPED and forces a
