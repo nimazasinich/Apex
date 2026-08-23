@@ -160,6 +160,25 @@ out and why.
 - `scripts/utilities/createReleaseArchive.mts` — sanitized release archive, content/tree hashes,
   approved-file copy, release evidence.
 
+### Change-aware dev loop (`verify:fast`) — never a release gate
+
+- `scripts/gates/verifyFast.mjs` (`npm run verify:fast`) — DEV-LOOP-ONLY filter over the canonical
+  `verify` chain. Runs the gates whose declared inputs changed since a recorded last-known-good
+  baseline and reports the rest as **SKIPPED**, never as PASS. Mirrors the `&&` semantics of the
+  real chain: the first failure stops the run and later gates are reported as NOT RUN.
+- `scripts/gates/gateDependencyMap.mjs` — hand-maintained gate → input-glob map. Adding a gate to
+  `verify`, or teaching an existing gate to read a new path, requires updating this map in the same
+  change. A gate present in `verify` but absent from the map is reported as UNMAPPED and forces a
+  no-skip run, so drift degrades toward running everything rather than toward skipping something.
+- `scripts/gates/computeChangedScope.mjs` (`npm run verify:fast:scope`) — git-diff scope report
+  written to `QA/verify-fast-scope.json`. `--record-baseline --evidence="..."` records the
+  last-known-good ref and refuses to record one without evidence.
+- **`verify:fast` certifies nothing.** `npm run verify` and `npm run release:package` are unchanged,
+  unconditional, and remain mandatory before any commit to `main` and before any release. Only gates
+  marked expensive are ever skippable; every contract-string gate runs on every invocation, and with
+  no recorded baseline nothing is skipped at all. Any doubt about a result means running the full
+  `npm run verify`.
+
 ### Subsystem QA naming conventions
 
 - `verify*` — named static/source or browser contract gate.
@@ -195,7 +214,7 @@ the correct Windows/VM surface, read the generated evidence, and only then claim
 Complete per-file capability inventory, copied from the APEX scripts capability map.
 Format: `path` — capability **[tags]**; env: relevant environment variables.
 
-Entry counts: capture 21, gates 7, lib 2, qa 82, utilities 47, windows 4, root audits 4 = **167**.
+Entry counts: capture 21, gates 10, lib 2, qa 82, utilities 47, windows 4, root audits 4 = **170**.
 
 ### capture
 
@@ -230,6 +249,9 @@ Entry counts: capture 21, gates 7, lib 2, qa 82, utilities 47, windows 4, root a
 - `gates/checkRootContract.mjs` — Verifies the repository/project-root contract and required root layout. **[runtime, release]**
 - `gates/checkTestInventory.mjs` — Discovers test files/calls and validates the expected test inventory/count contract. **[tests]**
 - `gates/checkVersionIdentity.mjs` — Checks version identity consistency across project metadata. **[release]**
+- `gates/computeChangedScope.mjs` — Classifies git-changed files into scopes and writes the dev-loop scope report; records an evidence-backed last-known-good baseline. **[static/read, writes]**; env: APEX_VERIFY_FAST_BASE
+- `gates/gateDependencyMap.mjs` — Hand-maintained gate → input-glob dependency map consumed by the dev-loop filter; no authority over `verify`. **[static/read]**
+- `gates/verifyFast.mjs` — DEV-LOOP-ONLY change-aware filter over the canonical verify chain; skips only expensive gates whose inputs are unchanged and never reports SKIPPED as PASS. **[tests, build, runtime]**
 
 ### lib
 

@@ -38,6 +38,8 @@
     "qa:consolidation": "node scripts/qa/verifyConsolidationIntegration.mjs",
     "verify": "npm run lint && npm run check:test-inventory && npm run test:unit && npm run build && npm run test:runtime && npm run check:source-contracts && npm run test:browser && npm run test:visual && npm run docs:visual && npm run docs:check && npm run release:gate",
     "verify:visual": "npm run qa:ui-1368 && npm run qa:workspace-runtime",
+    "verify:fast": "node scripts/gates/verifyFast.mjs",
+    "verify:fast:scope": "node scripts/gates/computeChangedScope.mjs",
     "docs:visual": "node scripts/utilities/updateVisualProjectDocumentation.mjs",
     "qa:reference-ui": "node scripts/qa/verifyReferenceUiRedesign.mjs",
     "clean:artifacts": "node scripts/utilities/cleanGeneratedArtifacts.mjs",

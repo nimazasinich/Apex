@@ -13,8 +13,8 @@ Use this index before opening large files. Search by function name, tag, or file
 
 ## Summary
 
-- Total indexed symbols: 3615
-- Generated at: 2026-08-23T08:20:10.698Z
+- Total indexed symbols: 3630
+- Generated at: 2026-08-23T09:40:24.184Z
 
 ## Tag Index
 
@@ -27,7 +27,7 @@ Use this index before opening large files. Search by function name, tag, or file
 - `ml`: 177
 - `provider`: 106
 - `scanner`: 30
-- `script`: 661
+- `script`: 676
 - `server`: 80
 - `service`: 1906
 - `test`: 151
@@ -277,6 +277,24 @@ Use this index before opening large files. Search by function name, tag, or file
 |---|---|---:|---|---|---|
 | `readJson` | arrow | 6-6 | no | no | `script` |
 
+### scripts/gates/computeChangedScope.mjs
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `git` | function | 37-44 | no | no | `script` |
+| `lines` | function | 46-49 | no | no | `script` |
+| `readBaseline` | function | 51-81 | no | no | `script` |
+| `computeChangedScope` | function | 83-143 | yes | no | `script` |
+| `recordBaseline` | function | 145-174 | no | no | `script` |
+| `main` | function | 176-189 | no | no | `script` |
+
+### scripts/gates/gateDependencyMap.mjs
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `globToRegExp` | function | 257-283 | yes | no | `script` |
+| `matchesAny` | function | 286-291 | yes | no | `script` |
+
 ### scripts/gates/runAutopilotLifecycleRuntime.mjs
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -291,6 +309,18 @@ Use this index before opening large files. Search by function name, tag, or file
 | `stopServer` | function | 197-204 | no | no | `script` |
 | `waitForBoot` | function | 224-236 | no | yes | `script` |
 | `waitForSchedulerCycle` | arrow | 302-326 | no | yes | `script` |
+
+### scripts/gates/verifyFast.mjs
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `banner` | function | 59-64 | no | no | `script` |
+| `canonicalVerifyLeaves` | function | 72-95 | no | no | `script` |
+| `walk` | arrow | 75-92 | no | no | `script` |
+| `probeBuildIdentity` | function | 97-104 | no | no | `script` |
+| `decide` | function | 106-124 | no | no | `script` |
+| `runGate` | function | 126-144 | no | no | `script` |
+| `main` | function | 146-241 | no | no | `script` |
 
 ### scripts/lib/captureServer.mts
 

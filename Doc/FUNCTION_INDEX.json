@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T08:20:10.684Z",
+  "generatedAt": "2026-08-23T09:40:24.165Z",
   "process": "Apex Function Atlas",
   "fileHashes": {
     "server.ts": "dc4ba382f58e2bda",
@@ -549,7 +549,10 @@
     "scripts/gates/checkRootContract.mjs": "786026389d7ba749",
     "scripts/gates/checkTestInventory.mjs": "c6f548f3bad02bb1",
     "scripts/gates/checkVersionIdentity.mjs": "b5de86af5b1a975d",
+    "scripts/gates/computeChangedScope.mjs": "9629d3d6af2d0f49",
+    "scripts/gates/gateDependencyMap.mjs": "e324afd08a9ac654",
     "scripts/gates/runAutopilotLifecycleRuntime.mjs": "eff4dab830620a4c",
+    "scripts/gates/verifyFast.mjs": "9397e3e2807c1d25",
     "scripts/lib/captureServer.mts": "3e2cd0ebcec1d489",
     "scripts/lib/decisionMemoryLoader.mts": "50cfe14cb35aa525",
     "scripts/qa/accessibilitySmoke.spec.mts": "b8ca5b2c500db2fb",
@@ -2726,6 +2729,158 @@
       "docstring": ""
     },
     {
+      "name": "git",
+      "qualname": "git",
+      "kind": "function",
+      "file": "scripts/gates/computeChangedScope.mjs",
+      "line": 37,
+      "lineEnd": 44,
+      "exported": false,
+      "async": false,
+      "params": [
+        "args",
+        "{ root = process.cwd(), allowFail = true } = {}"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function git(args, { root = process.cwd(), allowFail = true } = {}) {",
+      "docstring": ""
+    },
+    {
+      "name": "lines",
+      "qualname": "lines",
+      "kind": "function",
+      "file": "scripts/gates/computeChangedScope.mjs",
+      "line": 46,
+      "lineEnd": 49,
+      "exported": false,
+      "async": false,
+      "params": [
+        "value"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function lines(value) {",
+      "docstring": ""
+    },
+    {
+      "name": "readBaseline",
+      "qualname": "readBaseline",
+      "kind": "function",
+      "file": "scripts/gates/computeChangedScope.mjs",
+      "line": 51,
+      "lineEnd": 81,
+      "exported": false,
+      "async": false,
+      "params": [
+        "root"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function readBaseline(root) {",
+      "docstring": ""
+    },
+    {
+      "name": "computeChangedScope",
+      "qualname": "computeChangedScope",
+      "kind": "function",
+      "file": "scripts/gates/computeChangedScope.mjs",
+      "line": 83,
+      "lineEnd": 143,
+      "exported": true,
+      "async": false,
+      "params": [
+        "{ root = process.cwd() } = {}"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function computeChangedScope({ root = process.cwd() } = {}) {",
+      "docstring": ""
+    },
+    {
+      "name": "recordBaseline",
+      "qualname": "recordBaseline",
+      "kind": "function",
+      "file": "scripts/gates/computeChangedScope.mjs",
+      "line": 145,
+      "lineEnd": 174,
+      "exported": false,
+      "async": false,
+      "params": [
+        "root"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function recordBaseline(root) {",
+      "docstring": ""
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/gates/computeChangedScope.mjs",
+      "line": 176,
+      "lineEnd": 189,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main() {",
+      "docstring": ""
+    },
+    {
+      "name": "globToRegExp",
+      "qualname": "globToRegExp",
+      "kind": "function",
+      "file": "scripts/gates/gateDependencyMap.mjs",
+      "line": 257,
+      "lineEnd": 283,
+      "exported": true,
+      "async": false,
+      "params": [
+        "pattern"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function globToRegExp(pattern) {",
+      "docstring": "Converts one glob pattern to a RegExp, single pass, no placeholder sentinels.\nSupported forms, which are the only ones this map uses:\n  '*'          -> matches any path at all (used by the ALWAYS_RUN gates)\n  'a' + '/' -> optional directory prefix, so 'a' + '/b' matches 'a/b'\n  'a'       -> any dept"
+    },
+    {
+      "name": "matchesAny",
+      "qualname": "matchesAny",
+      "kind": "function",
+      "file": "scripts/gates/gateDependencyMap.mjs",
+      "line": 286,
+      "lineEnd": 291,
+      "exported": true,
+      "async": false,
+      "params": [
+        "filePath",
+        "patterns"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function matchesAny(filePath, patterns) {",
+      "docstring": "Returns the first pattern that matches, or null."
+    },
+    {
       "name": "record",
       "qualname": "record",
       "kind": "function",
@@ -2917,6 +3072,135 @@
         "script"
       ],
       "signature": "async (expectedIndex) => {",
+      "docstring": ""
+    },
+    {
+      "name": "banner",
+      "qualname": "banner",
+      "kind": "function",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 59,
+      "lineEnd": 64,
+      "exported": false,
+      "async": false,
+      "params": [
+        "lines"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function banner(lines) {",
+      "docstring": ""
+    },
+    {
+      "name": "canonicalVerifyLeaves",
+      "qualname": "canonicalVerifyLeaves",
+      "kind": "function",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 72,
+      "lineEnd": 95,
+      "exported": false,
+      "async": false,
+      "params": [
+        "scripts"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function canonicalVerifyLeaves(scripts) {",
+      "docstring": "Expands the canonical `verify` script into its leaf gates, expanding ONLY the\ntwo aggregate children that VERIFY_FAST_CHAIN models at child level. Anything\nelse (qa:liquidity-hunter's own 15-child chain, for example) stays a single\nleaf, exactly as the map treats it."
+    },
+    {
+      "name": "walk",
+      "qualname": "walk",
+      "kind": "arrow",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 75,
+      "lineEnd": 92,
+      "exported": false,
+      "async": false,
+      "params": [
+        "name"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "(name) => {",
+      "docstring": ""
+    },
+    {
+      "name": "probeBuildIdentity",
+      "qualname": "probeBuildIdentity",
+      "kind": "function",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 97,
+      "lineEnd": 104,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function probeBuildIdentity() {",
+      "docstring": ""
+    },
+    {
+      "name": "decide",
+      "qualname": "decide",
+      "kind": "function",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 106,
+      "lineEnd": 124,
+      "exported": false,
+      "async": false,
+      "params": [
+        "{ entry, scope, noSkip, buildProbe }"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function decide({ entry, scope, noSkip, buildProbe }) {",
+      "docstring": ""
+    },
+    {
+      "name": "runGate",
+      "qualname": "runGate",
+      "kind": "function",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 126,
+      "lineEnd": 144,
+      "exported": false,
+      "async": false,
+      "params": [
+        "entry"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function runGate(entry) {",
+      "docstring": ""
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/gates/verifyFast.mjs",
+      "line": 146,
+      "lineEnd": 241,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main() {",
       "docstring": ""
     },
     {
