@@ -5,31 +5,8 @@
  */
 
 import type { NewsArticle } from './supplementalTypes';
-
-export type NewsApiEndpoint = 'everything' | 'top-headlines';
-export type NewsApiSortBy = 'relevancy' | 'popularity' | 'publishedAt';
-
-/** Non-secret query options persisted in Settings (safe to expose to the browser). */
-export interface NewsApiQueryOptions {
-  endpoint?: NewsApiEndpoint;
-  sortBy?: NewsApiSortBy;
-  language?: string;
-  pageSize?: number;
-  lookbackDays?: number;
-  domains?: string;
-  excludeDomains?: string;
-  searchIn?: string;
-  sources?: string;
-  category?: string;
-  country?: string;
-  includeCryptoTerms?: boolean;
-  /**
-   * Drop headlines that carry no cryptocurrency term. NewsAPI matches `q`
-   * against the full article body, so crypto publishers leak general world
-   * news (their "appeared first on Crypto Briefing" footer matches "crypto").
-   */
-  cryptoOnly?: boolean;
-}
+import type { NewsApiQueryOptions } from './newsApiTypes';
+export type { NewsApiEndpoint, NewsApiQueryOptions, NewsApiSortBy } from './newsApiTypes';
 
 export const DEFAULT_NEWSAPI_QUERY: NewsApiQueryOptions = {
   endpoint: 'everything',

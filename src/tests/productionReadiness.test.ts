@@ -76,4 +76,18 @@ describe('production readiness dependency truth', () => {
     expect(snapshot.dependencies.persistence.reason).toContain('decision_memory_unavailable');
     expect(snapshot.dependencies.supplementalProviders.required).toBe(false);
   });
+
+  it('fails persistence readiness when the mirror exists but its last durable write failed', () => {
+    const snapshot = buildProductionReadiness({
+      now: 10_000,
+      acceptingRequests: true,
+      providerProbe: { checkedAt: 9_500, kucoin: 'READY', binance: 'READY' },
+      exchange: { activeSessions: 0, executionArmedSessions: 0, newestVerifiedAt: null, newestVerifiedAgeMs: null },
+      persistence: { decisionMemoryAvailable: true, decisionMemoryWritable: false, adaptiveGovernanceAvailable: true },
+      liquidityHunter: lh(),
+      supplementalSummary: supplemental,
+    });
+    expect(snapshot.state).toBe('NOT_READY');
+    expect(snapshot.dependencies.persistence.reason).toBe('decision_memory_not_writable');
+  });
 });

@@ -295,7 +295,11 @@ export function HelpPage() {
               aria-label={`${tutorial.title}, ${tutorial.duration}`}
               onClick={() => setActiveTutorial(tutorial)}
             >
-              <div className="apex-v3-tutorial-thumb" aria-hidden="true">
+              <div
+                className="apex-v3-tutorial-thumb"
+                aria-hidden="true"
+                style={{ backgroundImage: `url("${tutorial.thumbnail}")` }}
+              >
                 <img src={tutorial.thumbnail} alt="" loading="eager" />
                 <span>{tutorial.duration}</span>
               </div>

@@ -1,6 +1,7 @@
 import type { BacktestCandle } from '../backtesting';
 import type { BacktestInterval, StrategyReplayResult } from '../../types';
 import { computeTransactionCostPct, transactionCostInputsFromModel, type TransactionCostModel } from '../transactionCosts';
+import type { HistoricalSignalBundle } from './historicalSignals';
 
 export interface StrategyRunContext {
   symbol: string;
@@ -11,9 +12,81 @@ export interface StrategyRunContext {
   universeCandles?: Record<string, BacktestCandle[]>;
   parameters?: Record<string, number | string>;
   transactionCostModel: TransactionCostModel;
+  historicalSignals?: HistoricalSignalBundle;
 }
 
 export type StrategyRunFn = (ctx: StrategyRunContext) => StrategyReplayResult;
+
+export interface PortfolioRiskPolicy {
+  policyVersion: string;
+  maxGrossExposureFraction: number;
+  maxRiskPerTradePct: number;
+  softDrawdownPct: number;
+  hardDrawdownPct: number;
+  softThrottleFraction: number;
+}
+
+export const DEFAULT_PORTFOLIO_RISK_POLICY: PortfolioRiskPolicy = {
+  policyVersion: 'portfolio-risk-cap-v1',
+  maxGrossExposureFraction: 0.35,
+  maxRiskPerTradePct: 0.75,
+  softDrawdownPct: 8,
+  hardDrawdownPct: 12,
+  softThrottleFraction: 0.5,
+};
+
+/**
+ * Converts price-return trades into portfolio-return trades with a fixed risk
+ * budget, gross-exposure cap, drawdown throttle and hard shutdown. The policy is
+ * applied in chronological order and never consults future candles or results.
+ */
+export function applyPortfolioRiskPolicy(
+  input: StrategyReplayResult['trades'],
+  policy: PortfolioRiskPolicy = DEFAULT_PORTFOLIO_RISK_POLICY,
+): { trades: StrategyReplayResult['trades']; skippedAfterShutdown: number; throttledTrades: number } {
+  const ordered = [...input].sort((left, right) => Date.parse(left.entryTime) - Date.parse(right.entryTime));
+  const trades: StrategyReplayResult['trades'] = [];
+  let equity = 100;
+  let peak = 100;
+  let shutdown = false;
+  let skippedAfterShutdown = 0;
+  let throttledTrades = 0;
+
+  for (const trade of ordered) {
+    if (shutdown) { skippedAfterShutdown += 1; continue; }
+    const drawdownPct = peak > 0 ? ((peak - equity) / peak) * 100 : policy.hardDrawdownPct;
+    const throttle = drawdownPct >= policy.softDrawdownPct ? policy.softThrottleFraction : 1;
+    if (throttle < 1) throttledTrades += 1;
+    const stopRiskPct = trade.entry > 0 ? Math.abs(trade.entry - trade.stop) / trade.entry * 100 : Number.POSITIVE_INFINITY;
+    const riskSizedExposure = stopRiskPct > 0 && Number.isFinite(stopRiskPct) ? policy.maxRiskPerTradePct / stopRiskPct : 0;
+    const exposureFraction = Math.max(0, Math.min(policy.maxGrossExposureFraction, riskSizedExposure * throttle));
+    const grossPnlPct = Number.isFinite(trade.unscaledGrossPnlPct)
+      ? Number(trade.unscaledGrossPnlPct)
+      : Number.isFinite(trade.grossPnlPct)
+        ? Number(trade.grossPnlPct)
+        : trade.pnlPct + Number(trade.transactionCostPct || 0);
+    const transactionCostPct = Number.isFinite(trade.unscaledTransactionCostPct)
+      ? Number(trade.unscaledTransactionCostPct)
+      : Number(trade.transactionCostPct || 0);
+    const portfolioPnlPct = (grossPnlPct - transactionCostPct) * exposureFraction;
+    const governed = {
+      ...trade,
+      grossPnlPct: grossPnlPct * exposureFraction,
+      transactionCostPct: transactionCostPct * exposureFraction,
+      pnlPct: portfolioPnlPct,
+      portfolioPnlPct,
+      exposureFraction,
+      unscaledGrossPnlPct: grossPnlPct,
+      unscaledTransactionCostPct: transactionCostPct,
+    };
+    trades.push(governed);
+    equity *= 1 + portfolioPnlPct / 100;
+    peak = Math.max(peak, equity);
+    const nextDrawdown = peak > 0 ? ((peak - equity) / peak) * 100 : policy.hardDrawdownPct;
+    if (nextDrawdown >= policy.hardDrawdownPct) shutdown = true;
+  }
+  return { trades, skippedAfterShutdown, throttledTrades };
+}
 
 export function sanitizeCandles(candles: BacktestCandle[]): BacktestCandle[] {
   const cleaned: Array<BacktestCandle & { __timestamp: number }> = [];
@@ -224,11 +297,14 @@ export function rollingVwap(candles: BacktestCandle[], endExclusive: number, len
 
 export function finalizeReplay(
   candles: BacktestCandle[],
-  trades: StrategyReplayResult['trades'],
+  rawTrades: StrategyReplayResult['trades'],
   strategyId: string,
   rejectedCandidates = 0,
   rejectionCounts: Record<string, number> = {},
+  riskPolicy: PortfolioRiskPolicy = DEFAULT_PORTFOLIO_RISK_POLICY,
 ): StrategyReplayResult {
+  const governed = applyPortfolioRiskPolicy(rawTrades, riskPolicy);
+  const trades = governed.trades;
   const equityCurve = [100];
   let grossWins = 0;
   let grossLosses = 0;
@@ -276,6 +352,15 @@ export function finalizeReplay(
       rejectionCounts,
       strategy: strategyId,
       replayMode: 'DETERMINISTIC_STRATEGY_REPLAY',
+      riskPolicy: {
+        policyVersion: riskPolicy.policyVersion,
+        maxGrossExposureFraction: riskPolicy.maxGrossExposureFraction,
+        maxRiskPerTradePct: riskPolicy.maxRiskPerTradePct,
+        softDrawdownPct: riskPolicy.softDrawdownPct,
+        hardDrawdownPct: riskPolicy.hardDrawdownPct,
+        skippedAfterShutdown: governed.skippedAfterShutdown,
+        throttledTrades: governed.throttledTrades,
+      },
     },
   };
 }

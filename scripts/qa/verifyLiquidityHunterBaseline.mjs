@@ -9,6 +9,19 @@ const pkg = JSON.parse(read('package.json'));
 const registry = read('src/services/strategyRegistry.ts');
 const routes = read('src/services/apexNextMarketRoutes.ts');
 const server = read('server.ts');
+// Route handlers now also live in dedicated modules under src/services/routes/
+// (e.g. registerDecisionMemoryRoutes, mounted from server.ts). The baseline check
+// asserts the snapshotted route literals still exist in the route-handling source,
+// so it must read those modules too — otherwise a pure relocation of a still-mounted
+// route reads as a deleted route. Scan every module in the directory so future route
+// extractions stay covered without editing this gate again.
+const routeModulesDir = 'src/services/routes';
+const routeModules = exists(routeModulesDir)
+  ? fs.readdirSync(path.join(root, routeModulesDir))
+      .filter((file) => file.endsWith('.ts'))
+      .map((file) => read(`${routeModulesDir}/${file}`))
+      .join('\n')
+  : '';
 const governance = read('src/services/adaptiveThresholdGovernance.ts');
 const baselinePath = 'QA/liquidity-hunter-baseline/baseline.json';
 const baseline = exists(baselinePath) ? JSON.parse(read(baselinePath)) : null;
@@ -16,7 +29,7 @@ const baseline = exists(baselinePath) ? JSON.parse(read(baselinePath)) : null;
 const strategyIds = [...registry.matchAll(/strategyId:\s*'([^']+)'/g)].map((match) => match[1]);
 const defaultStrategyMatch = registry.match(/DEFAULT_STRATEGY_ID\s*=\s*'([^']+)'/);
 const uniqueStrategyIds = [...new Set([...(defaultStrategyMatch ? [defaultStrategyMatch[1]] : []), ...strategyIds])];
-const currentRouteText = `${routes}\n${server}`;
+const currentRouteText = `${routes}\n${server}\n${routeModules}`;
 const preservedStrategyIds = baseline?.strategyRegistry?.strategies?.map((item) => item.strategyId) ?? [];
 const preservedRouteLiterals = baseline?.apiRoutes?.routes ?? [];
 const preservedScriptNames = Object.keys(baseline?.packageScripts?.scripts ?? {});

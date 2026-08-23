@@ -96,8 +96,8 @@ describe('Autopilot wiring — one controller, one driver', () => {
     const app = read(APP);
     expect(app).toContain("import { useAutopilotController } from './lib/useAutopilotController';");
     expect(app.match(/useAutopilotController\(settings\.autopilotEnabled\)/g)?.length).toBe(1);
-    // The global shell plus both page-local mirrors receive the same controller binding.
-    expect(app.match(/autopilotController=\{autopilotController\}/g)?.length).toBe(3);
+    // The global shell plus all three page consumers (Overview, Backtesting, Strategies) receive the same controller binding.
+    expect(app.match(/autopilotController=\{autopilotController\}/g)?.length).toBe(4);
     // The existing persisted-preference path is untouched.
     expect(app.match(/onAutopilotEnabledChange=\{setAutopilotEnabled\}/g)?.length).toBeGreaterThanOrEqual(2);
   });

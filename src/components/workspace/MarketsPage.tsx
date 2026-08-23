@@ -388,11 +388,11 @@ function MarketsTablePanel({
       <div className="apex-mkt2-pagination">
         <span>{filtered.length ? `Showing ${pageStart + 1} to ${Math.min(pageStart + pageSize, filtered.length)} of ${filtered.length} markets` : 'Showing 0 markets'}</span>
         <div className="apex-mkt2-pagination-pages">
-          <button type="button" disabled={safePage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} aria-label="Previous page"><ChevronLeft size={14} /></button>
+          <button type="button" disabled={safePage <= 1} onClick={() => setPage(Math.max(1, safePage - 1))} aria-label="Previous page"><ChevronLeft size={14} /></button>
           {pageButtons.map((item, index) => item === 'ellipsis'
             ? <span key={`ellipsis-${index}`} className="apex-mkt2-page-ellipsis">…</span>
             : <button key={item} type="button" className={item === safePage ? 'active' : ''} onClick={() => setPage(item)}>{item}</button>)}
-          <button type="button" disabled={safePage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} aria-label="Next page"><ChevronRight size={14} /></button>
+          <button type="button" disabled={safePage >= totalPages} onClick={() => setPage(Math.min(totalPages, safePage + 1))} aria-label="Next page"><ChevronRight size={14} /></button>
         </div>
         <label className="apex-mkt2-page-size">
           <select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} aria-label="Rows per page">

@@ -56,6 +56,10 @@ export interface ScreenerRow {
   lastPrice: number;
   priceChange24hPct: number;
   turnover24h: number;
+  /** Reported base-asset volume. Kept separate from USD turnover. */
+  baseVolume24h: ScreenerMetric;
+  /** Reported high-to-low range as a percentage of last price; not annualized volatility. */
+  range24hPct: ScreenerMetric;
   openInterest: ScreenerMetric;
   fundingRate: ScreenerMetric;
   /**
@@ -90,6 +94,14 @@ export interface ScreenerFilters {
   minScore: number;
   /** Inclusive lower bound on 24h USD turnover. */
   minTurnoverUsd: number;
+  performance: 'ALL' | 'GAINERS' | 'LOSERS' | 'MOVERS';
+  guard: 'ALL' | 'PASS' | 'FLAGGED';
+  confluence: 'ALL' | 'ALIGNED' | 'CONFLICTING';
+  funding: 'ALL' | 'POSITIVE' | 'NEGATIVE' | 'AVAILABLE';
+  dataQuality: 'ALL' | 'LIVE' | 'PARTIAL';
+  minMomentum: number;
+  minCoveragePct: number;
+  favoritesOnly: boolean;
 }
 
 export const DEFAULT_SCREENER_FILTERS: ScreenerFilters = {
@@ -98,9 +110,19 @@ export const DEFAULT_SCREENER_FILTERS: ScreenerFilters = {
   tier: 'ALL',
   minScore: 0,
   minTurnoverUsd: 0,
+  performance: 'ALL',
+  guard: 'ALL',
+  confluence: 'ALL',
+  funding: 'ALL',
+  dataQuality: 'ALL',
+  minMomentum: 0,
+  minCoveragePct: 0,
+  favoritesOnly: false,
 };
 
-export type ScreenerSortKey = 'rank' | 'symbol' | 'direction' | 'score' | 'tier' | 'change' | 'turnover';
+export type ScreenerSortKey =
+  | 'rank' | 'symbol' | 'direction' | 'score' | 'tier' | 'change' | 'turnover'
+  | 'momentum' | 'structure' | 'funding' | 'openInterest' | 'coverage' | 'range' | 'warnings';
 
 export interface ScreenerSort {
   key: ScreenerSortKey;
@@ -108,6 +130,30 @@ export interface ScreenerSort {
 }
 
 export const DEFAULT_SCREENER_SORT: ScreenerSort = { key: 'rank', ascending: true };
+
+export type ScreenerColumnSet = 'overview' | 'momentum' | 'derivatives' | 'quality';
+export type ScreenerViewMode = 'table' | 'map';
+
+export interface ScreenerWorkspaceState {
+  filters: ScreenerFilters;
+  sort: ScreenerSort;
+  columnSet: ScreenerColumnSet;
+  viewMode: ScreenerViewMode;
+}
+
+export interface SavedScreenerScreen {
+  id: string;
+  name: string;
+  createdAt: number;
+  workspace: ScreenerWorkspaceState;
+}
+
+export const DEFAULT_SCREENER_WORKSPACE: ScreenerWorkspaceState = {
+  filters: DEFAULT_SCREENER_FILTERS,
+  sort: DEFAULT_SCREENER_SORT,
+  columnSet: 'overview',
+  viewMode: 'table',
+};
 
 export interface ScreenerSummary {
   /** Distinct symbols the scanner returned a thesis for. */

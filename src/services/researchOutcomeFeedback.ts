@@ -30,7 +30,7 @@
  */
 import type { SignalDecisionLog } from '../types';
 import { PAPER_FORWARD_SOURCE } from './paperForwardEvaluator';
-import type { CommanderOutcomeAttributionV1, CommanderResearchComparisonV1 } from './strategyCommander/commanderOutcomeFeedback';
+import type { CommanderOutcomeAttributionV1, CommanderResearchComparisonV1 } from '../contracts/commander/commanderOutcomeContracts';
 
 export const RESEARCH_OUTCOME_VERSION = 'research_outcome_feedback_v1';
 export const RESEARCH_OUTCOME_SOURCE = 'SMART_AUTOPILOT_RESEARCH_REPLAY';

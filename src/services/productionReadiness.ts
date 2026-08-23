@@ -49,6 +49,7 @@ export interface ProductionReadinessInput {
   maxAccountAgeMs?: number;
   persistence: {
     decisionMemoryAvailable: boolean;
+    decisionMemoryWritable?: boolean;
     adaptiveGovernanceAvailable: boolean;
   };
   liquidityHunter: LiquidityHunterOperationsSnapshot;
@@ -100,11 +101,13 @@ export function buildProductionReadiness(input: ProductionReadinessInput): Produ
     accountFreshness = { state: 'READY', required: false, reason: null, lastVerifiedAt: iso(input.exchange.newestVerifiedAt) };
   }
 
-  const persistenceReady = input.persistence.decisionMemoryAvailable && input.persistence.adaptiveGovernanceAvailable;
+  const decisionMemoryWritable = input.persistence.decisionMemoryWritable ?? input.persistence.decisionMemoryAvailable;
+  const persistenceReady = input.persistence.decisionMemoryAvailable && decisionMemoryWritable && input.persistence.adaptiveGovernanceAvailable;
   const persistence: DependencyReadinessItem = persistenceReady
     ? { state: 'READY', required: true, reason: null, lastVerifiedAt: iso(now) }
     : { state: 'NOT_READY', required: true, reason: [
         !input.persistence.decisionMemoryAvailable ? 'decision_memory_unavailable' : null,
+        input.persistence.decisionMemoryAvailable && !decisionMemoryWritable ? 'decision_memory_not_writable' : null,
         !input.persistence.adaptiveGovernanceAvailable ? 'adaptive_governance_unavailable' : null,
       ].filter(Boolean).join(';'), lastVerifiedAt: iso(now) };
 

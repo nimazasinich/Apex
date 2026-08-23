@@ -69,11 +69,35 @@ button { color: inherit; }
 .apex-shell .apex-nav,
 .apex-shell .apex-sidebar-bottom { display: flex !important; flex-direction: column !important; gap: 2px !important; }
 .apex-shell .apex-nav { padding-top: 4px !important; }
+
+/* Full-height rail containment.
+   `.apex-shell > .apex-sidebar` is height:100% with overflow:hidden, so the nav
+   has to be the flexible region. Historically the logo (52) + 13 nav entries
+   with their group captions (652) + the bottom cluster (162) + padding (10)
+   measured 876px against a 753px rail at the canonical 1368x753 viewport, and
+   `margin-top: auto` on the bottom cluster collapsed to 0 -- clipping Settings,
+   Help and the whole Market Data status card below the fold, unreachable
+   because the rail does not scroll.
+   The rail density below now fits that budget outright: 33px rows, 16px group
+   captions, 4px section margins and a 60px status card put the nav at 545px
+   scrollHeight inside a 557px clientHeight at 1368x753, so no scrollbar is
+   rendered. This shrink-and-scroll containment is deliberately KEPT as the
+   safety net: if a future release adds nav entries the rail degrades to a thin
+   scroller instead of silently clipping Settings/Help/status again. */
+.apex-shell > .apex-sidebar > .apex-nav {
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin !important;
+}
+.apex-shell > .apex-sidebar > .apex-sidebar-bottom { flex: 0 0 auto !important; }
 .apex-shell .apex-nav button,
 .apex-shell .apex-sidebar-bottom > button {
   width: 100% !important;
-  height: 38px !important;
-  min-height: 38px !important;
+  height: 33px !important;
+  min-height: 33px !important;
   padding: 0 10px !important;
   display: flex !important;
   align-items: center !important;
@@ -90,7 +114,13 @@ button { color: inherit; }
   transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast) !important;
 }
 .apex-shell .apex-nav-icon { width: 18px !important; height: 18px !important; flex: 0 0 18px !important; display: grid !important; place-items: center !important; color: var(--apex-muted-600) !important; }
-.apex-shell .apex-nav-icon svg { width: 18px !important; height: 18px !important; stroke-width: 1.7 !important; }
+/* The glyph itself is pinned to 20px by `index.css`
+   (`.apex-nav button .apex-nav-icon svg`, 0,2,2 !important), which outranks a plain
+   `.apex-shell .apex-nav-icon svg` (0,2,1). It therefore overhung its own 18px wrapper by
+   1px on each side and crowded the label. Match the wrapper at (0,3,2): 18px in a 33px row
+   keeps the [icon] Label rhythm without touching the wrapper's flex basis. */
+.apex-shell .apex-nav button .apex-nav-icon svg,
+.apex-shell .apex-sidebar-bottom > button .apex-nav-icon svg { width: 18px !important; height: 18px !important; stroke-width: 1.7 !important; }
 .apex-shell .apex-nav button:hover,
 .apex-shell .apex-sidebar-bottom > button:hover { background: var(--apex-surface-soft) !important; color: var(--apex-ink-900) !important; }
 .apex-shell .apex-nav button.active,
@@ -104,18 +134,52 @@ button { color: inherit; }
 .apex-shell .apex-sidebar-bottom { margin-top: auto !important; }
 .apex-shell .apex-system-card {
   width: 156px !important;
-  height: 74px !important;
-  min-height: 74px !important;
-  margin: 8px 2px 0 !important;
-  padding: 9px 10px !important;
+  height: 60px !important;
+  min-height: 60px !important;
+  margin: 6px 2px 0 !important;
+  padding: 7px 10px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 3px !important;
+  gap: 2px !important;
   overflow: hidden !important;
   border: 1px solid var(--apex-border) !important;
   border-radius: 12px !important;
   background: var(--apex-surface-soft) !important;
   box-shadow: none !important;
+}
+/* The system card is `<button class="apex-system-card">` and a DIRECT CHILD of
+   `.apex-sidebar-bottom`, so the rail-button rule above
+   (`.apex-shell .apex-sidebar-bottom > button`, specificity 0,2,1) outranks the card's own
+   rule (`.apex-shell .apex-system-card`, 0,2,0) even though both are `!important`. The card
+   was therefore laid out as a single-line rail button (33px at the current rail density):
+   vertical padding zeroed, gap
+   widened to 10px, children centered. Its three lines need 8.5 + 12.5 + 10 = 31px plus gaps,
+   and `<strong>` is the only child with `overflow: hidden`, so its automatic minimum size
+   resolves to 0 and flexbox absorbed the entire shortfall there -- the status value
+   ("Connected") rendered at height 0 and was invisible at the canonical 1368x753 viewport.
+   Re-assert the card's own box above the rail-button rule (0,3,1). `display` is deliberately
+   NOT set here so the <=1279px rules that hide the card in the collapsed rail still win.
+   The box is 60px: 37px of measured content + 14px padding + 2px border = 57px, so the
+   status value keeps 3px of slack and is never clipped. */
+.apex-shell .apex-sidebar-bottom > button.apex-system-card {
+  height: 60px !important;
+  min-height: 60px !important;
+  padding: 7px 10px !important;
+  gap: 2px !important;
+  row-gap: 2px !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+}
+/* Same specificity theft, second symptom: the rail-button rule also carries
+   `display: flex !important` at (0,2,1), which outranks the `display: none !important` this
+   file already declares for `.apex-shell .apex-system-card` (0,2,0) in its <=1279px and
+   <=1119px blocks. So the card was never actually hidden in the collapsed icon rail -- it was
+   squeezed into a 51px column with its text ellipsised. `.apex-data-status`, listed in the
+   very same hide rule but with no competing button rule, does collapse correctly, which is
+   the proof. Re-assert the intended hide above the rail-button rule; this also returns 74px
+   of vertical room to the collapsed rail. */
+@media (max-width: 1279px) {
+  .apex-shell .apex-sidebar-bottom > button.apex-system-card { display: none !important; }
 }
 .apex-shell .apex-system-card-label { display: flex; align-items: center; gap: 6px; font-size: 8.5px; color: var(--apex-muted-600); }
 .apex-shell .apex-system-card strong { font-size: 10px !important; color: var(--apex-ink-900) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -490,6 +554,25 @@ summary:focus-visible,
   .apex-data-status { display: none !important; }
   .apex-shell .apex-nav button,
   .apex-shell .apex-sidebar-bottom > button { justify-content: center !important; padding: 0 !important; }
+  /* `.apex-nav-group` is a grid whose single implicit track floors at
+     min-content, and the group caption is the widest thing in it — "Operations"
+     measures 93.09px. That forces the caption, the button wrapper and every
+     nav button to 93px inside the collapsed rail's 63px content box, which the
+     rail then clips (scrollWidth 99 vs clientWidth 63). Clamp the tracks and
+     take the caption out of layout while keeping it in the accessibility tree,
+     matching how this breakpoint already hides the nav button labels. */
+  .apex-shell .apex-nav-group { position: relative !important; grid-template-columns: minmax(0, 1fr) !important; }
+  .apex-shell .apex-nav-group > div { grid-template-columns: minmax(0, 1fr) !important; }
+  .apex-shell .apex-nav-group > h2 {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
   .apex-global-search,
   .apex-shell .apex-search { width: min(360px, 48vw) !important; }
   .apex-page-frame {
@@ -530,9 +613,15 @@ summary:focus-visible,
 .apex-content:focus { outline: none; }
 .apex-search input[role="combobox"]:focus-visible { outline: none; }
 
-/* v2.3 navigation grouping and controlled service-worker update surface. */
-.apex-shell .apex-nav-group { display: grid; gap: 3px; margin: 0 0 8px; }
-.apex-shell .apex-nav-group > h2 { margin: 0; padding: 5px 12px 3px; color: var(--apex-muted-600); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+/* v2.3 navigation grouping and controlled service-worker update surface.
+   Group captions are secondary labels, not headings: 16px total box
+   (9px/12px caption + 3px/1px padding) instead of 21.5px, and 4px of
+   section separation instead of 8px. Combined with the 2px caption-to-first-row
+   gap this keeps a visible rhythm (last row -> 4px margin + 2px nav gap + 3px
+   caption padding) while returning 4.5px x 4 captions + 4px x 4 sections to the
+   navigation itself. */
+.apex-shell .apex-nav-group { display: grid; gap: 2px; margin: 0 0 4px; }
+.apex-shell .apex-nav-group > h2 { margin: 0; padding: 3px 12px 1px; color: var(--apex-muted-600); font-size: 9px; line-height: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .apex-shell .apex-nav-group > div { display: grid; gap: 2px; }
 .apex-update-banner { position: fixed; z-index: 1000; right: 18px; bottom: 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; width: min(560px, calc(100vw - 36px)); padding: 12px 14px; border: 1px solid var(--apex-border); border-radius: 14px; background: color-mix(in srgb, var(--apex-surface, #111a16) 94%, transparent); box-shadow: 0 18px 50px rgba(0,0,0,.28); backdrop-filter: blur(18px); }
 .apex-update-banner strong,.apex-update-banner span { display: block; }
@@ -748,4 +837,32 @@ summary:focus-visible,
   .apex-shell.apex-workspace > .apex-stage {
     min-width: 0 !important;
   }
+}
+
+/* Short-viewport rail density.
+   The 33px/16px/4px density above fits 1368x753 with 12px to spare, but a 720px
+   viewport has 33 fewer pixels of rail while the navigation payload is identical,
+   which puts the nav 21px over its box. Take that back from the same cumulative
+   pools rather than from any single component: rows 33 -> 32, captions 16 -> 14,
+   section margins 4 -> 3, status card 60 -> 58, nav lead-in 4 -> 3. Measured at
+   1280x720 this lands the nav at 519px scrollHeight in a 529px box.
+   `max-height: 752px` deliberately excludes the canonical 753px contract, and
+   `min-width: 1120px` leaves the <=1119px collapsed-rail contract untouched.
+   Nothing here re-declares button padding or justify-content, so the 72px icon
+   rail at 1120-1279px keeps its centred, label-less layout. */
+@media (max-height: 752px) and (min-width: 1120px) {
+  .apex-shell .apex-nav { padding-top: 3px !important; }
+  .apex-shell .apex-nav button,
+  .apex-shell .apex-sidebar-bottom > button {
+    height: 32px !important;
+    min-height: 32px !important;
+  }
+  .apex-shell .apex-nav-group { margin-bottom: 3px !important; }
+  .apex-shell .apex-nav-group > h2 { padding: 2px 12px 1px !important; line-height: 11px !important; }
+  .apex-shell .apex-sidebar-bottom > button.apex-system-card {
+    height: 58px !important;
+    min-height: 58px !important;
+    padding: 6px 10px !important;
+  }
+  .apex-shell .apex-system-card { margin-top: 5px !important; }
 }

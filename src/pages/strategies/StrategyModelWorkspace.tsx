@@ -160,8 +160,7 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
         <header className="strategy-model-header">
           <div className="strategy-model-heading">
             <span className={`strategy-status ${status.toLowerCase().replaceAll(' ', '-')}`}>{status}</span>
-            <h2>{strategy.name}</h2>
-            <p>{strategy.summary}</p>
+            <h2 title={strategy.summary}>{strategy.name}</h2>
           </div>
           <div className="strategy-identity-actions">
             <button type="button" className={bookmarked ? 'bookmarked' : ''} aria-pressed={bookmarked} onClick={onBookmark} aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark model'}><Bookmark size={17} fill={bookmarked ? 'currentColor' : 'none'} /></button>
@@ -239,7 +238,7 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
               );
             })}
           </div>
-        ) : <p className="strategy-parameter-empty">This registry model exposes no tunable parameters.</p>}
+        ) : <p className="strategy-parameter-empty">No tunable parameters.</p>}
       </section>
 
       {strategy.fusion && (
@@ -288,7 +287,7 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
 
       <div className="strategy-safety-note">
         <ShieldCheck size={14} />
-        <span>Strategy Studio is research-only. Live context reflects real-time market conditions and data quality across all selected inputs; validation and execution evidence stay explicit in Backtesting.</span>
+        <span>Strategy Studio is research-only · validation and execution evidence stay explicit in Backtesting.</span>
       </div>
 
       <footer className="strategy-model-actions">

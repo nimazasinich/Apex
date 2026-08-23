@@ -169,7 +169,7 @@ export function StrategyEvidenceRail(props: StrategyEvidenceRailProps) {
         <header className="strategy-evidence-card-title"><strong>EVIDENCE STATUS</strong></header>
         <div className={`strategy-evidence-state ${evidenceReady ? 'ready' : 'pending'}`}>
           <ShieldCheck size={18} aria-hidden="true" />
-          <span><strong>{evidenceReady ? 'Evidence Ready' : 'Evidence Pending'}</strong><p>{evidenceReady ? 'Bound server evidence is available for this registered model.' : 'Evidence pending: no complete server evidence snapshot is currently bound, so performance is not presented as verified performance.'}</p></span>
+          <span><strong>{evidenceReady ? 'Evidence Ready' : 'Evidence Pending'}</strong><p>{evidenceReady ? 'Server evidence bound.' : 'Evidence pending — performance is not presented as verified performance.'}</p></span>
         </div>
         <dl className="strategy-evidence-status-list">
           <div><dt>Snapshot age</dt><dd>{bound && snapshot ? relativeAge(snapshot.lastBacktestAt) : '—'}</dd></div>

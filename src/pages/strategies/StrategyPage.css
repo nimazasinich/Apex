@@ -848,23 +848,50 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
   box-shadow: 0 25px 70px rgba(0, 0, 0, .3);
 }
 .strategy-compare-dialog > header { position: sticky; top: 0; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px; border-bottom: 1px solid var(--strategy-border); background: color-mix(in srgb, var(--strategy-surface) 96%, transparent); backdrop-filter: blur(14px); }
-.strategy-compare-dialog > header span { color: var(--strategy-green); font-size: 8px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.strategy-compare-dialog > header span { color: var(--strategy-green); font-size: 9.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .strategy-compare-dialog > header h2 { margin: 3px 0; font-size: 18px; }
-.strategy-compare-dialog > header p { margin: 0; color: var(--strategy-muted); font-size: 9px; }
+/* This paragraph carries `evidenceComparable().reason` — the single sentence that
+   tells the operator whether the metrics below mean anything — and the `small`
+   below it explains the selection limit. Both were 8-9px in a 1050px-wide dialog
+   that has room to spare; neither is a decorative caption. */
+.strategy-compare-dialog > header p { margin: 0; color: var(--strategy-muted); font-size: 10.5px; line-height: 1.45; }
+.strategy-compare-dialog > header small { display: block; margin-top: 4px; max-width: 62ch; color: var(--strategy-muted); font-size: 10px; line-height: 1.45; }
 .strategy-compare-dialog > header button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--strategy-border); border-radius: 8px; background: var(--strategy-surface); color: var(--strategy-muted); cursor: pointer; }
 .strategy-compare-picker { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 15px; border-bottom: 1px solid var(--strategy-border); }
-.strategy-compare-picker button { display: inline-flex; align-items: center; gap: 5px; min-height: 29px; padding: 0 8px; border: 1px solid var(--strategy-border); border-radius: 8px; background: var(--strategy-soft); color: var(--strategy-muted); cursor: pointer; font-size: 8px; }
+.strategy-compare-picker button { display: inline-flex; align-items: center; gap: 5px; min-height: 29px; padding: 0 9px; border: 1px solid var(--strategy-border); border-radius: 8px; background: var(--strategy-soft); color: var(--strategy-muted); cursor: pointer; font-size: 10px; }
 .strategy-compare-picker button span { width: 14px; height: 14px; display: grid; place-items: center; border: 1px solid var(--strategy-border); border-radius: 4px; }
 .strategy-compare-picker button.selected { border-color: color-mix(in srgb, var(--strategy-green) 40%, var(--strategy-border)); color: var(--strategy-green); }
 .strategy-compare-picker button:disabled { opacity: .45; cursor: not-allowed; }
-.strategy-compare-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; padding: 15px; }
-.strategy-compare-grid article { min-width: 0; padding: 12px; border: 1px solid var(--strategy-border); border-radius: 11px; background: var(--strategy-soft); }
-.strategy-compare-grid h3 { margin: 8px 0 5px; font-size: 11px; }
-.strategy-compare-grid article > p { min-height: 52px; margin: 0 0 9px; color: var(--strategy-muted); font-size: 8px; line-height: 1.5; }
-.strategy-compare-grid dl { display: grid; gap: 0; margin: 0; }
-.strategy-compare-grid dl > div { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 7px; padding: 7px 0; border-top: 1px solid var(--strategy-border); }
-.strategy-compare-grid dt { color: var(--strategy-muted); font-size: 7px; }
-.strategy-compare-grid dd { margin: 0; overflow-wrap: anywhere; font-size: 7.5px; line-height: 1.4; }
+/* One matrix, not one card per model. The old `.strategy-compare-grid` was a
+   fixed `repeat(3, 1fr)` holding an `<article><dl>` per model, which had three
+   separate defects: comparing two models left a third of the dialog empty while
+   still squeezing both columns to a third of the width; each model owned its own
+   `<dl>`, so a summary of a different length desynchronised that column's rows
+   from its neighbours (the `min-height: 52px` on the summary was hiding it); and
+   the labels/values had been shrunk to 7px/7.5px to survive that 1/3 column.
+   Table rows align by construction and the columns divide the real width, so the
+   pinned height is gone and the type is back above the 10px floor the rest of
+   the app uses. */
+.strategy-compare-grid { display: grid; gap: 10px; padding: 15px; overflow-x: auto; }
+.strategy-compare-matrix { width: 100%; min-width: 430px; border-collapse: collapse; table-layout: fixed; }
+.strategy-compare-matrix caption { caption-side: top; margin-bottom: 9px; color: var(--strategy-muted); font-size: 10px; line-height: 1.45; text-align: left; }
+/* Fixed label column; the model columns then split whatever is left, so two
+   models get half the dialog each and three get a third. */
+.strategy-compare-matrix col.strategy-compare-label-col { width: 132px; }
+.strategy-compare-matrix thead td { border: 0; }
+.strategy-compare-matrix thead th { padding: 0 10px 9px; border-bottom: 1px solid var(--strategy-border); border-left: 1px solid var(--strategy-border); text-align: left; vertical-align: bottom; }
+.strategy-compare-matrix thead th strong { display: block; margin-top: 5px; font-size: 11.5px; line-height: 1.3; }
+.strategy-compare-matrix tbody th { padding: 8px 10px 8px 0; border-top: 1px solid var(--strategy-border); color: var(--strategy-muted); font-size: 10px; font-weight: 600; text-align: left; vertical-align: top; }
+.strategy-compare-matrix tbody td { padding: 8px 10px; border-top: 1px solid var(--strategy-border); border-left: 1px solid var(--strategy-border); font-size: 10.5px; line-height: 1.45; vertical-align: top; overflow-wrap: anywhere; }
+.strategy-compare-matrix tbody tr:nth-child(even) th,
+.strategy-compare-matrix tbody tr:nth-child(even) td { background: var(--strategy-soft); }
+.strategy-compare-matrix tbody td.numeric { font-weight: 800; font-variant-numeric: tabular-nums; }
+/* "Not comparable" and "Evidence pending" are states, not measurements. They are
+   muted and italic so an operator scanning the three metric rows cannot read one
+   as a value, and each such cell carries a title naming the precondition that
+   failed. */
+.strategy-compare-matrix tbody td.unavailable { color: var(--strategy-muted); font-weight: 500; font-style: italic; }
+.strategy-compare-matrix tbody tr.prose td { color: var(--strategy-muted); font-size: 10px; }
 
 .strategy-studio .spin { animation: strategy-spin .9s linear infinite; }
 @keyframes strategy-spin { to { transform: rotate(360deg); } }
@@ -900,7 +927,9 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
   .strategy-explanation-grid { grid-template-columns: 1fr; }
   .strategy-model-actions { justify-content: stretch; }
   .strategy-model-actions button { flex: 1 1 150px; }
-  .strategy-compare-grid { grid-template-columns: 1fr; }
+  /* The matrix keeps its columns here — at this width the dialog still has room
+     for three model columns once the label column gives up 36px. */
+  .strategy-compare-matrix col.strategy-compare-label-col { width: 96px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

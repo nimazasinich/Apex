@@ -1,4 +1,4 @@
-import type { AccountSnapshot } from './accountClient';
+import type { AccountSnapshot } from './accountTypes';
 
 export interface WorkspacePosition {
   id: string;

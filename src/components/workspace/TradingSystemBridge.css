@@ -211,20 +211,42 @@
   }
 
   #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics > div {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
     min-width: 0 !important;
-    padding: 4px 5px !important;
+    padding: 2px 5px !important;
     border-left: 1px solid var(--apex-trading-border, #e5eaf0) !important;
   }
 
+  /* Data integrity: metric labels/values must never ellipsise a number. The
+     cells are ~75px wide, so multi-token values ("+272.22 (+0.43%)",
+     "+0.0054% · now") cannot fit one line. Allow up to two lines with clamp and
+     compact metrics so 1 label line + 2 value lines fit the fixed 42px band
+     (52px facts row − 10px padding) without the row's overflow:hidden clipping
+     the 2nd line. Font stays 10px; height is reclaimed from padding/margin/
+     line-height only. */
   #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics dt {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
     font-size: 10px !important;
-    line-height: 1.05 !important;
+    line-height: 1 !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
   }
 
   #root .apex-shell.apex-workspace[data-page="trading"] .apex-instrument-metrics dd {
-    margin-top: 3px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    margin-top: 1px !important;
     font-size: 10px !important;
-    line-height: 1.05 !important;
+    line-height: 1 !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
   }
 
   #root .apex-shell.apex-workspace[data-page="trading"] .apex-active-strategy-summary {

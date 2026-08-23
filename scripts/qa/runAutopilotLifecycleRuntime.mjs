@@ -389,14 +389,28 @@ try {
       check('Cycle N+1 consumes Cycle N forward evidence', priorEvidence !== null && typeof priorEvidence === 'object',
         `openedN=${openedN.length} evidence=${priorEvidence ? 'present' : 'absent'}`);
       const priorIds = new Set(openedN.map((position) => position.id));
-      const evidenceCycles = Array.isArray(priorEvidence?.contexts) ? priorEvidence.contexts.map((row) => row.lastCycleIndex).filter(Number.isInteger) : [];
+      // `forwardEvaluation.evidence` is a ForwardEvidenceReport; its per-context
+      // aggregates live in `entries` (paperForwardEvaluator.ts), each carrying a
+      // `lastCycleIndex`. The prior `.contexts` name never existed on the report,
+      // so this attribution check was silently vacuous — read `entries` so it
+      // actually verifies cycle attribution.
+      const evidenceCycles = Array.isArray(priorEvidence?.entries) ? priorEvidence.entries.map((row) => row.lastCycleIndex).filter(Number.isInteger) : [];
       check('Cycle N+1 evidence retains prior cycle attribution', evidenceCycles.every((index) => index <= cycleN1.cycleIndex)
         && (evidenceCycles.length === 0 || evidenceCycles.some((index) => index === cycleN.cycleIndex)),
       `priorPositions=${priorIds.size} evidenceCycles=${evidenceCycles.join(',') || 'none'}`);
     } else {
-      skip('Cycle N+1 consumes Cycle N forward evidence', 'Cycle N created no paper-forward positions; the application reported insufficient evidence honestly.');
-      check('Cycle N+1 reports insufficient forward evidence honestly', priorEvidence === null || priorEvidence?.insufficientEvidence === true
-        || Array.isArray(priorEvidence?.contexts), `openedN=${openedN.length}`);
+      skip('Cycle N+1 consumes Cycle N forward evidence', 'Cycle N created no paper-forward positions this cycle; forward evidence, if any, comes only from the persisted research-scoped mirror.');
+      // The evidence payload is the ForwardEvidenceReport from aggregateForwardEvidence:
+      // `null` when no forward position has ever been persisted, otherwise a report
+      // whose aggregates are in `entries` (each with its own INSUFFICIENT_EVIDENCE/
+      // RETAIN/DEMOTE/IMPROVE verdict). Cycle N opening nothing new this cycle does
+      // not erase evidence an earlier cycle already persisted, so an honest payload
+      // is either null or a well-formed report; a truthy value of any other shape
+      // would be fabricated and still fails. The report has no top-level
+      // `insufficientEvidence`/`contexts` field — those names never existed and made
+      // this check unsatisfiable whenever real persisted evidence was present.
+      check('Cycle N+1 reports insufficient forward evidence honestly', priorEvidence === null || Array.isArray(priorEvidence?.entries),
+        `openedN=${openedN.length} evidence=${priorEvidence === null ? 'null' : (Array.isArray(priorEvidence?.entries) ? `report(entries=${priorEvidence.entries.length})` : typeof priorEvidence)}`);
     }
     const results = Array.isArray(cycleN1.optimization?.results) ? cycleN1.optimization.results : [];
     const gated = results.filter((row) => row?.promotionGate);

@@ -1,6 +1,9 @@
 import { runApexReplayBacktestDirectional, type BacktestCandle } from '../backtesting';
 import type { ScannerConfig, StrategyDefinition, StrategyReplayResult } from '../../types';
 import { finalizeReplay } from './replayHarness';
+import type { HistoricalSignalBundle } from './historicalSignals';
+import type { TransactionCostModel } from '../transactionCosts';
+import { isNativeSignalScannerStrategy, runSignalAwareScannerStrategy } from './signalAwareScannerAdapter';
 
 export function buildScannerPresetConfig(
   base: ScannerConfig,
@@ -49,14 +52,30 @@ export function runScannerPresetStrategy(args: {
   candles: BacktestCandle[];
   symbol: string;
   interval: Parameters<typeof runApexReplayBacktestDirectional>[1]['interval'];
-  direction: 'LONG' | 'SHORT';
+  direction: 'LONG' | 'SHORT' | 'BOTH';
   maxBars: number;
   baseConfig: ScannerConfig;
   definition: StrategyDefinition;
   transactionCostPct?: number;
+  transactionCostModel?: TransactionCostModel;
+  historicalSignals?: HistoricalSignalBundle;
   parameters?: Record<string, number | string>;
   applyDefinitionOverrides?: boolean;
 }): StrategyReplayResult {
+  if (isNativeSignalScannerStrategy(args.definition.strategyId)) {
+    if (!args.transactionCostModel) throw new Error('An explicit transaction-cost model is required for native-signal scanner replay.');
+    return runSignalAwareScannerStrategy({
+      candles: args.candles,
+      symbol: args.symbol,
+      direction: args.direction,
+      maxBars: args.maxBars,
+      definition: args.definition,
+      transactionCostModel: args.transactionCostModel,
+      historicalSignals: args.historicalSignals,
+      parameters: args.parameters,
+    });
+  }
+  if (args.direction === 'BOTH') throw new Error('The legacy canonical scanner replay requires an explicit LONG or SHORT direction.');
   const scannerConfig = buildScannerPresetConfig(args.baseConfig, args.definition, args.parameters, { applyDefinitionOverrides: args.applyDefinitionOverrides });
   const result = runApexReplayBacktestDirectional(args.candles, {
     symbol: args.symbol,

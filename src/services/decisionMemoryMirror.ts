@@ -1,6 +1,6 @@
 /* Copied from apex-trading-engine/src/services/decisionMemoryMirror.ts */
 
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { SignalDecisionLog } from '../types';
 import { readDurableJsonFileSync, writeDurableJsonFileSync } from './durableJsonFile';
@@ -16,7 +16,23 @@ export interface DecisionMemoryQuery {
   until?: number;
 }
 
-const MAX_ROWS = 50_000;
+const DEFAULT_MAX_ROWS = 50_000;
+const DEFAULT_MAX_BYTES = 32 * 1024 * 1024;
+
+export interface DecisionMemoryMirrorOptions {
+  maxRows?: number;
+  maxBytes?: number;
+}
+
+export interface DecisionMemoryPersistenceStatus {
+  writable: boolean;
+  lastError: string | null;
+  lastPersistedAt: string | null;
+  persistedBytes: number;
+  maxBytes: number;
+  headroomBytes: number;
+  lastPrunedRows: number;
+}
 
 function cleanRows(value: unknown): SignalDecisionLog[] {
   const rows = Array.isArray(value)
@@ -39,17 +55,26 @@ export class DecisionMemoryMirror {
   private readonly byOutcome = new Map<string, Set<string>>();
   private readonly byTimestamp = new Map<string, Set<string>>();
 
-  constructor(filePath?: string) {
+  constructor(filePath?: string, options: DecisionMemoryMirrorOptions = {}) {
     this.filePath = filePath ? resolve(filePath) : join(resolvePrivateDataDir(), 'decision-memory', 'decision-memory-v1.json');
+    this.maxRows = Math.max(1, Math.floor(options.maxRows ?? DEFAULT_MAX_ROWS));
+    this.maxBytes = Math.max(1024, Math.floor(options.maxBytes ?? DEFAULT_MAX_BYTES));
     this.load();
   }
 
   private readonly filePath: string;
+  private readonly maxRows: number;
+  private readonly maxBytes: number;
+  private lastPersistError: string | null = null;
+  private lastPersistedAt: string | null = null;
+  private persistedBytes = 0;
+  private lastPrunedRows = 0;
 
   private load(): void {
     if (!existsSync(this.filePath)) return;
     try {
       for (const row of cleanRows(readDurableJsonFileSync(this.filePath))) this.index(row);
+      this.persistedBytes = statSync(this.filePath).size;
     } catch {
       throw new Error('decision_memory_mirror_corrupt');
     }
@@ -89,32 +114,73 @@ export class DecisionMemoryMirror {
     this.removeIndex(this.byTimestamp, String(row.timestamp), row.id);
   }
 
-  private persist(): void {
-    const path = this.filePath;
-    const rows = [...this.rows.values()]
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, MAX_ROWS);
-    writeDurableJsonFileSync(path, { version: 1, updatedAt: new Date().toISOString(), rows });
+  private persistedEnvelope(rows: SignalDecisionLog[], updatedAt: string) {
+    return { version: 1, updatedAt, rows };
   }
 
-  putMany(rows: SignalDecisionLog[]): { accepted: number; total: number } {
-    let accepted = 0;
-    for (const row of rows) {
-      if (!row || typeof row.id !== 'string' || typeof row.timestamp !== 'number') continue;
-      this.index(row);
-      accepted += 1;
+  private serializedBytes(rows: SignalDecisionLog[], updatedAt: string): number {
+    return Buffer.byteLength(`${JSON.stringify(this.persistedEnvelope(rows, updatedAt), null, 2)}\n`, 'utf8');
+  }
+
+  private rowsWithinCapacity(rows: SignalDecisionLog[], updatedAt: string): SignalDecisionLog[] {
+    const candidates = rows.slice(0, this.maxRows);
+    let low = 0;
+    let high = candidates.length;
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      if (this.serializedBytes(candidates.slice(0, middle), updatedAt) <= this.maxBytes) low = middle;
+      else high = middle - 1;
     }
-    if (this.rows.size > MAX_ROWS) {
-      const stale = [...this.rows.values()]
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(MAX_ROWS);
-      for (const row of stale) {
+    if (candidates.length && low === 0) throw new Error('decision_memory_row_capacity_exceeded');
+    return candidates.slice(0, low);
+  }
+
+  private persist(): number {
+    const updatedAt = new Date().toISOString();
+    try {
+      const sorted = [...this.rows.values()].sort((a, b) => b.timestamp - a.timestamp);
+      const retained = this.rowsWithinCapacity(sorted, updatedAt);
+      const retainedIds = new Set(retained.map((row) => row.id));
+      const pruned = sorted.filter((row) => !retainedIds.has(row.id));
+      const envelope = this.persistedEnvelope(retained, updatedAt);
+      const bytes = this.serializedBytes(retained, updatedAt);
+      writeDurableJsonFileSync(this.filePath, envelope, { maxBytes: this.maxBytes });
+      for (const row of pruned) {
         this.unindex(row);
         this.rows.delete(row.id);
       }
+      this.lastPersistError = null;
+      this.lastPersistedAt = updatedAt;
+      this.persistedBytes = bytes;
+      this.lastPrunedRows = pruned.length;
+      return pruned.length;
+    } catch (error) {
+      this.lastPersistError = error instanceof Error ? error.message : 'decision_memory_persist_failed';
+      throw error;
     }
-    this.persist();
-    return { accepted, total: this.rows.size };
+  }
+
+  putMany(rows: SignalDecisionLog[]): { accepted: number; total: number; pruned: number } {
+    const before = [...this.rows.values()];
+    let accepted = 0;
+    try {
+      for (const row of rows) {
+        if (!row || typeof row.id !== 'string' || typeof row.timestamp !== 'number') continue;
+        this.index(row);
+        accepted += 1;
+      }
+      const pruned = this.persist();
+      return { accepted, total: this.rows.size, pruned };
+    } catch (error) {
+      this.rows.clear();
+      this.byTicker.clear();
+      this.byDecision.clear();
+      this.byReasonCode.clear();
+      this.byOutcome.clear();
+      this.byTimestamp.clear();
+      for (const row of before) this.index(row);
+      throw error;
+    }
   }
 
   query(query: DecisionMemoryQuery = {}): SignalDecisionLog[] {
@@ -164,6 +230,19 @@ export class DecisionMemoryMirror {
         outcome: this.byOutcome.size,
         timestamp: this.byTimestamp.size,
       },
+      persistence: this.persistenceStatus(),
+    };
+  }
+
+  persistenceStatus(): DecisionMemoryPersistenceStatus {
+    return {
+      writable: this.lastPersistError === null,
+      lastError: this.lastPersistError,
+      lastPersistedAt: this.lastPersistedAt,
+      persistedBytes: this.persistedBytes,
+      maxBytes: this.maxBytes,
+      headroomBytes: Math.max(0, this.maxBytes - this.persistedBytes),
+      lastPrunedRows: this.lastPrunedRows,
     };
   }
 

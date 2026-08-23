@@ -7,6 +7,7 @@
 import { MathEngine, clampHeuristicAdjustment } from './mathEngine';
 import { smcAlignmentForDirection } from './smartMoneyContextEngine';
 import { effectiveQStructThreshold } from './scannerConfigPolicy';
+import type { ScanGateSnapshot } from '../contracts/scanner/scanContracts';
 import {
   BinanceSentiment,
   OITrendDirection,
@@ -36,20 +37,7 @@ export interface ScanEvaluation {
   scoringBreakdown?: ReturnType<typeof MathEngine.calculateDirectionalRawScore>['breakdown'];
 }
 
-export interface ScanGateSnapshot {
-  shortObi: boolean;
-  shortVolume: boolean;
-  shortQStruct: boolean;
-  longObi: boolean;
-  longVolume: boolean;
-  longQStruct: boolean;
-  obiThreshold: number;
-  volumeThreshold: number;
-  qStructThreshold: number;
-  smoothedObi: number;
-  smoothedVolDelta: number;
-  qStructDirectional: number;
-}
+export type { ScanGateSnapshot } from '../contracts/scanner/scanContracts';
 
 export interface ScanDecisionTrace {
   status: SignalDecisionStatus;

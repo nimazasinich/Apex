@@ -11,6 +11,26 @@ const MIRROR_BATCH_SIZE = 50;
 let mirrorQueue: SignalDecisionLog[] = [];
 let mirrorTimer: ReturnType<typeof setTimeout> | undefined;
 
+export type DecisionMemoryPersistenceState = 'synced' | 'browser_only' | 'mirror_degraded';
+
+let persistenceState: DecisionMemoryPersistenceState = 'browser_only';
+const persistenceListeners = new Set<() => void>();
+
+function setPersistenceState(next: DecisionMemoryPersistenceState): void {
+  if (persistenceState === next) return;
+  persistenceState = next;
+  for (const listener of persistenceListeners) listener();
+}
+
+export function getDecisionMemoryPersistenceState(): DecisionMemoryPersistenceState {
+  return persistenceState;
+}
+
+export function subscribeDecisionMemoryPersistence(listener: () => void): () => void {
+  persistenceListeners.add(listener);
+  return () => persistenceListeners.delete(listener);
+}
+
 const VALID_OUTCOMES = new Set<NonNullable<SignalDecisionLog['laterOutcome']>>([
   'WIN', 'LOSS', 'BREAKEVEN', 'EXPIRED', 'UNKNOWN',
 ]);
@@ -37,6 +57,10 @@ function queueMirror(log: SignalDecisionLog): void {
 }
 
 async function flushMirror(): Promise<void> {
+  if (mirrorTimer) {
+    clearTimeout(mirrorTimer);
+    mirrorTimer = undefined;
+  }
   if (!mirrorQueue.length) return;
   const batch = mirrorQueue.splice(0, MIRROR_BATCH_SIZE);
   try {
@@ -45,8 +69,13 @@ async function flushMirror(): Promise<void> {
       body: JSON.stringify({ rows: batch }),
     });
     if (!response.ok) throw new Error(`mirror_http_${response.status}`);
+    setPersistenceState('synced');
   } catch {
     // The browser store is authoritative. Backend outages must never block scans.
+    // Preserve that behavior while making the loss of durable mirroring visible
+    // to the operator. If IndexedDB itself is unavailable, the truthful state is
+    // browser-only because the localStorage fallback remains the sole store.
+    setPersistenceState(hasIndexedDB() ? 'mirror_degraded' : 'browser_only');
   }
   if (mirrorQueue.length) void flushMirror();
 }
@@ -176,6 +205,11 @@ export const DecisionMemoryDB = {
 
   mirror(logs: SignalDecisionLog[]): void {
     for (const log of logs) queueMirror(log);
+  },
+
+  /** Flush queued rows now; useful for explicit lifecycle boundaries and tests. */
+  async flushMirror(): Promise<void> {
+    await flushMirror();
   },
 
   async list(limit = 500): Promise<SignalDecisionLog[]> {

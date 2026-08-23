@@ -194,6 +194,13 @@ function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, con
     lastPrice: Number.isFinite(candidate.lastPrice) ? candidate.lastPrice : (ticker?.lastPrice ?? Number.NaN),
     priceChange24hPct: candidate.priceChange24hPct,
     turnover24h: candidate.turnover24h,
+    baseVolume24h: ticker == null
+      ? unavailable('No ticker snapshot for this symbol in the current market payload.')
+      : metricFrom(ticker.volume24h, undefined, 'No base-asset volume was reported for this market.'),
+    range24hPct: ticker == null || !Number.isFinite(ticker.lastPrice) || ticker.lastPrice <= 0
+      || !Number.isFinite(ticker.high24h) || !Number.isFinite(ticker.low24h) || ticker.high24h < ticker.low24h
+      ? unavailable('A valid 24h high, low, and last price are required to calculate the range.')
+      : available(((ticker.high24h - ticker.low24h) / ticker.lastPrice) * 100),
     openInterest: ticker == null
       ? unavailable('No ticker snapshot for this symbol in the current market payload.')
       : metricFrom(
@@ -250,7 +257,11 @@ export function buildScreenerRows(candidates: CandidateScore[], tickers: SymbolT
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
-export function applyScreenerFilters(rows: ScreenerRow[], filters: ScreenerFilters): ScreenerRow[] {
+export function applyScreenerFilters(
+  rows: ScreenerRow[],
+  filters: ScreenerFilters,
+  favoriteSymbols: ReadonlySet<string> = new Set(),
+): ScreenerRow[] {
   const query = filters.query.trim().toUpperCase();
   return rows.filter((row) => {
     if (query && !row.symbol.toUpperCase().includes(query) && !row.baseAsset.toUpperCase().includes(query)) return false;
@@ -260,6 +271,22 @@ export function applyScreenerFilters(rows: ScreenerRow[], filters: ScreenerFilte
     // A row whose turnover never arrived cannot be proven to clear the floor, so
     // a raised floor excludes it rather than quietly admitting it.
     if (filters.minTurnoverUsd > 0 && !(Number.isFinite(row.turnover24h) && row.turnover24h >= filters.minTurnoverUsd)) return false;
+    if (filters.performance === 'GAINERS' && !(Number.isFinite(row.priceChange24hPct) && row.priceChange24hPct > 0)) return false;
+    if (filters.performance === 'LOSERS' && !(Number.isFinite(row.priceChange24hPct) && row.priceChange24hPct < 0)) return false;
+    if (filters.performance === 'MOVERS' && !(Number.isFinite(row.priceChange24hPct) && Math.abs(row.priceChange24hPct) >= 3)) return false;
+    if (filters.guard === 'PASS' && !row.guardPass) return false;
+    if (filters.guard === 'FLAGGED' && row.guardPass) return false;
+    if (filters.confluence === 'ALIGNED' && !(row.timeframeConfluenceState === 'ALIGNED' || (row.timeframeConfluenceState == null && row.timeframeConfluence))) return false;
+    if (filters.confluence === 'CONFLICTING' && row.timeframeConfluenceState !== 'CONFLICTING') return false;
+    if (filters.funding === 'AVAILABLE' && row.fundingRate.state !== 'AVAILABLE') return false;
+    if (filters.funding === 'POSITIVE' && !(row.fundingRate.state === 'AVAILABLE' && Number(row.fundingRate.value) > 0)) return false;
+    if (filters.funding === 'NEGATIVE' && !(row.fundingRate.state === 'AVAILABLE' && Number(row.fundingRate.value) < 0)) return false;
+    if (filters.dataQuality === 'LIVE' && row.dataState !== 'live') return false;
+    if (filters.dataQuality === 'PARTIAL' && row.dataState === 'live' && !row.warnings.length) return false;
+    const momentum = row.factors.find((factor) => factor.id === 'momentum')?.metric;
+    if (filters.minMomentum > 0 && !(momentum?.state === 'AVAILABLE' && Number(momentum.value) >= filters.minMomentum)) return false;
+    if (filters.minCoveragePct > 0 && !(row.scoreCoveragePct != null && row.scoreCoveragePct >= filters.minCoveragePct)) return false;
+    if (filters.favoritesOnly && !favoriteSymbols.has(row.symbol)) return false;
     return true;
   });
 }
@@ -272,6 +299,17 @@ const TIER_ORDER: Record<ScreenerRow['readinessTier'], number> = {
 };
 
 export function sortScreenerRows(rows: ScreenerRow[], sort: ScreenerSort): ScreenerRow[] {
+  const metricValue = (row: ScreenerRow, id: ScreenerFactorId): number | null => {
+    const metric = row.factors.find((factor) => factor.id === id)?.metric;
+    return metric?.state === 'AVAILABLE' && metric.value != null ? metric.value : null;
+  };
+  const optionalCompare = (left: number | null, right: number | null): number => {
+    // Missing readings remain at the bottom in both directions. They are not zero.
+    if (left == null && right == null) return 0;
+    if (left == null) return sort.ascending ? 1 : -1;
+    if (right == null) return sort.ascending ? -1 : 1;
+    return left - right;
+  };
   const compare = (left: ScreenerRow, right: ScreenerRow): number => {
     switch (sort.key) {
       case 'symbol': return left.symbol.localeCompare(right.symbol);
@@ -280,6 +318,13 @@ export function sortScreenerRows(rows: ScreenerRow[], sort: ScreenerSort): Scree
       case 'tier': return TIER_ORDER[left.readinessTier] - TIER_ORDER[right.readinessTier];
       case 'change': return left.priceChange24hPct - right.priceChange24hPct;
       case 'turnover': return left.turnover24h - right.turnover24h;
+      case 'momentum': return optionalCompare(metricValue(left, 'momentum'), metricValue(right, 'momentum'));
+      case 'structure': return optionalCompare(metricValue(left, 'structure'), metricValue(right, 'structure'));
+      case 'funding': return optionalCompare(left.fundingRate.value, right.fundingRate.value);
+      case 'openInterest': return optionalCompare(left.openInterest.value, right.openInterest.value);
+      case 'coverage': return optionalCompare(left.scoreCoveragePct, right.scoreCoveragePct);
+      case 'range': return optionalCompare(left.range24hPct.value, right.range24hPct.value);
+      case 'warnings': return left.warnings.length - right.warnings.length;
       default: return left.rank - right.rank;
     }
   };
@@ -311,5 +356,13 @@ export function screenerFiltersActive(filters: ScreenerFilters): boolean {
     || filters.direction !== DEFAULT_SCREENER_FILTERS.direction
     || filters.tier !== DEFAULT_SCREENER_FILTERS.tier
     || filters.minScore !== DEFAULT_SCREENER_FILTERS.minScore
-    || filters.minTurnoverUsd !== DEFAULT_SCREENER_FILTERS.minTurnoverUsd;
+    || filters.minTurnoverUsd !== DEFAULT_SCREENER_FILTERS.minTurnoverUsd
+    || filters.performance !== DEFAULT_SCREENER_FILTERS.performance
+    || filters.guard !== DEFAULT_SCREENER_FILTERS.guard
+    || filters.confluence !== DEFAULT_SCREENER_FILTERS.confluence
+    || filters.funding !== DEFAULT_SCREENER_FILTERS.funding
+    || filters.dataQuality !== DEFAULT_SCREENER_FILTERS.dataQuality
+    || filters.minMomentum !== DEFAULT_SCREENER_FILTERS.minMomentum
+    || filters.minCoveragePct !== DEFAULT_SCREENER_FILTERS.minCoveragePct
+    || filters.favoritesOnly !== DEFAULT_SCREENER_FILTERS.favoritesOnly;
 }

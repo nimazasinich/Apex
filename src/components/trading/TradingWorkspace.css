@@ -5955,3 +5955,23 @@ body .apex-trading-terminal.apex-trading-modern .apex-order-ticket fieldset {
     white-space: normal !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Order-ticket stepper label fit.
+   The ".apex-order-flow-steps" row is only ~210px wide inside the compact order
+   column; with the default flex-shrink the three step labels were squeezed below
+   their text width and ellipsised to "Set…/Re…/Co…". Their content sums to
+   ~200px, so tightening the circle/connector chrome and pinning each label to
+   its intrinsic width (flex: 0 0 auto) renders "Set Order / Review / Confirm" in
+   full without overflowing the column. Verified live at 1368x753: ol
+   scrollWidth == clientWidth (210px), no label clipped.
+   The label size is 10px, not smaller: `verifyUiAuditAndAccessibility.mjs`
+   ("Primary Overview and Trading workspaces keep text at 10px or larger")
+   rejects any single-digit px font-size in this file, and 22 characters at
+   10px/600 plus the tightened chrome above still sums to ~199px inside the
+   210px row. */
+.apex-trading-terminal.apex-trading-modern .apex-order-flow-steps { gap: 4px; }
+.apex-trading-terminal.apex-trading-modern .apex-order-flow-steps li { gap: 4px; min-width: 0; }
+.apex-trading-terminal.apex-trading-modern .apex-order-flow-steps li span { width: 15px; height: 15px; }
+.apex-trading-terminal.apex-trading-modern .apex-order-flow-steps li:not(:last-child)::after { width: 5px; margin-inline: 1px; }
+.apex-trading-terminal.apex-trading-modern .apex-order-flow-steps li strong { flex: 0 0 auto; overflow: visible; text-overflow: clip; font-size: 10px; letter-spacing: -0.01em; }

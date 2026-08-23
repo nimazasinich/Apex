@@ -15,6 +15,7 @@ import { DEFAULT_STRATEGY_ID, clientSafeStrategy, getStrategyDefinition, listCli
 import { buildStrategyParameterValues, normalizeStrategyParameterAliases, readStrategyParameterValue, validateStrategyParameterValues } from './strategyParameters';
 import { buildScannerPresetConfig, runScannerPresetStrategy } from './strategyEngine/scannerPresetAdapter';
 import { bespokeStrategyRunners } from './strategyEngine';
+import type { HistoricalSignalBundle } from './strategyEngine/historicalSignals';
 import { buildStrategyValidationReport, gateData, gateDrawdown, gateOutOfSample, gateSample } from './strategyValidation';
 import { scoreStrategyValidation } from './strategyRanking';
 import { buildStrategyEvidenceSnapshot } from './strategyEvidence';
@@ -587,6 +588,7 @@ export function registerApexNextMarketRoutes(
     scannerConfig?: ScannerConfig;
     applyActiveOptimization?: boolean;
     scannerConfigAuthoritative?: boolean;
+    historicalSignals?: HistoricalSignalBundle;
   }): Promise<StrategyReplayResult> => {
     if (args.definition.status === 'blocked' || args.definition.status === 'deprecated') {
       throw new Error(args.definition.blockedReason || 'This strategy is not executable in the current APEX data environment.');
@@ -630,6 +632,8 @@ export function registerApexNextMarketRoutes(
         baseConfig: effectiveScannerConfig,
         definition: args.definition,
         transactionCostPct: args.transactionCostPct,
+        transactionCostModel,
+        historicalSignals: args.historicalSignals,
         parameters: {},
         applyDefinitionOverrides: false,
       });
@@ -662,6 +666,7 @@ export function registerApexNextMarketRoutes(
         universeCandles,
         parameters: effectiveParameters,
         transactionCostModel,
+        historicalSignals: args.historicalSignals,
       });
     }
 

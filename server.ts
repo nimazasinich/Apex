@@ -20,7 +20,7 @@ import {
   restoreDecisionMemoryFromDataset,
   syncDecisionMemoryToDataset,
 } from './src/services/decisionMemoryDatasetSync';
-import { buildDecisionMemoryExportPayload } from './src/utils/decisionMemoryExport';
+import { registerDecisionMemoryRoutes } from './src/services/routes/decisionMemoryRoutes';
 import { resolveHost, resolvePort } from './src/utils/cliConfig';
 import { ensureApexPortAvailable } from './scripts/utilities/portTakeover.mts';
 import { initializeSupplementalOrchestrator, getSupplementalOrchestrator } from './src/services/supplementalOrchestrator';
@@ -312,6 +312,7 @@ app.get('/api/readiness', (_req, res) => {
     exchange: exchangeSessionManager.diagnostics(now),
     persistence: {
       decisionMemoryAvailable: Boolean(decisionMemoryMirror),
+      decisionMemoryWritable: decisionMemoryMirror?.persistenceStatus().writable ?? false,
       adaptiveGovernanceAvailable: Boolean(governance.active),
     },
     liquidityHunter: getLiquidityHunterOperationsSnapshot(),
@@ -505,7 +506,11 @@ app.use((req, res, next) => {
 const apexNextMarketRoutes = registerApexNextMarketRoutes(app, {
   onShadowLogs: (logs) => {
     if (decisionMemoryMirror && logs.length) {
-      decisionMemoryMirror.putMany(logs);
+      try {
+        decisionMemoryMirror.putMany(logs);
+      } catch (error) {
+        console.error('[decision-memory] shadow batch persistence failed', error instanceof Error ? error.message : 'unknown_error');
+      }
     }
   },
   onResearchOutcomeLogs: (logs) => {
@@ -1230,45 +1235,7 @@ app.use('/api/execution', (req, res) => res.status(503).json({
   readiness: getTestnetReadiness(),
 }));
 
-app.post('/api/decision-memory/batch', (req, res) => {
-  if (!decisionMemoryMirror) {
-    return res.status(503).json({ ok: false, error: 'mirror_disabled' });
-  }
-  const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
-  if (rows.length > 500) {
-    return res.status(413).json({ ok: false, error: 'batch_too_large', maxRows: 500 });
-  }
-  const result = decisionMemoryMirror.putMany(rows);
-  return res.json({ ok: true, ...result });
-});
-
-app.get('/api/decision-memory', (req, res) => {
-  if (!decisionMemoryMirror) {
-    return res.status(503).json({ ok: false, error: 'mirror_disabled' });
-  }
-  const parseNumber = (value: unknown): number | undefined => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  };
-  const result = decisionMemoryMirror.query({
-    limit: parseNumber(req.query.limit),
-    ticker: typeof req.query.ticker === 'string' ? req.query.ticker : undefined,
-    decision: typeof req.query.decision === 'string' ? req.query.decision as any : undefined,
-    reasonCode: typeof req.query.reasonCode === 'string' ? req.query.reasonCode as any : undefined,
-    laterOutcome: typeof req.query.laterOutcome === 'string' ? req.query.laterOutcome as any : undefined,
-    since: parseNumber(req.query.since),
-    until: parseNumber(req.query.until),
-  });
-  return res.json({ ok: true, rows: result, stats: decisionMemoryMirror.stats() });
-});
-
-app.get('/api/decision-memory/status', (_req, res) => {
-  return res.json({
-    ok: true,
-    enabled: Boolean(decisionMemoryMirror),
-    stats: decisionMemoryMirror?.stats() ?? null,
-  });
-});
+registerDecisionMemoryRoutes(app, decisionMemoryMirror);
 
 app.get('/api/operations/trading-modules', (_req, res) => {
   return res.json({ ok: true, modules: getTradingModuleRegistry(), generatedAt: new Date().toISOString() });
@@ -1669,18 +1636,6 @@ app.get('/api/operations/ml-governance', (_req, res) => {
   }
   const report = evaluateMlGovernance(decisionMemoryMirror.exportAll(), model);
   return res.json({ ok: true, modelPathConfigured: Boolean(modelPath), modelError, report });
-});
-
-app.get('/api/decision-memory/export', (_req, res) => {
-  if (!decisionMemoryMirror) {
-    return res.status(503).json({ ok: false, error: 'mirror_disabled' });
-  }
-  const rows = decisionMemoryMirror.exportAll();
-  return res.json({
-    ok: true,
-    ...buildDecisionMemoryExportPayload(rows, 'APEX DecisionMemoryMirror server export'),
-    stats: decisionMemoryMirror.stats(),
-  });
 });
 
 app.get('/api/operations/status', (_req, res) => {

@@ -319,8 +319,14 @@ export function OrdersPage(props: AccountWorkspaceProps) {
             <button type="button" className={activeFilterCount ? 'active-filters' : ''} disabled={!activeFilterCount} onClick={clearFilters}><SlidersHorizontal size={13} /> Clear Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}</button>
           </div>
           <table>
-            <thead><tr><th></th><th>Order ID</th><th>Market</th><th>Side</th><th>Type</th><th>Filled / Size</th><th>Avg. Fill Price</th><th>Status</th><th>Time</th><th></th></tr></thead>
-            <tbody>{pageData.items.map((order) => (
+            <thead><tr><th></th><th>Order ID</th><th>Market</th><th>Side</th><th>Type</th><th>Filled / Size</th><th>Avg. Fill</th><th>Status</th><th>Time</th><th></th></tr></thead>
+            <tbody>{pageData.items.map((order) => {
+              // The exact pair, kept for the cell `title`: the Filled / Size column
+              // is the one cell whose content width scales with the magnitude of the
+              // data, so a seven-digit pair truncates visually. The unrounded value
+              // stays available here rather than being abbreviated in the table.
+              const fillLabel = `${order.filled.toLocaleString()} / ${order.size.toLocaleString()}`;
+              return (
               <tr
                 key={order.id}
                 className={selected?.id === order.id ? 'selected' : ''}
@@ -330,16 +336,17 @@ export function OrdersPage(props: AccountWorkspaceProps) {
               >
                 <td><span className="v20-radio" /></td>
                 <td>{order.id.slice(0, 12)}</td>
-                <td><CoinIcon symbol={order.symbol} size={20} /><strong>{order.symbol}</strong></td>
+                <td><CoinIcon symbol={order.symbol} size={20} /><strong title={order.symbol}>{order.symbol}</strong></td>
                 <td><span className={`v20-pill ${order.side === 'buy' ? 'success' : 'danger'}`}>{order.side === 'buy' ? 'Buy' : 'Sell'}</span></td>
-                <td>{order.type}</td>
-                <td><span>{order.filled.toLocaleString()} / {order.size.toLocaleString()}</span><div className="v20-progress"><i style={{ width: `${order.fillPct}%` }} /></div></td>
+                <td title={order.type}>{order.type}</td>
+                <td title={fillLabel}><span>{fillLabel}</span><div className="v20-progress"><i style={{ width: `${order.fillPct}%` }} /></div></td>
                 <td>{fmtPrice(order.averageFillPrice || order.price)}</td>
                 <td><span className={`v20-pill ${order.status}`}>{order.status.replace('_', ' ')}</span></td>
                 <td>{timestamp(order.updatedAt || order.createdAt)}</td>
                 <td><button type="button" className="v20-icon-button" onClick={(event) => { event.stopPropagation(); prepareDraft(order, 'duplicate'); }} aria-label="Duplicate order"><FileText size={14} /></button></td>
               </tr>
-            ))}</tbody>
+              );
+            })}</tbody>
           </table>
           {!pageData.items.length && <div className="orders-empty-state"><OrdersEmptyVisual /><strong>{noDataTitle}</strong><span>{noDataDetail}</span></div>}
           <PaginationControls {...pageData} onPageChange={setPage} />

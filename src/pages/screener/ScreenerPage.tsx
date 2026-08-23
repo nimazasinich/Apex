@@ -1,18 +1,29 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './ScreenerPage.css';
 import {
+  Activity,
   AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
   ArrowUpDown,
   ChevronDown,
   ChevronUp,
   Copy,
+  Download,
+  Gauge,
+  LayoutList,
+  Radar,
   RefreshCw,
+  Save,
   ScanSearch,
   Search,
   ShieldCheck,
+  Sparkles,
   SlidersHorizontal,
   Star,
+  Trash2,
   TrendingUp,
+  Waves,
   X,
 } from 'lucide-react';
 import { CoinIcon } from '../../components/CoinIcon';
@@ -20,7 +31,6 @@ import {
   DataState,
   Donut,
   KeyValueList,
-  PageHeading,
   Panel,
   PanelHeader,
   StatusBadge,
@@ -42,12 +52,23 @@ import {
 import {
   DEFAULT_SCREENER_FILTERS,
   DEFAULT_SCREENER_SORT,
+  DEFAULT_SCREENER_WORKSPACE,
+  type SavedScreenerScreen,
+  type ScreenerColumnSet,
   type ScreenerFilters,
   type ScreenerMetric,
   type ScreenerRow,
   type ScreenerSort,
   type ScreenerSortKey,
+  type ScreenerViewMode,
+  type ScreenerWorkspaceState,
 } from './screenerTypes';
+import {
+  loadSavedScreenerScreens,
+  loadScreenerWorkspace,
+  saveSavedScreenerScreens,
+  saveScreenerWorkspace,
+} from './screenerPersistence';
 
 type ScreenerPageProps = MarketWorkspaceProps & { onOpenTrading: (symbol?: string) => void };
 
@@ -100,19 +121,71 @@ const TURNOVER_STEPS: Array<{ value: number; label: string }> = [
   { value: 250_000_000, label: 'Over $250M / 24h' },
 ];
 
-const COLUMNS: Array<{ key: ScreenerSortKey; label: string; numeric?: boolean }> = [
-  { key: 'rank', label: '#', numeric: true },
-  { key: 'symbol', label: 'Symbol' },
-  { key: 'direction', label: 'Bias' },
-  { key: 'score', label: 'Score', numeric: true },
-  { key: 'tier', label: 'Signal' },
-  { key: 'change', label: '24h', numeric: true },
-  { key: 'turnover', label: '24h volume', numeric: true },
+/**
+ * Sort keys offered per lens.
+ *
+ * These are the same `ScreenerSortKey`s the table headers exposed. The results
+ * are read as a ranked list rather than a matrix, so the sort affordance is an
+ * explicit control instead of a clickable header row — no sort direction becomes
+ * unreachable in the process.
+ */
+const SORT_OPTIONS: Record<ScreenerColumnSet, Array<{ key: ScreenerSortKey; label: string }>> = {
+  overview: [
+    { key: 'rank', label: 'Rank' }, { key: 'score', label: 'Score' }, { key: 'tier', label: 'Signal' },
+    { key: 'direction', label: 'Bias' }, { key: 'change', label: '24h' }, { key: 'turnover', label: 'Turnover' },
+    { key: 'symbol', label: 'Symbol' }, { key: 'warnings', label: 'Flags' },
+  ],
+  momentum: [
+    { key: 'rank', label: 'Rank' }, { key: 'score', label: 'Score' }, { key: 'change', label: '24h' },
+    { key: 'range', label: 'Range' }, { key: 'momentum', label: 'Momentum' }, { key: 'structure', label: 'Structure' },
+  ],
+  derivatives: [
+    { key: 'rank', label: 'Rank' }, { key: 'score', label: 'Score' }, { key: 'funding', label: 'Funding' },
+    { key: 'openInterest', label: 'Open interest' }, { key: 'turnover', label: 'Turnover' }, { key: 'warnings', label: 'Flags' },
+  ],
+  quality: [
+    { key: 'rank', label: 'Rank' }, { key: 'score', label: 'Score' }, { key: 'coverage', label: 'Coverage' },
+    { key: 'warnings', label: 'Flags' },
+  ],
+};
+
+/**
+ * Which measures each lens prints on a card.
+ *
+ * Every id resolves to a field the scanner or the market snapshot actually
+ * reported. Nothing here is derived or filled in, so a lens can only ever show
+ * less, never something invented.
+ */
+type ScreenerMetricSlot =
+  | 'price' | 'change' | 'turnover' | 'range' | 'momentum'
+  | 'structure' | 'funding' | 'openInterest' | 'coverage' | 'warningCount';
+
+const LENS_METRICS: Record<ScreenerColumnSet, ScreenerMetricSlot[]> = {
+  overview: ['price', 'change', 'turnover'],
+  momentum: ['change', 'range', 'momentum', 'structure'],
+  derivatives: ['funding', 'openInterest', 'turnover'],
+  quality: ['coverage', 'warningCount'],
+};
+
+const COLUMN_SET_OPTIONS: Array<{ id: ScreenerColumnSet; label: string; icon: React.ComponentType<{ size?: number }> }> = [
+  { id: 'overview', label: 'Overview', icon: LayoutList },
+  { id: 'momentum', label: 'Momentum', icon: Waves },
+  { id: 'derivatives', label: 'Derivatives', icon: Gauge },
+  { id: 'quality', label: 'Quality', icon: ShieldCheck },
+];
+
+const PRESETS: Array<{ id: string; label: string; detail: string; state: Omit<Partial<ScreenerWorkspaceState>, 'filters'> & { filters: Partial<ScreenerFilters> } }> = [
+  { id: 'all', label: 'All signals', detail: 'Full ranked candidate set', state: { filters: {}, sort: DEFAULT_SCREENER_SORT, columnSet: 'overview', viewMode: 'table' } },
+  { id: 'conviction', label: 'High conviction', detail: '75+ · aligned · guarded · liquid', state: { filters: { minScore: 75, minTurnoverUsd: 10_000_000, guard: 'PASS', confluence: 'ALIGNED', dataQuality: 'LIVE' }, sort: { key: 'score', ascending: false }, columnSet: 'overview', viewMode: 'table' } },
+  { id: 'momentum', label: 'Momentum leaders', detail: 'Positive tape · 65+ momentum', state: { filters: { performance: 'GAINERS', minMomentum: 65, guard: 'PASS' }, sort: { key: 'momentum', ascending: false }, columnSet: 'momentum', viewMode: 'table' } },
+  { id: 'shorts', label: 'Short pressure', detail: 'Falling short-biased candidates', state: { filters: { direction: 'SHORT', performance: 'LOSERS', minScore: 60 }, sort: { key: 'score', ascending: false }, columnSet: 'derivatives', viewMode: 'table' } },
+  { id: 'risk', label: 'Risk radar', detail: 'Flagged or incomplete evidence', state: { filters: { dataQuality: 'PARTIAL' }, sort: { key: 'warnings', ascending: false }, columnSet: 'quality', viewMode: 'table' } },
 ];
 
 const directionTone = (direction: TradeDirection) => direction === 'LONG' ? 'positive' : 'negative';
 const changeTone = (value: number) => !Number.isFinite(value) ? 'neutral' : value > 0 ? 'positive' : value < 0 ? 'negative' : 'neutral';
 const usdCompact = (value: number | null) => value == null || !Number.isFinite(value) ? '—' : `$${formatCompactNumber(value)}`;
+const confluenceLabel = (row: ScreenerRow) => row.timeframeConfluenceState ?? (row.timeframeConfluence ? 'ALIGNED' : 'NOT ALIGNED');
 
 /** Renders a metric or says plainly that it is missing. Never prints a stand-in number. */
 function MetricValue({ metric, render }: { metric: ScreenerMetric; render: (value: number) => string }) {
@@ -120,6 +193,55 @@ function MetricValue({ metric, render }: { metric: ScreenerMetric; render: (valu
     return <span className="apex-screener-unavailable" title={metric.note ?? undefined}>Unavailable</span>;
   }
   return <>{render(metric.value)}</>;
+}
+
+function ScoreGlyph({ value, tone }: { value: number; tone: ReadinessTier }) {
+  const safe = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
+  return <span className={`apex-screener-score-glyph tone-${tone.toLowerCase()}`} aria-label={`Scanner score ${Math.round(safe)} out of 100`}>
+    <svg viewBox="0 0 38 38" role="img" aria-hidden="true">
+      <circle className="track" cx="19" cy="19" r="15" />
+      <circle className="value" cx="19" cy="19" r="15" pathLength="100" style={{ '--score-ring': safe } as React.CSSProperties} />
+    </svg>
+    <b>{Math.round(safe)}</b>
+  </span>;
+}
+
+/**
+ * The five published score factors as one small column chart.
+ *
+ * This is the page's signature detail: it makes the shape of the evidence legible
+ * at a glance without repeating five numbers on every card. An unavailable factor
+ * is drawn as a full-height hatched column, never as a short one, because a bar
+ * scaled to zero would read as "scored zero" instead of "not reported" — the same
+ * convention `.apex-screener-factor-meter i.empty` already uses in the detail
+ * panel.
+ */
+function EvidenceEqualizer({ row }: { row: ScreenerRow }) {
+  const readings = row.factors.map((factor) => ({
+    id: factor.id,
+    label: factor.label,
+    value: factor.metric.state === 'AVAILABLE' && factor.metric.value != null
+      ? Math.max(0, Math.min(100, factor.metric.value))
+      : null,
+    note: factor.metric.note,
+  }));
+  const summary = readings
+    .map((reading) => `${reading.label} ${reading.value == null ? 'unavailable' : Math.round(reading.value)}`)
+    .join(', ');
+  return (
+    <span className="apex-screener-equalizer" role="img" aria-label={`Score factors: ${summary}`}>
+      {readings.map((reading, index) => (
+        <i
+          key={reading.id}
+          className={reading.value == null ? 'absent' : undefined}
+          title={reading.value == null
+            ? `${reading.label}: ${reading.note ?? 'not reported by the scanner.'}`
+            : `${reading.label}: ${Math.round(reading.value)} of 100`}
+          style={{ '--bar': `${reading.value ?? 100}%`, '--bar-index': index } as React.CSSProperties}
+        />
+      ))}
+    </span>
+  );
 }
 
 function relativeAge(observedAtMs: number | null, nowMs: number): string | null {
@@ -158,9 +280,18 @@ function FactorBreakdown({ row }: { row: ScreenerRow }) {
 }
 
 export function ScreenerPage(props: ScreenerPageProps) {
-  const [filters, setFilters] = useState<ScreenerFilters>(() => ({ ...DEFAULT_SCREENER_FILTERS }));
-  const [sort, setSort] = useState<ScreenerSort>(() => ({ ...DEFAULT_SCREENER_SORT }));
+  const [initialWorkspace] = useState(() => loadScreenerWorkspace());
+  const [filters, setFilters] = useState<ScreenerFilters>(() => initialWorkspace.filters);
+  const [sort, setSort] = useState<ScreenerSort>(() => initialWorkspace.sort);
+  const [columnSet, setColumnSet] = useState<ScreenerColumnSet>(() => initialWorkspace.columnSet);
+  const viewMode: ScreenerViewMode = 'table';
+  const [activePresetId, setActivePresetId] = useState('all');
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(() => readWatchlistFavorites());
+  const [savedScreens, setSavedScreens] = useState<SavedScreenerScreen[]>(() => loadSavedScreenerScreens());
+  const [activeScreenId, setActiveScreenId] = useState('');
+  const [saveDraft, setSaveDraft] = useState('');
+  const [saveOpen, setSaveOpen] = useState(false);
 
   useEffect(() => {
     const sync = () => setFavorites(readWatchlistFavorites());
@@ -172,11 +303,18 @@ export function ScreenerPage(props: ScreenerPageProps) {
     };
   }, []);
 
+  useEffect(() => {
+    saveScreenerWorkspace({ filters, sort, columnSet, viewMode });
+  }, [columnSet, filters, sort, viewMode]);
+
   const rows = useMemo(
     () => buildScreenerRows([...props.longCandidates, ...props.shortCandidates], props.tickers),
     [props.longCandidates, props.shortCandidates, props.tickers],
   );
-  const visible = useMemo(() => sortScreenerRows(applyScreenerFilters(rows, filters), sort), [filters, rows, sort]);
+  const visible = useMemo(
+    () => sortScreenerRows(applyScreenerFilters(rows, filters, favorites), sort),
+    [favorites, filters, rows, sort],
+  );
   const summary = useMemo(() => screenerSummary(rows, visible), [rows, visible]);
   const filtersActive = screenerFiltersActive(filters);
 
@@ -208,6 +346,68 @@ export function ScreenerPage(props: ScreenerPageProps) {
     notifyWorkspace({ title: existed ? 'Removed from watchlist' : 'Added to watchlist', detail: symbol, tone: 'success' });
   };
 
+  const applyWorkspace = (workspace: ScreenerWorkspaceState, screenId = '') => {
+    setFilters({ ...DEFAULT_SCREENER_FILTERS, ...workspace.filters });
+    setSort(workspace.sort);
+    setColumnSet(workspace.columnSet);
+    setActiveScreenId(screenId);
+    setActivePresetId('');
+  };
+
+  const applyPreset = (preset: (typeof PRESETS)[number]) => {
+    applyWorkspace({
+      filters: { ...DEFAULT_SCREENER_FILTERS, ...preset.state.filters },
+      sort: preset.state.sort ?? DEFAULT_SCREENER_SORT,
+      columnSet: preset.state.columnSet ?? DEFAULT_SCREENER_WORKSPACE.columnSet,
+      viewMode: preset.state.viewMode ?? DEFAULT_SCREENER_WORKSPACE.viewMode,
+    });
+    setActivePresetId(preset.id);
+  };
+
+  const saveNamedScreen = () => {
+    const name = saveDraft.trim().slice(0, 48);
+    if (!name) return;
+    const screen: SavedScreenerScreen = {
+      id: `screen-${Date.now().toString(36)}`,
+      name,
+      createdAt: Date.now(),
+      workspace: { filters, sort, columnSet, viewMode },
+    };
+    const next = [screen, ...savedScreens.filter((item) => item.name.toLowerCase() !== name.toLowerCase())].slice(0, 12);
+    setSavedScreens(next);
+    saveSavedScreenerScreens(next);
+    setActiveScreenId(screen.id);
+    setSaveDraft('');
+    setSaveOpen(false);
+    notifyWorkspace({ title: 'Screen saved', detail: name, tone: 'success' });
+  };
+
+  const deleteActiveScreen = () => {
+    if (!activeScreenId) return;
+    const removed = savedScreens.find((screen) => screen.id === activeScreenId);
+    const next = savedScreens.filter((screen) => screen.id !== activeScreenId);
+    setSavedScreens(next);
+    saveSavedScreenerScreens(next);
+    setActiveScreenId('');
+    if (removed) notifyWorkspace({ title: 'Saved screen removed', detail: removed.name, tone: 'info' });
+  };
+
+  const exportVisible = () => {
+    if (!visible.length) return;
+    const factor = (row: ScreenerRow, id: ScreenerRow['factors'][number]['id']) => row.factors.find((item) => item.id === id)?.metric.value ?? '';
+    const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const header = ['Rank', 'Symbol', 'Bias', 'Score', 'Readiness', '24h change %', '24h turnover USD', '24h range %', 'Funding rate', 'Open interest USD', 'Momentum', 'Order flow', 'Structure', 'Liquidity', 'Coverage %', 'Confluence', 'Guard pass', 'Warnings', 'Data state'];
+    const lines = visible.map((row) => [row.rank, row.symbol, row.direction, row.score, row.readinessTier, row.priceChange24hPct, row.turnover24h, row.range24hPct.value ?? '', row.fundingRate.value ?? '', row.openInterest.value ?? '', factor(row, 'momentum'), factor(row, 'orderFlow'), factor(row, 'structure'), factor(row, 'liquidity'), row.scoreCoveragePct ?? '', row.timeframeConfluenceState ?? '', row.guardPass, row.warnings.join(' | '), row.dataState].map(quote).join(','));
+    const blob = new Blob([[header.map(quote).join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `apex-crypto-screen-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    notifyWorkspace({ title: 'Screener exported', detail: `${visible.length} visible rows`, tone: 'success' });
+  };
+
   const copySymbol = (symbol: string) => {
     // Clipboard access can be denied. The failure is reported, not swallowed.
     if (typeof navigator === 'undefined' || !navigator.clipboard) {
@@ -229,6 +429,33 @@ export function ScreenerPage(props: ScreenerPageProps) {
     });
   };
 
+  const factorMetric = (row: ScreenerRow, id: ScreenerRow['factors'][number]['id']): ScreenerMetric =>
+    row.factors.find((factor) => factor.id === id)?.metric
+    ?? { state: 'UNAVAILABLE', value: null, note: 'The scanner did not publish this factor.' };
+
+  /** One measure on a card: a quiet uppercase label over a monospaced value. */
+  const renderMetricSlot = (row: ScreenerRow, slot: ScreenerMetricSlot) => {
+    const cell = (label: string, node: React.ReactNode, tone: 'positive' | 'negative' | 'neutral' = 'neutral') =>
+      <span key={slot} className={`apex-screener-metric ${tone}`}><span>{label}</span><b>{node}</b></span>;
+    switch (slot) {
+      case 'price': return cell('Price', Number.isFinite(row.lastPrice)
+        ? formatPrice(row.lastPrice)
+        : <span className="apex-screener-unavailable" title="No last price was reported for this market.">Unavailable</span>);
+      case 'change': return cell('24h', formatPercent(row.priceChange24hPct), changeTone(row.priceChange24hPct));
+      case 'turnover': return cell('Turnover', usdCompact(Number.isFinite(row.turnover24h) ? row.turnover24h : null));
+      case 'range': return cell('Range', <MetricValue metric={row.range24hPct} render={(value) => `${value.toFixed(2)}%`} />);
+      case 'momentum': return cell('Momentum', <MetricValue metric={factorMetric(row, 'momentum')} render={(value) => Math.round(value).toString()} />);
+      case 'structure': return cell('Structure', <MetricValue metric={factorMetric(row, 'structure')} render={(value) => Math.round(value).toString()} />);
+      case 'funding': return cell('Funding', <MetricValue metric={row.fundingRate} render={(value) => `${(value * 100).toFixed(4)}%`} />);
+      case 'openInterest': return cell('Open int.', <MetricValue metric={row.openInterest} render={(value) => `$${formatCompactNumber(value)}`} />);
+      case 'coverage': return cell('Coverage', row.scoreCoveragePct == null
+        ? <span className="apex-screener-unavailable" title="The scanner did not report evidence coverage.">Unavailable</span>
+        : `${Math.round(row.scoreCoveragePct)}%`);
+      case 'warningCount': return cell('Flags', row.warnings.length);
+      default: return null;
+    }
+  };
+
   const resultsBody = props.loading && !rows.length
     ? <DataState availability="loading" title="Scanning markets" detail="Ranked results appear as soon as the scanner returns its candidate set." />
     : !rows.length
@@ -247,112 +474,124 @@ export function ScreenerPage(props: ScreenerPageProps) {
           <span>{summary.scanned} symbol{summary.scanned === 1 ? '' : 's'} were scanned, but none satisfy every active filter. Widen the score or liquidity floor, or clear the filters.</span>
           <button type="button" className="apex-v3-button primary" onClick={() => setFilters(resetScreenerFilters())}>Reset filters</button>
         </div>
-        : <div className="apex-v3-table-scroll apex-screener-table-scroll">
-          <table className="apex-v3-table apex-screener-table">
-            <thead>
-              <tr>
-                {COLUMNS.map((column) => (
-                  <th
-                    key={column.key}
-                    className={column.numeric ? 'number' : ''}
-                    aria-sort={sort.key === column.key ? (sort.ascending ? 'ascending' : 'descending') : 'none'}
-                  >
-                    <button type="button" onClick={() => toggleSort(column.key)}>
-                      {column.label}
-                      {sort.key === column.key
-                        ? (sort.ascending ? <ChevronUp size={12} /> : <ChevronDown size={12} />)
-                        : <ArrowUpDown size={12} className="idle" />}
-                    </button>
-                  </th>
-                ))}
-                <th>Guard</th>
-                <th><span className="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((row) => (
-                <tr
+        : <div className="apex-v3-table-scroll apex-screener-stream">
+          <ol className="apex-screener-rows">
+            {visible.map((row, rowIndex) => {
+              const isSelected = row.symbol === selected?.symbol;
+              const isFavorite = favorites.has(row.symbol);
+              return (
+                <li
                   key={row.symbol}
-                  className={row.symbol === selected?.symbol ? 'selected' : ''}
-                  tabIndex={0}
-                  onClick={() => props.onSelectSymbol(row.symbol)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      props.onSelectSymbol(row.symbol);
-                    }
-                  }}
+                  className={`apex-screener-row ${row.direction.toLowerCase()}${isSelected ? ' selected' : ''}`}
+                  // Capped so a long result set does not stagger itself into a
+                  // visible wave; past the first screenful the delay is constant.
+                  style={{ '--row-index': Math.min(rowIndex, 12) } as React.CSSProperties}
                 >
-                  <td className="number" data-label="Rank">{row.rank}</td>
-                  <td data-label="Symbol">
+                  <button
+                    type="button"
+                    className="apex-screener-row-main"
+                    aria-current={isSelected || undefined}
+                    onClick={() => props.onSelectSymbol(row.symbol)}
+                  >
+                    <span className="apex-screener-row-rank">{row.rank}</span>
                     <span className="apex-screener-symbol">
-                      <CoinIcon symbol={row.symbol} size={22} />
+                      <CoinIcon symbol={row.symbol} size={26} />
                       <span><strong>{row.baseAsset}</strong><small>{row.symbol}</small></span>
                     </span>
-                  </td>
-                  <td data-label="Bias">
-                    <StatusBadge tone={directionTone(row.direction)}>{row.direction === 'LONG' ? 'Long' : 'Short'}</StatusBadge>
-                  </td>
-                  <td className="number apex-screener-score-cell" data-label="Score">
-                    <strong>{Math.round(row.score)}</strong>
-                    <span className="apex-screener-score-track" aria-hidden="true">
-                      <i style={{ width: `${Math.max(0, Math.min(100, row.score))}%` }} />
+                    <span className={`apex-screener-bias ${row.direction.toLowerCase()}`}>
+                      {row.direction === 'LONG' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                      {row.direction === 'LONG' ? 'Long' : 'Short'}
                     </span>
-                  </td>
-                  <td data-label="Signal">
-                    <StatusBadge tone={TIER_TONES[row.readinessTier]} detail={`Scanner readiness: ${row.readinessTier}`}>
-                      {TIER_LABELS[row.readinessTier]}
-                    </StatusBadge>
-                  </td>
-                  <td className={`number ${changeTone(row.priceChange24hPct)}`} data-label="24h change">
-                    {formatPercent(row.priceChange24hPct)}
-                  </td>
-                  <td className="number" data-label="24h volume">
-                    {usdCompact(Number.isFinite(row.turnover24h) ? row.turnover24h : null)}
-                  </td>
-                  <td data-label="Guard">
-                    {row.guardPass
-                      ? <span className="apex-screener-guard pass"><ShieldCheck size={13} /> Pass</span>
-                      : <span className="apex-screener-guard fail" title={row.warnings[0]}><AlertTriangle size={13} /> {row.warnings.length} flag{row.warnings.length === 1 ? '' : 's'}</span>}
-                  </td>
-                  <td className="apex-screener-row-actions" data-label="Actions">
+                    <ScoreGlyph value={row.score} tone={row.readinessTier} />
+                    <EvidenceEqualizer row={row} />
+                    <span className="apex-screener-row-metrics">
+                      {LENS_METRICS[columnSet].map((slot) => renderMetricSlot(row, slot))}
+                    </span>
+                    <span className="apex-screener-row-state">
+                      <StatusBadge tone={TIER_TONES[row.readinessTier]} detail={`Scanner readiness: ${row.readinessTier}`}>
+                        {TIER_LABELS[row.readinessTier]}
+                      </StatusBadge>
+                      {(columnSet === 'momentum' || columnSet === 'quality') && <StatusBadge
+                        tone={confluenceLabel(row) === 'ALIGNED' ? 'positive' : confluenceLabel(row) === 'CONFLICTING' ? 'negative' : 'warning'}
+                      >{confluenceLabel(row)}</StatusBadge>}
+                      {columnSet === 'quality' && <StatusBadge tone={MARKET_STATE_TONES[row.dataState]}>
+                        {row.dataState.replace(/_/g, ' ')}
+                      </StatusBadge>}
+                      {/* Guard state shows on every lens: it is the risk objection,
+                          not a column the user should have to go looking for. */}
+                      {row.guardPass
+                        ? <span className="apex-screener-guard pass"><ShieldCheck size={13} /> Pass</span>
+                        : <span className="apex-screener-guard fail" title={row.warnings[0]}>
+                          <AlertTriangle size={13} /> {row.warnings.length} flag{row.warnings.length === 1 ? '' : 's'}
+                        </span>}
+                    </span>
+                  </button>
+                  <div className="apex-screener-row-actions">
                     <button
                       type="button"
-                      className={`apex-v3-icon-button ${favorites.has(row.symbol) ? 'active' : ''}`}
-                      aria-label={`${favorites.has(row.symbol) ? 'Remove' : 'Add'} ${row.symbol} ${favorites.has(row.symbol) ? 'from' : 'to'} watchlist`}
-                      onClick={(event) => { event.stopPropagation(); toggleFavorite(row.symbol); }}
+                      className={`apex-v3-icon-button ${isFavorite ? 'active' : ''}`}
+                      aria-label={`${isFavorite ? 'Remove' : 'Add'} ${row.symbol} ${isFavorite ? 'from' : 'to'} watchlist`}
+                      onClick={() => toggleFavorite(row.symbol)}
                     >
-                      <Star size={13} fill={favorites.has(row.symbol) ? 'currentColor' : 'none'} />
+                      <Star size={13} fill={isFavorite ? 'currentColor' : 'none'} />
                     </button>
                     <button
                       type="button"
                       className="apex-v3-button secondary"
-                      onClick={(event) => { event.stopPropagation(); openInTrading(row.symbol); }}
+                      onClick={() => openInTrading(row.symbol)}
                     >Open</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>;
 
   const main = <div className="apex-screener-main">
-    <PageHeading
-      eyebrow="Monitor"
-      title="Market Screener"
-      subtitle="Symbols worth attention right now, ranked by the scanner's own score with the reasoning behind each rank."
-      actions={<button type="button" className="apex-v3-button secondary" onClick={props.onRefresh} disabled={props.loading}>
-        <RefreshCw size={14} className={props.loading ? 'spin' : ''} /> Refresh
-      </button>}
-    />
+    <header className="apex-screener-hero">
+      <span className="apex-screener-hero-mark" aria-hidden="true"><Radar size={22} /><i /></span>
+      <div className="apex-screener-hero-copy">
+        <span><Sparkles size={11} /> Market intelligence</span>
+        <h1>Crypto opportunity scanner</h1>
+        <p>Calm, evidence-led signals ranked by the APEX scanner.</p>
+      </div>
+      <div className="apex-screener-heading-actions">
+        <button type="button" className="apex-v3-button secondary" onClick={exportVisible} disabled={!visible.length}><Download size={14} /> Export</button>
+        <button type="button" className="apex-v3-button secondary" onClick={props.onRefresh} disabled={props.loading}><RefreshCw size={14} className={props.loading ? 'spin' : ''} /> Refresh</button>
+      </div>
+    </header>
 
     <div className="apex-screener-chips" aria-label="Scan status">
-      <span><b>{summary.scanned}</b> scanned</span>
-      <span><b>{summary.opportunities}</b> opportunities</span>
-      <span><b>{summary.matched}</b> shown</span>
-      <span>{age ? <>Updated <b>{age}</b></> : <>Update time <b>unknown</b></>}</span>
+      <span><Activity size={11} /><b>{summary.scanned}</b> scanned</span>
+      <span><Sparkles size={11} /><b>{summary.opportunities}</b> opportunities</span>
+      <span><LayoutList size={11} /><b>{summary.matched}</b> shown</span>
+      <span><Radar size={11} />{age ? <>Updated <b>{age}</b></> : <>Update time <b>unknown</b></>}</span>
       <StatusBadge tone={MARKET_STATE_TONES[props.dataState]}>{MARKET_STATE_LABELS[props.dataState]}</StatusBadge>
     </div>
+
+    <section className="apex-screener-screenbar" aria-label="Screens and presets">
+      <div className="apex-screener-presets">
+        {PRESETS.map((preset) => <button key={preset.id} type="button" className={activePresetId === preset.id ? 'active' : ''} title={preset.detail} onClick={() => applyPreset(preset)}><span />{preset.label}</button>)}
+      </div>
+      <span className="apex-screener-screen-divider" aria-hidden="true" />
+      <label className="apex-screener-saved-select">
+        <span>Saved</span>
+        <select value={activeScreenId} onChange={(event) => {
+          const id = event.target.value;
+          const screen = savedScreens.find((item) => item.id === id);
+          if (screen) applyWorkspace(screen.workspace, screen.id); else setActiveScreenId('');
+        }}>
+          <option value="">Select screen…</option>
+          {savedScreens.map((screen) => <option key={screen.id} value={screen.id}>{screen.name}</option>)}
+        </select>
+      </label>
+      {saveOpen ? <form className="apex-screener-save-form" onSubmit={(event) => { event.preventDefault(); saveNamedScreen(); }}>
+        <input autoFocus value={saveDraft} maxLength={48} onChange={(event) => setSaveDraft(event.target.value)} placeholder="Screen name" aria-label="Saved screen name" />
+        <button type="submit" className="apex-v3-icon-button" disabled={!saveDraft.trim()} aria-label="Confirm saved screen"><Save size={13} /></button>
+        <button type="button" className="apex-v3-icon-button" onClick={() => { setSaveOpen(false); setSaveDraft(''); }} aria-label="Cancel saved screen"><X size={13} /></button>
+      </form> : <button type="button" className="apex-v3-button secondary" onClick={() => setSaveOpen(true)}><Save size={13} /> Save screen</button>}
+      <button type="button" className="apex-v3-icon-button" onClick={deleteActiveScreen} disabled={!activeScreenId} aria-label="Delete selected saved screen"><Trash2 size={13} /></button>
+    </section>
 
     {stale && <p className="apex-screener-stale" role="status">
       <AlertTriangle size={14} /> The newest market observation is {age} old. Refresh before acting on these ranks.
@@ -427,6 +666,17 @@ export function ScreenerPage(props: ScreenerPageProps) {
         </select>
       </label>
 
+      <label className="apex-screener-field">
+        <span>Performance</span>
+        <select value={filters.performance} onChange={(event) => setFilters((current) => ({ ...current, performance: event.target.value as ScreenerFilters['performance'] }))}>
+          <option value="ALL">All moves</option><option value="GAINERS">Gainers</option><option value="LOSERS">Losers</option><option value="MOVERS">±3% movers</option>
+        </select>
+      </label>
+
+      <button type="button" className={`apex-v3-button secondary apex-screener-advanced-toggle ${advancedOpen ? 'active' : ''}`} onClick={() => setAdvancedOpen((open) => !open)} aria-expanded={advancedOpen}>
+        <SlidersHorizontal size={13} /> Advanced
+      </button>
+
       <button
         type="button"
         className="apex-v3-button secondary apex-screener-reset"
@@ -435,11 +685,42 @@ export function ScreenerPage(props: ScreenerPageProps) {
       >Reset filters</button>
     </section>
 
-    <Panel className="apex-v3-table-panel apex-screener-results">
+    {advancedOpen && <section className="apex-screener-advanced" aria-label="Advanced screener filters">
+      <label className="apex-screener-field"><span>Risk guard</span><select value={filters.guard} onChange={(event) => setFilters((current) => ({ ...current, guard: event.target.value as ScreenerFilters['guard'] }))}><option value="ALL">All</option><option value="PASS">Pass only</option><option value="FLAGGED">Flagged only</option></select></label>
+      <label className="apex-screener-field"><span>Timeframes</span><select value={filters.confluence} onChange={(event) => setFilters((current) => ({ ...current, confluence: event.target.value as ScreenerFilters['confluence'] }))}><option value="ALL">All</option><option value="ALIGNED">Aligned</option><option value="CONFLICTING">Conflicting</option></select></label>
+      <label className="apex-screener-field"><span>Funding</span><select value={filters.funding} onChange={(event) => setFilters((current) => ({ ...current, funding: event.target.value as ScreenerFilters['funding'] }))}><option value="ALL">All</option><option value="AVAILABLE">Available</option><option value="POSITIVE">Positive</option><option value="NEGATIVE">Negative</option></select></label>
+      <label className="apex-screener-field"><span>Data quality</span><select value={filters.dataQuality} onChange={(event) => setFilters((current) => ({ ...current, dataQuality: event.target.value as ScreenerFilters['dataQuality'] }))}><option value="ALL">All</option><option value="LIVE">Live only</option><option value="PARTIAL">Needs review</option></select></label>
+      <label className="apex-screener-field apex-screener-score-filter"><span>Min momentum <b>{filters.minMomentum}</b></span><input type="range" min={0} max={100} step={5} value={filters.minMomentum} onChange={(event) => setFilters((current) => ({ ...current, minMomentum: Number(event.target.value) }))} /></label>
+      <label className="apex-screener-field apex-screener-score-filter"><span>Min coverage <b>{filters.minCoveragePct}%</b></span><input type="range" min={0} max={100} step={10} value={filters.minCoveragePct} onChange={(event) => setFilters((current) => ({ ...current, minCoveragePct: Number(event.target.value) }))} /></label>
+      <label className="apex-screener-check"><input type="checkbox" checked={filters.favoritesOnly} onChange={(event) => setFilters((current) => ({ ...current, favoritesOnly: event.target.checked }))} /><Star size={13} /> Watchlist only</label>
+    </section>}
+
+    <Panel className="apex-screener-results">
       <PanelHeader
-        title="Ranked results"
+        title="Signal stream"
         subtitle={`${summary.matched} of ${summary.scanned} symbols · ${summary.partial} with partial data`}
+        action={<div className="apex-screener-view-tools" aria-label="Result lens">
+          {COLUMN_SET_OPTIONS.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={columnSet === id ? 'active' : ''} onClick={() => setColumnSet(id)} aria-pressed={columnSet === id} title={`${label} result lens`}><Icon size={12} /><span>{label}</span></button>)}
+        </div>}
       />
+      {/* Only shown alongside a populated stream: sorting an empty or errored
+          result set is a control with nothing to act on. */}
+      {visible.length > 0 && <div className="apex-screener-sortbar" role="group" aria-label="Sort ranked results">
+        <span className="apex-screener-sortbar-lead"><ArrowUpDown size={11} /> Sort</span>
+        {SORT_OPTIONS[columnSet].map((option) => <button
+          key={option.key}
+          type="button"
+          className={sort.key === option.key ? 'active' : ''}
+          aria-pressed={sort.key === option.key}
+          title={sort.key === option.key
+            ? `Sorted by ${option.label}, ${sort.ascending ? 'ascending' : 'descending'} — click to reverse`
+            : `Sort by ${option.label}`}
+          onClick={() => toggleSort(option.key)}
+        >
+          {option.label}
+          {sort.key === option.key && (sort.ascending ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
+        </button>)}
+      </div>}
       {resultsBody}
     </Panel>
   </div>;
@@ -478,20 +759,20 @@ export function ScreenerPage(props: ScreenerPageProps) {
         />
 
         <div className="apex-screener-block">
-          <h3>Score breakdown</h3>
+          <h3><Activity size={11} /> Score architecture</h3>
           <FactorBreakdown row={selected} />
           <p className="apex-screener-note">Sub-scores are published by the scanner. The screener ranks on its score rather than re-deriving one.</p>
         </div>
 
         <div className="apex-screener-block">
-          <h3>Why it ranked here</h3>
+          <h3><Sparkles size={11} /> Why it surfaced</h3>
           <ul className="apex-screener-reasons">
             {selected.reasons.map((reason) => <li key={reason}>{reason}</li>)}
           </ul>
         </div>
 
         <div className="apex-screener-block">
-          <h3>Risk warnings</h3>
+          <h3><AlertTriangle size={11} /> Risk notes</h3>
           {selected.warnings.length
             ? <ul className="apex-screener-warnings">
               {selected.warnings.map((warning) => <li key={warning}><AlertTriangle size={13} /> {warning}</li>)}
@@ -500,11 +781,13 @@ export function ScreenerPage(props: ScreenerPageProps) {
         </div>
 
         <div className="apex-screener-block">
-          <h3>Market stats</h3>
+          <h3><Gauge size={11} /> Market texture</h3>
           <KeyValueList rows={[
             { label: 'Price', value: Number.isFinite(selected.lastPrice) ? formatPrice(selected.lastPrice) : <span className="apex-screener-unavailable">Unavailable</span> },
             { label: '24h change', value: formatPercent(selected.priceChange24hPct), tone: changeTone(selected.priceChange24hPct) },
-            { label: '24h volume', value: usdCompact(Number.isFinite(selected.turnover24h) ? selected.turnover24h : null) },
+            { label: '24h turnover', value: usdCompact(Number.isFinite(selected.turnover24h) ? selected.turnover24h : null) },
+            { label: '24h base volume', value: <MetricValue metric={selected.baseVolume24h} render={formatCompactNumber} /> },
+            { label: '24h high-low range', value: <MetricValue metric={selected.range24hPct} render={(value) => `${value.toFixed(2)}%`} /> },
             { label: 'Open interest', value: <MetricValue metric={selected.openInterest} render={(value) => `$${formatCompactNumber(value)}`} /> },
             { label: 'Funding rate', value: <MetricValue metric={selected.fundingRate} render={(value) => `${(value * 100).toFixed(4)}%`} /> },
             { label: 'Spread / depth', value: <MetricValue metric={selected.spreadDepth} render={(value) => String(value)} /> },

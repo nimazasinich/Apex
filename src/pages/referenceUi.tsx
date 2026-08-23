@@ -94,7 +94,7 @@ export function SoftMetric({
         <span className="v20-metric-icon"><Icon size={16} /></span>
         <span>{label}</span>
       </div>
-      <strong className={valueTone || ''}>{value}</strong>
+      <strong className={valueTone || ''} title={typeof value === 'string' || typeof value === 'number' ? String(value) : undefined}>{value}</strong>
       {detail && <small>{detail}</small>}
       {chart?.length ? (
         <MiniSparkline
@@ -119,9 +119,17 @@ export function HalfGauge({
   centerText?: string;
 }) {
   const safe = Math.max(0, Math.min(100, value));
+  // The dial label sits inside the arc (`.v20-half-gauge > strong` is pulled up
+  // over the svg), so a needle drawn from the hub outwards crossed straight
+  // through its own value on every gauge in the app. It is drawn as an outboard
+  // tick instead: r=30 clears the tallest label the shared styles produce, r=40
+  // stops just inside the 46-radius arc band it points at.
+  const angle = Math.PI * (1 - safe / 100);
+  const tickX = (radius: number) => 60 + radius * Math.cos(angle);
+  const tickY = (radius: number) => 58 - radius * Math.sin(angle);
   return (
     <div className={`v20-half-gauge ${toneName}`}>
-      <svg viewBox="0 0 120 68" aria-label={`${label}: ${safe}%`}>
+      <svg viewBox="0 0 120 68" aria-label={`${label}: ${Math.round(safe)}%`}>
         <path d="M 14 58 A 46 46 0 0 1 106 58" pathLength="100" className="track" />
         <path
           d="M 14 58 A 46 46 0 0 1 106 58"
@@ -130,13 +138,12 @@ export function HalfGauge({
           style={{ strokeDasharray: `${safe} ${100 - safe}` }}
         />
         <line
-          x1="60"
-          y1="58"
-          x2={60 + 37 * Math.cos(Math.PI - Math.PI * safe / 100)}
-          y2={58 - 37 * Math.sin(Math.PI * safe / 100)}
+          x1={tickX(30)}
+          y1={tickY(30)}
+          x2={tickX(40)}
+          y2={tickY(40)}
           className="needle"
         />
-        <circle cx="60" cy="58" r="3.5" />
       </svg>
       <strong>{centerText || `${Math.round(safe)}/100`}</strong>
       <span>{label}</span>

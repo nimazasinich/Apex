@@ -1,8 +1,46 @@
 /* Copied from apex-trading-engine/src/services/providers/supplementalTypes.ts */
 
+import type { NewsApiQueryOptions } from './newsApiTypes';
+
 export type SupplementalDataSource = 'live' | 'degraded' | 'unavailable' | 'not_configured';
 
 export type SupplementalCategory = 'news' | 'sentiment' | 'onchain' | 'market';
+
+/**
+ * Truthful outcome of an upstream read, kept distinct from `status` so an
+ * operator can tell a genuinely empty source from one whose response shape
+ * changed or that could not be reached. Mirrors HfResultState in hfSpaceIntel.
+ */
+export type SupplementalResultState = 'SUCCESS' | 'NO_DATA' | 'SCHEMA_MISMATCH' | 'NETWORK_ERROR';
+
+/** One upstream endpoint attempt, for debugging without reproducing requests. */
+export interface SupplementalAttemptDiagnostic {
+  endpoint: string;
+  provider: string;
+  latencyMs: number;
+  httpStatus: number;
+  resultState: SupplementalResultState;
+  itemCount: number;
+  rawItemCount: number;
+  receivedKeys?: string[];
+  error?: string;
+}
+
+/**
+ * Optional, non-scoring diagnostics. Never consumed as trading evidence — it
+ * exists so provider failures are explainable after the fact.
+ */
+export interface SupplementalDiagnostics {
+  state: SupplementalResultState;
+  /** Body keys observed when a response no longer matched the expected schema. */
+  receivedKeys?: string[];
+  /**
+   * Valid raw observations the upstream returned, before category-specific
+   * promotion rules (e.g. requiring an explicit on-chain direction) applied.
+   */
+  rawObservationCount?: number;
+  attempts?: SupplementalAttemptDiagnostic[];
+}
 
 export interface NewsArticle {
   title: string;
@@ -23,6 +61,8 @@ export interface NewsResult {
   reason?: string;
   latencyMs: number;
   updatedAt: string;
+  /** Additive diagnostics; absent for providers that do not report them. */
+  diagnostics?: SupplementalDiagnostics;
 }
 
 export interface SentimentScore {
@@ -46,6 +86,8 @@ export interface SentimentResult {
   reason?: string;
   latencyMs: number;
   updatedAt: string;
+  /** Additive diagnostics; absent for providers that do not report them. */
+  diagnostics?: SupplementalDiagnostics;
 }
 
 export interface OnChainSignal {
@@ -75,6 +117,12 @@ export interface OnChainResult {
   reason?: string;
   latencyMs: number;
   updatedAt: string;
+  /**
+   * Additive diagnostics. `rawObservationCount` records valid whale rows the
+   * upstream returned even when none carried an explicit direction, so raw
+   * observations stay visible without being promoted to directional signals.
+   */
+  diagnostics?: SupplementalDiagnostics;
 }
 
 export type SupplementalResult = NewsResult | SentimentResult | OnChainResult;
@@ -143,7 +191,7 @@ export interface ProviderConfig {
   timeout?: number;
   rateLimitPerMinute?: number;
   /** NewsAPI.org /v2 query options (non-secret). */
-  newsApiQuery?: import('./newsApiRequest').NewsApiQueryOptions;
+  newsApiQuery?: NewsApiQueryOptions;
 }
 
 export interface SupplementalFetchContext {

@@ -13,7 +13,21 @@ const ROOT = resolve(process.cwd());
  * `distribution/` or `templates/` document would have been skipped silently —
  * the worse half, because a skipped file cannot fail.
  */
-const EXCLUDED_SEGMENTS = new Set(['node_modules', 'dist', 'temp']);
+const EXCLUDED_SEGMENTS = new Set([
+  '.agent-index',
+  '.apex-data',
+  '.claude',
+  '.git',
+  '.mcp-recovered',
+  '_archive',
+  '_qa',
+  '_release',
+  'dist',
+  'node_modules',
+  'QA',
+  'temp',
+  'test-results',
+]);
 const isExcluded = (path: string): boolean =>
   // readdirSync reports native separators, so split on both rather than assuming posix.
   path.split(/[\\/]/).some(segment => EXCLUDED_SEGMENTS.has(segment));

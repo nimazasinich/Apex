@@ -6615,3 +6615,34 @@
     max-height: 382px !important;
   }
 }
+
+/* Narrow-desktop viewport containment (<=1279px).
+   At >=1280px the workspace is height:100% and the layout row scrolls its own
+   panels, so everything stays inside .apex-content. Below that, `height: auto`
+   let the workspace grow to its natural ~1807px while .apex-content stayed
+   716px with `overflow: hidden !important`, so roughly 1.1k px of the page —
+   the whole results panel below the fold — was clipped and unreachable with no
+   scrollbar anywhere. Restore the bounded model and move the scrolling into
+   the layout row. */
+@media (max-width: 1279px) {
+  .apex-content:has(.apex-backtest-workspace.apex-bt-polish-v1066) {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+  }
+
+  .apex-backtest-workspace.apex-bt-polish-v1066 {
+    height: 100% !important;
+    min-height: 0 !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+  }
+
+  .apex-bt-polish-v1066 .apex-bt-layout.apex-bt-layout-modernized {
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+}
+

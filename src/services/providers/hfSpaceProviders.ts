@@ -30,6 +30,7 @@ export class HfSpacesNewsProvider implements SupplementalProvider {
   async fetch(symbol: string): Promise<NewsResult> {
     const startedAt = Date.now();
     const result = await fetchHfSpaceNews();
+    const usable = result.ok && result.headlines.length > 0;
     return {
       category: 'news',
       provider: result.source,
@@ -40,11 +41,18 @@ export class HfSpacesNewsProvider implements SupplementalProvider {
         source: item.source || result.source,
         publishedAt: item.publishedAt || '',
       })),
-      source: result.ok && result.headlines.length ? 'degraded' : 'unavailable',
-      status: result.ok && result.headlines.length ? 'OK' : 'NO_DATA',
+      source: usable ? 'degraded' : 'unavailable',
+      // A 200 whose body no longer matches the expected shape is reported as a
+      // schema break rather than being flattened into NO_DATA.
+      status: usable ? 'OK' : result.state === 'SCHEMA_MISMATCH' ? 'SCHEMA_MISMATCH' : 'NO_DATA',
       reason: result.detail,
       latencyMs: Date.now() - startedAt,
       updatedAt: new Date().toISOString(),
+      diagnostics: {
+        state: result.state,
+        receivedKeys: result.receivedKeys,
+        attempts: result.attempts,
+      },
     };
   }
 }
@@ -115,6 +123,10 @@ export class HfSpacesSentimentProvider implements SupplementalProvider {
         reason: fearGreed.classification || undefined,
         latencyMs: Date.now() - startedAt,
         updatedAt: new Date().toISOString(),
+        diagnostics: {
+          state: fearGreed.state,
+          attempts: fearGreed.attempts,
+        },
       };
     }
 
@@ -125,10 +137,17 @@ export class HfSpacesSentimentProvider implements SupplementalProvider {
       symbol,
       data: null,
       source: 'unavailable',
-      status: 'NO_DATA',
+      // Distinguish a changed upstream schema from a source that truthfully has
+      // nothing to report.
+      status: fearGreed.state === 'SCHEMA_MISMATCH' ? 'SCHEMA_MISMATCH' : 'NO_DATA',
       reason: fearGreed.detail || 'Both approved Hugging Face Spaces were unavailable',
       latencyMs: Date.now() - startedAt,
       updatedAt: new Date().toISOString(),
+      diagnostics: {
+        state: fearGreed.state,
+        receivedKeys: fearGreed.receivedKeys,
+        attempts: fearGreed.attempts,
+      },
     };
   }
 }
@@ -165,12 +184,29 @@ export class HfSpacesOnChainProvider implements SupplementalProvider {
       symbol,
       data: rows,
       source: result.ok && rows.length ? 'degraded' : 'unavailable',
-      status: result.ok && rows.length ? 'OK' : result.ok ? 'NO_DIRECTIONAL_ROWS' : 'NO_DATA',
+      // Three distinct facts are kept apart: usable directional signals, valid
+      // observations that carried no direction, and an upstream whose response
+      // shape changed. Only the last is a schema break.
+      status: result.ok && rows.length
+        ? 'OK'
+        : result.ok
+          ? 'NO_DIRECTIONAL_ROWS'
+          : result.state === 'SCHEMA_MISMATCH'
+            ? 'SCHEMA_MISMATCH'
+            : 'NO_DATA',
       reason: result.ok && result.rows.length && !rows.length
         ? 'Hugging Face returned whale rows but no explicit inbound/outbound direction; APEX refused to infer it'
         : result.detail,
       latencyMs: Date.now() - startedAt,
       updatedAt: new Date().toISOString(),
+      diagnostics: {
+        state: result.state,
+        receivedKeys: result.receivedKeys,
+        // Valid observations before the directional promotion rule — these are
+        // never discarded silently.
+        rawObservationCount: result.ok ? result.rows.length : result.rawRowCount,
+        attempts: result.attempts,
+      },
     };
   }
 }

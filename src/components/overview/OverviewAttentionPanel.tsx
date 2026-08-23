@@ -38,9 +38,9 @@ export function OverviewAttentionPanel({
   const candidate = candidates.find((row) => row.guardPass && row.readinessTier === 'CONFIRMED');
   if (candidate) items.push({ id: 'signal', title: `${candidate.symbol} ${candidate.direction} signal`, detail: `Score ${candidate.score}; review its evidence before opening Trading.`, page: 'strategies', icon: Radio, tone: 'info' });
 
-  const visible = items.slice(0, 5);
+  const visible = items.slice(0, 3);
   return <section className="apex-overview-attention apex-panel" aria-labelledby="overview-attention-title">
-    <header><div><span className="apex-eyebrow">Priority queue</span><h2 id="overview-attention-title">Needs attention</h2></div><strong>{visible.length}</strong></header>
+    <header className="apex-overview-section-head"><span className="apex-overview-section-num">5</span><div><h2 id="overview-attention-title">Priority / Action Needed</h2></div><strong>{visible.length}</strong></header>
     {visible.length ? <div className="apex-overview-attention-list">{visible.map((item) => {
       const Icon = item.icon;
       return <button type="button" key={item.id} className={`tone-${item.tone}`} onClick={() => onNavigate(item.page)}>
@@ -48,6 +48,6 @@ export function OverviewAttentionPanel({
         <span><strong>{item.title}</strong><small>{item.detail}</small></span>
         <ArrowRight size={15} aria-hidden="true" />
       </button>;
-    })}</div> : <div className="apex-overview-calm"><CheckCircle2 size={24} /><strong>No immediate action required</strong><span>Current data, account state, orders, positions, and scanner results have no flagged condition.</span></div>}
+    })}</div> : <div className="apex-overview-calm-compact apex-overview-calm-large"><CheckCircle2 size={18} aria-hidden="true" /><span><strong>No immediate action required</strong><small>All systems operational</small></span></div>}
   </section>;
 }

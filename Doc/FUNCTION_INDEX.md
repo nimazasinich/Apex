@@ -13,25 +13,25 @@ Use this index before opening large files. Search by function name, tag, or file
 
 ## Summary
 
-- Total indexed symbols: 3479
-- Generated at: 2026-08-17T02:32:47.261Z
+- Total indexed symbols: 3615
+- Generated at: 2026-08-22T19:40:53.719Z
 
 ## Tag Index
 
 - `adaptive`: 101
-- `api-route`: 2
-- `component`: 189
-- `decision-memory`: 140
-- `hook`: 8
-- `market-data`: 553
-- `ml`: 163
+- `api-route`: 3
+- `component`: 197
+- `decision-memory`: 155
+- `hook`: 9
+- `market-data`: 557
+- `ml`: 177
 - `provider`: 106
-- `scanner`: 22
-- `script`: 616
-- `server`: 81
-- `service`: 1870
-- `test`: 146
-- `ui`: 314
+- `scanner`: 30
+- `script`: 661
+- `server`: 80
+- `service`: 1906
+- `test`: 151
+- `ui`: 340
 
 ## Functions By File
 
@@ -255,9 +255,11 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `entries` | function | 18-56 | no | no | `script` |
-| `hasPrefix` | function | 57-57 | no | no | `script` |
-| `assertNoForbidden` | function | 58-65 | no | no | `script` |
+| `normalizeArchiveEntryPath` | function | 18-20 | yes | no | `script` |
+| `entries` | function | 22-60 | no | no | `script` |
+| `hasPrefix` | function | 61-61 | no | no | `script` |
+| `assertNoForbidden` | function | 62-69 | no | no | `script` |
+| `runPolicySelfTest` | function | 71-100 | no | no | `script` |
 
 ### scripts/gates/checkTestInventory.mjs
 
@@ -558,6 +560,18 @@ Use this index before opening large files. Search by function name, tag, or file
 | `walk` | function | 8-8 | no | no | `script` |
 | `get` | arrow | 10-10 | no | no | `script` |
 | `check` | arrow | 15-15 | no | no | `script` |
+
+### scripts/qa/runOfflinePixelGate.mjs
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `ticker` | arrow | 33-33 | no | no | `script` |
+| `OfflineWebSocket` | class | 44-50 | no | no | `script` |
+| `OfflineWebSocket.close` | method | 47-47 | no | no | `script` |
+| `OfflineWebSocket.send` | method | 47-47 | no | no | `script` |
+| `OfflineWebSocket.addEventListener` | method | 48-48 | no | no | `script` |
+| `OfflineWebSocket.dispatchEvent` | method | 49-49 | no | no | `script` |
+| `OfflineWebSocket.removeEventListener` | method | 49-49 | no | no | `script` |
 
 ### scripts/qa/runProxyFetchOptionalDependencyRuntime.mjs
 
@@ -941,26 +955,26 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `safeName` | function | 49-51 | no | no | `script` |
-| `isServerReady` | function | 53-60 | no | yes | `script` |
-| `startServer` | function | 62-82 | no | yes | `script` |
-| `stopServer` | function | 84-103 | no | yes | `script` |
-| `launchBrowser` | function | 105-114 | no | yes | `script` |
-| `inspectViewportContainment` | function | 117-211 | no | no | `script` |
-| `rect` | function | 122-142 | no | no | `script` |
-| `label` | function | 144-149 | no | no | `script` |
-| `within` | function | 151-163 | no | no | `script` |
-| `attachDiagnostics` | function | 213-235 | no | no | `script` |
-| `seedTheme` | function | 237-241 | no | yes | `script` |
-| `inspectRoute` | function | 243-312 | no | yes | `script` |
-| `verifyDesignTokensRuntime` | function | 314-364 | no | yes | `script` |
-| `verifyThemeSurfaceRuntime` | function | 366-407 | no | yes | `script` |
-| `verifyLightThemeRuntime` | function | 409-502 | no | yes | `script` |
-| `parseColor` | function | 437-443 | no | no | `script` |
-| `luminance` | function | 444-448 | no | no | `script` |
-| `contrast` | function | 449-452 | no | no | `script` |
-| `verifyWatchlistPersistence` | function | 504-517 | no | yes | `script` |
-| `verifyThemePersistence` | function | 519-538 | no | yes | `script` |
-| `main` | function | 540-591 | no | yes | `script` |
+| `cssLuminance` | function | 53-59 | no | no | `script` |
+| `cssAlpha` | function | 61-66 | no | no | `script` |
+| `cssContrast` | function | 68-71 | no | no | `script` |
+| `isServerReady` | function | 73-80 | no | yes | `script` |
+| `startServer` | function | 82-102 | no | yes | `script` |
+| `stopServer` | function | 104-126 | no | yes | `script` |
+| `launchBrowser` | function | 128-137 | no | yes | `script` |
+| `inspectViewportContainment` | function | 140-238 | no | no | `script` |
+| `rect` | function | 145-165 | no | no | `script` |
+| `label` | function | 167-172 | no | no | `script` |
+| `within` | function | 174-190 | no | no | `script` |
+| `attachDiagnostics` | function | 240-267 | no | no | `script` |
+| `seedTheme` | function | 269-273 | no | yes | `script` |
+| `inspectRoute` | function | 275-345 | no | yes | `script` |
+| `verifyDesignTokensRuntime` | function | 347-397 | no | yes | `script` |
+| `verifyThemeSurfaceRuntime` | function | 399-452 | no | yes | `script` |
+| `verifyLightThemeRuntime` | function | 454-528 | no | yes | `script` |
+| `verifyWatchlistPersistence` | function | 530-543 | no | yes | `script` |
+| `verifyThemePersistence` | function | 545-564 | no | yes | `script` |
+| `main` | function | 566-618 | no | yes | `script` |
 
 ### scripts/qa/workspaceGeometry.spec.mts
 
@@ -978,6 +992,52 @@ Use this index before opening large files. Search by function name, tag, or file
 | `navHash` | function | 142-147 | no | yes | `script` |
 | `runViewport` | function | 149-332 | no | yes | `script` |
 | `main` | function | 334-355 | no | yes | `script` |
+
+### scripts/research/acquireProfitabilityData.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `sha256` | function | 35-37 | no | no | `script` |
+| `iso` | function | 39-41 | no | no | `script` |
+| `sleep` | function | 43-45 | no | no | `script` |
+| `fetchBytes` | function | 47-66 | no | yes | `script` |
+| `fetchJsonPage` | function | 68-75 | no | yes | `script` |
+| `writeSeries` | function | 77-93 | no | no | `script` |
+| `coverage` | function | 95-101 | no | no | `script` |
+| `mapLimit` | function | 103-115 | no | yes | `script` |
+| `utcDates` | function | 117-123 | no | no | `script` |
+| `utcMonths` | function | 125-135 | no | no | `script` |
+| `acquireKlines` | function | 137-164 | no | yes | `script` |
+| `acquireFunding` | function | 166-193 | no | yes | `script` |
+| `unzipCsv` | function | 195-202 | no | no | `script` |
+| `acquireMetrics` | function | 204-233 | no | yes | `script` |
+| `acquireBookDepth` | function | 235-273 | no | yes | `script` |
+| `decodeXml` | function | 275-278 | no | no | `ml`, `script` |
+| `tag` | function | 280-283 | no | no | `script` |
+| `acquireNews` | function | 285-308 | no | yes | `script` |
+| `acquireSentiment` | function | 310-320 | no | yes | `script` |
+| `main` | function | 322-355 | no | yes | `script` |
+
+### scripts/research/runStructuralProfitabilityStudy.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `sha256` | arrow | 21-21 | no | no | `script` |
+| `pct` | arrow | 22-22 | no | no | `script` |
+| `pf` | arrow | 23-23 | no | no | `script` |
+| `timestamp` | function | 50-52 | no | no | `script` |
+| `aggregate4h` | function | 54-67 | no | no | `script` |
+| `sliceCandles` | function | 69-73 | no | no | `script` |
+| `defaultParameters` | function | 75-77 | no | no | `script` |
+| `metrics` | function | 79-92 | no | no | `script` |
+| `legacyDrawdown` | function | 94-105 | no | no | `script` |
+| `runDefinition` | function | 107-129 | no | yes | `script` |
+| `fullSemanticsBlockers` | function | 131-140 | no | no | `script` |
+| `readBrowserQa` | function | 142-145 | no | no | `script` |
+| `sealHoldout` | function | 147-172 | no | no | `script` |
+| `verifySeal` | function | 174-183 | no | no | `script` |
+| `markdownTable` | function | 185-187 | no | no | `script` |
+| `evaluate` | function | 189-302 | no | yes | `script` |
 
 ### scripts/utilities/analyzeDirectionDivergence.mts
 
@@ -1019,13 +1079,13 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `runStep` | function | 57-80 | no | no | `script` |
+| `runStep` | function | 59-82 | no | no | `script` |
 
 ### scripts/utilities/checkDocumentationLinks.mts
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `isExcluded` | arrow | 17-19 | no | no | `script` |
+| `isExcluded` | arrow | 31-33 | no | no | `script` |
 
 ### scripts/utilities/createReleaseArchive.mts
 
@@ -1352,97 +1412,96 @@ Use this index before opening large files. Search by function name, tag, or file
 |---|---|---:|---|---|---|
 | `routerFetch` | arrow | 172-173 | no | no | `server` |
 | `quote` | method | 234-255 | no | yes | `server` |
-| `exchangeSessionId` | function | 546-548 | no | no | `market-data`, `server` |
-| `exchangeSessionCookie` | function | 550-561 | no | no | `market-data`, `server` |
-| `clearExchangeSessionCookie` | function | 563-574 | no | no | `market-data`, `server` |
-| `scopedCookie` | function | 576-587 | no | no | `server` |
-| `requestedAccountMode` | function | 589-591 | no | no | `server` |
-| `ensureDemoSession` | function | 593-596 | no | no | `server` |
-| `accountCookies` | function | 598-604 | no | no | `server` |
-| `accountRouteError` | function | 606-635 | no | no | `server` |
-| `testnetStore` | arrow | 851-856 | no | no | `server` |
-| `testnetAdapter` | arrow | 857-860 | no | no | `server` |
-| `validationStore` | arrow | 861-866 | no | no | `server` |
-| `validationAdapter` | arrow | 867-870 | no | no | `server` |
-| `validationConfigured` | arrow | 871-874 | no | no | `server` |
-| `mapTestnetStatus` | arrow | 875-880 | no | no | `server` |
-| `normalizeTestnetFills` | arrow | 881-904 | no | no | `server` |
-| `reconcileTestnetOrder` | arrow | 905-928 | no | yes | `server` |
-| `handleManualTestnetOrder` | arrow | 1022-1193 | no | yes | `server` |
-| `positionNotional` | arrow | 1055-1055 | no | no | `server` |
-| `parseNumber` | arrow | 1249-1252 | no | no | `server` |
-| `verifyOperatorToken` | function | 1432-1442 | no | no | `server` |
-| `buildLiquidityHunterShadowContext` | function | 1483-1563 | no | yes | `server` |
-| `ExchangeProxyError` | class | 1752-1761 | no | no | `market-data`, `server` |
-| `reportDebugEvent` | function | 1770-1785 | no | no | `server` |
-| `exchangeRouteCooldownKey` | function | 1788-1795 | no | no | `market-data`, `server` |
-| `assertExchangeRouteNotCoolingDown` | function | 1797-1808 | no | no | `market-data`, `server` |
-| `recordExchangeRouteTransportFailure` | function | 1810-1812 | no | no | `market-data`, `server` |
-| `classifyStatus` | arrow | 1814-1820 | no | no | `server` |
-| `fetchExchangeJson` | function | 1822-1891 | no | yes | `market-data`, `server` |
-| `assertKuCoinSuccess` | function | 1893-1901 | no | no | `market-data`, `server` |
-| `sendExchangeError` | function | 1903-1936 | no | no | `market-data`, `server` |
-| `sendExchangeOk` | function | 1942-1957 | no | no | `market-data`, `server` |
-| `sendExchangeErr` | function | 1962-1993 | no | no | `market-data`, `server` |
-| `sendLive` | function | 1996-1998 | no | no | `server` |
-| `getBacktestProfile` | function | 2078-2081 | no | no | `server` |
-| `backtestPublicProfile` | function | 2083-2093 | no | no | `server` |
-| `assertBacktestUrlAllowed` | function | 2095-2105 | no | no | `server` |
-| `normalizeBacktestInterval` | function | 2107-2111 | no | no | `server` |
-| `sanitizeBacktestEndpointPath` | function | 2113-2124 | no | no | `server` |
-| `backtestSymbolContext` | function | 2133-2140 | no | no | `server` |
-| `intervalToHistoryDays` | function | 2142-2146 | no | no | `server` |
-| `applyBacktestEndpointTemplate` | function | 2148-2157 | no | no | `server` |
-| `buildBacktestUrl` | function | 2159-2177 | no | no | `server` |
-| `fetchBacktestText` | function | 2179-2195 | no | yes | `server` |
-| `num` | function | 2197-2201 | no | no | `server` |
-| `timeString` | function | 2203-2217 | no | no | `server` |
-| `candleFromArray` | function | 2219-2229 | no | no | `server` |
-| `candleFromObject` | function | 2231-2241 | no | no | `server` |
-| `chartObjectToCandles` | function | 2243-2255 | no | no | `server` |
-| `normalizeBacktestCandles` | function | 2257-2288 | no | no | `server` |
-| `parseCsvCandles` | function | 2290-2304 | no | no | `server` |
-| `compactRawSample` | function | 2306-2316 | no | no | `server` |
-| `sendSentimentEnvelope` | function | 2622-2653 | no | no | `server` |
-| `readSavedSupplementalConfig` | function | 2895-2927 | no | no | `server` |
-| `supplementalVerifiedStatus` | function | 2962-2968 | no | no | `server` |
-| `persistSupplementalKeys` | function | 2970-2979 | no | no | `server` |
-| `restoreSupplementalProbeCache` | function | 2981-2990 | no | no | `server` |
-| `rebuildSupplementalOrchestrator` | function | 2999-3023 | no | no | `server` |
-| `supplementalConfigStatus` | function | 3025-3034 | no | no | `server` |
-| `clearSupplementalVerification` | function | 3036-3042 | no | no | `server` |
-| `sanitizeExternalSource` | function | 3180-3183 | no | no | `server` |
-| `normalizeExternalSource` | function | 3185-3211 | no | no | `server` |
-| `readExternalApiSources` | function | 3213-3222 | no | no | `server` |
-| `persistExternalApiSources` | function | 3226-3230 | no | no | `server` |
-| `seedCompletedDefaultExternalSources` | function | 3232-3243 | no | no | `server` |
-| `appendAuthToExternalRequest` | function | 3259-3270 | no | no | `server` |
-| `slim` | arrow | 3579-3582 | no | no | `server` |
-| `persistTelegramConfig` | function | 3670-3678 | no | no | `server` |
-| `telegramConfigured` | function | 3680-3682 | no | no | `server` |
-| `sendTelegramMessage` | function | 3684-3712 | no | yes | `server` |
-| `historicalResearchWindow` | function | 3762-3767 | no | no | `server` |
-| `initializeDecisionMemoryDatasetDurability` | function | 3851-3864 | no | yes | `decision-memory`, `ml`, `server` |
-| `initializeOpenInterestHistorySampler` | function | 3866-3891 | no | no | `server` |
-| `reconcilePersistedTestnetOrders` | function | 3893-3907 | no | yes | `server` |
-| `logProxyStartup` | function | 3909-3923 | no | no | `market-data`, `server` |
-| `startServer` | route | 3925-4013 | no | yes | `api-route`, `server` |
-| `transformIndexHtml` | method | 3992-3994 | no | no | `ml`, `server` |
-| `closeHttpServer` | function | 4030-4050 | no | yes | `server` |
-| `finish` | arrow | 4036-4041 | no | no | `server` |
-| `gracefulShutdown` | function | 4052-4083 | no | yes | `server` |
+| `exchangeSessionId` | function | 551-553 | no | no | `market-data`, `server` |
+| `exchangeSessionCookie` | function | 555-566 | no | no | `market-data`, `server` |
+| `clearExchangeSessionCookie` | function | 568-579 | no | no | `market-data`, `server` |
+| `scopedCookie` | function | 581-592 | no | no | `server` |
+| `requestedAccountMode` | function | 594-596 | no | no | `server` |
+| `ensureDemoSession` | function | 598-601 | no | no | `server` |
+| `accountCookies` | function | 603-609 | no | no | `server` |
+| `accountRouteError` | function | 611-640 | no | no | `server` |
+| `testnetStore` | arrow | 856-861 | no | no | `server` |
+| `testnetAdapter` | arrow | 862-865 | no | no | `server` |
+| `validationStore` | arrow | 866-871 | no | no | `server` |
+| `validationAdapter` | arrow | 872-875 | no | no | `server` |
+| `validationConfigured` | arrow | 876-879 | no | no | `server` |
+| `mapTestnetStatus` | arrow | 880-885 | no | no | `server` |
+| `normalizeTestnetFills` | arrow | 886-909 | no | no | `server` |
+| `reconcileTestnetOrder` | arrow | 910-933 | no | yes | `server` |
+| `handleManualTestnetOrder` | arrow | 1027-1198 | no | yes | `server` |
+| `positionNotional` | arrow | 1060-1060 | no | no | `server` |
+| `verifyOperatorToken` | function | 1399-1409 | no | no | `server` |
+| `buildLiquidityHunterShadowContext` | function | 1450-1530 | no | yes | `server` |
+| `ExchangeProxyError` | class | 1707-1716 | no | no | `market-data`, `server` |
+| `reportDebugEvent` | function | 1725-1740 | no | no | `server` |
+| `exchangeRouteCooldownKey` | function | 1743-1750 | no | no | `market-data`, `server` |
+| `assertExchangeRouteNotCoolingDown` | function | 1752-1763 | no | no | `market-data`, `server` |
+| `recordExchangeRouteTransportFailure` | function | 1765-1767 | no | no | `market-data`, `server` |
+| `classifyStatus` | arrow | 1769-1775 | no | no | `server` |
+| `fetchExchangeJson` | function | 1777-1846 | no | yes | `market-data`, `server` |
+| `assertKuCoinSuccess` | function | 1848-1856 | no | no | `market-data`, `server` |
+| `sendExchangeError` | function | 1858-1891 | no | no | `market-data`, `server` |
+| `sendExchangeOk` | function | 1897-1912 | no | no | `market-data`, `server` |
+| `sendExchangeErr` | function | 1917-1948 | no | no | `market-data`, `server` |
+| `sendLive` | function | 1951-1953 | no | no | `server` |
+| `getBacktestProfile` | function | 2033-2036 | no | no | `server` |
+| `backtestPublicProfile` | function | 2038-2048 | no | no | `server` |
+| `assertBacktestUrlAllowed` | function | 2050-2060 | no | no | `server` |
+| `normalizeBacktestInterval` | function | 2062-2066 | no | no | `server` |
+| `sanitizeBacktestEndpointPath` | function | 2068-2079 | no | no | `server` |
+| `backtestSymbolContext` | function | 2088-2095 | no | no | `server` |
+| `intervalToHistoryDays` | function | 2097-2101 | no | no | `server` |
+| `applyBacktestEndpointTemplate` | function | 2103-2112 | no | no | `server` |
+| `buildBacktestUrl` | function | 2114-2132 | no | no | `server` |
+| `fetchBacktestText` | function | 2134-2150 | no | yes | `server` |
+| `num` | function | 2152-2156 | no | no | `server` |
+| `timeString` | function | 2158-2172 | no | no | `server` |
+| `candleFromArray` | function | 2174-2184 | no | no | `server` |
+| `candleFromObject` | function | 2186-2196 | no | no | `server` |
+| `chartObjectToCandles` | function | 2198-2210 | no | no | `server` |
+| `normalizeBacktestCandles` | function | 2212-2243 | no | no | `server` |
+| `parseCsvCandles` | function | 2245-2259 | no | no | `server` |
+| `compactRawSample` | function | 2261-2271 | no | no | `server` |
+| `sendSentimentEnvelope` | function | 2577-2608 | no | no | `server` |
+| `readSavedSupplementalConfig` | function | 2850-2882 | no | no | `server` |
+| `supplementalVerifiedStatus` | function | 2917-2923 | no | no | `server` |
+| `persistSupplementalKeys` | function | 2925-2934 | no | no | `server` |
+| `restoreSupplementalProbeCache` | function | 2936-2945 | no | no | `server` |
+| `rebuildSupplementalOrchestrator` | function | 2954-2978 | no | no | `server` |
+| `supplementalConfigStatus` | function | 2980-2989 | no | no | `server` |
+| `clearSupplementalVerification` | function | 2991-2997 | no | no | `server` |
+| `sanitizeExternalSource` | function | 3135-3138 | no | no | `server` |
+| `normalizeExternalSource` | function | 3140-3166 | no | no | `server` |
+| `readExternalApiSources` | function | 3168-3177 | no | no | `server` |
+| `persistExternalApiSources` | function | 3181-3185 | no | no | `server` |
+| `seedCompletedDefaultExternalSources` | function | 3187-3198 | no | no | `server` |
+| `appendAuthToExternalRequest` | function | 3214-3225 | no | no | `server` |
+| `slim` | arrow | 3534-3537 | no | no | `server` |
+| `persistTelegramConfig` | function | 3625-3633 | no | no | `server` |
+| `telegramConfigured` | function | 3635-3637 | no | no | `server` |
+| `sendTelegramMessage` | function | 3639-3667 | no | yes | `server` |
+| `historicalResearchWindow` | function | 3717-3722 | no | no | `server` |
+| `initializeDecisionMemoryDatasetDurability` | function | 3806-3819 | no | yes | `decision-memory`, `ml`, `server` |
+| `initializeOpenInterestHistorySampler` | function | 3821-3846 | no | no | `server` |
+| `reconcilePersistedTestnetOrders` | function | 3848-3862 | no | yes | `server` |
+| `logProxyStartup` | function | 3864-3878 | no | no | `market-data`, `server` |
+| `startServer` | route | 3880-3968 | no | yes | `api-route`, `server` |
+| `transformIndexHtml` | method | 3947-3949 | no | no | `ml`, `server` |
+| `closeHttpServer` | function | 3985-4005 | no | yes | `server` |
+| `finish` | arrow | 3991-3996 | no | no | `server` |
+| `gracefulShutdown` | function | 4007-4038 | no | yes | `server` |
 
 ### src/App.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `initialPage` | function | 116-120 | no | no |  |
-| `App` | component | 122-613 | yes | no | `component` |
-| `bootstrap` | arrow | 376-397 | no | yes |  |
-| `loadDetail` | arrow | 432-475 | no | yes |  |
-| `onHashChange` | arrow | 482-482 | no | no |  |
-| `navigate` | arrow | 491-495 | no | no |  |
-| `onConnectionChange` | arrow | 497-505 | no | no |  |
+| `initialPage` | function | 119-123 | no | no |  |
+| `App` | component | 125-626 | yes | no | `component` |
+| `bootstrap` | arrow | 385-406 | no | yes |  |
+| `loadDetail` | arrow | 441-484 | no | yes |  |
+| `onHashChange` | arrow | 491-491 | no | no |  |
+| `navigate` | arrow | 500-504 | no | no |  |
+| `onConnectionChange` | arrow | 506-514 | no | no |  |
 
 ### src/components/BacktestChart.tsx
 
@@ -1578,11 +1637,20 @@ Use this index before opening large files. Search by function name, tag, or file
 | `updateTime` | arrow | 54-57 | no | no | `ui` |
 | `RailButton` | component | 247-282 | no | no | `component`, `ui` |
 
+### src/components/overview/OverviewAccountSummary.tsx
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `money` | function | 7-9 | no | no | `ui` |
+| `signedMoney` | function | 11-15 | no | no | `ui` |
+| `signedClass` | function | 17-19 | no | no | `ui` |
+| `OverviewAccountSummary` | component | 21-90 | yes | no | `component`, `ui` |
+
 ### src/components/overview/OverviewActivityPanel.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `OverviewActivityPanel` | component | 7-24 | yes | no | `component`, `ui` |
+| `OverviewActivityPanel` | component | 7-25 | yes | no | `component`, `ui` |
 
 ### src/components/overview/OverviewAttentionPanel.tsx
 
@@ -1590,18 +1658,70 @@ Use this index before opening large files. Search by function name, tag, or file
 |---|---|---:|---|---|---|
 | `OverviewAttentionPanel` | component | 17-53 | yes | no | `component`, `ui` |
 
+### src/components/overview/OverviewExecutionSnapshotPanel.tsx
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `OverviewExecutionSnapshotPanel` | component | 5-31 | yes | no | `component`, `ui` |
+
 ### src/components/overview/OverviewKpiStrip.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `money` | function | 7-9 | no | no | `ui` |
-| `OverviewKpiStrip` | component | 11-44 | yes | no | `component`, `ui` |
+| `signedMoney` | function | 11-15 | no | no | `ui` |
+| `signedClass` | function | 17-19 | no | no | `ui` |
+| `compactMoney` | function | 24-27 | no | no | `ui` |
+| `percent` | function | 29-31 | no | no | `ui` |
+| `OverviewKpiStrip` | component | 33-82 | yes | no | `component`, `ui` |
+| `count` | arrow | 60-60 | no | no | `ui` |
 
 ### src/components/overview/OverviewMarketSummary.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `OverviewMarketSummary` | component | 8-65 | yes | no | `component`, `market-data`, `ui` |
+| `OverviewMarketSummary` | component | 11-98 | yes | no | `component`, `market-data`, `ui` |
+
+### src/components/overview/overviewModel.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `buildSignalFunnel` | function | 29-50 | yes | no | `ml`, `ui` |
+| `buildMarketBreadth` | function | 52-68 | yes | no | `market-data`, `ml`, `ui` |
+| `liquidityLabel` | function | 70-75 | yes | no | `ml`, `ui` |
+| `providerLatencyMs` | function | 77-80 | yes | no | `market-data`, `ml`, `ui` |
+| `providerRowState` | function | 82-89 | yes | no | `market-data`, `ml`, `ui` |
+| `dailyPnlFromInsights` | function | 91-99 | yes | no | `ml`, `ui` |
+| `openRiskUsd` | function | 101-107 | yes | no | `ml`, `ui` |
+| `averageOrderFillPct` | function | 109-114 | yes | no | `ml`, `ui` |
+| `buildExecutionSnapshot` | function | 127-150 | yes | no | `ml`, `ui` |
+| `fundingBiasLabel` | function | 152-156 | yes | no | `ml`, `ui` |
+| `sentimentBreadthOverlay` | function | 158-164 | yes | no | `ml`, `ui` |
+
+### src/components/overview/OverviewProviderHealthPanel.tsx
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `OverviewProviderHealthPanel` | component | 6-43 | yes | no | `component`, `market-data`, `ui` |
+
+### src/components/overview/OverviewSignalsPanel.tsx
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `evidenceLine` | function | 7-11 | no | no | `ui` |
+| `OverviewSignalsPanel` | component | 13-70 | yes | no | `component`, `ui` |
+
+### src/components/overview/OverviewStatusCards.tsx
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `OverviewStatusCards` | component | 21-111 | yes | no | `component`, `ui` |
+
+### src/components/overview/OverviewSystemHealthPanel.tsx
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `OverviewSystemHealthPanel` | component | 7-45 | yes | no | `component`, `ui` |
 
 ### src/components/PriceChart.tsx
 
@@ -1956,23 +2076,23 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `csvCell` | function | 16-19 | no | no | `decision-memory`, `ui` |
-| `download` | function | 21-29 | no | no | `decision-memory`, `ui` |
-| `DecisionJournalDrawer` | component | 31-119 | yes | no | `component`, `decision-memory`, `ui` |
-| `draftFor` | arrow | 82-82 | no | no | `decision-memory`, `ui` |
-| `updateDraft` | arrow | 83-83 | no | no | `decision-memory`, `ui` |
-| `saveOutcome` | arrow | 84-93 | no | yes | `decision-memory`, `ui` |
-| `removeRow` | arrow | 94-98 | no | yes | `decision-memory`, `ui` |
-| `exportJson` | arrow | 99-99 | no | no | `decision-memory`, `ui` |
-| `exportCsv` | arrow | 100-104 | no | no | `decision-memory`, `ui` |
+| `csvCell` | function | 20-23 | no | no | `decision-memory`, `ui` |
+| `download` | function | 25-33 | no | no | `decision-memory`, `ui` |
+| `DecisionJournalDrawer` | component | 35-133 | yes | no | `component`, `decision-memory`, `ui` |
+| `draftFor` | arrow | 96-96 | no | no | `decision-memory`, `ui` |
+| `updateDraft` | arrow | 97-97 | no | no | `decision-memory`, `ui` |
+| `saveOutcome` | arrow | 98-107 | no | yes | `decision-memory`, `ui` |
+| `removeRow` | arrow | 108-112 | no | yes | `decision-memory`, `ui` |
+| `exportJson` | arrow | 113-113 | no | no | `decision-memory`, `ui` |
+| `exportCsv` | arrow | 114-118 | no | no | `decision-memory`, `ui` |
 
 ### src/components/workspace/GeneralViews.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `signed` | arrow | 16-16 | no | no | `ui` |
-| `TickerStrip` | component | 47-63 | no | no | `component`, `ui` |
-| `OverviewView` | component | 65-97 | yes | no | `component`, `ui` |
+| `OverviewAutopilotDecisionPanel` | component | 57-90 | no | no | `component`, `decision-memory`, `ui` |
+| `buildOverviewExecutionView` | function | 92-103 | no | no | `ui` |
+| `OverviewView` | component | 105-168 | yes | no | `component`, `ui` |
 
 ### src/components/workspace/MarketsPage.tsx
 
@@ -2351,6 +2471,12 @@ Use this index before opening large files. Search by function name, tag, or file
 | `useDialogA11y` | hook | 34-110 | yes | no | `hook` |
 | `onKeyDown` | arrow | 67-95 | no | no |  |
 
+### src/lib/useOverviewDiagnostics.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `useOverviewDiagnostics` | hook | 10-42 | yes | no | `hook` |
+
 ### src/lib/watchlistFavorites.ts
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -2667,7 +2793,7 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `HelpPage` | component | 151-388 | yes | no | `component` |
+| `HelpPage` | component | 151-392 | yes | no | `component` |
 | `copySupportTemplate` | function | 222-232 | no | yes |  |
 
 ### src/pages/history/HistoryPage.tsx
@@ -2693,7 +2819,7 @@ Use this index before opening large files. Search by function name, tag, or file
 | `OrderMetricCard` | component | 65-88 | no | no | `component` |
 | `OrdersEmptyVisual` | component | 90-107 | no | no | `component` |
 | `OrderAssistantEmpty` | component | 109-142 | no | no | `component` |
-| `OrdersPage` | component | 144-401 | yes | no | `component` |
+| `OrdersPage` | component | 144-408 | yes | no | `component` |
 | `count` | arrow | 183-183 | no | no |  |
 | `cancel` | arrow | 186-205 | no | yes |  |
 | `prepareDraft` | arrow | 207-222 | no | no |  |
@@ -2743,11 +2869,13 @@ Use this index before opening large files. Search by function name, tag, or file
 | `assetFrom` | function | 46-51 | yes | no |  |
 | `V20PageTitle` | component | 53-68 | yes | no | `component` |
 | `SoftMetric` | component | 70-108 | yes | no | `component` |
-| `HalfGauge` | component | 110-145 | yes | no | `component` |
-| `Donut` | component | 147-166 | yes | no | `component` |
-| `LinePlot` | component | 168-196 | yes | no | `component` |
-| `HonestEmpty` | component | 198-206 | yes | no | `component` |
-| `PaginationControls` | component | 208-248 | yes | no | `component` |
+| `HalfGauge` | component | 110-152 | yes | no | `component` |
+| `tickX` | arrow | 128-128 | no | no |  |
+| `tickY` | arrow | 129-129 | no | no |  |
+| `Donut` | component | 154-173 | yes | no | `component` |
+| `LinePlot` | component | 175-203 | yes | no | `component` |
+| `HonestEmpty` | component | 205-213 | yes | no | `component` |
+| `PaginationControls` | component | 215-255 | yes | no | `component` |
 
 ### src/pages/screener/screenerModel.ts
 
@@ -2759,31 +2887,57 @@ Use this index before opening large files. Search by function name, tag, or file
 | `factorsFor` | function | 70-86 | no | no | `ml` |
 | `reasonsFor` | function | 88-121 | no | no | `ml` |
 | `warningsFor` | function | 123-174 | no | no | `ml` |
-| `rowFor` | function | 176-221 | no | no | `ml` |
-| `buildScreenerRows` | function | 231-251 | yes | no | `ml` |
-| `applyScreenerFilters` | function | 253-265 | yes | no | `ml` |
-| `sortScreenerRows` | function | 274-293 | yes | no | `ml` |
-| `compare` | arrow | 275-285 | no | no | `ml` |
-| `screenerSummary` | function | 295-303 | yes | no | `ml` |
-| `resetScreenerFilters` | function | 305-307 | yes | no | `ml` |
-| `screenerFiltersActive` | function | 309-315 | yes | no | `ml` |
+| `rowFor` | function | 176-228 | no | no | `ml` |
+| `buildScreenerRows` | function | 238-258 | yes | no | `ml` |
+| `applyScreenerFilters` | function | 260-292 | yes | no | `ml` |
+| `sortScreenerRows` | function | 301-338 | yes | no | `ml` |
+| `metricValue` | arrow | 302-305 | no | no | `ml` |
+| `optionalCompare` | arrow | 306-312 | no | no | `ml` |
+| `compare` | arrow | 313-330 | no | no | `ml` |
+| `screenerSummary` | function | 340-348 | yes | no | `ml` |
+| `resetScreenerFilters` | function | 350-352 | yes | no | `ml` |
+| `screenerFiltersActive` | function | 354-368 | yes | no | `ml` |
 
 ### src/pages/screener/ScreenerPage.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `directionTone` | arrow | 113-113 | no | no |  |
-| `changeTone` | arrow | 114-114 | no | no |  |
-| `usdCompact` | arrow | 115-115 | no | no |  |
-| `MetricValue` | component | 118-123 | no | no | `component` |
-| `relativeAge` | function | 125-132 | no | no |  |
-| `FactorBreakdown` | component | 137-158 | no | no | `component` |
-| `ScreenerPage` | component | 160-533 | yes | no | `component` |
-| `sync` | arrow | 166-166 | no | no |  |
-| `toggleSort` | arrow | 198-203 | no | no |  |
-| `toggleFavorite` | arrow | 205-209 | no | no |  |
-| `copySymbol` | arrow | 211-220 | no | no |  |
-| `openInTrading` | arrow | 222-230 | no | no |  |
+| `directionTone` | arrow | 185-185 | no | no |  |
+| `changeTone` | arrow | 186-186 | no | no |  |
+| `usdCompact` | arrow | 187-187 | no | no |  |
+| `confluenceLabel` | arrow | 188-188 | no | no |  |
+| `MetricValue` | component | 191-196 | no | no | `component` |
+| `ScoreGlyph` | component | 198-207 | no | no | `component` |
+| `EvidenceEqualizer` | component | 219-245 | no | no | `component` |
+| `relativeAge` | function | 247-254 | no | no |  |
+| `FactorBreakdown` | component | 259-280 | no | no | `component` |
+| `ScreenerPage` | component | 282-816 | yes | no | `component` |
+| `sync` | arrow | 297-297 | no | no |  |
+| `toggleSort` | arrow | 336-341 | no | no |  |
+| `toggleFavorite` | arrow | 343-347 | no | no |  |
+| `applyWorkspace` | arrow | 349-355 | no | no |  |
+| `applyPreset` | arrow | 357-365 | no | no |  |
+| `saveNamedScreen` | arrow | 367-383 | no | no |  |
+| `deleteActiveScreen` | arrow | 385-393 | no | no |  |
+| `exportVisible` | arrow | 395-409 | no | no |  |
+| `factor` | arrow | 397-397 | no | no |  |
+| `quote` | arrow | 398-398 | no | no |  |
+| `copySymbol` | arrow | 411-420 | no | no |  |
+| `openInTrading` | arrow | 422-430 | no | no |  |
+| `factorMetric` | arrow | 432-434 | no | no |  |
+| `renderMetricSlot` | arrow | 437-457 | no | no |  |
+| `cell` | arrow | 438-439 | no | no |  |
+
+### src/pages/screener/screenerPersistence.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `storageOrNull` | function | 18-20 | no | no |  |
+| `normalizeWorkspace` | function | 22-36 | no | no |  |
+| `loadScreenerWorkspace` | function | 38-42 | yes | no |  |
+| `saveScreenerWorkspace` | function | 44-47 | yes | no |  |
+| `loadSavedScreenerScreens` | function | 49-67 | yes | no |  |
+| `saveSavedScreenerScreens` | function | 69-72 | yes | no |  |
 
 ### src/pages/settings/SettingsPage.tsx
 
@@ -2822,8 +2976,9 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `metric` | function | 19-21 | no | no |  |
-| `StrategyCompareDialog` | component | 23-82 | yes | no | `component` |
-| `toggle` | arrow | 30-34 | no | no |  |
+| `unavailableReason` | function | 67-71 | no | no |  |
+| `StrategyCompareDialog` | component | 73-162 | yes | no | `component` |
+| `toggle` | arrow | 80-84 | no | no |  |
 
 ### src/pages/strategies/StrategyDetailPage.tsx
 
@@ -2851,10 +3006,10 @@ Use this index before opening large files. Search by function name, tag, or file
 | `directionLabel` | function | 48-51 | no | no |  |
 | `snapshotLabel` | function | 53-59 | no | no |  |
 | `filterStrategyLibrary` | function | 61-79 | yes | no |  |
-| `StrategyLibraryRail` | component | 81-279 | yes | no | `component` |
-| `patch` | arrow | 96-96 | no | no |  |
-| `clear` | arrow | 97-104 | no | no |  |
-| `bookmarkButton` | arrow | 106-123 | no | no |  |
+| `StrategyLibraryRail` | component | 81-300 | yes | no | `component` |
+| `patch` | arrow | 102-102 | no | no |  |
+| `clear` | arrow | 103-110 | no | no |  |
+| `bookmarkButton` | arrow | 112-129 | no | no |  |
 
 ### src/pages/strategies/StrategyModelWorkspace.tsx
 
@@ -2866,7 +3021,7 @@ Use this index before opening large files. Search by function name, tag, or file
 | `sliderPct` | function | 82-85 | no | no | `ml` |
 | `parametersEqual` | function | 87-90 | no | no | `ml` |
 | `ConfidenceGauge` | component | 92-101 | no | no | `component`, `ml` |
-| `StrategyModelWorkspace` | component | 103-305 | yes | no | `component`, `ml` |
+| `StrategyModelWorkspace` | component | 103-304 | yes | no | `component`, `ml` |
 | `resetParameters` | arrow | 133-133 | no | no | `ml` |
 
 ### src/pages/strategies/StrategyPage.tsx
@@ -2937,18 +3092,18 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `jsonOrError` | function | 104-108 | no | yes | `service` |
-| `getConnection` | function | 112-116 | yes | yes | `service` |
-| `connectExchange` | function | 118-124 | yes | yes | `market-data`, `service` |
-| `disconnectExchange` | function | 126-132 | yes | yes | `market-data`, `service` |
-| `selectAccountMode` | function | 134-143 | yes | yes | `service` |
-| `resetDemoAccount` | function | 145-154 | yes | yes | `service` |
-| `accountIsAvailable` | function | 158-160 | yes | no | `service` |
-| `getPortfolio` | function | 162-165 | yes | yes | `service` |
-| `previewOrder` | function | 167-174 | yes | yes | `service` |
-| `submitLiveOrder` | function | 176-182 | yes | yes | `service` |
-| `cancelLiveOrder` | function | 184-190 | yes | yes | `service` |
-| `getWorkspaceData` | function | 194-202 | yes | yes | `service` |
+| `jsonOrError` | function | 95-99 | no | yes | `service` |
+| `getConnection` | function | 103-107 | yes | yes | `service` |
+| `connectExchange` | function | 109-115 | yes | yes | `market-data`, `service` |
+| `disconnectExchange` | function | 117-123 | yes | yes | `market-data`, `service` |
+| `selectAccountMode` | function | 125-134 | yes | yes | `service` |
+| `resetDemoAccount` | function | 136-145 | yes | yes | `service` |
+| `accountIsAvailable` | function | 149-151 | yes | no | `service` |
+| `getPortfolio` | function | 153-156 | yes | yes | `service` |
+| `previewOrder` | function | 158-165 | yes | yes | `service` |
+| `submitLiveOrder` | function | 167-173 | yes | yes | `service` |
+| `cancelLiveOrder` | function | 175-181 | yes | yes | `service` |
+| `getWorkspaceData` | function | 185-193 | yes | yes | `service` |
 
 ### src/services/adaptiveLearningStress.ts
 
@@ -3005,46 +3160,46 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `getMarketCache` | function | 121-129 | no | no | `market-data`, `service` |
-| `setMarketCache` | function | 131-133 | no | no | `market-data`, `service` |
-| `cleanSymbol` | function | 135-137 | no | no | `market-data`, `service` |
-| `formatTickerSymbol` | function | 139-158 | no | no | `market-data`, `service` |
-| `normalizeTickerSymbol` | function | 160-179 | no | no | `market-data`, `service` |
-| `parseLeverageQuery` | function | 181-188 | no | no | `market-data`, `service` |
-| `fetchKuCoinTickers` | function | 196-219 | no | yes | `market-data`, `service` |
-| `combineDataStates` | function | 230-235 | no | no | `market-data`, `service` |
-| `toDirectionCandles` | function | 237-246 | no | no | `market-data`, `service` |
-| `directionMarketSource` | function | 248-256 | no | no | `market-data`, `service` |
-| `mapWithConcurrency` | function | 258-273 | no | yes | `market-data`, `service` |
-| `unavailableOrderBook` | function | 275-283 | no | no | `market-data`, `service` |
-| `fetchCandlesForSymbol` | function | 285-320 | no | yes | `market-data`, `service` |
-| `fetchHistoricalCandlesForBacktest` | function | 325-357 | no | yes | `market-data`, `service` |
-| `fetchMicrostructure` | function | 359-409 | no | yes | `market-data`, `service` |
-| `toEngineCandles` | arrow | 373-380 | no | no | `market-data`, `service` |
-| `candidateFromSnapshot` | function | 411-426 | no | no | `market-data`, `service` |
-| `fetchCandidateEnrichment` | function | 428-497 | no | yes | `market-data`, `service` |
-| `registerApexNextMarketRoutes` | route | 507-3383 | yes | no | `api-route`, `market-data`, `service` |
-| `activeScannerConfig` | arrow | 526-529 | no | no | `market-data`, `scanner`, `service` |
-| `resolveStrategyScannerConfig` | arrow | 531-547 | no | no | `market-data`, `scanner`, `service` |
-| `dispatchAutopilotEvent` | arrow | 572-574 | no | no | `market-data`, `service` |
-| `runStrategyDefinition` | arrow | 576-676 | no | yes | `market-data`, `service` |
-| `optimizeAutopilotContext` | arrow | 678-863 | no | yes | `market-data`, `service` |
-| `buildBacktestPayload` | arrow | 865-989 | no | no | `market-data`, `service` |
-| `runStrategyValidationSuite` | arrow | 1010-1136 | no | yes | `market-data`, `service` |
-| `runSlice` | arrow | 1032-1047 | no | yes | `market-data`, `service` |
-| `boundedAutopilotControl` | arrow | 1779-1786 | no | no | `market-data`, `service` |
-| `parseSmartAutopilotControls` | arrow | 1792-1820 | no | no | `market-data`, `service` |
-| `forwardBarsCacheKey` | arrow | 1836-1837 | no | no | `market-data`, `service` |
-| `loadForwardBars` | arrow | 1839-1861 | no | yes | `market-data`, `service` |
-| `markOpenForwardPositions` | arrow | 1870-1895 | no | yes | `market-data`, `service` |
-| `openForwardPositionsForPlan` | arrow | 1904-1964 | no | yes | `market-data`, `service` |
-| `runSmartAutopilotCycle` | arrow | 1974-2410 | no | yes | `market-data`, `service` |
-| `jobIdFor` | arrow | 2125-2125 | no | no | `market-data`, `service` |
-| `publicSchedulerState` | arrow | 2496-2509 | no | no | `market-data`, `service` |
-| `runScheduledAutopilotCycle` | arrow | 2511-2539 | no | yes | `market-data`, `service` |
-| `stopSmartAutopilotScheduler` | arrow | 2541-2547 | no | no | `market-data`, `service` |
-| `armSmartAutopilotScheduler` | arrow | 2553-2569 | no | no | `market-data`, `service` |
-| `bounded` | arrow | 2583-2588 | no | no | `market-data`, `service` |
+| `getMarketCache` | function | 122-130 | no | no | `market-data`, `service` |
+| `setMarketCache` | function | 132-134 | no | no | `market-data`, `service` |
+| `cleanSymbol` | function | 136-138 | no | no | `market-data`, `service` |
+| `formatTickerSymbol` | function | 140-159 | no | no | `market-data`, `service` |
+| `normalizeTickerSymbol` | function | 161-180 | no | no | `market-data`, `service` |
+| `parseLeverageQuery` | function | 182-189 | no | no | `market-data`, `service` |
+| `fetchKuCoinTickers` | function | 197-220 | no | yes | `market-data`, `service` |
+| `combineDataStates` | function | 231-236 | no | no | `market-data`, `service` |
+| `toDirectionCandles` | function | 238-247 | no | no | `market-data`, `service` |
+| `directionMarketSource` | function | 249-257 | no | no | `market-data`, `service` |
+| `mapWithConcurrency` | function | 259-274 | no | yes | `market-data`, `service` |
+| `unavailableOrderBook` | function | 276-284 | no | no | `market-data`, `service` |
+| `fetchCandlesForSymbol` | function | 286-321 | no | yes | `market-data`, `service` |
+| `fetchHistoricalCandlesForBacktest` | function | 326-358 | no | yes | `market-data`, `service` |
+| `fetchMicrostructure` | function | 360-410 | no | yes | `market-data`, `service` |
+| `toEngineCandles` | arrow | 374-381 | no | no | `market-data`, `service` |
+| `candidateFromSnapshot` | function | 412-427 | no | no | `market-data`, `service` |
+| `fetchCandidateEnrichment` | function | 429-498 | no | yes | `market-data`, `service` |
+| `registerApexNextMarketRoutes` | route | 508-3388 | yes | no | `api-route`, `market-data`, `service` |
+| `activeScannerConfig` | arrow | 527-530 | no | no | `market-data`, `scanner`, `service` |
+| `resolveStrategyScannerConfig` | arrow | 532-548 | no | no | `market-data`, `scanner`, `service` |
+| `dispatchAutopilotEvent` | arrow | 573-575 | no | no | `market-data`, `service` |
+| `runStrategyDefinition` | arrow | 577-681 | no | yes | `market-data`, `service` |
+| `optimizeAutopilotContext` | arrow | 683-868 | no | yes | `market-data`, `service` |
+| `buildBacktestPayload` | arrow | 870-994 | no | no | `market-data`, `service` |
+| `runStrategyValidationSuite` | arrow | 1015-1141 | no | yes | `market-data`, `service` |
+| `runSlice` | arrow | 1037-1052 | no | yes | `market-data`, `service` |
+| `boundedAutopilotControl` | arrow | 1784-1791 | no | no | `market-data`, `service` |
+| `parseSmartAutopilotControls` | arrow | 1797-1825 | no | no | `market-data`, `service` |
+| `forwardBarsCacheKey` | arrow | 1841-1842 | no | no | `market-data`, `service` |
+| `loadForwardBars` | arrow | 1844-1866 | no | yes | `market-data`, `service` |
+| `markOpenForwardPositions` | arrow | 1875-1900 | no | yes | `market-data`, `service` |
+| `openForwardPositionsForPlan` | arrow | 1909-1969 | no | yes | `market-data`, `service` |
+| `runSmartAutopilotCycle` | arrow | 1979-2415 | no | yes | `market-data`, `service` |
+| `jobIdFor` | arrow | 2130-2130 | no | no | `market-data`, `service` |
+| `publicSchedulerState` | arrow | 2501-2514 | no | no | `market-data`, `service` |
+| `runScheduledAutopilotCycle` | arrow | 2516-2544 | no | yes | `market-data`, `service` |
+| `stopSmartAutopilotScheduler` | arrow | 2546-2552 | no | no | `market-data`, `service` |
+| `armSmartAutopilotScheduler` | arrow | 2558-2574 | no | no | `market-data`, `service` |
+| `bounded` | arrow | 2588-2593 | no | no | `market-data`, `service` |
 
 ### src/services/apiMutate.ts
 
@@ -3209,23 +3364,27 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `validateOutcome` | function | 18-22 | no | no | `decision-memory`, `service` |
-| `queueMirror` | function | 24-37 | no | no | `decision-memory`, `service` |
-| `flushMirror` | function | 39-52 | no | yes | `decision-memory`, `service` |
-| `hasIndexedDB` | function | 54-56 | no | no | `decision-memory`, `service` |
-| `openDb` | function | 58-78 | no | no | `decision-memory`, `service` |
-| `withStore` | function | 80-94 | no | yes | `decision-memory`, `service` |
-| `readFallback` | function | 96-105 | no | no | `decision-memory`, `service` |
-| `writeFallback` | function | 107-114 | no | no | `decision-memory`, `service` |
-| `put` | method | 117-126 | no | yes | `decision-memory`, `service` |
-| `bulkPut` | method | 128-130 | no | yes | `decision-memory`, `service` |
-| `get` | method | 132-139 | no | yes | `decision-memory`, `service` |
-| `patch` | method | 141-167 | no | yes | `decision-memory`, `service` |
-| `delete` | method | 169-175 | no | yes | `decision-memory`, `service` |
-| `mirror` | method | 177-179 | no | no | `decision-memory`, `service` |
-| `list` | method | 181-210 | no | yes | `decision-memory`, `service` |
-| `clear` | method | 212-218 | no | yes | `decision-memory`, `service` |
-| `decisionStats` | function | 221-232 | yes | no | `decision-memory`, `service` |
+| `setPersistenceState` | function | 19-23 | no | no | `decision-memory`, `service` |
+| `getDecisionMemoryPersistenceState` | function | 25-27 | yes | no | `decision-memory`, `service` |
+| `subscribeDecisionMemoryPersistence` | function | 29-32 | yes | no | `decision-memory`, `service` |
+| `validateOutcome` | function | 38-42 | no | no | `decision-memory`, `service` |
+| `queueMirror` | function | 44-57 | no | no | `decision-memory`, `service` |
+| `flushMirror` | function | 59-81 | no | yes | `decision-memory`, `service` |
+| `hasIndexedDB` | function | 83-85 | no | no | `decision-memory`, `service` |
+| `openDb` | function | 87-107 | no | no | `decision-memory`, `service` |
+| `withStore` | function | 109-123 | no | yes | `decision-memory`, `service` |
+| `readFallback` | function | 125-134 | no | no | `decision-memory`, `service` |
+| `writeFallback` | function | 136-143 | no | no | `decision-memory`, `service` |
+| `put` | method | 146-155 | no | yes | `decision-memory`, `service` |
+| `bulkPut` | method | 157-159 | no | yes | `decision-memory`, `service` |
+| `get` | method | 161-168 | no | yes | `decision-memory`, `service` |
+| `patch` | method | 170-196 | no | yes | `decision-memory`, `service` |
+| `delete` | method | 198-204 | no | yes | `decision-memory`, `service` |
+| `mirror` | method | 206-208 | no | no | `decision-memory`, `service` |
+| `flushMirror` | method | 211-213 | no | yes | `decision-memory`, `service` |
+| `list` | method | 215-244 | no | yes | `decision-memory`, `service` |
+| `clear` | method | 246-252 | no | yes | `decision-memory`, `service` |
+| `decisionStats` | function | 255-266 | yes | no | `decision-memory`, `service` |
 
 ### src/services/decisionMemoryDatasetSync.ts
 
@@ -3254,18 +3413,22 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `cleanRows` | function | 21-32 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror` | class | 34-173 | yes | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.load` | method | 49-56 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.addIndex` | method | 58-63 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.removeIndex` | method | 65-71 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.index` | method | 73-82 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.unindex` | method | 84-90 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.persist` | method | 92-98 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.putMany` | method | 100-118 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.query` | method | 120-142 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.stats` | method | 144-168 | no | no | `decision-memory`, `service` |
-| `DecisionMemoryMirror.exportAll` | method | 170-172 | no | no | `decision-memory`, `service` |
+| `cleanRows` | function | 37-48 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror` | class | 50-252 | yes | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.load` | method | 73-81 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.addIndex` | method | 83-88 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.removeIndex` | method | 90-96 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.index` | method | 98-107 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.unindex` | method | 109-115 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.persistedEnvelope` | method | 117-119 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.serializedBytes` | method | 121-123 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.rowsWithinCapacity` | method | 125-136 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.persist` | method | 138-161 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.putMany` | method | 163-184 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.query` | method | 186-208 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.stats` | method | 210-235 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.persistenceStatus` | method | 237-247 | no | no | `decision-memory`, `service` |
+| `DecisionMemoryMirror.exportAll` | method | 249-251 | no | no | `decision-memory`, `service` |
 
 ### src/services/decisionOutcome.ts
 
@@ -3431,20 +3594,30 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `hfGet` | function | 61-93 | no | yes | `service` |
-| `mapStatus` | function | 95-101 | no | no | `service` |
-| `fetchHfSpaceIntelStatus` | function | 104-132 | yes | yes | `service` |
-| `parseNewsRows` | function | 134-151 | no | no | `service` |
-| `fetchHfSpaceNews` | function | 154-194 | yes | yes | `service` |
-| `parseFearGreed` | function | 196-220 | no | no | `service` |
-| `fetchHfSpaceFearGreed` | function | 223-269 | yes | yes | `service` |
-| `parseHfOnChainRows` | function | 276-310 | no | no | `service` |
-| `fetchHfSpaceOnChain` | function | 313-346 | yes | yes | `service` |
-| `fetchHfSpaceWhales` | function | 349-368 | yes | yes | `service` |
-| `readPositivePrice` | function | 370-384 | no | no | `service` |
-| `fetchSpace2Rate` | function | 386-389 | no | yes | `service` |
-| `fetchHfSpaceMarketPrices` | function | 395-442 | yes | yes | `market-data`, `service` |
-| `priceFor` | arrow | 425-428 | no | no | `service` |
+| `readPath` | function | 102-104 | no | no | `service` |
+| `collectTopLevelKeys` | function | 107-110 | yes | no | `service` |
+| `pickHfRows` | function | 116-125 | yes | no | `service` |
+| `classifyHfPayload` | function | 132-145 | yes | no | `service` |
+| `formatHfDiagnosticsTable` | function | 151-165 | yes | no | `service` |
+| `line` | arrow | 163-163 | no | no | `service` |
+| `hfGet` | function | 180-219 | no | yes | `service` |
+| `mapStatus` | function | 221-227 | no | no | `service` |
+| `fetchHfSpaceIntelStatus` | function | 230-258 | yes | yes | `service` |
+| `parseHfNewsPayload` | function | 265-281 | yes | no | `service` |
+| `aggregateState` | function | 284-288 | no | no | `service` |
+| `fetchHfSpaceNews` | function | 301-407 | yes | yes | `service` |
+| `parseFearGreed` | function | 409-433 | no | no | `service` |
+| `classifyHfScalarPayload` | function | 440-445 | yes | no | `service` |
+| `classifyHfFearGreedPayload` | function | 452-454 | yes | no | `service` |
+| `fetchHfSpaceFearGreed` | function | 460-561 | yes | yes | `service` |
+| `parseHfOnChainPayload` | function | 573-603 | yes | no | `service` |
+| `fetchHfSpaceOnChain` | function | 612-689 | yes | yes | `service` |
+| `fetchHfSpaceWhales` | function | 692-728 | yes | yes | `service` |
+| `readPositivePrice` | function | 730-744 | no | no | `service` |
+| `fetchSpace2Rate` | function | 750-766 | no | yes | `service` |
+| `fetchHfSpaceMarketPrices` | function | 776-875 | yes | yes | `market-data`, `service` |
+| `recordScalar` | arrow | 786-804 | no | no | `service` |
+| `priceFor` | arrow | 848-851 | no | no | `service` |
 
 ### src/services/hfSpacesClient.ts
 
@@ -4234,8 +4407,8 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `iso` | arrow | 58-59 | no | no | `service` |
-| `buildProductionReadiness` | function | 61-147 | yes | no | `service` |
+| `iso` | arrow | 59-60 | no | no | `service` |
+| `buildProductionReadiness` | function | 62-150 | yes | no | `service` |
 
 ### src/services/providerHealth.ts
 
@@ -4305,39 +4478,39 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `normalizeSymbol` | function | 15-17 | no | no | `market-data`, `provider`, `service` |
-| `HfSpacesNewsProvider` | class | 24-50 | yes | no | `market-data`, `provider`, `service` |
+| `HfSpacesNewsProvider` | class | 24-58 | yes | no | `market-data`, `provider`, `service` |
 | `HfSpacesNewsProvider.isConfigured` | method | 28-28 | no | no | `market-data`, `provider`, `service` |
-| `HfSpacesNewsProvider.fetch` | method | 30-49 | no | yes | `market-data`, `provider`, `service` |
-| `HfSpacesSentimentProvider` | class | 52-134 | yes | no | `market-data`, `provider`, `service` |
-| `HfSpacesSentimentProvider.isConfigured` | method | 56-56 | no | no | `market-data`, `provider`, `service` |
-| `HfSpacesSentimentProvider.fetch` | method | 58-133 | no | yes | `market-data`, `provider`, `service` |
-| `HfSpacesOnChainProvider` | class | 136-176 | yes | no | `market-data`, `provider`, `service` |
-| `HfSpacesOnChainProvider.isConfigured` | method | 140-140 | no | no | `market-data`, `provider`, `service` |
-| `HfSpacesOnChainProvider.fetch` | method | 142-175 | no | yes | `market-data`, `provider`, `service` |
+| `HfSpacesNewsProvider.fetch` | method | 30-57 | no | yes | `market-data`, `provider`, `service` |
+| `HfSpacesSentimentProvider` | class | 60-153 | yes | no | `market-data`, `provider`, `service` |
+| `HfSpacesSentimentProvider.isConfigured` | method | 64-64 | no | no | `market-data`, `provider`, `service` |
+| `HfSpacesSentimentProvider.fetch` | method | 66-152 | no | yes | `market-data`, `provider`, `service` |
+| `HfSpacesOnChainProvider` | class | 155-212 | yes | no | `market-data`, `provider`, `service` |
+| `HfSpacesOnChainProvider.isConfigured` | method | 159-159 | no | no | `market-data`, `provider`, `service` |
+| `HfSpacesOnChainProvider.fetch` | method | 161-211 | no | yes | `market-data`, `provider`, `service` |
 
 ### src/services/providers/newsApiRequest.ts
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `sanitizeSearchIn` | function | 50-59 | yes | no | `market-data`, `provider`, `service` |
-| `normalizeNewsApiQuery` | function | 81-101 | yes | no | `market-data`, `provider`, `service` |
-| `resolveSymbolLabel` | function | 104-111 | yes | no | `market-data`, `provider`, `service` |
-| `mapSymbolToNewsQuery` | function | 113-118 | yes | no | `market-data`, `provider`, `service` |
-| `stripPublisherBoilerplate` | function | 146-151 | no | no | `market-data`, `provider`, `service` |
-| `stripRelevanceHook` | function | 161-163 | no | no | `market-data`, `provider`, `service` |
-| `escapeRegExp` | function | 165-167 | no | no | `market-data`, `provider`, `service` |
-| `isCryptoRelevantArticle` | function | 174-195 | yes | no | `market-data`, `provider`, `service` |
-| `matches` | arrow | 183-186 | no | no | `market-data`, `provider`, `service` |
-| `filterCryptoRelevantArticles` | function | 197-202 | yes | no | `market-data`, `provider`, `service` |
-| `relevanceTermsForSymbol` | function | 209-215 | yes | no | `market-data`, `provider`, `service` |
-| `countMatches` | function | 230-233 | no | no | `market-data`, `provider`, `service` |
-| `isNewsroomArticle` | function | 242-249 | yes | no | `market-data`, `provider`, `service` |
-| `isCryptoHeadline` | function | 252-254 | yes | no | `market-data`, `provider`, `service` |
-| `tagArticleSentiment` | function | 257-271 | yes | no | `market-data`, `provider`, `service` |
-| `isoDateDaysAgo` | function | 273-277 | no | no | `market-data`, `provider`, `service` |
-| `buildNewsApiRequestUrl` | function | 279-314 | yes | no | `market-data`, `provider`, `service` |
-| `buildNewsDataIoRequestUrl` | function | 317-333 | yes | no | `market-data`, `provider`, `service` |
-| `fetchNewsApiArticles` | function | 346-410 | yes | yes | `market-data`, `provider`, `service` |
+| `sanitizeSearchIn` | function | 27-36 | yes | no | `market-data`, `provider`, `service` |
+| `normalizeNewsApiQuery` | function | 58-78 | yes | no | `market-data`, `provider`, `service` |
+| `resolveSymbolLabel` | function | 81-88 | yes | no | `market-data`, `provider`, `service` |
+| `mapSymbolToNewsQuery` | function | 90-95 | yes | no | `market-data`, `provider`, `service` |
+| `stripPublisherBoilerplate` | function | 123-128 | no | no | `market-data`, `provider`, `service` |
+| `stripRelevanceHook` | function | 138-140 | no | no | `market-data`, `provider`, `service` |
+| `escapeRegExp` | function | 142-144 | no | no | `market-data`, `provider`, `service` |
+| `isCryptoRelevantArticle` | function | 151-172 | yes | no | `market-data`, `provider`, `service` |
+| `matches` | arrow | 160-163 | no | no | `market-data`, `provider`, `service` |
+| `filterCryptoRelevantArticles` | function | 174-179 | yes | no | `market-data`, `provider`, `service` |
+| `relevanceTermsForSymbol` | function | 186-192 | yes | no | `market-data`, `provider`, `service` |
+| `countMatches` | function | 207-210 | no | no | `market-data`, `provider`, `service` |
+| `isNewsroomArticle` | function | 219-226 | yes | no | `market-data`, `provider`, `service` |
+| `isCryptoHeadline` | function | 229-231 | yes | no | `market-data`, `provider`, `service` |
+| `tagArticleSentiment` | function | 234-248 | yes | no | `market-data`, `provider`, `service` |
+| `isoDateDaysAgo` | function | 250-254 | no | no | `market-data`, `provider`, `service` |
+| `buildNewsApiRequestUrl` | function | 256-291 | yes | no | `market-data`, `provider`, `service` |
+| `buildNewsDataIoRequestUrl` | function | 294-310 | yes | no | `market-data`, `provider`, `service` |
+| `fetchNewsApiArticles` | function | 323-387 | yes | yes | `market-data`, `provider`, `service` |
 
 ### src/services/providers/newsApiServerFetch.ts
 
@@ -5038,6 +5211,13 @@ Use this index before opening large files. Search by function name, tag, or file
 | `evaluateRiskGovernor` | function | 161-340 | yes | no | `service` |
 | `add` | arrow | 167-171 | no | no | `service` |
 
+### src/services/routes/decisionMemoryRoutes.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `registerDecisionMemoryRoutes` | route | 6-72 | yes | no | `api-route`, `decision-memory`, `service` |
+| `parseNumber` | arrow | 36-39 | no | no | `decision-memory`, `service` |
+
 ### src/services/scannerConfigPolicy.ts
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -5050,12 +5230,12 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `selectScanSlice` | function | 68-85 | yes | no | `scanner`, `service` |
-| `gateReason` | function | 87-102 | no | no | `scanner`, `service` |
-| `directionConfidencePreview` | function | 104-135 | no | no | `scanner`, `service` |
-| `evaluateScanDecision` | function | 137-347 | yes | no | `decision-memory`, `scanner`, `service` |
-| `evaluateScanCandidate` | function | 349-373 | yes | no | `scanner`, `service` |
-| `pickBestCandidate` | function | 380-385 | yes | no | `scanner`, `service` |
+| `selectScanSlice` | function | 56-73 | yes | no | `scanner`, `service` |
+| `gateReason` | function | 75-90 | no | no | `scanner`, `service` |
+| `directionConfidencePreview` | function | 92-123 | no | no | `scanner`, `service` |
+| `evaluateScanDecision` | function | 125-335 | yes | no | `decision-memory`, `scanner`, `service` |
+| `evaluateScanCandidate` | function | 337-361 | yes | no | `scanner`, `service` |
+| `pickBestCandidate` | function | 368-373 | yes | no | `scanner`, `service` |
 
 ### src/services/serverSecurity.ts
 
@@ -5242,17 +5422,17 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `isString` | arrow | 73-73 | no | no | `service` |
-| `isUnit` | arrow | 74-74 | no | no | `service` |
-| `isDirection` | arrow | 75-75 | no | no | `service` |
-| `isRegime` | arrow | 76-78 | no | no | `service` |
-| `isThesis` | arrow | 79-81 | no | no | `service` |
-| `isTrendRelation` | arrow | 82-82 | no | no | `service` |
-| `buildCommanderResearchComparison` | function | 85-127 | yes | no | `service` |
-| `buildCommanderOutcomeAttribution` | function | 130-177 | yes | no | `service` |
-| `isCommanderOutcomeAttribution` | function | 179-209 | yes | no | `service` |
-| `extractCommanderOutcomeObservation` | function | 216-244 | yes | no | `service` |
-| `extractCommanderOutcomeObservations` | function | 246-261 | yes | no | `service` |
+| `isString` | arrow | 25-25 | no | no | `service` |
+| `isUnit` | arrow | 26-26 | no | no | `service` |
+| `isDirection` | arrow | 27-27 | no | no | `service` |
+| `isRegime` | arrow | 28-30 | no | no | `service` |
+| `isThesis` | arrow | 31-33 | no | no | `service` |
+| `isTrendRelation` | arrow | 34-34 | no | no | `service` |
+| `buildCommanderResearchComparison` | function | 37-79 | yes | no | `service` |
+| `buildCommanderOutcomeAttribution` | function | 82-129 | yes | no | `service` |
+| `isCommanderOutcomeAttribution` | function | 131-161 | yes | no | `service` |
+| `extractCommanderOutcomeObservation` | function | 168-196 | yes | no | `service` |
+| `extractCommanderOutcomeObservations` | function | 198-213 | yes | no | `service` |
 
 ### src/services/strategyCommander/commanderWeightGovernance.ts
 
@@ -5486,6 +5666,18 @@ Use this index before opening large files. Search by function name, tag, or file
 | `synchronizeUniverse` | function | 10-44 | no | no | `adaptive`, `service` |
 | `runAdaptiveTrendPortfolio` | arrow | 46-111 | yes | no | `adaptive`, `service` |
 
+### src/services/strategyEngine/historicalSignals.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `sha256` | function | 60-62 | no | no | `service` |
+| `readVerifiedSeries` | function | 64-83 | no | no | `service` |
+| `assertManifest` | function | 85-101 | no | no | `service` |
+| `filterWindow` | function | 103-110 | no | no | `service` |
+| `loadHistoricalSignalBundle` | function | 112-148 | yes | no | `service` |
+| `loadHistoricalCandles` | function | 150-169 | yes | no | `service` |
+| `asOf` | function | 171-181 | yes | no | `service` |
+
 ### src/services/strategyEngine/orbVwapBreakout.ts
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -5507,29 +5699,43 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `sanitizeCandles` | function | 18-57 | yes | no | `service` |
-| `prefixSeries` | function | 69-73 | no | no | `service` |
-| `windowSum` | function | 75-78 | no | no | `service` |
-| `buildReplayIndicatorCache` | function | 85-135 | yes | no | `service` |
-| `meanFrom` | arrow | 100-103 | no | no | `service` |
-| `lowerBound` | function | 137-146 | no | no | `service` |
-| `rollingPercentileSeries` | function | 149-170 | yes | no | `service` |
-| `average` | function | 172-175 | yes | no | `service` |
-| `sma` | function | 177-180 | yes | no | `service` |
-| `emaSeries` | function | 182-190 | yes | no | `service` |
-| `trueRange` | function | 192-196 | yes | no | `service` |
-| `atr` | function | 198-203 | yes | no | `service` |
-| `rollingStd` | function | 205-210 | yes | no | `service` |
-| `rollingVwap` | function | 212-223 | yes | no | `service` |
-| `finalizeReplay` | function | 225-281 | yes | no | `service` |
-| `simulateBracketTrade` | function | 283-335 | yes | no | `service` |
+| `applyPortfolioRiskPolicy` | function | 43-89 | yes | no | `service` |
+| `sanitizeCandles` | function | 91-130 | yes | no | `service` |
+| `prefixSeries` | function | 142-146 | no | no | `service` |
+| `windowSum` | function | 148-151 | no | no | `service` |
+| `buildReplayIndicatorCache` | function | 158-208 | yes | no | `service` |
+| `meanFrom` | arrow | 173-176 | no | no | `service` |
+| `lowerBound` | function | 210-219 | no | no | `service` |
+| `rollingPercentileSeries` | function | 222-243 | yes | no | `service` |
+| `average` | function | 245-248 | yes | no | `service` |
+| `sma` | function | 250-253 | yes | no | `service` |
+| `emaSeries` | function | 255-263 | yes | no | `service` |
+| `trueRange` | function | 265-269 | yes | no | `service` |
+| `atr` | function | 271-276 | yes | no | `service` |
+| `rollingStd` | function | 278-283 | yes | no | `service` |
+| `rollingVwap` | function | 285-296 | yes | no | `service` |
+| `finalizeReplay` | function | 298-366 | yes | no | `service` |
+| `simulateBracketTrade` | function | 368-420 | yes | no | `service` |
 
 ### src/services/strategyEngine/scannerPresetAdapter.ts
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `buildScannerPresetConfig` | function | 5-46 | yes | no | `scanner`, `service` |
-| `runScannerPresetStrategy` | function | 48-105 | yes | no | `scanner`, `service` |
+| `buildScannerPresetConfig` | function | 8-49 | yes | no | `scanner`, `service` |
+| `runScannerPresetStrategy` | function | 51-124 | yes | no | `scanner`, `service` |
+
+### src/services/strategyEngine/signalAwareScannerAdapter.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `allowed` | function | 20-22 | no | no | `scanner`, `service` |
+| `indexAtOrBefore` | function | 24-33 | no | no | `scanner`, `service` |
+| `headlineTone` | function | 35-40 | no | no | `scanner`, `service` |
+| `runNativeSignalReplay` | function | 42-161 | no | no | `scanner`, `service` |
+| `reject` | arrow | 61-61 | no | no | `scanner`, `service` |
+| `enter` | arrow | 62-73 | no | no | `scanner`, `service` |
+| `isNativeSignalScannerStrategy` | function | 163-171 | yes | no | `scanner`, `service` |
+| `runSignalAwareScannerStrategy` | function | 173-175 | yes | no | `scanner`, `service` |
 
 ### src/services/strategyEngine/volatilitySqueezeExpansion.ts
 
@@ -5685,18 +5891,18 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `strategyValidationUniverseRequired` | function | 57-59 | yes | no | `service` |
-| `isPlainObject` | arrow | 128-129 | no | no | `service` |
-| `canonicalize` | function | 135-147 | no | no | `service` |
-| `hash` | function | 150-157 | no | no | `service` |
-| `buildStrategyValidationUniverseIdentity` | function | 159-209 | yes | no | `service` |
-| `fingerprintStrategyValidationSubject` | function | 220-230 | yes | no | `service` |
-| `identifyStrategyValidationSubject` | function | 232-246 | yes | no | `service` |
-| `validationReplayInputs` | function | 259-274 | yes | no | `service` |
-| `optimizationCandidateSubject` | function | 277-297 | yes | no | `service` |
-| `activeProfileSubject` | function | 300-315 | yes | no | `service` |
-| `definitionDefaultsSubject` | function | 318-332 | yes | no | `service` |
-| `detectValidationSubjectLeak` | function | 343-365 | yes | no | `service` |
+| `strategyValidationUniverseRequired` | function | 58-60 | yes | no | `service` |
+| `isPlainObject` | arrow | 111-112 | no | no | `service` |
+| `canonicalize` | function | 118-130 | no | no | `service` |
+| `hash` | function | 133-140 | no | no | `service` |
+| `buildStrategyValidationUniverseIdentity` | function | 142-192 | yes | no | `service` |
+| `fingerprintStrategyValidationSubject` | function | 203-213 | yes | no | `service` |
+| `identifyStrategyValidationSubject` | function | 215-229 | yes | no | `service` |
+| `validationReplayInputs` | function | 242-257 | yes | no | `service` |
+| `optimizationCandidateSubject` | function | 260-280 | yes | no | `service` |
+| `activeProfileSubject` | function | 283-298 | yes | no | `service` |
+| `definitionDefaultsSubject` | function | 301-315 | yes | no | `service` |
+| `detectValidationSubjectLeak` | function | 326-348 | yes | no | `service` |
 
 ### src/services/supplementalKeyProbe.ts
 
@@ -5931,6 +6137,13 @@ Use this index before opening large files. Search by function name, tag, or file
 |---|---|---:|---|---|---|
 | `row` | function | 10-16 | no | no | `decision-memory`, `ml`, `test` |
 
+### src/tests/decisionMemoryMirror.test.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `file` | function | 11-15 | no | no | `decision-memory`, `test` |
+| `row` | function | 17-29 | no | no | `decision-memory`, `test` |
+
 ### src/tests/decisionMemoryPatch.test.ts
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -5940,6 +6153,12 @@ Use this index before opening large files. Search by function name, tag, or file
 | `MemoryStorage.setItem` | method | 8-8 | no | no | `decision-memory`, `test` |
 | `MemoryStorage.removeItem` | method | 9-9 | no | no | `decision-memory`, `test` |
 | `MemoryStorage.clear` | method | 10-10 | no | no | `decision-memory`, `test` |
+
+### src/tests/decisionMemoryRoutes.test.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `start` | function | 12-20 | no | yes | `decision-memory`, `test` |
 
 ### src/tests/decisionOutcome.test.ts
 
@@ -5991,7 +6210,8 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `shortHunterEnvelope` | function | 10-20 | no | no | `test` |
+| `shortHunterEnvelope` | function | 19-29 | no | no | `test` |
+| `shortHunter` | arrow | 233-235 | no | no | `test` |
 
 ### src/tests/historicalMicrostructure.test.ts
 
@@ -6188,6 +6408,12 @@ Use this index before opening large files. Search by function name, tag, or file
 |---|---|---:|---|---|---|
 | `candidate` | function | 13-33 | no | no | `ml`, `test` |
 | `ticker` | function | 35-49 | no | no | `ml`, `test` |
+
+### src/tests/screenerPersistence.test.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `memoryStorage` | function | 10-16 | no | no | `decision-memory`, `test` |
 
 ### src/tests/signalLifecycleTracker.test.ts
 

@@ -1,63 +1,489 @@
+/* Overview command centre — status cards, upper 3-col grid, lower 3-col grid.
+   Fixed stage at 1368 x 753; page never scrolls; panels clip internally. */
 .apex-overview-v2 {
   height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-rows: 58px 58px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: 7px;
   overflow: hidden;
 }
-.apex-overview-v2 .apex-market-strip { min-height: 0; height: 58px; }
-.apex-overview-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0; overflow: hidden; border: 1px solid var(--apex-border); border-radius: 11px; background: var(--apex-surface); }
-.apex-overview-kpis > button { --overview-kpi-accent: var(--apex-green-600); position: relative; min-width: 0; border: 0; border-right: 1px solid var(--apex-divider); border-radius: 0; background: transparent; padding: 7px 11px; display: grid; grid-template-columns: 22px minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "icon label" "icon value"; align-content: center; gap: 2px 7px; text-align: left; box-shadow: none; }
-.apex-overview-kpis > button:last-child { border-right: 0; }
-.apex-overview-kpis > button:nth-child(2) { --overview-kpi-accent: var(--apex-blue-500); }
-.apex-overview-kpis > button:nth-child(3) { --overview-kpi-accent: var(--apex-violet-500); }
-.apex-overview-kpis > button:nth-child(4) { --overview-kpi-accent: var(--apex-orange-500); }
-.apex-overview-kpis > button::before { content: ''; position: absolute; inset: 8px auto 8px 0; width: 2px; border-radius: 2px; background: var(--overview-kpi-accent); opacity: .75; }
-.apex-overview-kpis > button:hover { background: var(--apex-surface-soft); }
-.apex-overview-kpis svg { grid-area: icon; align-self: center; color: var(--overview-kpi-accent); }
-.apex-overview-kpis span { grid-area: label; font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-kpis strong { grid-area: value; min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 700 14px/1.15 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
-.apex-overview-kpis small { display: none; }
-.apex-overview-command-grid { display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 8px; min-height: 0; }
-.apex-overview-primary-stack { display: grid; grid-template-rows: minmax(248px, .92fr) minmax(210px, 1.08fr); gap: 8px; min-width: 0; min-height: 0; }
-.apex-overview-summary, .apex-overview-attention, .apex-overview-activity { min-width: 0; min-height: 0; overflow: hidden; }
-.apex-overview-summary { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 11px 12px; }
-.apex-overview-summary > header, .apex-overview-attention > header, .apex-overview-activity > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.apex-overview-summary h2, .apex-overview-attention h2, .apex-overview-activity h2 { margin: 2px 0 0; display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--apex-ink-950); }
-.apex-overview-summary p { margin: 4px 0 0; font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-summary-body { display: grid; grid-template-columns: 154px minmax(0, 1fr) 146px; align-items: center; gap: 14px; min-height: 0; }
-.apex-overview-summary-price strong { display: block; font: 700 24px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
-.apex-overview-summary-price span, .apex-overview-summary-price small { display: block; margin-top: 7px; font-size: 10px; }
-.apex-overview-summary-price small { color: var(--apex-muted-600); }
-.apex-overview-summary-chart { height: 112px; min-width: 0; }
+
+/* Row 1 — six status cards */
+.apex-overview-status-cards {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+.apex-overview-status-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 1px 6px;
+  padding: 7px 9px;
+  border: 1px solid var(--apex-border);
+  border-radius: 10px;
+  background: var(--apex-surface);
+  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset;
+  overflow: hidden;
+  align-content: center;
+}
+.apex-overview-status-icon {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--apex-surface-soft);
+  color: var(--apex-muted-600);
+}
+.apex-overview-status-card.tone-ok .apex-overview-status-icon { color: var(--apex-positive); background: color-mix(in srgb, var(--apex-positive) 12%, transparent); }
+.apex-overview-status-card.tone-warn .apex-overview-status-icon { color: var(--apex-orange-500); background: color-mix(in srgb, var(--apex-orange-500) 12%, transparent); }
+.apex-overview-status-card.tone-danger .apex-overview-status-icon { color: var(--apex-negative); background: color-mix(in srgb, var(--apex-negative) 12%, transparent); }
+.apex-overview-status-card.tone-info .apex-overview-status-icon { color: var(--apex-blue-500); background: color-mix(in srgb, var(--apex-blue-500) 12%, transparent); }
+.apex-overview-status-card .apex-status-dot {
+  display: none;
+}
+.apex-overview-status-card b {
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--apex-muted-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.apex-overview-status-card em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 700 12px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace);
+  color: var(--apex-ink-950);
+}
+.apex-overview-status-card.tone-ok em { color: var(--apex-green-700); }
+.apex-overview-status-card.tone-warn em { color: var(--apex-orange-500); }
+.apex-overview-status-card.tone-danger em { color: var(--apex-negative); }
+.apex-overview-status-card.tone-info em { color: var(--apex-blue-500); }
+.apex-overview-status-card.tone-muted em { color: var(--apex-muted-600); }
+
+/* Upper grid: Account ~30% | Market ~42% | Signals+Autopilot ~28% */
+.apex-overview-upper-grid {
+  display: grid;
+  grid-template-columns: 30fr 42fr 28fr;
+  gap: 7px;
+  min-height: 0;
+  min-width: 0;
+}
+.apex-overview-upper-right {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, auto);
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Lower grid: Action | Activity | Data+System health */
+.apex-overview-lower-grid {
+  display: grid;
+  grid-template-columns: 30fr 42fr 28fr;
+  gap: 7px;
+  min-height: 0;
+  min-width: 0;
+}
+.apex-overview-lower-right {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, auto);
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Account / Portfolio summary card */
+.apex-overview-account {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+  padding: 7px 9px 8px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.apex-overview-account > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.apex-overview-account h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--apex-ink-950);
+}
+.apex-overview-account > header em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.apex-overview-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.apex-overview-section-head > div { min-width: 0; display: grid; gap: 1px; }
+.apex-overview-section-num {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-content: center;
+  border-radius: 999px;
+  background: var(--apex-green-600);
+  color: #fff;
+  font: 700 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace);
+}
+.apex-overview-section-head h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--apex-ink-950);
+  text-transform: uppercase;
+}
+.apex-overview-section-head small { font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-section-head em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.apex-overview-account-rows { display: grid; gap: 5px; min-height: 0; overflow: hidden; }
+.apex-overview-account-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.apex-overview-account-cell {
+  min-width: 0;
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+  padding: 5px 7px;
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  box-shadow: none;
+}
+.apex-overview-account-cell:hover { background: var(--apex-surface); }
+.apex-overview-account-cell > span { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-account-cell > strong { font: 700 12px/1.15 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-account-cell > strong.positive { color: var(--apex-positive); }
+.apex-overview-account-cell > strong.negative { color: var(--apex-negative); }
+.apex-overview-account-cell > small { font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-account-cell > small.positive { color: var(--apex-positive); }
+.apex-overview-account-cell > small.negative { color: var(--apex-negative); }
+.apex-overview-margin-bar {
+  margin-top: 2px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--apex-divider);
+  overflow: hidden;
+}
+.apex-overview-margin-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--apex-green-600), var(--apex-blue-500));
+}
+
+.apex-overview-summary, .apex-overview-attention, .apex-overview-activity,
+.apex-overview-signals, .apex-overview-autopilot, .apex-overview-providers,
+.apex-overview-execution, .apex-overview-account { min-width: 0; min-height: 0; overflow: hidden; }
+
+/* Market intelligence with compact tiles */
+.apex-overview-summary { display: grid; grid-template-rows: auto auto minmax(0, auto) auto auto; gap: 5px; padding: 7px 9px 8px; }
+.apex-overview-summary header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; min-width: 0; }
+.apex-overview-summary header > div { min-width: 0; display: grid; gap: 1px; }
+.apex-overview-summary .apex-eyebrow { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--apex-muted-600); }
+.apex-overview-summary header h2 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 700; color: var(--apex-ink-950); }
+.apex-overview-summary header h2 svg { color: var(--apex-blue-500); }
+
+.apex-overview-market-tiles {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+.apex-overview-market-tiles > button {
+  flex: 1 1 0;
+  min-width: 88px;
+  max-width: 120px;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "icon sym" "icon pct" "spark spark";
+  align-items: center;
+  gap: 0 5px;
+  padding: 5px 6px;
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+  text-align: left;
+  box-shadow: none;
+}
+.apex-overview-market-tiles > button.active { border-color: var(--apex-blue-500); background: var(--apex-surface); }
+.apex-overview-market-tiles > button:hover { background: var(--apex-surface); }
+.apex-overview-market-tiles img, .apex-overview-market-tiles svg:first-child { grid-area: icon; }
+.apex-overview-market-tiles > button > span { grid-area: sym; min-width: 0; overflow: hidden; }
+.apex-overview-market-tiles strong { display: block; font-size: 10px; font-weight: 700; color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-market-tiles small { display: block; font: 600 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-market-tiles em { grid-area: pct; font: 700 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace); font-style: normal; }
+.apex-overview-market-tiles em.positive { color: var(--apex-positive); }
+.apex-overview-market-tiles em.negative { color: var(--apex-negative); }
+.apex-overview-market-tiles .apex-mini-sparkline { display: none; }
+
+.apex-overview-summary-body { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 8px; align-items: center; min-height: 0; }
+.apex-overview-summary-price { min-width: 0; display: grid; gap: 1px; }
+.apex-overview-summary-price strong { font: 700 16px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-summary-price span { font-size: 10px; font-weight: 600; }
+.apex-overview-summary-price span.positive { color: var(--apex-positive); }
+.apex-overview-summary-price span.negative { color: var(--apex-negative); }
+.apex-overview-summary-price small { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-summary-chart { min-width: 0; min-height: 48px; max-height: 72px; height: 100%; overflow: hidden; border-radius: 6px; }
+.apex-overview-summary-chart > * { height: 100%; }
 .apex-overview-summary-chart .apex-mini-sparkline { width: 100%; height: 100%; }
-.apex-overview-summary dl { margin: 0; display: grid; gap: 10px; }
-.apex-overview-summary dl div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--apex-divider); padding-bottom: 7px; }
-.apex-overview-summary dt { color: var(--apex-muted-600); font-size: 10px; }
-.apex-overview-summary dd { margin: 0; color: var(--apex-ink-900); font: 600 10px var(--apex-font-mono, "JetBrains Mono", monospace); }
-.apex-overview-summary footer { display: flex; justify-content: flex-end; gap: 8px; }
-.apex-overview-summary-empty { min-height: 100px; display: grid; place-items: center; color: var(--apex-muted-600); font-size: 11px; }
-.apex-overview-attention { padding: 12px; display: grid; grid-template-rows: auto minmax(0, 1fr); border-top: 3px solid var(--apex-orange-500); }
-.apex-overview-attention > header > strong { display: grid; place-items: center; min-width: 28px; height: 28px; border-radius: 999px; background: var(--apex-surface-selected); color: var(--apex-green-700); }
-.apex-overview-attention-list { margin-top: 9px; display: grid; align-content: start; gap: 6px; overflow: auto; }
-.apex-overview-attention-list button { min-height: 47px; display: grid; grid-template-columns: 22px minmax(0, 1fr) 16px; align-items: center; gap: 8px; border: 1px solid var(--apex-divider); border-radius: 9px; background: var(--apex-surface-soft); padding: 7px 8px; text-align: left; }
-.apex-overview-attention-list button.tone-danger svg:first-child { color: var(--apex-negative); }
-.apex-overview-attention-list button.tone-warning svg:first-child { color: var(--apex-orange-500); }
-.apex-overview-attention-list button.tone-info svg:first-child { color: var(--apex-blue-500); }
-.apex-overview-attention-list span { min-width: 0; }
-.apex-overview-attention-list strong, .apex-overview-attention-list small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.apex-overview-attention-list strong { font-size: 11px; }
-.apex-overview-attention-list small { margin-top: 2px; color: var(--apex-muted-600); font-size: 10px; }
-.apex-overview-calm { align-self: center; display: grid; justify-items: center; text-align: center; gap: 7px; padding: 18px; color: var(--apex-muted-600); }
-.apex-overview-calm svg { color: var(--apex-positive); }
-.apex-overview-calm strong { color: var(--apex-ink-900); }
-.apex-overview-activity { padding: 9px 11px; display: grid; grid-template-rows: auto minmax(0, 1fr); }
-.apex-overview-activity .apex-tabs { min-height: 0; overflow: hidden; }
+.apex-overview-summary-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--apex-divider); padding-top: 5px; }
+.apex-overview-summary-stats > div { min-width: 0; display: grid; gap: 0; padding: 0 6px; border-right: 1px solid var(--apex-divider); }
+.apex-overview-summary-stats > div:first-child { padding-left: 0; }
+.apex-overview-summary-stats > div:last-child { border-right: 0; padding-right: 0; }
+.apex-overview-summary-stats dt { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-summary-stats dd { margin: 0; font: 600 10px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-summary-stats dd.positive { color: var(--apex-positive); }
+.apex-overview-summary-stats dd.negative { color: var(--apex-negative); }
+.apex-overview-summary footer { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+.apex-overview-summary footer button { padding: 3px 8px; font-size: 10px; }
+.apex-overview-summary-empty { display: grid; place-content: center; min-height: 0; padding: 5px; border: 1px dashed var(--apex-border); border-radius: 6px; font-size: 10px; color: var(--apex-muted-600); text-align: center; }
+
+.apex-overview-calm-compact { display: flex; align-items: center; gap: 6px; min-height: 0; padding: 5px 7px; border: 1px solid var(--apex-divider); border-radius: 6px; background: var(--apex-surface-soft); }
+.apex-overview-calm-compact svg { flex: 0 0 auto; color: var(--apex-positive); }
+.apex-overview-calm-compact strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 600; color: var(--apex-muted-700); }
+.apex-overview-calm-large {
+  min-height: 88px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+.apex-overview-calm-large span { display: grid; gap: 2px; }
+.apex-overview-calm-large small { font-size: 10px; font-weight: 500; color: var(--apex-muted-600); }
+
+.apex-overview-funnel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.apex-overview-funnel > div {
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+  padding: 4px 6px;
+  display: grid;
+  gap: 1px;
+}
+.apex-overview-funnel span { font-size: 10px; color: var(--apex-muted-600); text-transform: uppercase; letter-spacing: .04em; }
+.apex-overview-funnel strong { font: 700 13px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
+.apex-overview-funnel strong.tone-ok { color: var(--apex-positive); }
+.apex-overview-funnel strong.tone-warn { color: var(--apex-orange-500); }
+
+.apex-overview-signal-highlight {
+  display: grid;
+  grid-template-columns: minmax(0, 92px) minmax(0, 1fr);
+  gap: 6px;
+  align-items: stretch;
+}
+.apex-overview-signal-highlight > div:first-child {
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+  padding: 5px 6px;
+  display: grid;
+  gap: 1px;
+  align-content: center;
+}
+.apex-overview-signal-highlight > div:first-child span { font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-signal-highlight > div:first-child strong { font: 700 16px/1 var(--apex-font-mono, "JetBrains Mono", monospace); }
+.apex-overview-signal-top { display: grid; gap: 2px; min-width: 0; }
+.apex-overview-signal-top > span { font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-signal-top > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface);
+  text-align: left;
+}
+.apex-overview-signal-top > button strong { font-size: 10px; }
+.apex-overview-signal-top > button em { font: 700 11px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-blue-500); font-style: normal; }
+.apex-overview-signal-top > button b { font-size: 10px; font-weight: 700; color: var(--apex-blue-500); }
+.apex-overview-rejection { margin: 0; font-size: 10px; color: var(--apex-muted-600); }
+
+.apex-overview-decision-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+.apex-overview-decision-list > div {
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+  padding: 4px 6px;
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.apex-overview-decision-list dt { font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-decision-list dd {
+  margin: 0;
+  font: 700 10px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace);
+  color: var(--apex-ink-950);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apex-overview-provider-table { display: grid; gap: 2px; min-height: 0; overflow: auto; font-size: 10px; }
+.apex-overview-provider-table .head,
+.apex-overview-provider-table .row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr) .7fr .6fr .55fr;
+  gap: 4px;
+  align-items: center;
+  padding: 2px 4px;
+}
+.apex-overview-provider-table .head { color: var(--apex-muted-600); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.apex-overview-provider-table .row { border-radius: 4px; background: var(--apex-surface-soft); }
+.apex-overview-provider-table .row strong { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-provider-table .status-ok { color: var(--apex-positive); font-weight: 700; }
+.apex-overview-provider-table .status-degraded,
+.apex-overview-provider-table .status-schema { color: var(--apex-orange-500); font-weight: 700; }
+.apex-overview-provider-table .status-not-set { color: var(--apex-muted-600); }
+
+.apex-overview-execution-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.apex-overview-execution-grid > div {
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface-soft);
+  padding: 4px 6px;
+  display: grid;
+  gap: 1px;
+}
+.apex-overview-execution-grid span { font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-execution-grid strong { font: 700 11px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace); }
+.apex-overview-execution-grid em { font-size: 10px; font-style: normal; color: var(--apex-positive); font-weight: 600; }
+.apex-overview-execution footer { margin-top: 2px; }
+.apex-overview-execution footer small { font-size: 10px; color: var(--apex-muted-600); }
+
+.apex-overview-signals > header, .apex-overview-attention > header,
+.apex-overview-activity > header, .apex-overview-autopilot > header,
+.apex-overview-datahealth > header, .apex-overview-systemhealth > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.apex-overview-signals h2, .apex-overview-attention h2, .apex-overview-activity h2,
+.apex-overview-autopilot h2, .apex-overview-datahealth h2, .apex-overview-systemhealth h2 { display: flex; align-items: center; gap: 5px; margin: 0; font-size: 12px; font-weight: 700; color: var(--apex-ink-950); }
+.apex-overview-signals > header > strong, .apex-overview-attention > header > strong { font: 700 14px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
+.apex-overview-signals > header em, .apex-overview-autopilot > header em,
+.apex-overview-datahealth > header em { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .04em; }
+.apex-overview-activity > header button { padding: 3px 7px; font-size: 10px; }
+
+.apex-overview-signals { display: grid; grid-template-rows: auto auto auto auto auto; gap: 5px; padding: 7px 9px 8px; align-content: start; }
+.apex-overview-signals footer,
+.apex-overview-autopilot footer { display: flex; justify-content: flex-end; }
+.apex-overview-autopilot { display: grid; grid-template-rows: auto auto auto auto; gap: 4px; padding: 7px 9px 8px; align-content: start; }
+.apex-overview-providers,
+.apex-overview-execution { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 7px 9px 8px; align-content: start; }
+.apex-overview-signals-meta { margin: 0; font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-signal-list { display: grid; grid-auto-rows: 36px; gap: 3px; min-height: 0; overflow-y: auto; align-content: start; }
+.apex-overview-signal-list > button { --signal-tone: var(--apex-muted-500); position: relative; min-width: 0; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; grid-template-rows: auto auto; grid-template-areas: "icon name score" "icon detail score"; align-items: center; gap: 0 6px; padding: 3px 6px 3px 8px; border: 1px solid var(--apex-divider); border-radius: 6px; background: var(--apex-surface); text-align: left; box-shadow: none; }
+.apex-overview-signal-list > button::before { content: ''; position: absolute; inset: 4px auto 4px 0; width: 2px; border-radius: 2px; background: var(--signal-tone); }
+.apex-overview-signal-list > button:hover { background: var(--apex-surface-soft); }
+.apex-overview-signal-list > button.dir-long { --signal-tone: var(--apex-positive); }
+.apex-overview-signal-list > button.dir-short { --signal-tone: var(--apex-negative); }
+.apex-overview-signal-list > button.tier-blocked { --signal-tone: var(--apex-muted-500); opacity: .82; }
+.apex-overview-signal-list > button.tier-caution { --signal-tone: var(--apex-orange-500); }
+.apex-overview-signal-list svg, .apex-overview-signal-list img { grid-area: icon; }
+.apex-overview-signal-list > button > strong { grid-area: name; min-width: 0; display: flex; align-items: baseline; gap: 4px; overflow: hidden; font-size: 10px; font-weight: 700; color: var(--apex-ink-950); }
+.apex-overview-signal-list > button > strong em { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .05em; color: var(--signal-tone); }
+.apex-overview-signal-list > button > b { grid-area: score; font: 700 12px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
+.apex-overview-signal-list > button > small { grid-area: detail; min-width: 0; display: flex; align-items: baseline; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-signal-list > button > small i { flex: 0 0 auto; font-style: normal; font-weight: 700; color: var(--signal-tone); }
+
+.apex-overview-attention { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 5px; padding: 7px 9px 8px; }
+.apex-overview-attention-list { display: grid; grid-auto-rows: 36px; gap: 3px; min-height: 0; overflow-y: auto; align-content: start; }
+.apex-overview-attention-list > button { --attn-tone: var(--apex-blue-500); min-width: 0; display: grid; grid-template-columns: 15px minmax(0, 1fr) 14px; align-items: center; gap: 6px; padding: 3px 6px; border: 1px solid var(--apex-divider); border-left: 2px solid var(--attn-tone); border-radius: 6px; background: var(--apex-surface); text-align: left; box-shadow: none; }
+.apex-overview-attention-list > button:hover { background: var(--apex-surface-soft); }
+.apex-overview-attention-list > button.tone-warning { --attn-tone: var(--apex-orange-500); }
+.apex-overview-attention-list > button.tone-danger { --attn-tone: var(--apex-negative); }
+.apex-overview-attention-list svg { color: var(--attn-tone); }
+.apex-overview-attention-list span { min-width: 0; display: grid; gap: 0; }
+.apex-overview-attention-list strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 600; color: var(--apex-ink-950); }
+.apex-overview-attention-list small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-600); }
+
+.apex-overview-autopilot { display: grid; grid-template-rows: auto auto; gap: 4px; padding: 7px 9px 8px; align-content: start; }
+.apex-overview-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; margin: 0; }
+.apex-overview-kv > div { min-width: 0; display: grid; gap: 0; padding: 2px 5px; border: 1px solid var(--apex-divider); border-radius: 5px; background: var(--apex-surface-soft); }
+.apex-overview-kv dt { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-kv dd { margin: 0; font: 700 10px/1.25 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apex-overview-panel-error { display: flex; align-items: center; gap: 4px; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-negative); }
+.apex-overview-panel-error svg { flex: 0 0 auto; }
+
+.apex-overview-datahealth, .apex-overview-systemhealth { display: grid; grid-template-rows: auto auto; gap: 4px; padding: 7px 9px 8px; align-content: start; }
+.apex-overview-health-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.apex-overview-health-list > li { --health-tone: var(--apex-muted-500); min-width: 0; display: grid; grid-template-columns: minmax(0, 72px) minmax(0, 1fr) auto; align-items: baseline; gap: 5px; padding: 2px 5px 2px 7px; border-left: 2px solid var(--health-tone); border-radius: 4px; background: var(--apex-surface-soft); }
+.apex-overview-health-list span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-700); }
+.apex-overview-health-list small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-600); }
+.apex-overview-health-list b { font: 700 10px/1.4 var(--apex-font-mono, "JetBrains Mono", monospace); letter-spacing: .03em; color: var(--health-tone); }
+
+.apex-overview-kv > div.tone-ok dd, .apex-overview-health-list > li.tone-ok, .apex-overview-datahealth em.tone-ok, .apex-overview-autopilot em.tone-ok, .apex-overview-account > header em.tone-ok { --health-tone: var(--apex-positive); color: var(--apex-positive); }
+.apex-overview-kv > div.tone-warn dd, .apex-overview-health-list > li.tone-warn, .apex-overview-datahealth em.tone-warn { --health-tone: var(--apex-orange-500); color: var(--apex-orange-500); }
+.apex-overview-kv > div.tone-danger dd, .apex-overview-health-list > li.tone-danger, .apex-overview-datahealth em.tone-danger { --health-tone: var(--apex-negative); color: var(--apex-negative); }
+.apex-overview-kv > div.tone-info dd, .apex-overview-health-list > li.tone-info, .apex-overview-datahealth em.tone-info { --health-tone: var(--apex-blue-500); color: var(--apex-blue-500); }
+.apex-overview-kv > div.tone-muted dd, .apex-overview-health-list > li.tone-muted, .apex-overview-datahealth em.tone-muted, .apex-overview-autopilot em.tone-muted, .apex-overview-account > header em.tone-muted { --health-tone: var(--apex-muted-500); color: var(--apex-muted-600); }
+
+.apex-overview-activity { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 7px 9px 8px; }
+.apex-overview-activity .apex-tabs { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 3px; min-height: 0; }
 .apex-overview-activity .apex-tabs-panel { min-height: 0; overflow: auto; }
+.apex-overview-activity table { font-size: 10px; }
+.apex-overview-activity th, .apex-overview-activity td { padding: 2px 5px; }
+.apex-overview-activity .apex-honest-empty { min-height: 0; padding: 5px 7px; font-size: 10px; }
+.apex-overview-activity .apex-honest-empty svg { display: none; }
+
 @container workspace-region (max-width: 900px) {
   .apex-overview-v2 { height: auto; overflow: visible; grid-template-rows: auto; }
-  .apex-overview-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .apex-overview-command-grid { grid-template-columns: 1fr; }
-  .apex-overview-primary-stack { grid-template-rows: auto; }
+  .apex-overview-status-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .apex-overview-upper-grid, .apex-overview-lower-grid { grid-template-columns: 1fr; }
+  .apex-overview-upper-right, .apex-overview-lower-right { grid-template-rows: auto; }
+  .apex-overview-summary-body { grid-template-columns: 1fr; }
+  .apex-overview-summary-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-overview-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-overview-account-row { grid-template-columns: 1fr; }
+  .apex-overview-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-overview-execution-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-overview-signal-highlight { grid-template-columns: 1fr; }
 }

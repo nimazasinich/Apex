@@ -1,7 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Download, RefreshCw, Save, Search, Trash2, X } from 'lucide-react';
 import type { SignalDecisionLog } from '../../types';
-import { DecisionMemoryDB } from '../../services/decisionMemory';
+import {
+  DecisionMemoryDB,
+  getDecisionMemoryPersistenceState,
+  subscribeDecisionMemoryPersistence,
+} from '../../services/decisionMemory';
 import { useDialogA11y } from '../../lib/useDialogA11y';
 import './OperationsDrawers.css';
 
@@ -44,6 +48,16 @@ export function DecisionJournalDrawer({ isOpen, onClose }: DecisionJournalDrawer
   const [toDate, setToDate] = useState('');
   const [editing, setEditing] = useState<Record<string, { outcome: string; pnl: string }>>({});
   const [message, setMessage] = useState<string | null>(null);
+  const persistenceState = useSyncExternalStore(
+    subscribeDecisionMemoryPersistence,
+    getDecisionMemoryPersistenceState,
+    getDecisionMemoryPersistenceState,
+  );
+  const persistenceLabel = persistenceState === 'synced'
+    ? 'Synced Decision Memory'
+    : persistenceState === 'mirror_degraded'
+      ? 'Mirror degraded'
+      : 'Browser-only Decision Memory';
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -107,7 +121,7 @@ export function DecisionJournalDrawer({ isOpen, onClose }: DecisionJournalDrawer
 
   return <div className="apex-ops-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <div ref={dialogRef} className="apex-ops-drawer apex-journal-drawer" role="dialog" aria-modal="true" aria-labelledby="decision-journal-title">
-      <header className="apex-ops-header"><div><span>Canonical Decision Memory</span><h2 id="decision-journal-title">Decision Journal</h2><p>Outcomes are annotations on existing SignalDecisionLog rows; scores are not probabilities.</p></div><button ref={closeRef} type="button" aria-label="Close decision journal" onClick={onClose}><X size={18} /></button></header>
+      <header className="apex-ops-header"><div><span data-persistence-state={persistenceState}>{persistenceLabel}</span><h2 id="decision-journal-title">Decision Journal</h2><p>Outcomes are annotations on existing SignalDecisionLog rows; scores are not probabilities.</p></div><button ref={closeRef} type="button" aria-label="Close decision journal" onClick={onClose}><X size={18} /></button></header>
       <div className="apex-ops-toolbar"><span>{filtered.length} filtered rows</span><div className="apex-journal-actions"><button type="button" onClick={() => void load()} disabled={loading}><RefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh</button><button type="button" onClick={exportCsv} disabled={!filtered.length}><Download size={14} /> CSV</button><button type="button" onClick={exportJson} disabled={!filtered.length}><Download size={14} /> JSON</button></div></div>
       <section className="apex-journal-summary" aria-label="Outcome breakdown"><article><span>Accepted</span><strong>{accepted}</strong></article><article><span>Rejected</span><strong>{rejected}</strong></article><article><span>Resolved</span><strong>{resolved.length}</strong></article><article><span>Average later P&L</span><strong>{avgPnl == null ? '—' : `${avgPnl.toFixed(2)}R`}</strong></article></section>
       <section className="apex-journal-filters"><label className="search"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ticker, reason, cycle…" /></label><select aria-label="Decision filter" value={decision} onChange={(event) => setDecision(event.target.value)}><option value="ALL">All decisions</option><option value="ACCEPTED">Accepted</option><option value="REJECTED">Rejected</option></select><select aria-label="Direction filter" value={direction} onChange={(event) => setDirection(event.target.value)}><option value="ALL">All directions</option><option value="LONG">Long</option><option value="SHORT">Short</option><option value="NONE">None</option></select><select aria-label="Outcome filter" value={outcome} onChange={(event) => setOutcome(event.target.value)}><option value="ALL">All outcomes</option><option value="UNRESOLVED">Unresolved</option>{OUTCOMES.filter(Boolean).map((item) => <option key={item} value={item}>{item}</option>)}</select><select aria-label="Reason filter" value={reason} onChange={(event) => setReason(event.target.value)}><option value="ALL">All reasons</option>{reasons.map((item) => <option key={item} value={item}>{item}</option>)}</select><label><span>From</span><input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label><label><span>To</span><input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></label></section>

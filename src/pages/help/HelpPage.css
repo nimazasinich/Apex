@@ -299,7 +299,18 @@
   position: relative;
   height: 76px;
   overflow: hidden;
-  background: var(--apex-surface-soft);
+  /* `background-color`, not the `background` shorthand. The shorthand reset the
+     `background-position: center / -repeat: no-repeat / -size: cover` trio this same
+     class declares earlier in this file, so the per-tutorial artwork applied as an
+     inline `background-image` in HelpPage.tsx could never paint. The `<img>` child
+     stays the primary render path (the 1368 visual gate rewrites its `src` to a data
+     URI); the background paints the identical asset behind it, so the artwork is
+     present from the first paint instead of an empty soft surface. Same URL, so the
+     browser issues a single request. */
+  background-color: var(--apex-surface-soft);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 .apex-v3-tutorial-thumb img {
   width: 100%;

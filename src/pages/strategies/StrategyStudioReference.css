@@ -1762,9 +1762,19 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
   max-width: 480px !important;
   margin: 0 !important;
   overflow: hidden !important;
+  /* One line, not two. The registry `summary` is a long guide-style sentence (the
+     Multi-Alpha model runs 150 characters), and at 10px/15px it always wrapped to two
+     lines, costing 15px of the center pane on every model. The full text is preserved as
+     data (it still feeds the library search haystack and the Compare matrix) and is
+     reachable here via the `title` tooltip set in StrategyModelWorkspace.tsx.
+     `white-space: nowrap` + `text-overflow` is used because the computed `display` for
+     this element resolves to `flow-root`, which makes `-webkit-line-clamp` inert -- the
+     clamp below is kept only for the `-webkit-box` case. */
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
-  -webkit-line-clamp: 2 !important;
+  -webkit-line-clamp: 1 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
   color: var(--strategy-muted) !important;
   font-size: 10px !important;
   line-height: 15px !important;
@@ -2112,17 +2122,17 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
   font-size: 14px;
   line-height: 1;
 }
-.strategy-validation-card .strategy-validation-message,
-.strategy-validation-card::after {
+.strategy-validation-card .strategy-validation-message {
   color: var(--strategy-muted) !important;
   font-size: 9px !important;
   line-height: 13px !important;
 }
-.strategy-validation-card::after {
-  content: 'Validation runs the registered server data-link and model gates. Local edits remain explicit Backtesting inputs.';
-  display: block !important;
-  margin-top: 8px !important;
-}
+/* The `::after` helper paragraph ("Validation runs the registered server data-link and
+   model gates. Local edits remain explicit Backtesting inputs.") was removed: it was
+   static instructional copy injected into a right-side evidence card, costing 34px
+   (2 lines x 13px + 8px margin) of rail height on every render while carrying no state.
+   The real validation state is still rendered by `.strategy-validation-message`
+   (role="status") above, which is live and conditional. */
 .strategy-secondary-tools {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
@@ -2304,8 +2314,16 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
 }
 
 /* Strategy reference vertical fit correction — keeps action bar reachable at 1368×753. */
-.strategy-identity-card { height: 152px !important; min-height: 152px !important; }
-.strategy-model-header { height: 106px !important; min-height: 106px !important; padding-top: 12px !important; padding-bottom: 8px !important; }
+/* 137px, not 152px: the card height was locked to fit a two-line `summary`. That summary
+   is now clamped to one line (see `.strategy-model-heading p` above), so the card kept
+   15px of empty space that the center pane could not reclaim -- it is `overflow: hidden`
+   with a fixed height, so the freed text height was absorbed instead of removed. Giving
+   the 15px back is what lets the center workspace stop scrolling at 1368x753. */
+.strategy-identity-card { height: 137px !important; min-height: 137px !important; }
+/* 87px, not 106px: this header holds the one-line `summary`, so it absorbs the freed text
+   height. 87 + 46 (`.strategy-model-meta`) = 133, inside the card's 135px content box, so
+   nothing is clipped. The governing declaration is in the 1368x753 media band below. */
+.strategy-model-header { height: 87px !important; min-height: 87px !important; padding-top: 12px !important; padding-bottom: 8px !important; }
 .strategy-model-meta { height: 46px !important; min-height: 46px !important; }
 .strategy-model-meta > div { padding-top: 7px !important; padding-bottom: 6px !important; }
 .strategy-configuration-panel { height: 274px !important; min-height: 274px !important; padding: 12px !important; }
@@ -2456,8 +2474,22 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
     max-height: 110px !important;
   }
 
+/* 87px, down from 102px. This rule (specificity 0,2,0 inside the 1368x753 band) is the
+   one that actually governs the header, so the identity card's height reduction has to be
+   made here too or the card clips its own STRATEGY ID / DIRECTION / INTERVALS row.
+   87 = heading 67 (18 badge + 6 + 24 h2 + 4 + 15 one-line summary) + 12 padding-top +
+   8 padding-bottom, and 87 + 46 (`.strategy-model-meta`) = 133 <= the card's 135px
+   content box, so nothing is clipped. */
   .strategy-studio .strategy-model-header {
-    min-height: 102px !important;
+    min-height: 87px !important;
+  }
+
+  /* The h2 shed 5px of vertical margin (9/6 -> 6/4) so the header lands on 87px without
+     shrinking the title, the status badge or the meta row. Scoped to this viewport band
+     only -- other breakpoints keep the original spacing. */
+  .strategy-studio .strategy-model-heading h2 {
+    margin-top: 6px !important;
+    margin-bottom: 4px !important;
   }
 
   .strategy-studio .strategy-hero-art {
@@ -2609,3 +2641,373 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
   width: 17px !important;
   height: 17px !important;
 }
+
+/* Evidence rail: grid mode spaces with `gap`, so the per-card side margins
+   inherited from the flex rail (`margin: 0 12px 12px` in StrategyPage.css)
+   double-count against `.strategy-evidence-card { width: 100% !important }`.
+   In the 466px track the card then renders 466 + 12 = 478px, pushing the right
+   column 12px past its track and 2px past `.strategy-studio` — the reason the
+   studio reported scrollWidth 962 against clientWidth 960. The rail only
+   switches to grid at <=1050px, so scope the correction to that mode and leave
+   the flex rail at wider widths untouched. */
+@media (max-width: 1050px) {
+  .strategy-evidence-rail > .strategy-evidence-card {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* ===========================================================================
+   Strategy Studio density refinement (v1.0.68)
+   ---------------------------------------------------------------------------
+   Measured problem at 1368x753, before this block:
+     - Left rail spent 163px of its 663px content box on search/filter chrome
+       plus a 42px "View all strategies" footer = 205px (31%) of chrome, leaving
+       416px for a 1624px list -> only 3.5 of 14 models visible.
+     - `filtersOpen` was dead state (useState(true), setter never called), so the
+       71px four-select grid was permanently expanded showing four inactive
+       "All ..." defaults. `.strategy-filter-icon` was already styled here
+       (lines 101 / 341 / 555) for the toggle that was never rendered.
+     - `.strategy-library-view-all` ran the same `clear()` handler as the
+       "Clear filters" button - two controls, one behaviour, 74px of rail.
+     - The card `-foot` row repeated the registry slug that the centre meta row
+       and the right rail's DATA & ECOSYSTEM card both already show.
+     - Right rail content measured 745px against a 683px box: 62px was hidden
+       behind an internal scroller.
+     - `.strategy-model-heading p` was `nowrap` with scrollWidth 697 in a 396px
+       box, so 43% of the summary was ellipsised away.
+   Structural rules that must follow the markup change live at top level; the
+   tightened geometry is scoped to the 1368x753 band so the already-green
+   1024x768 containment layout is untouched.
+   =========================================================================== */
+
+/* The card lost its third (`-foot`) row, so the 3-track template would leave a
+   dead 14px track under the body at every other breakpoint. */
+.strategy-studio .strategy-library-card {
+  grid-template-rows: 16px 42px !important;
+  min-height: 88px !important;
+  max-height: 92px !important;
+}
+
+/* The bookmark control moved out of the removed `-foot` row into the topline,
+   which is `justify-content: space-between`; without this it would share the
+   free space with the Core chip instead of pinning to the right edge. */
+.strategy-studio .strategy-library-card-topline .strategy-library-bookmark {
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Filter disclosure button + its active-filter count badge. */
+.strategy-studio .strategy-filter-icon {
+  position: relative !important;
+  flex: 0 0 auto !important;
+}
+
+.strategy-studio .strategy-filter-icon.active {
+  border-color: rgba(0, 155, 122, .45) !important;
+  background: var(--strategy-green-soft, #EFF9F3) !important;
+  color: var(--strategy-green, #009B7A) !important;
+}
+
+.strategy-studio .strategy-filter-icon em {
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  min-width: 13px !important;
+  height: 13px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 3px !important;
+  border-radius: 999px !important;
+  background: var(--strategy-green, #009B7A) !important;
+  color: #fff !important;
+  font: 700 8px/1 'JetBrains Mono', monospace !important;
+  font-style: normal !important;
+}
+
+/* The view-mode toggle moved inside `.strategy-filter-actions`, so it must drop
+   the rail padding it carried as a standalone row (line 347). */
+.strategy-studio .strategy-filter-actions {
+  display: grid !important;
+  grid-template-columns: 60px minmax(0, 1fr) 26px !important;
+  align-items: center !important;
+}
+
+.strategy-studio .strategy-filter-actions .strategy-view-mode-toggle {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  padding: 0 !important;
+}
+
+.strategy-studio .strategy-filter-actions > button {
+  justify-content: center !important;
+}
+
+.strategy-studio .strategy-filter-actions > button.strategy-filter-clear {
+  padding: 0 !important;
+}
+
+@media (min-width: 1280px) and (max-width: 1450px) and (min-height: 680px) and (max-height: 820px) {
+  /* ---- Left rail: chrome 205px -> 79px, card 108px -> 78px ---------------- */
+  .strategy-studio .strategy-rail-heading.strategy-library-titlebar {
+    min-height: 21px !important;
+    height: 21px !important;
+    padding: 8px 10px 4px !important;
+  }
+
+  .strategy-studio .strategy-library-titlebar h1 { font-size: 9.5px !important; }
+
+  .strategy-studio .strategy-library-search-row {
+    grid-template-columns: minmax(0, 1fr) 30px !important;
+    gap: 6px !important;
+    padding: 0 10px 6px !important;
+  }
+
+  .strategy-studio .strategy-library-search-row .strategy-search-field,
+  .strategy-studio .strategy-filter-icon {
+    min-height: 30px !important;
+    height: 30px !important;
+  }
+
+  .strategy-studio .strategy-filter-icon {
+    width: 30px !important;
+    border-radius: 7px !important;
+  }
+
+  .strategy-studio .strategy-filter-actions {
+    gap: 6px !important;
+    padding: 0 10px 6px !important;
+  }
+
+  .strategy-studio .strategy-filter-actions .strategy-view-mode-toggle { gap: 4px !important; }
+
+  .strategy-studio .strategy-filter-actions .strategy-view-mode-toggle button,
+  .strategy-studio .strategy-filter-actions > button {
+    min-height: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+    font-size: 8.5px !important;
+  }
+
+  .strategy-studio .strategy-filter-actions > button.strategy-filter-clear {
+    width: 26px !important;
+  }
+
+  .strategy-studio .strategy-filter-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    padding: 0 10px 6px !important;
+  }
+
+  .strategy-studio .strategy-filter-grid select {
+    height: 26px !important;
+    font-size: 9px !important;
+  }
+
+  .strategy-studio .strategy-model-list { padding: 6px 7px 6px !important; }
+  .strategy-studio .strategy-model-list.is-cards { gap: 8px !important; }
+
+  .strategy-studio .strategy-library-card {
+    min-height: 78px !important;
+    max-height: 82px !important;
+    gap: 4px !important;
+    padding: 7px !important;
+  }
+
+  .strategy-studio .strategy-library-card.selected,
+  .strategy-studio .strategy-library-card[aria-selected="true"] {
+    padding: 6.5px !important;
+  }
+
+  .strategy-studio .strategy-library-card-topline { gap: 5px !important; }
+
+  /* Artwork 48px -> 38px returns 18px of width to the title, which is what
+     stops the three-line names ("Adaptive Cross-Asset Trend and Regime
+     Rotation") clipping their third line out of a two-line clamp. */
+  .strategy-studio .strategy-library-card-body {
+    grid-template-columns: 38px minmax(0, 1fr) 12px !important;
+    gap: 6px !important;
+    min-height: 42px !important;
+  }
+
+  .strategy-studio .strategy-library-art {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .strategy-studio .strategy-library-card-copy > strong {
+    font-size: 9.5px !important;
+    line-height: 11.5px !important;
+  }
+
+  /* ---- Centre: proportional Configuration downscale ---------------------- */
+  /* The strategy blurb was removed from the header on request — it is prose,
+     not operational data, and the centre column is the densest part of the
+     page. The full sentence stays reachable as the `<h2>` tooltip, and the
+     36px it occupied is handed to the parameter cards below rather than left
+     as a dead band. */
+  .strategy-studio .strategy-identity-card { height: 110px !important; min-height: 110px !important; }
+  .strategy-studio .strategy-model-header { height: 66px !important; min-height: 66px !important; }
+  .strategy-studio .strategy-model-meta { height: 42px !important; min-height: 42px !important; }
+  .strategy-studio .strategy-model-meta > div { padding-top: 6px !important; padding-bottom: 5px !important; }
+
+  .strategy-studio .strategy-configuration-panel {
+    height: 290px !important;
+    min-height: 290px !important;
+    padding: 11px !important;
+  }
+
+  .strategy-studio .strategy-configuration-panel > header {
+    height: 22px !important;
+    min-height: 22px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .strategy-studio .strategy-config-controls { margin-bottom: 8px !important; }
+
+  .strategy-studio .strategy-config-controls select,
+  .strategy-studio .strategy-direction-control .apex-direction-selector {
+    height: 29px !important;
+    min-height: 29px !important;
+  }
+
+  .strategy-studio .strategy-direction-control .apex-direction-selector button {
+    height: 23px !important;
+    min-height: 23px !important;
+  }
+
+  /* 88px is back within reach of this file's own 92px reference min-height
+     (line 169): the density win comes from deleting wasted chrome and prose,
+     not from crushing the controls. Rows sum inside the content box:
+     16+22+14+10 + 3x1px gap = 65 <= 88 - 2px border - 16px padding = 70. */
+  .strategy-studio .strategy-parameter-card {
+    height: 88px !important;
+    min-height: 88px !important;
+    grid-template-rows: 16px 22px 14px 10px !important;
+    padding: 8px 9px !important;
+  }
+
+  .strategy-studio .strategy-parameter-label { min-height: 16px !important; }
+
+  /* `.strategy-parameter-grid input { min-height: 36px }` (line 358) was written
+     for the text inputs but also matches `type="range"`, and min-height beats the
+     `height: 14px !important` this file declares for the slider three times over
+     (174, 2348, 2552). The 3px rail therefore sat in a 36px box and pushed 13px
+     past the card's content edge — the numeric cards clipped before this pass too.
+     14px is exactly the thumb height (3px track + 5.5px either side), so the
+     control paints in full and the row template above becomes accurate. */
+  .strategy-studio .strategy-parameter-slider {
+    height: 14px !important;
+    min-height: 14px !important;
+  }
+
+  .strategy-studio .strategy-parameter-number {
+    height: 22px !important;
+    min-height: 22px !important;
+    font-size: 18px !important;
+    line-height: 22px !important;
+  }
+
+  .strategy-studio .strategy-fusion-panel { height: 112px !important; min-height: 112px !important; }
+  .strategy-studio .strategy-fusion-header { height: 29px !important; min-height: 29px !important; }
+  .strategy-studio .strategy-fusion-metrics article { min-height: 48px !important; }
+
+  .strategy-studio .strategy-fusion-metrics article > strong {
+    margin-top: 6px !important;
+    font-size: 12px !important;
+    line-height: 14px !important;
+  }
+
+  /* ---- Right rail: remove the 62px hidden overflow ----------------------- */
+  .strategy-studio .strategy-evidence-rail { gap: 7px !important; }
+  .strategy-studio .strategy-evidence-card { padding: 7px 9px !important; }
+  .strategy-studio .strategy-evidence-card-title { margin-bottom: 5px !important; }
+
+  .strategy-studio .strategy-validation-card { min-height: 84px !important; }
+  .strategy-studio .strategy-secondary-research-card { min-height: 84px !important; }
+  .strategy-studio .strategy-evidence-status-card { min-height: 146px !important; }
+  .strategy-studio .strategy-warnings-card { min-height: 62px !important; }
+  .strategy-studio .strategy-provenance-card { min-height: 96px !important; }
+  .strategy-studio .strategy-evidence-advanced { min-height: 28px !important; }
+
+  /* "Run Validation" keeps its full 42px height and reference gradient so it
+     stays the most prominent control in the rail; only the two secondary
+     research buttons come down, from 52px each. */
+  .strategy-studio .strategy-secondary-tools .strategy-optimization-button,
+  .strategy-studio .strategy-secondary-tools .strategy-liquidity-hunter-button {
+    min-height: 34px !important;
+    height: 34px !important;
+    font-size: 9px !important;
+  }
+
+  /* ---- List view: the whole catalogue in one column, no scrollbar ---------
+     The rail gives the list a 536px content box. 14 rows at 36px with a 2px
+     gap = 530px, so every model in the registry is reachable without
+     scrolling — that is the point of this view. Card view is deliberately left
+     alone and keeps its scroller.
+     Each row becomes two lines instead of the seven-column wide-screen table:
+     line 1 is the name, line 2 is status + direction + intervals + data tier.
+     Every placement below is explicit so no implicit track can be created. */
+  .strategy-studio .strategy-model-list.is-list {
+    gap: 2px !important;
+    padding: 6px 7px !important;
+    align-content: start !important;
+  }
+
+  .strategy-studio .strategy-library-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto 16px !important;
+    grid-template-rows: 15px 12px !important;
+    column-gap: 5px !important;
+    row-gap: 0 !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 3px 6px !important;
+    align-items: center !important;
+  }
+
+  .strategy-studio .strategy-library-row:hover { transform: none !important; }
+
+  .strategy-studio .strategy-library-row > .strategy-library-row-main {
+    grid-area: 1 / 1 / 2 / 6 !important;
+    gap: 0 !important;
+  }
+
+  .strategy-studio .strategy-library-row-main strong {
+    font-size: 11px !important;
+    line-height: 15px !important;
+  }
+
+  /* Registry slug and version already head the centre meta row. */
+  .strategy-studio .strategy-library-row-main span { display: none !important; }
+
+  .strategy-studio .strategy-library-row > .strategy-status {
+    grid-area: 2 / 1 / 3 / 2 !important;
+    justify-self: start !important;
+    height: 12px !important;
+    min-height: 12px !important;
+    padding-inline: 4px !important;
+    font-size: 7.5px !important;
+    line-height: 12px !important;
+  }
+
+  .strategy-studio .strategy-library-row > small {
+    font-size: 8.5px !important;
+    line-height: 12px !important;
+  }
+
+  .strategy-studio .strategy-library-row > small:nth-of-type(1) { grid-area: 2 / 2 / 3 / 3 !important; }
+  .strategy-studio .strategy-library-row > small:nth-of-type(2) { grid-area: 2 / 3 / 3 / 4 !important; }
+  .strategy-studio .strategy-library-row > small:nth-of-type(3) { grid-area: 2 / 4 / 3 / 5 !important; }
+
+  /* Snapshot freshness is reported once, in the rail's DATA & ECOSYSTEM card. */
+  .strategy-studio .strategy-library-row > small:nth-of-type(4) { display: none !important; }
+
+  .strategy-studio .strategy-library-row > .strategy-library-bookmark {
+    grid-area: 1 / 6 / 3 / 7 !important;
+    width: 16px !important;
+    height: 16px !important;
+    align-self: center !important;
+  }
+}
+

@@ -2,7 +2,9 @@ import type { TradePlan } from './tradePlan';
 import type { RiskGovernorResult } from './riskGovernor';
 import { apiMutate } from './apiMutate';
 import type { LiveReconciliationSummary } from './liveExecutionIntentStore';
+import type { AccountSnapshot } from './accountTypes';
 export type { LiveReconciliationSummary } from './liveExecutionIntentStore';
+export type { AccountSnapshot } from './accountTypes';
 
 export type ConnectionState =
   | {
@@ -49,17 +51,6 @@ export type ConnectionState =
       maxOrderNotionalUsd: number;
       liveAvailable: true;
     };
-
-export interface AccountSnapshot {
-  account: Record<string, unknown>;
-  positions: Array<Record<string, unknown>>;
-  openOrders: Array<Record<string, unknown>>;
-  recentOrders: Array<Record<string, unknown>>;
-  recentTrades: Array<Record<string, unknown>>;
-  positionHistory: Array<Record<string, unknown>>;
-  serverTime: unknown;
-  syncedAt: string;
-}
 
 export interface ConnectExchangeInput {
   apiKey: string;

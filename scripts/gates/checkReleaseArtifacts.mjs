@@ -15,6 +15,10 @@ const paths = {
 const errors = [];
 for (const [kind, path] of Object.entries(paths)) if (!existsSync(path)) errors.push(`missing_${kind}_artifact`);
 
+export function normalizeArchiveEntryPath(name) {
+  return String(name).replaceAll('\\', '/').replace(/^\.\//, '');
+}
+
 function entries(path) {
   try {
     const buffer = readFileSync(path);
@@ -42,9 +46,9 @@ function entries(path) {
       // `app\node_modules\x` collapses to one segment and the node_modules and
       // runtime-secret gates silently never fire. The leading './' strip covers the
       // Info-ZIP branch and any other tool that records the archive root.
-      const name = buffer.subarray(offset + 46, offset + 46 + nameLength).toString('utf8')
-        .replaceAll('\\', '/')
-        .replace(/^\.\//, '');
+      const name = normalizeArchiveEntryPath(
+        buffer.subarray(offset + 46, offset + 46 + nameLength).toString('utf8'),
+      );
       rows.push(name);
       offset += 46 + nameLength + extraLength + commentLength;
     }
@@ -63,6 +67,39 @@ function assertNoForbidden(kind, rows) {
     if (segments.some((segment) => forbiddenNames.includes(segment))) errors.push(`${kind}_contains_runtime_secret:${row}`);
   }
 }
+
+function runPolicySelfTest() {
+  const failures = [];
+  const windowsBuild = [
+    'dist\\index.html',
+    'dist\\assets\\index.js',
+  ].map(normalizeArchiveEntryPath);
+  if (!hasPrefix(windowsBuild, 'dist')) failures.push('windows_dist_prefix_not_recognized');
+
+  const cleanErrorCount = errors.length;
+  assertNoForbidden('self_test', windowsBuild);
+  if (errors.length !== cleanErrorCount) failures.push('clean_windows_rows_rejected');
+
+  const forbiddenStart = errors.length;
+  assertNoForbidden('self_test', [
+    normalizeArchiveEntryPath('app\\node_modules\\pkg\\README.md'),
+    normalizeArchiveEntryPath('app\\private\\.env.local'),
+  ]);
+  const forbiddenErrors = errors.splice(forbiddenStart);
+  if (!forbiddenErrors.some((row) => row.includes('contains_node_modules'))) failures.push('windows_node_modules_not_rejected');
+  if (!forbiddenErrors.some((row) => row.includes('contains_runtime_secret'))) failures.push('windows_secret_not_rejected');
+
+  if (hasPrefix(['assets/index.js'], 'dist')) failures.push('missing_dist_not_rejected');
+  if (failures.length) {
+    console.error('[release-artifacts-self-test] FAILED');
+    failures.forEach((failure) => console.error(`  - ${failure}`));
+    process.exit(1);
+  }
+  console.log('[release-artifacts-self-test] passed: Windows separators, forbidden entries, and missing-dist rejection verified.');
+  process.exit(0);
+}
+
+if (process.argv.includes('--self-test')) runPolicySelfTest();
 
 if (!errors.length) {
   const source = entries(paths.source);

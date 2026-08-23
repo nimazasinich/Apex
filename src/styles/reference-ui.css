@@ -238,15 +238,78 @@
 .v20-table-tabs button.active { color: var(--v20-green); border-bottom-color: var(--v20-green); font-weight: 700; }
 .v20-orders-table .v20-filter-row,
 .v20-history-table .v20-filter-row { padding: 8px 10px 0; }
+/* Orders table column budget.
+   `.v20-table-card table` is `table-layout: fixed`, so these ten widths are the
+   entire column model: the browser scales them proportionally to fill the card,
+   and any column narrower than its own content wraps mid-word — the shared
+   `overflow-wrap: anywhere` in light-theme-hardening.css — inside a row that is
+   pinned to 31px at the 1368x753 baseline. A wrapped cell there is a clipped
+   cell, so each width below is the measured content need rather than a round
+   number:
+
+     radio 32 | id 88 | market 112 | side 52 | type 54 | filled 104
+     | avg fill 82 | status 104 | time 104 | action 52  = 784px
+
+   The total is deliberately held under the narrowest desktop card the shell can
+   produce (~788px at 1280-1367, where the nav rail is 172px and the assistant
+   rail 284px), so the columns are never compressed below what they must hold. At
+   1368 the card is ~888px and the ~104px of slack is distributed proportionally,
+   giving every column about 13% more room than the figures above.
+
+   Two measurements that are easy to get wrong when re-deriving these numbers:
+   cell padding in that band is 6px per side (the 1280-1450 block further down
+   this file), not the 9px of the base `td` rule, so a column's usable content box
+   is its width minus 12; and header text there is 10px, not the 8px of the base
+   `th` rule. The `th` is `white-space: nowrap`, so a header wider than its own
+   column spills into the next one — which is why column 7 reads `Avg. Fill`
+   rather than `Avg. Fill Price`. */
 .v20-orders-table th:nth-child(1) { width: 32px; }
-.v20-orders-table th:nth-child(2) { width: 100px; }
-.v20-orders-table th:nth-child(3) { width: 100px; }
-.v20-orders-table th:nth-child(4) { width: 55px; }
-.v20-orders-table th:nth-child(5) { width: 55px; }
-.v20-orders-table th:nth-child(6) { width: 180px; }
-.v20-orders-table th:nth-child(7) { width: 100px; }
-.v20-orders-table th:nth-child(8) { width: 95px; }
-.v20-orders-table th:nth-child(9) { width: 72px; }
+.v20-orders-table th:nth-child(2) { width: 88px; }
+/* Market: 20px coin icon + its 7px gap + a nine-character `XXXX-USDT` symbol.
+   The old 100px left 55px for the symbol, which is why DOGE-USDT, AVAX-USDT and
+   LINK-USDT broke onto a second line while the shorter BTC-USDT did not. */
+.v20-orders-table th:nth-child(3) { width: 112px; }
+.v20-orders-table th:nth-child(4) { width: 52px; }
+.v20-orders-table th:nth-child(5) { width: 54px; }
+.v20-orders-table th:nth-child(6) { width: 104px; }
+.v20-orders-table th:nth-child(7) { width: 82px; }
+/* Status: the capitalized `partially filled` pill is the widest single token in
+   the table and needs ~104px including its own border and padding. */
+.v20-orders-table th:nth-child(8) { width: 104px; }
+/* Time: `timestamp()` renders `Aug 17, 02:35 PM`, not a bare clock reading. */
+.v20-orders-table th:nth-child(9) { width: 104px; }
+/* Action: the shared 30px `.v20-icon-button` plus the 9px cell padding. Left
+   unspecified this column absorbed all the slack in the table — ~99px at 1368 —
+   while the Market, Status and Time columns wrapped. */
+.v20-orders-table th:nth-child(10) { width: 52px; }
+
+/* Nothing in the body may wrap: the row height is fixed, so a second line is
+   hidden rather than shown. Every column above is sized to hold its own content;
+   the two cells that can still meet an unusually long value — an exchange
+   specific order type such as `TAKE_PROFIT_MARKET`, or a long symbol — truncate
+   with an ellipsis and carry the full text in a `title` instead of breaking
+   mid-word. */
+.v20-orders-table tbody td { white-space: nowrap; }
+.v20-orders-table tbody td:nth-child(3) strong,
+.v20-orders-table tbody td:nth-child(5) { overflow: hidden; text-overflow: ellipsis; }
+/* The coin icon is a fixed 20px `inline-flex` box with a 7px gap, so the symbol
+   takes the remainder. Same cell pattern as `.v20-positions-table td > span`. */
+.v20-orders-table tbody td:nth-child(3) strong { display: inline-block; max-width: calc(100% - 27px); vertical-align: middle; }
+
+/* Filled / Size: the 92px inline progress bar plus the quantity text asked for
+   about 190px on a single line, which no realistic column width could give it.
+   Putting the bar on its own full-width line reads better at every width and is
+   what lets this column hand ~76px back to Status and Time.
+
+   The quantity line holds a pair, so it is the one cell whose width scales with
+   the magnitude of the data rather than with a known format. Six-digit sizes fit
+   at every desktop width; a seven-digit pair such as `1,234,567 / 2,000,000`
+   reaches the column edge, and because the row cannot grow a second line the
+   only alternatives are overlapping the Avg. Fill column or an ellipsis. It
+   ellipsises, and the cell carries the exact unrounded pair in a `title` — the
+   numbers themselves are never rounded or abbreviated. */
+.v20-orders-table tbody td:nth-child(6) > span { display: block; overflow: hidden; text-overflow: ellipsis; }
+.v20-orders-table tbody td:nth-child(6) .v20-progress { display: block; width: 100%; margin: 3px 0 0; }
 .v20-progress { display: inline-block; width: 92px; height: 5px; margin-left: 8px; border-radius: 9px; background: #e6ebe8; vertical-align: middle; overflow: hidden; }
 .v20-progress i { display: block; height: 100%; border-radius: inherit; background: var(--v20-green); }
 .v20-radio { width: 10px; height: 10px; border: 1px solid #bdc9c1; border-radius: 50%; }
@@ -540,13 +603,17 @@
   .apex-workspace:has(.v20-reference-page) .apex-stage { grid-template-rows: 56px minmax(0,1fr) !important; }
   .apex-workspace:has(.v20-reference-page) .apex-header { min-height: 56px !important; padding-inline: 14px !important; }
   .apex-workspace:has(.v20-reference-page) .apex-search { width: 340px !important; min-height: 36px !important; border-radius: 10px !important; }
-  .apex-workspace:has(.v20-reference-page) .apex-sidebar { padding: 10px 10px 9px !important; }
-  .apex-workspace:has(.v20-reference-page) .apex-logo { min-height: 45px !important; padding: 0 10px 14px !important; }
-  .apex-workspace:has(.v20-reference-page) .apex-logo > img { width: 29px !important; height: 29px !important; }
-  .apex-workspace:has(.v20-reference-page) .apex-logo span { font-size: 18px !important; }
-  .apex-workspace:has(.v20-reference-page) .apex-nav button,
-  .apex-workspace:has(.v20-reference-page) .apex-sidebar-bottom > button { min-height: 35px !important; border-radius: 10px !important; font-size: 10px !important; }
-  .apex-workspace:has(.v20-reference-page) .apex-system-card { min-height: 70px !important; }
+  /* The global navigation rail is owned by src/styles/workspace-shell.css and must
+     not change geometry per route. This band used to re-declare the rail here
+     (`.apex-sidebar` padding 10/9, `.apex-logo` min-height 45 + 29px mark + 18px
+     wordmark, `.apex-nav button` / `.apex-sidebar-bottom > button` min-height 35,
+     `.apex-system-card` min-height 70). Because `:has()` contributes its argument's
+     specificity, those selectors scored (0,3,x) and outranked the shell's (0,2,x)
+     rules, so opening the only `.v20-reference-page` route (Positions) silently
+     re-inflated the rail: rows 35px instead of 33px and a 70px status card, which
+     overran the 753px vertical budget and brought the rail scrollbar back on that
+     one route. `min-height` also beats `height`, so the shell could not win by
+     lowering `height` alone. Removed: the rail is now identical on all 15 routes. */
 }
 
 /* ===== APEX integrated appearance system ==================================
@@ -2698,10 +2765,22 @@
   height: 16px;
   stroke-width: 1.9;
 }
+/* The six KPI values are the reason this page exists, so they get the largest
+   type the 6-up track can hold rather than a size small enough that overflow
+   never happens. At 1368 the main column is ~888px, so a card is
+   (888 - 5 x 10px gap) / 6 = ~139px and its content box is ~113px after the
+   12px side padding and the border. A 15-character worst case such as
+   `-$1,284,503.22` sits at ~113px at 14px/500, which is why the clamp caps
+   there instead of climbing with the viewport. Anything longer now ellipsises
+   inside its own card — the previous `overflow: visible` let a long value bleed
+   across the neighbouring card instead, which is what the successive type
+   shrinks in this file were compensating for. `SoftMetric` carries the full
+   untruncated string in a `title`. */
 .v20-portfolio-page .v20-metric > strong {
   max-width: 100%;
   margin: 7px 0 2px;
-  overflow: visible;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: #192941;
   font-size: 13.6px;
   line-height: 1.12;
@@ -3300,15 +3379,27 @@
   box-shadow: var(--v20-shadow);
 }
 
+/* These three rules keep the `.apex-shell` prefix on purpose. `interaction-polish.css`
+   is imported after this file and sets the shared `.apex-shell .v20-metric` scale
+   (label 9.5px / value 16.5px / detail 9px) at the same (0,2,1) specificity as the
+   page-scoped rules above, so a `.v20-portfolio-page` selector alone loses the tie
+   on import order and the 6-up cards jump to the 5-up type scale. The extra class
+   here is the only thing holding the page's own scale.
+
+   The sizes below were 7.2 / 12 / 6.5px — the smallest type anywhere in the app and
+   well under the 8px floor the rest of the design system uses. They are raised to
+   the floor and, for the value, made fluid so narrower laptops still fit. Every one
+   of these three elements ellipsises (label via `> span:last-child`, value and
+   detail above), so a long string truncates instead of forcing another shrink. */
 .apex-shell .v20-portfolio-page .v20-metric-top {
-  font-size: 7.2px;
+  font-size: 8.5px;
 }
 
 .apex-shell .v20-portfolio-page .v20-metric > strong {
   max-width: 100%;
-  font-size: 12px;
+  font-size: clamp(12.5px, 1vw, 14px);
   font-weight: 500;
-  line-height: 1.08;
+  line-height: 1.22;
   white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;
@@ -3316,7 +3407,7 @@
 
 .apex-shell .v20-portfolio-page .v20-metric > small {
   max-width: calc(100% - 48px);
-  font-size: 6.5px;
+  font-size: 8px;
   white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;

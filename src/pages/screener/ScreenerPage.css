@@ -2,9 +2,9 @@
  *
  * Layering rules followed here:
  *  - every colour, radius, shadow and duration comes from src/styles/tokens.css;
- *  - the results table reuses the shared .apex-v3-table / .apex-v3-table-scroll
- *    contract and this file only adds column widths and screener-specific cells,
- *    so there is no second table implementation to keep in sync;
+ *  - the ranked results are row cards, not a table: they still sit inside the
+ *    shared .apex-v3-table-scroll scroll contract, so there is no second
+ *    scroll/overflow implementation to keep in sync;
  *  - every selector is scoped under .apex-screener-page, so nothing here can
  *    reach another route;
  *  - no !important: the shared rules are equal-specificity single classes, and a
@@ -16,10 +16,28 @@
      reasons and warnings all read as sentences and wrap badly below this. */
   grid-template-columns: minmax(0, 1fr) 322px;
   gap: 10px;
+  /* The project ships no @font-face and no font CDN link, so the only honest
+     "matches the app" choice is a stack that already resolves elsewhere in the
+     build: --screener-text mirrors the shell UI face (workspace-shell.css) and
+     --screener-mono is the same market-data stack reference-ui.css uses.
+     Declaring a family the build never loads would silently fall back and look
+     foreign on some machines. */
+  --screener-text: Inter, "Segoe UI", system-ui, sans-serif;
+  --screener-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 .apex-screener-page .apex-page-main {
   overflow: hidden;
+  border-radius: var(--radius-panel);
+  background:
+    radial-gradient(circle at 9% 4%, color-mix(in srgb, var(--apex-green-100) 55%, transparent), transparent 27%),
+    linear-gradient(180deg, color-mix(in srgb, var(--apex-surface) 68%, transparent), transparent 38%);
+}
+
+.apex-screener-page .apex-context-panel {
+  border-color: color-mix(in srgb, var(--apex-green-300) 40%, var(--apex-border));
+  background: linear-gradient(180deg, var(--apex-surface), var(--apex-surface-soft));
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--apex-ink-950) 7%, transparent);
 }
 
 /* Flex rather than fixed template rows because the stale-data banner is
@@ -34,20 +52,121 @@
 
 .apex-screener-page .apex-v3-heading {
   flex: 0 0 auto;
+  height: auto;
   min-height: 44px;
   padding: 0 2px;
 }
 
-.apex-screener-page .apex-v3-heading .spin {
+.apex-screener-hero {
+  min-height: 56px;
+  padding: 5px 4px 4px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.apex-screener-hero-mark {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--apex-green-200);
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--apex-surface), var(--apex-green-050));
+  color: var(--apex-green-700);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--apex-green-500) 14%, transparent);
+}
+
+.apex-screener-hero-mark::before,
+.apex-screener-hero-mark::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid color-mix(in srgb, var(--apex-green-500) 22%, transparent);
+  border-radius: 50%;
+  animation: apex-screener-radar 2.8s ease-out infinite;
+}
+
+.apex-screener-hero-mark::after { animation-delay: 1.4s; }
+
+.apex-screener-hero-mark i {
+  width: 7px;
+  height: 7px;
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid var(--apex-canvas);
+  border-radius: 50%;
+  background: var(--apex-green-500);
+  box-sizing: content-box;
+}
+
+.apex-screener-hero-copy { min-width: 0; }
+
+.apex-screener-hero-copy > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--apex-green-700);
+  font-size: 7.5px;
+  font-weight: 760;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.apex-screener-hero-copy h1 {
+  margin: 2px 0 0;
+  color: var(--apex-ink-950);
+  font-size: 20px;
+  line-height: 1.05;
+  font-weight: 720;
+  letter-spacing: -.025em;
+}
+
+.apex-screener-hero-copy p {
+  margin: 3px 0 0;
+  color: var(--apex-muted-600);
+  font-size: 8.5px;
+}
+
+.apex-screener-page .spin {
   animation: apex-screener-spin 900ms linear infinite;
+}
+
+.apex-screener-heading-actions,
+.apex-screener-view-tools {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 @keyframes apex-screener-spin {
   to { transform: rotate(360deg); }
 }
 
+@keyframes apex-screener-radar {
+  0% { opacity: .65; transform: scale(.7); }
+  75%, 100% { opacity: 0; transform: scale(1.25); }
+}
+
+/* Every animation on this page is decorative: the same information is present
+   without it, so reduced-motion callers lose nothing by switching it all off.
+   Each selector is page-scoped so it outranks the rule that declares the
+   animation — the score ring is declared later in this file, so an
+   equal-specificity override here would have lost the cascade and left the ring
+   animating for exactly the users who asked it not to. */
 @media (prefers-reduced-motion: reduce) {
-  .apex-screener-page .apex-v3-heading .spin { animation: none; }
+  .apex-screener-page .spin,
+  .apex-screener-page .apex-screener-hero-mark::before,
+  .apex-screener-page .apex-screener-hero-mark::after,
+  .apex-screener-page .apex-screener-row,
+  .apex-screener-page .apex-screener-equalizer i,
+  .apex-screener-page .apex-screener-score-glyph .value { animation: none; }
+
+  .apex-screener-page .apex-screener-row:hover,
+  .apex-screener-page .apex-screener-row:focus-within { transform: none; }
 }
 
 /* ---------- status chips ---------- */
@@ -70,7 +189,8 @@
   gap: 4px;
   border: 1px solid var(--apex-border);
   border-radius: 999px;
-  background: var(--apex-surface);
+  background: color-mix(in srgb, var(--apex-surface) 88%, var(--apex-green-050));
+  box-shadow: 0 2px 7px color-mix(in srgb, var(--apex-ink-950) 4%, transparent);
   white-space: nowrap;
 }
 
@@ -81,8 +201,116 @@
   font-variant-numeric: tabular-nums;
 }
 
+.apex-screener-chips > span > svg { color: var(--apex-green-600); }
+
 .apex-screener-chips .apex-v3-status {
   margin-left: auto;
+}
+
+/* ---------- reusable screens and fast presets ---------- */
+
+.apex-screener-screenbar {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 3px 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  border: 1px solid var(--apex-border);
+  border-radius: var(--radius-panel);
+  background: color-mix(in srgb, var(--apex-surface) 92%, var(--apex-green-050));
+  box-shadow: 0 5px 16px color-mix(in srgb, var(--apex-ink-950) 4%, transparent);
+  scrollbar-width: thin;
+}
+
+.apex-screener-presets {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.apex-screener-presets button {
+  min-height: 22px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--apex-muted-600);
+  font-size: 8px;
+  font-weight: 680;
+  cursor: pointer;
+  transition: color var(--duration-fast), background-color var(--duration-fast), transform var(--duration-fast);
+}
+
+.apex-screener-presets button > span {
+  width: 4px;
+  height: 4px;
+  margin-right: 5px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--apex-muted-400);
+  vertical-align: middle;
+  transition: transform var(--duration-fast), background-color var(--duration-fast);
+}
+
+.apex-screener-presets button:hover {
+  background: var(--apex-green-050);
+  color: var(--apex-green-700);
+}
+
+.apex-screener-presets button.active {
+  background: var(--apex-green-050);
+  color: var(--apex-green-700);
+  box-shadow: inset 0 0 0 1px var(--apex-green-200);
+}
+
+.apex-screener-presets button.active > span {
+  background: var(--apex-green-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--apex-green-500) 14%, transparent);
+  transform: scale(1.15);
+}
+
+.apex-screener-screen-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 2px 3px;
+  background: var(--apex-divider);
+}
+
+.apex-screener-saved-select {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--apex-muted-600);
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.apex-screener-saved-select select,
+.apex-screener-view-tools select,
+.apex-screener-save-form input {
+  height: 24px;
+  border: 1px solid var(--apex-border);
+  border-radius: var(--radius-control);
+  background: var(--apex-surface);
+  color: var(--apex-ink-900);
+  font-size: 8.5px;
+}
+
+.apex-screener-saved-select select { width: 112px; }
+
+.apex-screener-save-form {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.apex-screener-save-form input {
+  width: 118px;
+  padding: 0 7px;
 }
 
 .apex-screener-stale {
@@ -117,8 +345,10 @@
   gap: 8px;
   border: 1px solid var(--apex-border);
   border-radius: var(--radius-panel);
-  background: var(--apex-surface-soft);
-  box-shadow: var(--apex-shadow-xs);
+  border-color: color-mix(in srgb, var(--apex-green-300) 42%, var(--apex-border));
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--apex-green-050) 68%, var(--apex-surface)), var(--apex-surface-soft));
+  box-shadow: 0 7px 20px color-mix(in srgb, var(--apex-ink-950) 5%, transparent);
 }
 
 .apex-screener-filter-lead {
@@ -198,68 +428,282 @@
   min-height: 28px;
 }
 
-/* ---------- results table ---------- */
+.apex-screener-advanced-toggle.active {
+  border-color: var(--apex-green-300);
+  background: var(--apex-green-050);
+  color: var(--apex-green-700);
+}
 
+.apex-screener-advanced {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(82px, 1fr)) repeat(2, minmax(118px, 1.35fr)) auto;
+  align-items: end;
+  gap: 8px;
+  border: 1px solid var(--apex-green-300);
+  border-radius: var(--radius-panel);
+  background: var(--apex-green-050);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--apex-surface) 75%, transparent);
+}
+
+.apex-screener-check {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--apex-ink-700);
+  font-size: 8.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.apex-screener-check input { accent-color: var(--apex-green-600); }
+
+.apex-screener-view-tools select { width: 92px; padding: 0 5px; }
+
+.apex-screener-page .apex-v3-panel-head > .apex-screener-view-tools {
+  flex-direction: row;
+}
+
+.apex-screener-view-tools {
+  padding: 2px;
+  border: 1px solid var(--apex-border);
+  border-radius: 9px;
+  background: var(--apex-surface-soft);
+}
+
+.apex-screener-view-tools > button {
+  min-height: 23px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--apex-muted-600);
+  font-size: 7.5px;
+  font-weight: 680;
+  cursor: pointer;
+  transition: color var(--duration-fast), background-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.apex-screener-view-tools > button.active {
+  background: var(--apex-surface);
+  color: var(--apex-green-700);
+  box-shadow: 0 2px 7px color-mix(in srgb, var(--apex-ink-950) 7%, transparent);
+}
+
+/* ---------- ranked results: row cards ---------- */
+
+/* The panel drives its own vertical rhythm instead of borrowing
+   `.apex-v3-table-panel`'s `auto minmax(0,1fr) auto` grid. The sort bar only
+   renders when there are rows, so a fixed three-row template would hand the
+   flexible track to whichever child happened to be second and collapse the
+   results body to its content height — the exact clipping failure this page is
+   being reworked to avoid. "Last child absorbs the slack" is correct for both
+   the two-child (empty/loading) and three-child (populated) shapes. */
 .apex-screener-page .apex-screener-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-color: color-mix(in srgb, var(--apex-green-300) 32%, var(--apex-border));
+  border-radius: var(--radius-card);
+  background: var(--apex-surface-soft);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--apex-ink-950) 6%, transparent);
+}
+
+.apex-screener-page .apex-screener-results > * { flex: 0 0 auto; }
+
+.apex-screener-page .apex-screener-results > :last-child {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.apex-screener-page .apex-screener-table-scroll {
-  border-top: 1px solid var(--apex-divider);
+.apex-screener-page .apex-screener-results > .apex-v3-panel-head {
+  min-height: 43px;
+  padding-block: 7px;
+  border-bottom: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--apex-green-050) 55%, var(--apex-surface)), var(--apex-surface));
 }
 
-.apex-screener-page .apex-screener-table th:nth-child(1) { width: 38px; }
-.apex-screener-page .apex-screener-table th:nth-child(2) { width: 154px; }
-.apex-screener-page .apex-screener-table th:nth-child(3) { width: 74px; }
-.apex-screener-page .apex-screener-table th:nth-child(4) { width: 104px; }
-.apex-screener-page .apex-screener-table th:nth-child(5) { width: 96px; }
-.apex-screener-page .apex-screener-table th:nth-child(6) { width: 78px; }
-.apex-screener-page .apex-screener-table th:nth-child(7) { width: 92px; }
-.apex-screener-page .apex-screener-table th:nth-child(8) { width: 82px; }
-
-.apex-screener-page .apex-screener-table td.number,
-.apex-screener-page .apex-screener-table th.number {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+/* Sorting used to live in the table header cells. With rows there is no header,
+   so the same sort keys are exposed as an explicit chip row: every key that was
+   reachable before is still reachable, and the active chip carries the
+   direction chevron so the current order is readable without hovering. */
+.apex-screener-sortbar {
+  padding: 0 9px 7px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-/* Sort affordance: the whole header cell is one button so the hit target matches
-   the column, and the direction chevron sits inside that same control. */
-.apex-screener-page .apex-screener-table th button {
-  width: 100%;
-  padding: 0;
+.apex-screener-sortbar-lead {
+  margin-right: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--apex-muted-600);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.apex-screener-page .apex-screener-sortbar button {
+  min-height: 22px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
+  border: 1px solid var(--apex-border);
+  border-radius: 999px;
+  background: var(--apex-surface);
+  color: var(--apex-muted-600);
+  font-family: inherit;
+  font-size: 8.5px;
+  font-weight: 650;
   cursor: pointer;
+  transition: border-color var(--duration-fast), background-color var(--duration-fast), color var(--duration-fast);
 }
 
-.apex-screener-page .apex-screener-table th.number button {
-  justify-content: flex-end;
-}
-
-.apex-screener-page .apex-screener-table th button:hover {
+.apex-screener-page .apex-screener-sortbar button:hover {
+  border-color: var(--apex-green-300);
   color: var(--apex-green-700);
 }
 
-.apex-screener-page .apex-screener-table th button svg {
-  flex: 0 0 auto;
+.apex-screener-page .apex-screener-sortbar button.active {
+  border-color: color-mix(in srgb, var(--apex-green-500) 46%, var(--apex-border));
+  background: var(--apex-green-050);
+  color: var(--apex-green-700);
 }
 
-.apex-screener-page .apex-screener-table th button svg.idle {
-  opacity: .3;
+.apex-screener-page .apex-screener-sortbar button svg { flex: 0 0 auto; }
+
+.apex-screener-page .apex-screener-stream {
+  /* 3px of top slack so the shared :focus-visible ring on the first row is not
+     shaved off by the scroll container's edge; the other three sides already
+     have more padding than the ring is wide. */
+  padding: 3px 7px 7px;
+  border-top: 0;
+  background: linear-gradient(180deg, var(--apex-surface-soft), color-mix(in srgb, var(--apex-canvas) 72%, var(--apex-surface)));
 }
 
-.apex-screener-symbol {
+.apex-screener-rows {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.apex-screener-row {
+  --row-accent: var(--apex-green-500);
+  --row-accent-soft: var(--apex-green-050);
+  position: relative;
+  padding-right: 9px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--apex-border);
+  border-radius: 13px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--row-accent-soft) 58%, var(--apex-surface)), var(--apex-surface) 34%);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--apex-ink-950) 4%, transparent);
+  /* `backwards`, not `both`: a filled forwards animation keeps applying its
+     final `transform` at animation-origin priority, which would silently
+     outrank the hover lift below. Backwards fill still hides the row during
+     its stagger delay, and the end frame equals the element's resting style,
+     so releasing the fill produces no jump. */
+  animation: apex-screener-row-in 420ms cubic-bezier(.2,.7,.2,1) backwards;
+  animation-delay: calc(var(--row-index) * 28ms);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
+}
+
+.apex-screener-row.short {
+  --row-accent: var(--apex-red-500);
+  --row-accent-soft: var(--apex-red-050);
+}
+
+/* An inset rail rather than a left border, so selecting a row cannot change its
+   content box and re-flow every metric one pixel sideways. It is inset from the
+   corners and the row deliberately does NOT clip its overflow: the shared
+   :focus-visible contract in interaction-polish.css is a box-shadow ring, and
+   `overflow: hidden` here would shave that ring off the row-wide button on
+   three sides. */
+.apex-screener-row::before {
+  content: '';
+  position: absolute;
+  inset: 9px auto 9px 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--row-accent);
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.apex-screener-row:hover,
+.apex-screener-row:focus-within {
+  border-color: color-mix(in srgb, var(--row-accent) 38%, var(--apex-border));
+  box-shadow: 0 7px 16px color-mix(in srgb, var(--row-accent) 13%, transparent);
+  transform: translateY(-1px);
+}
+
+.apex-screener-row.selected {
+  border-color: color-mix(in srgb, var(--row-accent) 52%, var(--apex-border));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--row-accent-soft) 90%, var(--apex-surface)), var(--apex-surface) 62%);
+}
+
+.apex-screener-row.selected::before { opacity: 1; }
+
+@keyframes apex-screener-row-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* A real button, so Enter/Space, the shared `.apex-shell button:focus-visible`
+   ring and screen-reader semantics all come for free, and the row actions can
+   be siblings instead of interactive elements nested inside a clickable row. */
+.apex-screener-page .apex-screener-row-main {
+  min-height: 60px;
+  padding: 8px 4px 8px 11px;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 11px;
   min-width: 0;
+  border: 0;
+  border-radius: 13px 0 0 13px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.apex-screener-row-rank {
+  flex: 0 0 auto;
+  min-width: 17px;
+  color: var(--apex-muted-600);
+  font-family: var(--screener-mono);
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* The identity block is the only element allowed to flex, so it absorbs all
+   horizontal pressure and asset names are what truncate. Numbers are fixed-size
+   further down the row and therefore can never be cut off mid-digit. */
+.apex-screener-symbol {
+  flex: 1 1 150px;
+  min-width: 84px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
 }
 
 .apex-screener-symbol > span {
@@ -270,8 +714,11 @@
   display: block;
   overflow: hidden;
   color: var(--apex-ink-900);
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 730;
+  letter-spacing: -.01em;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .apex-screener-symbol small {
@@ -279,42 +726,186 @@
   overflow: hidden;
   margin-top: 1px;
   color: var(--apex-muted-600);
-  font-size: 7.5px;
+  font-family: var(--screener-mono);
+  font-size: 8.5px;
+  letter-spacing: .01em;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.apex-screener-page .apex-screener-score-cell {
+.apex-screener-score-glyph {
+  --score-color: var(--apex-green-500);
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.apex-screener-score-glyph.tone-watchlist { --score-color: var(--apex-blue-500, #2f8de4); }
+.apex-screener-score-glyph.tone-caution { --score-color: var(--apex-orange-500); }
+.apex-screener-score-glyph.tone-blocked { --score-color: var(--apex-red-500); }
+
+.apex-screener-score-glyph svg {
+  width: 36px;
+  height: 36px;
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.apex-screener-score-glyph circle {
+  fill: none;
+  stroke-width: 3;
+}
+
+.apex-screener-score-glyph .track { stroke: var(--apex-divider); }
+
+.apex-screener-score-glyph .value {
+  stroke: var(--score-color);
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--score-ring));
+  animation: apex-screener-ring-in 700ms cubic-bezier(.2,.7,.2,1) both;
+}
+
+.apex-screener-score-glyph b {
+  position: relative;
+  color: var(--apex-ink-950);
+  font-family: var(--screener-mono);
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes apex-screener-ring-in {
+  from { stroke-dashoffset: 100; }
+}
+
+/* Evidence equalizer: one bar per published score factor, so the row shows *why*
+   the scanner ranked it, not just the number. Bars read the factor sub-scores
+   verbatim — nothing here recomputes or normalizes the score. An unavailable
+   factor is drawn as a full-height hatch rather than a short bar, because a
+   short bar would read as "scored low" instead of "not reported". */
+.apex-screener-equalizer {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 22px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.apex-screener-equalizer i {
+  width: 5px;
+  height: var(--bar);
+  min-height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--row-accent), color-mix(in srgb, var(--row-accent) 40%, var(--apex-surface)));
+  transform-origin: 50% 100%;
+  animation: apex-screener-bar-in 460ms cubic-bezier(.2,.7,.2,1) backwards;
+  animation-delay: calc(var(--bar-index) * 40ms);
+}
+
+.apex-screener-equalizer i.absent {
+  height: 100%;
+  background: repeating-linear-gradient(135deg, var(--apex-divider) 0 3px, transparent 3px 6px);
+}
+
+@keyframes apex-screener-bar-in {
+  from { opacity: 0; transform: scaleY(0); }
+}
+
+.apex-screener-bias {
+  flex: 0 0 auto;
+  min-height: 22px;
+  padding: 0 7px 0 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--apex-green-200);
+  border-radius: 999px;
+  background: var(--apex-green-050);
+  color: var(--apex-green-700);
+  font-size: 7.5px;
+  font-weight: 720;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.apex-screener-bias.short {
+  border-color: color-mix(in srgb, var(--apex-red-500) 28%, var(--apex-border));
+  background: var(--apex-red-050);
+  color: var(--apex-red-500);
+}
+
+/* Metrics and state wrap onto a second line under pressure instead of being
+   clipped: each cell stays `flex: 0 0 auto`, so a narrow row gets taller rather
+   than losing digits. */
+.apex-screener-row-metrics {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 12px;
+}
+
+.apex-screener-metric {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   line-height: 1.15;
 }
 
-.apex-screener-page .apex-screener-score-cell strong {
-  display: block;
+.apex-screener-metric > span {
+  color: var(--apex-muted-600);
+  font-size: 7.5px;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.apex-screener-metric > b {
   color: var(--apex-ink-950);
-  font-size: 11px;
-  font-weight: 720;
+  font-family: var(--screener-mono);
+  font-size: 10.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.apex-screener-score-track {
-  display: block;
-  height: 3px;
-  margin-top: 3px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--apex-divider);
+.apex-screener-metric.positive > b { color: var(--apex-positive); }
+.apex-screener-metric.negative > b { color: var(--apex-negative); }
+
+/* An absent reading is prose, not data. Dropping back to the UI face keeps it
+   from ever being mistaken for a monospaced value in the same column. */
+.apex-screener-metric > b .apex-screener-unavailable {
+  font-family: var(--screener-text);
+  font-weight: 600;
 }
 
-.apex-screener-score-track i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--apex-green-500);
+.apex-screener-row-state {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 7px;
 }
 
-.apex-screener-page .apex-screener-table td.positive { color: var(--apex-positive); }
-.apex-screener-page .apex-screener-table td.negative { color: var(--apex-negative); }
-.apex-screener-page .apex-screener-table td.neutral { color: var(--apex-muted-600); }
+/* Badges wrap as whole units; shrinking one would clip its label, and a clipped
+   readiness tier is worse than a taller row. */
+.apex-screener-row-state > .apex-v3-status {
+  flex: 0 0 auto;
+}
 
 .apex-screener-guard {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -327,6 +918,7 @@
 .apex-screener-guard.fail { color: var(--apex-red-500); }
 
 .apex-screener-page .apex-screener-row-actions {
+  padding-left: 3px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -336,6 +928,9 @@
 .apex-screener-page .apex-screener-row-actions .apex-v3-icon-button {
   width: 26px;
   min-height: 26px;
+  border-color: transparent;
+  border-radius: 9px;
+  background: var(--apex-surface-soft);
 }
 
 .apex-screener-page .apex-screener-row-actions .apex-v3-icon-button.active {
@@ -347,7 +942,80 @@
 .apex-screener-page .apex-screener-row-actions .apex-v3-button {
   min-height: 26px;
   padding: 0 8px;
+  border-radius: 9px;
+  background: var(--apex-surface-soft);
 }
+
+/* ---------- visual signal map ---------- */
+
+.apex-screener-map {
+  height: 100%;
+  min-height: 0;
+  padding: 7px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+  grid-auto-rows: minmax(86px, 1fr);
+  gap: 6px;
+  overflow-y: auto;
+  border-top: 1px solid var(--apex-divider);
+}
+
+.apex-screener-map-tile {
+  --tile-accent: var(--apex-green-500);
+  padding: 8px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-content: space-between;
+  gap: 3px 7px;
+  overflow: hidden;
+  border: 1px solid var(--apex-border);
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--tile-accent) 9%, transparent), transparent 58%),
+    var(--apex-surface);
+  color: var(--apex-ink-900);
+  text-align: left;
+  box-shadow: var(--apex-shadow-xs);
+  cursor: pointer;
+}
+
+.apex-screener-map-tile.short { --tile-accent: var(--apex-red-500); }
+
+.apex-screener-map-tile::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--signal-strength);
+  height: 2px;
+  background: var(--tile-accent);
+}
+
+.apex-screener-map-tile:hover,
+.apex-screener-map-tile.selected {
+  border-color: color-mix(in srgb, var(--tile-accent) 55%, var(--apex-border));
+  transform: translateY(-1px);
+}
+
+.apex-screener-map-head {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+}
+
+.apex-screener-map-head b { overflow: hidden; font-size: 9px; text-overflow: ellipsis; }
+.apex-screener-map-head em { color: var(--apex-muted-400); font-size: 7.5px; font-style: normal; }
+.apex-screener-map-tile > strong { font-size: 20px; font-weight: 760; font-variant-numeric: tabular-nums; }
+.apex-screener-map-tile > span.positive,
+.apex-screener-map-tile > span.negative,
+.apex-screener-map-tile > span.neutral { align-self: center; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.apex-screener-map-tile > span.positive { color: var(--apex-positive); }
+.apex-screener-map-tile > span.negative { color: var(--apex-negative); }
+.apex-screener-map-tile > span.neutral { color: var(--apex-muted-600); }
+.apex-screener-map-tile > small { grid-column: 1 / -1; color: var(--apex-muted-600); font-size: 7.5px; }
 
 /* ---------- unavailable data, never a stand-in number ---------- */
 
@@ -408,12 +1076,16 @@
 }
 
 .apex-screener-identity {
-  padding: 9px 11px;
+  margin: 7px 7px 0;
+  padding: 9px 10px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 4px 9px;
-  border-bottom: 1px solid var(--apex-divider);
+  border: 1px solid var(--apex-border);
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--apex-surface), color-mix(in srgb, var(--apex-green-050) 58%, var(--apex-surface)));
+  box-shadow: 0 5px 15px color-mix(in srgb, var(--apex-ink-950) 5%, transparent);
 }
 
 .apex-screener-identity > div:not(.apex-screener-identity-badges) {
@@ -444,8 +1116,12 @@
 }
 
 .apex-screener-block {
-  padding: 9px 11px;
-  border-bottom: 1px solid var(--apex-divider);
+  margin: 0 7px 7px;
+  padding: 9px 10px;
+  border: 1px solid var(--apex-border);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--apex-surface) 96%, var(--apex-green-050));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--apex-ink-950) 4%, transparent);
 }
 
 .apex-screener-block h3 {
@@ -455,6 +1131,13 @@
   font-weight: 700;
   letter-spacing: .05em;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.apex-screener-block h3 svg {
+  color: var(--apex-green-600);
 }
 
 .apex-screener-note {
@@ -571,9 +1254,18 @@
 }
 
 .apex-screener-actions {
-  padding: 9px 11px 12px;
+  margin: 0 7px 7px;
+  padding: 9px 10px;
   display: grid;
   gap: 6px;
+  border: 1px solid var(--apex-border);
+  border-radius: 11px;
+  background: var(--apex-surface);
+}
+
+.apex-screener-page .apex-screener-detail .apex-v3-donut {
+  margin-block: 10px 12px;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--donut-color) 14%, transparent);
 }
 
 /* Not defined globally in this project, so the screener scopes its own. */
@@ -592,7 +1284,7 @@
 /* ---------- narrow layouts ---------- */
 
 /* Below the two-column threshold the detail panel stacks under the results
-   instead of squeezing the table into unreadable columns. */
+   instead of squeezing the ranked rows into an unreadable width. */
 @media (max-width: 1180px) {
   .apex-screener-page {
     grid-template-columns: minmax(0, 1fr);
@@ -607,106 +1299,41 @@
   .apex-screener-filters .apex-v3-search-field {
     width: min(240px, 44vw);
   }
+
+  .apex-screener-advanced {
+    grid-template-columns: repeat(3, minmax(104px, 1fr));
+  }
 }
 
-/* Phone / very narrow: the table becomes cards. Each cell already carries a
-   data-label, so the header row can be dropped without losing the labels. */
+/* Phone / very narrow: the summary line is allowed to wrap and the action pair
+   moves under it at full width. The row is already a card, so nothing has to be
+   re-shaped into one — this only relaxes the single-line constraint. */
 @media (max-width: 760px) {
-  .apex-screener-page .apex-screener-table {
-    display: block;
-    table-layout: auto;
+  .apex-screener-row {
+    grid-template-columns: minmax(0, 1fr);
+    padding-right: 0;
   }
 
-  .apex-screener-page .apex-screener-table thead {
-    position: static;
-    display: none;
-  }
-
-  .apex-screener-page .apex-screener-table tbody {
-    display: grid;
-    gap: 8px;
-    padding: 8px 2px;
-  }
-
-  .apex-screener-page .apex-screener-table tbody tr {
-    display: grid;
-    gap: 3px;
+  .apex-screener-page .apex-screener-row-main {
     padding: 9px 11px;
-    border: 1px solid var(--apex-border);
-    border-radius: var(--radius-card);
-    background: var(--apex-surface);
-    box-shadow: var(--apex-shadow-xs);
+    flex-wrap: wrap;
+    gap: 8px 9px;
+    border-radius: 13px 13px 0 0;
   }
 
-  .apex-screener-page .apex-screener-table tbody tr.selected {
-    border-color: var(--apex-green-300);
-    box-shadow: inset 2px 0 0 var(--apex-green-500);
+  .apex-screener-symbol {
+    flex: 1 1 120px;
   }
 
-  .apex-screener-page .apex-screener-table td {
-    height: auto;
-    padding: 1px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    overflow: visible;
-    border-bottom: 0;
-    text-align: left;
-    white-space: normal;
-  }
-
-  .apex-screener-page .apex-screener-table td::before {
-    content: attr(data-label);
-    flex: 0 0 auto;
-    color: var(--apex-muted-600);
-    font-size: 8px;
-    font-weight: 700;
-  }
-
-  /* Rank and symbol form the card header, so they keep their own emphasis and
-     drop the repeated label. */
-  .apex-screener-page .apex-screener-table td[data-label="Rank"] {
-    order: -2;
-    color: var(--apex-muted-600);
-    font-size: 8px;
-    font-weight: 700;
-  }
-
-  .apex-screener-page .apex-screener-table td[data-label="Symbol"] {
-    order: -1;
-    padding-bottom: 5px;
-    margin-bottom: 3px;
-    border-bottom: 1px solid var(--apex-divider);
-  }
-
-  .apex-screener-page .apex-screener-table td[data-label="Symbol"]::before {
-    content: none;
-  }
-
-  .apex-screener-page .apex-screener-score-cell {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 4px 10px;
-  }
-
-  .apex-screener-page .apex-screener-score-cell strong {
-    text-align: right;
-  }
-
-  .apex-screener-page .apex-screener-score-cell .apex-screener-score-track {
-    grid-column: 1 / -1;
-    margin-top: 0;
+  .apex-screener-row-metrics,
+  .apex-screener-row-state {
+    flex: 1 1 100%;
+    justify-content: flex-start;
   }
 
   .apex-screener-page .apex-screener-row-actions {
-    padding-top: 6px;
+    padding: 0 11px 9px;
     justify-content: stretch;
-  }
-
-  .apex-screener-page .apex-screener-row-actions::before {
-    content: none;
   }
 
   .apex-screener-page .apex-screener-row-actions .apex-v3-button {
@@ -729,5 +1356,21 @@
   .apex-screener-reset {
     margin-left: 0;
     flex: 1 1 100%;
+  }
+
+  .apex-screener-heading-actions .apex-v3-button {
+    padding-inline: 7px;
+  }
+
+  .apex-screener-screenbar {
+    align-items: flex-start;
+  }
+
+  .apex-screener-advanced {
+    grid-template-columns: repeat(2, minmax(118px, 1fr));
+  }
+
+  .apex-screener-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

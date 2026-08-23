@@ -40,6 +40,7 @@ import { HistoryPage } from './pages/history/HistoryPage';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { HelpPage } from './pages/help/HelpPage';
+import type { ScanMeta } from './components/overview/overviewModel';
 import { buildWorkspaceInsights, type WorkspaceInsights } from './services/workspaceInsights';
 import type { TradePlan } from './services/tradePlan';
 import { playAlertTone, showBrowserNotification } from './lib/notifications';
@@ -85,6 +86,8 @@ interface CandidatesPayload {
   longCandidates?: CandidateScore[];
   shortCandidates?: CandidateScore[];
   scanTimestamp?: number;
+  scannedCount?: number;
+  activeCandidateCount?: number;
   shadowMode?: boolean;
   directionShadowMode?: boolean;
   dataState?: DataState;
@@ -151,6 +154,7 @@ export default function App() {
   const [sentiment, setSentiment] = useState<SentimentComposite | null>(null);
   const [longCandidates, setLongCandidates] = useState<CandidateScore[]>([]);
   const [shortCandidates, setShortCandidates] = useState<CandidateScore[]>([]);
+  const [scanMeta, setScanMeta] = useState<ScanMeta | null>(null);
   const [marketLoading, setMarketLoading] = useState(true);
 
   const [selectedSymbol, setSelectedSymbol] = useState('BTC-USDT');
@@ -300,6 +304,11 @@ export default function App() {
         const nextShort = lifecycle.shortCandidates;
         setLongCandidates(nextLong);
         setShortCandidates(nextShort);
+        setScanMeta({
+          scannedCount: payload?.scannedCount ?? rawLong.length,
+          activeCandidateCount: payload?.activeCandidateCount ?? 0,
+          scanTimestamp: payload?.scanTimestamp ?? null,
+        });
         void persistCandidateShadowLogs({
           longCandidates: nextLong,
           shortCandidates: nextShort,
@@ -581,6 +590,9 @@ export default function App() {
         settings={settings}
         snapshot={snapshot}
         account={accountProps}
+        insights={insights}
+        reconciliation={reconciliation}
+        autopilotController={autopilotController}
         selectedTicker={selectedTicker}
         chartCandles={chartCandles}
         chartOrderBook={chartOrderBook}
@@ -588,6 +600,7 @@ export default function App() {
         chartFeed={chartFeed}
         tradePlanLong={detailTradePlanLong}
         tradePlanShort={detailTradePlanShort}
+        scanMeta={scanMeta}
         onRetryChart={retrySelectedMarket}
         onChartIntervalChange={setChartInterval}
         onNavigate={(destination) => navigate(destination)}

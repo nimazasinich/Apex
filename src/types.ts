@@ -2,9 +2,9 @@
  * APEX-NEXT Core Domain & Terminal Types
  * All domain models, exchange data structures, and terminal configuration types.
  */
-import type { ScanGateSnapshot } from './services/scannerCore';
+import type { ScanGateSnapshot } from './contracts/scanner/scanContracts';
 import type { EdgeId } from './contracts/realtime/edgeEvidence';
-import type { StrategyValidationSubjectIdentity } from './services/strategyValidationSubject';
+import type { StrategyValidationSubjectIdentity } from './services/strategyValidationContracts';
 
 export type DataState = 'live' | 'degraded' | 'not_configured' | 'unavailable';
 
@@ -936,6 +936,13 @@ export interface StrategyReplayTrade {
   pnlPct: number;
   grossPnlPct?: number;
   transactionCostPct?: number;
+  /** Fraction of portfolio equity exposed after the portfolio risk governor. */
+  exposureFraction?: number;
+  /** Portfolio-return contribution after exposure scaling. */
+  portfolioPnlPct?: number;
+  /** Raw price-return fields retained so nested strategy routers can re-govern once at portfolio level. */
+  unscaledGrossPnlPct?: number;
+  unscaledTransactionCostPct?: number;
   barsHeld: number;
   rawScore?: number;
   confidence?: number;
@@ -960,6 +967,15 @@ export interface StrategyReplaySummary {
   replayMode?: string;
   configOverrides?: Array<{ field: string; configured: number | string; effective: number | string; reason: string; policyVersion?: string }>;
   effectiveScoreWeights?: Partial<ScoringWeights>;
+  riskPolicy?: {
+    policyVersion: string;
+    maxGrossExposureFraction: number;
+    maxRiskPerTradePct: number;
+    softDrawdownPct: number;
+    hardDrawdownPct: number;
+    skippedAfterShutdown: number;
+    throttledTrades: number;
+  };
   optimizationProfile?: {
     revision: number;
     promotedAt: number;

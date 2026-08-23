@@ -127,6 +127,30 @@ describe('screener model', () => {
       .toEqual([88, 74]);
   });
 
+  it('combines advanced crypto filters without admitting unknown readings', () => {
+    const rows = buildScreenerRows(universe, tickers);
+    const visible = applyScreenerFilters(rows, {
+      ...DEFAULT_SCREENER_FILTERS,
+      performance: 'GAINERS',
+      guard: 'PASS',
+      confluence: 'ALIGNED',
+      funding: 'POSITIVE',
+      dataQuality: 'LIVE',
+      minMomentum: 70,
+    });
+    expect(visible.map((row) => row.symbol)).toEqual(['BTC-USDT', 'SOL-USDT']);
+  });
+
+  it('filters to favorites only using the shared watchlist identity', () => {
+    const rows = buildScreenerRows(universe, tickers);
+    const visible = applyScreenerFilters(
+      rows,
+      { ...DEFAULT_SCREENER_FILTERS, favoritesOnly: true },
+      new Set(['ETH-USDT', 'DOGE-USDT']),
+    );
+    expect(visible.map((row) => row.symbol)).toEqual(['ETH-USDT', 'DOGE-USDT']);
+  });
+
   it('a raised liquidity floor excludes rows whose turnover never arrived', () => {
     const rows = buildScreenerRows([candidate({ symbol: 'AAA-USDT', turnover24h: Number.NaN })], []);
     expect(applyScreenerFilters(rows, { ...DEFAULT_SCREENER_FILTERS, minTurnoverUsd: 1 })).toEqual([]);
@@ -158,6 +182,32 @@ describe('screener model', () => {
     expect(rows[0].openInterest.note).toBeTruthy();
     // Spread/depth has no market-wide source at all, so it is always declared absent.
     expect(rows[0].spreadDepth.state).toBe('UNAVAILABLE');
+  });
+
+  it('derives the labeled 24h high-low range only from a valid ticker range', () => {
+    const [row] = buildScreenerRows(
+      [candidate({ symbol: 'AAA-USDT' })],
+      [ticker({ symbol: 'AAA-USDT', lastPrice: 100, high24h: 112, low24h: 92, volume24h: 44_000 })],
+    );
+    expect(row.range24hPct).toEqual({ state: 'AVAILABLE', value: 20, note: null });
+    expect(row.baseVolume24h).toEqual({ state: 'AVAILABLE', value: 44_000, note: null });
+
+    const [invalid] = buildScreenerRows(
+      [candidate({ symbol: 'BBB-USDT' })],
+      [ticker({ symbol: 'BBB-USDT', lastPrice: 0, high24h: 0, low24h: 0 })],
+    );
+    expect(invalid.range24hPct.state).toBe('UNAVAILABLE');
+  });
+
+  it('sorts missing derivatives readings after reported values in either direction', () => {
+    const rows = buildScreenerRows(
+      [candidate({ symbol: 'KNOWN-USDT' }), candidate({ symbol: 'MISSING-USDT', score: 69 })],
+      [ticker({ symbol: 'KNOWN-USDT', fundingRate: -0.0002 })],
+    );
+    expect(sortScreenerRows(rows, { key: 'funding', ascending: true }).map((row) => row.symbol))
+      .toEqual(['KNOWN-USDT', 'MISSING-USDT']);
+    expect(sortScreenerRows(rows, { key: 'funding', ascending: false }).map((row) => row.symbol))
+      .toEqual(['KNOWN-USDT', 'MISSING-USDT']);
   });
 
   it('a symbol with no ticker keeps its scanner fields and reports the gap', () => {

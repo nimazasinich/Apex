@@ -1,12 +1,22 @@
 # APEX Unified Terminal
 
-**Current source version: 1.0.58.** The authoritative remediation/status report is [`APEX_V1_0_58_SIMULATION_QUALIFICATION_AND_REMEDIATION.md`](reports/final/APEX_V1_0_58_SIMULATION_QUALIFICATION_AND_REMEDIATION.md). Reports dated before 2026-08-13 are historical evidence unless explicitly carried forward there.
+**Current source version: 1.0.68.** Version 1.0.68 carries the full v1.0.58 feature set forward and adds reliability, QA and release-hygiene remediation. The carried-forward simulation-qualification baseline remains [`APEX_V1_0_58_SIMULATION_QUALIFICATION_AND_REMEDIATION.md`](reports/final/APEX_V1_0_58_SIMULATION_QUALIFICATION_AND_REMEDIATION.md). Reports dated before 2026-08-13 are historical evidence unless explicitly carried forward there.
 
-**Current source version:** `1.0.58`
+**Current source version:** `1.0.68`
 
-APEX 1.0.58 preserves the complete v1.0.56 market-data, strategy, backtesting, multi-agent, Liquidity Hunter, account and execution-safety feature set while repairing Autopilot discoverability/controller ownership, runtime/build identity, launch-path ambiguity, browser-safe capability presentation, stale QA contracts and release-root hygiene. No source feature was intentionally removed.
+APEX 1.0.68 preserves the complete v1.0.58 market-data, strategy, backtesting, multi-agent, Liquidity Hunter, account and execution-safety feature set (which itself carried v1.0.56 and earlier forward) while adding durable Decision Memory capacity handling, a dedicated Decision Memory route module, dark-theme Positions contrast repair, circular-dependency elimination with a new import-cycle gate, and workspace-runtime QA and Windows verification hardening. No source feature was intentionally removed.
 
-## Current v1.0.58 remediation highlights
+## Current v1.0.68 remediation highlights
+
+- Made the durable Decision Memory mirror byte-bounded (32 MiB cap) with binary-search pruning/compaction, so growth is capped by serialized size rather than a fixed row count; an oversized single row is rejected with `decision_memory_row_capacity_exceeded` instead of silently corrupting the store.
+- Extracted the Decision Memory HTTP surface into a dedicated `src/services/routes/decisionMemoryRoutes.ts` module (mounted via `registerDecisionMemoryRoutes`); the batch endpoint now returns `507` (`decision_memory_persist_failed`, retryable) on a persistence failure instead of an ambiguous `500`, `413` for oversized batches, and `503` when the mirror is disabled.
+- Exposed writable-persistence health through production readiness (`decisionMemoryWritable`), keeping readiness fail-closed when the durable store cannot be written.
+- Repaired dark-theme Positions reference-metric contrast without altering the light-theme default.
+- Eliminated circular module dependencies and added a `check:import-cycles` gate (madge `--circular`) to guard against regressions.
+- Rebuilt the Strategy comparison view as a single row-aligned semantic table so models stay aligned and honesty markers (`Not comparable` / `Evidence pending`) are preserved.
+- Hardened workspace-runtime QA and Windows verification teardown, including an Autopilot-lifecycle orphan-server guard (pre-spawn port check plus SIGINT/SIGTERM server shutdown).
+
+## Preserved v1.0.58 remediation highlights
 
 - Added a prominent global `AUTOPILOT` control backed by authoritative server phase, with explicit START/STOP ownership semantics and preserved page-local mirrors.
 - Added source/build identity generation and stale-build rejection; service-worker identity is tied to the generated build ID.

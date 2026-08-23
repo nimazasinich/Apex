@@ -85,7 +85,13 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
     [strategies],
   );
   const visible = useMemo(() => filterStrategyLibrary(strategies, filters, bookmarks), [bookmarks, filters, strategies]);
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount = [
+    filters.status !== 'all',
+    filters.category !== 'all',
+    filters.dataTier !== 'all',
+    filters.direction !== 'all',
+  ].filter(Boolean).length;
   const hasFilters = filters.search !== ''
     || filters.status !== 'all'
     || filters.category !== 'all'
@@ -140,10 +146,17 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
             onChange={(event) => patch({ search: event.target.value })}
           />
         </label>
-        <div className="strategy-view-mode-toggle" role="group" aria-label="Strategy library display mode">
-          <button type="button" className={viewMode === 'cards' ? 'active' : ''} aria-pressed={viewMode === 'cards'} onClick={() => onViewModeChange('cards')} title="Card View"><Grid2X2 size={13} /></button>
-          <button type="button" className={viewMode === 'list' ? 'active' : ''} aria-pressed={viewMode === 'list'} onClick={() => onViewModeChange('list')} title="List View"><List size={14} /></button>
-        </div>
+        <button
+          type="button"
+          className={`strategy-filter-icon ${filtersOpen ? 'active' : ''}`}
+          aria-expanded={filtersOpen}
+          aria-label={filtersOpen ? 'Hide strategy filters' : 'Show strategy filters'}
+          title={activeFilterCount ? `${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied` : 'Filters'}
+          onClick={() => setFiltersOpen(!filtersOpen)}
+        >
+          <SlidersHorizontal size={13} />
+          {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
+        </button>
       </div>
 
       {filtersOpen && (
@@ -181,15 +194,29 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
       )}
 
       <div className="strategy-filter-actions">
+        <div className="strategy-view-mode-toggle" role="group" aria-label="Strategy library display mode">
+          <button type="button" className={viewMode === 'cards' ? 'active' : ''} aria-pressed={viewMode === 'cards'} onClick={() => onViewModeChange('cards')} title="Card View"><Grid2X2 size={13} /></button>
+          <button type="button" className={viewMode === 'list' ? 'active' : ''} aria-pressed={viewMode === 'list'} onClick={() => onViewModeChange('list')} title="List View"><List size={14} /></button>
+        </div>
         <button
           type="button"
           className={filters.bookmarkedOnly ? 'active' : ''}
           aria-pressed={filters.bookmarkedOnly}
+          title="Show bookmarked strategies only"
           onClick={() => patch({ bookmarkedOnly: !filters.bookmarkedOnly })}
         >
-          <Bookmark size={13} />Bookmarked
+          <Bookmark size={13} />Saved
         </button>
-        <button type="button" disabled={!hasFilters} onClick={clear}><FilterX size={13} />Clear filters</button>
+        <button
+          type="button"
+          className="strategy-filter-clear"
+          disabled={!hasFilters}
+          aria-label="Clear all filters"
+          title="Clear all filters"
+          onClick={clear}
+        >
+          <FilterX size={13} />
+        </button>
       </div>
 
       <div className={`strategy-model-list is-${viewMode}`} role="listbox" aria-label="Strategy models">
@@ -217,11 +244,12 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
               <div className="strategy-library-card-topline">
                 <em className={`strategy-status ${status.toLowerCase().replaceAll(' ', '-')}`}>{status}</em>
                 {strategy.isCore && <span className="strategy-core-chip">Core <Star size={9} fill="currentColor" /></span>}
+                {bookmarkButton(strategy)}
               </div>
               <div className="strategy-library-card-body">
                 <StrategyArtwork variant={strategyArtworkVariant(strategy)} className="strategy-library-art" />
                 <div className="strategy-library-card-copy">
-                  <strong>{strategy.name}</strong>
+                  <strong title={strategy.name}>{strategy.name}</strong>
                   <span className="strategy-library-card-meta">
                     <small><CircleDot size={9} />{directionLabel(strategy)}</small>
                     <small><Clock3 size={9} />{intervals || '—'}</small>
@@ -229,11 +257,6 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
                   </span>
                 </div>
                 <MoreHorizontal size={14} className="strategy-library-card-menu" aria-hidden="true" />
-              </div>
-              <div className="strategy-library-card-foot">
-                <span>{strategy.strategyId}</span>
-                <small>v{strategy.version}</small>
-                {bookmarkButton(strategy)}
               </div>
             </article>
           ) : (
@@ -253,7 +276,7 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
               }}
             >
               <div className="strategy-library-row-main">
-                <strong>{strategy.name}</strong>
+                <strong title={strategy.name}>{strategy.name}</strong>
                 <span>{strategy.strategyId} · v{strategy.version}</span>
               </div>
               <em className={`strategy-status ${status.toLowerCase().replaceAll(' ', '-')}`}>{status}</em>
@@ -268,12 +291,10 @@ export function StrategyLibraryRail(props: StrategyLibraryRailProps) {
           <div className="strategy-list-empty">
             <SlidersHorizontal size={18} />
             <strong>No matching models</strong>
-            <span>Clear one or more filters to restore the catalogue.</span>
+            <span>Clear a filter to restore the catalogue.</span>
           </div>
         )}
       </div>
-
-      <button type="button" className="strategy-library-view-all" onClick={clear}>View all strategies <span aria-hidden="true">→</span></button>
     </aside>
   );
 }

@@ -16,6 +16,7 @@ const toolbox = read('src/components/workspace/TradingToolbox.tsx');
 const drawers = read('src/components/workspace/ToolboxDrawers.tsx');
 const account = read('src/components/workspace/AccountViews.tsx');
 const general = read('src/components/workspace/GeneralViews.tsx');
+const overviewMarketSummary = read('src/components/overview/OverviewMarketSummary.tsx');
 const watchlist = read('src/pages/watchlist/WatchlistPage.tsx');
 const overviewCss = read('src/components/overview/OverviewWorkspace.css');
 const strategy = read('src/pages/strategies/StrategyPage.tsx');
@@ -45,7 +46,7 @@ check('toolbox retains all seven functional drawers', ['order', 'orders', 'posit
 check('versioned layout preference persists safely', toolbox.includes('saveTradingLayoutPreference') && layoutPreference.includes('TRADING_LAYOUT_STORAGE_KEY') && layoutPreference.includes('executionDockWidthPx'));
 check('shared drawer shell exposes accessible dock state', drawers.includes('aria-pressed={Boolean(docked)}') && drawers.includes('apex-drawer-head-actions'));
 check('one order ticket definition is reused by the visible cockpit and toolbox drawer', account.includes('const orderTicket = (') && account.includes('<div className="apex-trading-order-column">') && account.includes('order: <div className="apex-trading-order-drawer-stack">{orderTicket}{riskPanel}</div>') && account.match(/<OrderTicketPanel/g)?.length === 1);
-check('market mini charts use only provider-supplied observations where mini charts are rendered', !sparkline.includes('generate1hSparkline') && general.includes('getTickerSparkline(ticker)') && drawers.includes('getTickerSparkline(ticker)') && watchlist.includes('getTickerSparkline(ticker)') && watchlist.includes('getTickerSparkline(selected)') && !account.includes('<MiniSparkline'));
+check('market mini charts use only provider-supplied observations where mini charts are rendered', !sparkline.includes('generate1hSparkline') && overviewMarketSummary.includes('getTickerSparkline(row)') && drawers.includes('getTickerSparkline(ticker)') && watchlist.includes('getTickerSparkline(ticker)') && watchlist.includes('getTickerSparkline(selected)') && !account.includes('<MiniSparkline'));
 check('new Stage UI route styles keep text at ten pixels or larger', !/font-size:\s*(?:[0-9](?:\.[0-9]+)?)px/.test(`${overviewCss}\n${tradingCss}`));
 check('overview is isolated from the retired toolbox geometry', general.includes('className="apex-overview-v2"') && !general.includes('<OverviewToolbox') && overviewCss.includes('.apex-overview-v2'));
 check('production strategy integration retained', strategy.includes('/api/strategies/') || strategy.includes('validateStrategy'));

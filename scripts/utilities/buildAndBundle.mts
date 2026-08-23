@@ -49,8 +49,10 @@ const steps: Step[] = [
   },
   {
     label: 'function index',
-    command: npx,
-    args: ['tsx', 'scripts/utilities/generateFunctionIndex.mts', '--if-changed'],
+    command: process.execPath,
+    // `tsx`'s CLI opens an IPC socket, which is prohibited on some hardened
+    // QA runners. Node's loader path executes the same TypeScript without IPC.
+    args: ['--import', 'tsx', 'scripts/utilities/generateFunctionIndex.mts', '--if-changed'],
   },
 ];
 

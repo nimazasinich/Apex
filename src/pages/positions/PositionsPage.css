@@ -1,4 +1,22 @@
 /* Positions reference pass — scoped to the real Positions workspace. */
+:root[data-apex-theme-resolved="dark"] .v20-positions-page .positions-reference-metric {
+  --position-card-soft: color-mix(in srgb, var(--position-card-accent) 18%, #111b2d) !important;
+  color: var(--v20-text) !important;
+  border-color: var(--v20-border) !important;
+  border-top-color: color-mix(in srgb, var(--position-card-accent) 72%, var(--v20-border)) !important;
+  background-color: var(--v20-surface) !important;
+  background-image: linear-gradient(180deg, var(--v20-surface) 0%, color-mix(in srgb, var(--position-card-accent) 5%, var(--v20-surface)) 100%) !important;
+}
+
+:root[data-apex-theme-resolved="dark"] .v20-positions-page .positions-reference-metric-head > strong,
+:root[data-apex-theme-resolved="dark"] .v20-positions-page .positions-reference-metric-value {
+  color: var(--v20-text) !important;
+}
+
+:root[data-apex-theme-resolved="dark"] .v20-positions-page .positions-reference-metric footer > small {
+  color: var(--v20-muted) !important;
+}
+
 :root[data-apex-theme-resolved="light"] .v20-positions-page {
   gap: 14px !important;
 }
@@ -8,6 +26,7 @@
   height: 108px !important;
   padding: 14px !important;
   border-radius: 12px !important;
+  background-color: #ffffff !important;
   box-shadow: none !important;
 }
 
