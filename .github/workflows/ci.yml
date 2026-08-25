@@ -60,11 +60,17 @@ jobs:
         if: matrix.node == '24.x'
         run: npm audit --omit=dev --audit-level=high
 
+      # Use the `:check` script aliases, which bake `--if-changed` into the
+      # script body. `npm run <script> -- --if-changed` does NOT forward the
+      # flag through npm on this platform, so the generators ran in
+      # unconditional mode and rewrote both indexes with a fresh wall-clock
+      # `generatedAt` on every run — which made the drift assertion below fail
+      # permanently, no matter what was committed.
       - name: Regenerate generated documentation indexes
         if: matrix.node == '24.x'
         run: |
-          npm run index:functions -- --if-changed
-          npm run index:docs -- --if-changed
+          npm run index:functions:check
+          npm run index:docs:check
           npm run docs:check
 
       - name: Fail if generated docs drifted from committed state

@@ -28,8 +28,13 @@ jobs:
       # Regenerates the function/doc indexes the same way `build` does, then
       # fails if that regeneration produced a diff against what's committed —
       # i.e. current main's generated docs have drifted from current source.
-      - run: npm run index:functions -- --if-changed
-      - run: npm run index:docs -- --if-changed
+      # These are the `:check` aliases (which bake `--if-changed` into the
+      # script body) because `npm run <script> -- --if-changed` does NOT forward
+      # the flag through npm on this platform; without them both generators
+      # rewrite their output with a fresh wall-clock `generatedAt` every run and
+      # the assertion below can never pass.
+      - run: npm run index:functions:check
+      - run: npm run index:docs:check
       - run: npm run docs:check
       - name: Fail if generated docs drifted from committed state
         run: |

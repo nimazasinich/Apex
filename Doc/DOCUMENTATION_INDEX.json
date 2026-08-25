@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-23T08:25:53.333Z",
+  "generatedAt": "2026-08-25T09:32:50.045Z",
   "root": "Doc",
-  "count": 237,
+  "count": 241,
   "categories": {
     "active": "Active documentation",
     "automation": "Automation and engine specifications",
@@ -74,12 +74,13 @@
     "backend/WORKSPACE_VIEW_MODEL_V20.md": "38f867ca9429dfbf6c3ddafb0010cefb30c922729b68d0fa13c794d46ab61440",
     "BACKTESTING_REFERENCE_1368x753_COMPLETION.md": "50d45ffdb37719c55167a78136847cd722bdca80c405e50975e9edef9d3cebf9",
     "BACKTESTING_WORKSPACE_UPGRADE.md": "6c919102133eb2c3442f5402e767949cd7b62af19b23f0af9ee332bbac8cced8",
-    "CLAUDE_SCRIPTS_TOOLING_MEMORY.md": "36588e568c572e0b548bb5c6d4ba2d40e5cc45e6f943a3631e97ce7470b7c131",
+    "CLAUDE_agent_rules_IMPROVED.md": "78beb3fefe10b752e12a0eafa9fa4fcb6efb6107f76e31ad1a68fdad3b8f20cd",
+    "CLAUDE_SCRIPTS_TOOLING_MEMORY.md": "2edc7de005bd894f21d28e36386242b00ee932c7621bc9eca6b8c8c3790bc298",
     "CLAUDE_UI_HANDOFF_20260816.md": "1a13866c447111a6dd960709df7b646e5b395012fa9371f22e3d09747e6f5907",
     "components/public/crypto-icons/README.md": "ce017ea8eae3700808287dd10014ba1ffbaa8c1dd65c3726ef7b5ec9b99278ad",
     "CONSOLIDATION_MANIFEST.json": "6d78308db7917e5d2ab7c79bd3064625ada87ba36903b71d043c4916facbc7da",
-    "FUNCTION_INDEX.json": "4a5ca259f93e706c6aa5c89d3e48538aa8634e2f28f03144214db7e01053e897",
-    "FUNCTION_INDEX.md": "8c014f8e32e3561e45660ec6cdfcde926bb4498fe65a1bf6f5e005b754620ddf",
+    "FUNCTION_INDEX.json": "ada7bc60f39011daa7bb72a5a1c54aacec84a48d3fbba77499723b9993133f99",
+    "FUNCTION_INDEX.md": "3f25e1ce6ab782f5e351376707f73b589095709077f9852ec33eac598cd9d631",
     "FUNCTION_INDEX_AUTOMATION.md": "661734fa2528078f1e2b02959983958bec81948d6c7fbc49ab5396a64bdc48c1",
     "generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html": "90b20a68a95863f0e8f4147866b0d9e78ac26d9d3119894c75105b1287fdb095",
     "handoff/DELIVERY_INTEGRATION_MANIFEST.md": "4aa4108a6a5adc7717db065607b23fffe3811846ab66ddf7e98f8d4f4b69b54e",
@@ -152,6 +153,9 @@
     "reports/APEX_V31_UI_BACKEND_REFINEMENT_1.0.32.md": "aec177a45ffa5e0cea35307bfaa3500e5ca78851385b05d7133fbf7c7e27d4ce",
     "reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md": "30df7e3fa880031eb125ce8b95be525e3a0719bd3a955c7c6e000fd87b5c46c3",
     "reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md": "342a4cb0297facc0b58d84fc7e70466ad6b7a5fd09c9b43baa09fb12c52c14ce",
+    "reports/captures/screener-after-filters.png": "19c41f7b083b1008af34fa6469d3eef2b86703ad3f646dba38c74098b3e31140",
+    "reports/captures/screener-after-rail.png": "f861ec4182b526f0f22982b9d3cd2182f247e808a052348c52a46683bb145bc1",
+    "reports/captures/screener-after-viewport.png": "dfea673f98eee5ce40d5079f4958ccb2b0c62a5e5aad22b7c41d4cd64f441076",
     "reports/CURRENT_STATUS.md": "f7bf72ba9e22f3e06889613ce4a0b2e1af98d30c5e2bc5235b4502f529e47594",
     "reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md": "31c734db9926667c652c5b809d648b57fe47449cb38acfacdcac871525a64ff8",
     "reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md": "267c8793b0e9e62fdb47718b4a49a688ffb3f2fff2d171ebef620e450fed439b",
@@ -218,8 +222,8 @@
     "reports/historical/legacy-root-2026-08-09/APEX_v1.0.53_SAFE_COMPLETION_REPORT.md": "c945ff657a7875894ae2f80e80913cd171b3181e513a70f3ab7444cf0cc02666",
     "reports/historical/legacy-root-2026-08-09/APEX_v1.0.54_VERIFIED_UI_COMPLETION_REPORT.md": "5d5273650b5c93f505895b21b58b3d34f1001e39f61606284f3188df2d0930a9",
     "reports/historical/legacy-root-2026-08-09/REFERENCE_SUBSYSTEM_INTEGRATION_REPORT.md": "1532a722a6b96ee9248565a851cde366f42caa90c8cf31de6153d73f3772f2b3",
-    "repository/API_ROUTE_INDEX_2026-08-10.json": "a890945fae93ebe34799c4dceaeb914e40717a5e324780eaed819452e5fe82a6",
-    "repository/API_ROUTE_INDEX_2026-08-10.md": "f21cb7641823a75f6dd96940f9d5c8b25bc47ce735a00d124e207571fb825933",
+    "repository/API_ROUTE_INDEX_2026-08-10.json": "5198ae23769e140165a0a33baec0d9e5244ceafc2ffd91fe73bbdc260ce01153",
+    "repository/API_ROUTE_INDEX_2026-08-10.md": "5f8af6a0eb1b7e88c804b4b2570936bd914b2ea01a276752374c75e59a7a9eba",
     "repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md": "1a89bd74306a12003f469e986a17e0a0e5be77eda57bc10688e40047542fce8f",
     "repository/FILE_INDEX_2026-08-10.json": "8e9789041fe1032e5af4e48fa38a97064a85ab0735746783145910bb4409416a",
     "repository/FILE_INDEX_2026-08-10.md": "046caeeb0cbdb94c752d3b738d897ba023a01739d4b57b840b64bae28f0f4c9a",
@@ -397,12 +401,20 @@
       "updatedAt": "2026-08-17T04:04:57.000Z"
     },
     {
+      "path": "CLAUDE_agent_rules_IMPROVED.md",
+      "category": "active",
+      "format": "md",
+      "title": "Agent Operating Rules — v2 (proposed revision, 2026-08-23)",
+      "bytes": 12848,
+      "updatedAt": "2026-08-23T23:40:35.326Z"
+    },
+    {
       "path": "CLAUDE_SCRIPTS_TOOLING_MEMORY.md",
       "category": "active",
       "format": "md",
       "title": "APEX Scripts Tooling Memory",
-      "bytes": 43450,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "bytes": 45769,
+      "updatedAt": "2026-08-23T10:02:32.431Z"
     },
     {
       "path": "CLAUDE_UI_HANDOFF_20260816.md",
@@ -741,6 +753,30 @@
       "updatedAt": "2026-08-17T04:05:01.000Z"
     },
     {
+      "path": "reports/captures/screener-after-filters.png",
+      "category": "active",
+      "format": "png",
+      "title": "screener after filters",
+      "bytes": 345948,
+      "updatedAt": "2026-08-24T13:18:19.081Z"
+    },
+    {
+      "path": "reports/captures/screener-after-rail.png",
+      "category": "active",
+      "format": "png",
+      "title": "screener after rail",
+      "bytes": 346273,
+      "updatedAt": "2026-08-24T13:18:20.492Z"
+    },
+    {
+      "path": "reports/captures/screener-after-viewport.png",
+      "category": "active",
+      "format": "png",
+      "title": "screener after viewport",
+      "bytes": 345804,
+      "updatedAt": "2026-08-24T13:18:17.932Z"
+    },
+    {
       "path": "reports/CURRENT_STATUS.md",
       "category": "active",
       "format": "md",
@@ -753,16 +789,16 @@
       "category": "active",
       "format": "json",
       "title": "API ROUTE INDEX 2026 08 10",
-      "bytes": 22103,
-      "updatedAt": "2026-08-23T08:25:31.091Z"
+      "bytes": 22104,
+      "updatedAt": "2026-08-24T22:55:47.507Z"
     },
     {
       "path": "repository/API_ROUTE_INDEX_2026-08-10.md",
       "category": "active",
       "format": "md",
       "title": "APEX API Route Index — 2026-08-10",
-      "bytes": 11371,
-      "updatedAt": "2026-08-23T08:25:31.091Z"
+      "bytes": 11372,
+      "updatedAt": "2026-08-24T22:55:47.507Z"
     },
     {
       "path": "repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md",
@@ -1345,16 +1381,16 @@
       "category": "generated-output",
       "format": "json",
       "title": "FUNCTION INDEX",
-      "bytes": 1977352,
-      "updatedAt": "2026-08-23T08:20:10.705Z"
+      "bytes": 2083759,
+      "updatedAt": "2026-08-25T09:32:48.789Z"
     },
     {
       "path": "FUNCTION_INDEX.md",
       "category": "generated-output",
       "format": "md",
       "title": "APEX Function Atlas",
-      "bytes": 320866,
-      "updatedAt": "2026-08-23T08:20:10.705Z"
+      "bytes": 331735,
+      "updatedAt": "2026-08-25T09:32:48.789Z"
     },
     {
       "path": "generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html",
@@ -1362,7 +1398,7 @@
       "format": "html",
       "title": "APEX v1.0.56 — Visual Architecture & File Layer Atlas",
       "bytes": 48135,
-      "updatedAt": "2026-08-19T15:25:23.000Z"
+      "updatedAt": "2026-08-25T01:33:34.948Z"
     },
     {
       "path": "archive/legacy-deliverables-2026-08-09/APEX-autopilot-newsdata-20260809/DIFF_SUMMARY.md",
@@ -1778,7 +1814,7 @@
       "format": "md",
       "title": "APEX structural profitability remediation — 2026-08-22",
       "bytes": 15804,
-      "updatedAt": "2026-08-22T19:40:17.000Z"
+      "updatedAt": "2026-08-25T00:22:26.851Z"
     },
     {
       "path": "reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md",

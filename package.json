@@ -71,6 +71,7 @@
     "qa:cleanup:dry": "tsx scripts/qa/cleanupQaArtifacts.mts --dry-run",
     "qa:v20-contract": "node scripts/qa/verifyV20ReferenceContract.mjs",
     "index:functions:check": "tsx scripts/utilities/generateFunctionIndex.mts --if-changed",
+    "index:docs:check": "tsx scripts/utilities/generateDocumentationIndex.mts --if-changed",
     "index:functions:query": "tsx scripts/utilities/queryFunctionIndex.mts",
     "stress:backtesting-learning": "tsx scripts/qa/benchmarkBacktestingLearning.mts",
     "stress:strategy-optimization": "tsx scripts/qa/benchmarkStrategyOptimization.mts",

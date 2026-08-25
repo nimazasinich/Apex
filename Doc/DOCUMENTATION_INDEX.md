@@ -1,10 +1,10 @@
 # APEX Documentation Index
 
-Generated: 2026-08-23T08:25:53.331Z
+Generated: 2026-08-25T09:32:50.043Z
 
 This file is generated from the current `Doc/` tree. Use `Doc/README.md` for the short operating guide and `Refrence.md` for agent navigation rules.
 
-Documented files: 237
+Documented files: 241
 
 ## Active documentation
 
@@ -28,7 +28,8 @@ Documented files: 237
 | [`backend/WORKSPACE_VIEW_MODEL_V20.md`](./backend/WORKSPACE_VIEW_MODEL_V20.md) | Backend Workspace View Model — V20 | md | 2026-08-17 |
 | [`BACKTESTING_REFERENCE_1368x753_COMPLETION.md`](./BACKTESTING_REFERENCE_1368x753_COMPLETION.md) | APEX Backtesting Lab — 1368×753 Completion Report | md | 2026-08-17 |
 | [`BACKTESTING_WORKSPACE_UPGRADE.md`](./BACKTESTING_WORKSPACE_UPGRADE.md) | APEX Backtesting Workspace Upgrade | md | 2026-08-17 |
-| [`CLAUDE_SCRIPTS_TOOLING_MEMORY.md`](./CLAUDE_SCRIPTS_TOOLING_MEMORY.md) | APEX Scripts Tooling Memory | md | 2026-08-17 |
+| [`CLAUDE_agent_rules_IMPROVED.md`](./CLAUDE_agent_rules_IMPROVED.md) | Agent Operating Rules — v2 (proposed revision, 2026-08-23) | md | 2026-08-23 |
+| [`CLAUDE_SCRIPTS_TOOLING_MEMORY.md`](./CLAUDE_SCRIPTS_TOOLING_MEMORY.md) | APEX Scripts Tooling Memory | md | 2026-08-23 |
 | [`CLAUDE_UI_HANDOFF_20260816.md`](./CLAUDE_UI_HANDOFF_20260816.md) | APEX UI Handoff — 2026-08-16 | md | 2026-08-17 |
 | [`components/public/crypto-icons/README.md`](./components/public/crypto-icons/README.md) | Local cryptocurrency icons | md | 2026-08-17 |
 | [`CONSOLIDATION_MANIFEST.json`](./CONSOLIDATION_MANIFEST.json) | CONSOLIDATION MANIFEST | json | 2026-08-17 |
@@ -71,9 +72,12 @@ Documented files: 237
 | [`reports/APEX_V31_UI_BACKEND_REFINEMENT_1.0.32.md`](./reports/APEX_V31_UI_BACKEND_REFINEMENT_1.0.32.md) | APEX V31 UI + Governor Refinement 1.0.32 | md | 2026-08-17 |
 | [`reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md`](./reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md) | APEX V31 UI and Market-Data Recovery Report — 1.0.26 | md | 2026-08-17 |
 | [`reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md`](./reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md) | APEX V31 Verified UI and Backtesting Recovery — 1.0.28 | md | 2026-08-17 |
+| [`reports/captures/screener-after-filters.png`](./reports/captures/screener-after-filters.png) | screener after filters | png | 2026-08-24 |
+| [`reports/captures/screener-after-rail.png`](./reports/captures/screener-after-rail.png) | screener after rail | png | 2026-08-24 |
+| [`reports/captures/screener-after-viewport.png`](./reports/captures/screener-after-viewport.png) | screener after viewport | png | 2026-08-24 |
 | [`reports/CURRENT_STATUS.md`](./reports/CURRENT_STATUS.md) | APEX Unified Terminal — Current Status | md | 2026-08-17 |
-| [`repository/API_ROUTE_INDEX_2026-08-10.json`](./repository/API_ROUTE_INDEX_2026-08-10.json) | API ROUTE INDEX 2026 08 10 | json | 2026-08-23 |
-| [`repository/API_ROUTE_INDEX_2026-08-10.md`](./repository/API_ROUTE_INDEX_2026-08-10.md) | APEX API Route Index — 2026-08-10 | md | 2026-08-23 |
+| [`repository/API_ROUTE_INDEX_2026-08-10.json`](./repository/API_ROUTE_INDEX_2026-08-10.json) | API ROUTE INDEX 2026 08 10 | json | 2026-08-24 |
+| [`repository/API_ROUTE_INDEX_2026-08-10.md`](./repository/API_ROUTE_INDEX_2026-08-10.md) | APEX API Route Index — 2026-08-10 | md | 2026-08-24 |
 | [`repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md`](./repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md) | Documentation Relocation Manifest — 2026-08-10 | md | 2026-08-17 |
 | [`repository/FILE_INDEX_2026-08-10.json`](./repository/FILE_INDEX_2026-08-10.json) | FILE INDEX 2026 08 10 | json | 2026-08-17 |
 | [`repository/FILE_INDEX_2026-08-10.md`](./repository/FILE_INDEX_2026-08-10.md) | APEX Canonical File Index — 2026-08-10 | md | 2026-08-17 |
@@ -155,9 +159,9 @@ Documented files: 237
 | [`automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md`](./automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md) | APEX Shadow ML Training Report v1 | md | 2026-08-17 |
 | [`automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json`](./automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json) | REJECTED REPLAY REPORT v1 | json | 2026-08-17 |
 | [`automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md`](./automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md) | APEX Rejected Candidate Replay Report v1 | md | 2026-08-17 |
-| [`FUNCTION_INDEX.json`](./FUNCTION_INDEX.json) | FUNCTION INDEX | json | 2026-08-23 |
-| [`FUNCTION_INDEX.md`](./FUNCTION_INDEX.md) | APEX Function Atlas | md | 2026-08-23 |
-| [`generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html`](./generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html) | APEX v1.0.56 — Visual Architecture & File Layer Atlas | html | 2026-08-19 |
+| [`FUNCTION_INDEX.json`](./FUNCTION_INDEX.json) | FUNCTION INDEX | json | 2026-08-25 |
+| [`FUNCTION_INDEX.md`](./FUNCTION_INDEX.md) | APEX Function Atlas | md | 2026-08-25 |
+| [`generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html`](./generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html) | APEX v1.0.56 — Visual Architecture & File Layer Atlas | html | 2026-08-25 |
 
 ## Historical documentation
 
@@ -247,7 +251,7 @@ Documented files: 237
 | [`reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md`](./reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md) | APEX Comprehensive Project Architecture, File Index & Deficiency Audit — 2026-08-10 | md | 2026-08-17 |
 | [`reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md`](./reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md) | APEX v1.0.56 — Heavy Load / Stress Verification Report | md | 2026-08-17 |
 | [`reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md`](./reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md) | گزارش پیاده‌سازی APEX Strategy Studio Reference | md | 2026-08-17 |
-| [`reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md`](./reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md) | APEX structural profitability remediation — 2026-08-22 | md | 2026-08-22 |
+| [`reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md`](./reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md) | APEX structural profitability remediation — 2026-08-22 | md | 2026-08-25 |
 | [`reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md`](./reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md) | APEX UI Redesign V3 — Implementation Handoff | md | 2026-08-17 |
 | [`reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md`](./reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md) | APEX v1.0.56 — Master Project Gap-Closure Prompt | md | 2026-08-17 |
 | [`reports/final/APEX_V1_0_57_REMEDIATION_AND_DELIVERY.md`](./reports/final/APEX_V1_0_57_REMEDIATION_AND_DELIVERY.md) | APEX Unified Terminal v1.0.57 — Remediation and Delivery Status | md | 2026-08-17 |
