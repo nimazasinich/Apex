@@ -139,6 +139,50 @@ function fullSemanticsBlockers(definition: StrategyDefinition): string[] {
   return [...new Set(blockers)];
 }
 
+/**
+ * Gate taxonomy for scoped promotion claims.
+ *
+ * `fullStrategySemantics` answers a different question from the performance
+ * gates. It asks whether a HISTORICAL replay can bind timestamp-aligned
+ * LIVE_ONLY fusion evidence. For every current core strategy the answer is
+ * structurally no — all ten weight all five LIVE_ONLY components above zero —
+ * so one combined verdict collapses "this strategy has no edge" and "this
+ * strategy's live-only inputs cannot be verified historically" into a single
+ * indistinguishable REJECT, which is why a 0/26 pass count carried almost no
+ * information about strategy quality.
+ *
+ * Separating the claims is a REPORTING change only. No threshold moves, no
+ * gate is removed, and `promoted` still requires every gate including
+ * provenance. The added verdicts are strictly weaker claims, each named for
+ * exactly what it asserts, and none of them authorizes execution.
+ */
+const PERFORMANCE_GATE_KEYS: string[] = ['sample', 'return', 'profitFactor', 'drawdown', 'costStress', 'riskPolicy', 'distinctTradeSequence'];
+const PROVENANCE_GATE_KEYS: string[] = ['fullStrategySemantics'];
+
+function scopedVerdicts(gates: Record<string, boolean | undefined>) {
+  const passes = (keys: string[]) => keys.length > 0 && keys.every((key) => gates[key] === true);
+  return {
+    /**
+     * Every gate except `fullStrategySemantics`. Explicitly does NOT assert
+     * that the LIVE_ONLY fusion components were validated; `unvalidatedLiveOnly`
+     * lists exactly which ones were not, with their weights.
+     */
+    replayScopePromotable: passes(Object.keys(gates).filter((key) => !PROVENANCE_GATE_KEYS.includes(key))),
+    /**
+     * Diagnostic only, NOT a promotion claim: did this row show measurable
+     * post-cost edge on a valid, strategy-distinct trade sequence?
+     */
+    performanceGatesPassed: passes(PERFORMANCE_GATE_KEYS.filter((key) => gates[key] !== undefined)),
+  };
+}
+
+/** Weighted LIVE_ONLY fusion components — quantifies what a replay cannot validate. */
+function unvalidatedLiveOnly(definition: StrategyDefinition) {
+  return (definition.fusion?.components ?? [])
+    .filter((component) => component.weight > 0 && component.dataMode === 'LIVE_ONLY')
+    .map((component) => ({ key: component.key, label: component.label, weight: component.weight }));
+}
+
 function readBrowserQa() {
   const gate = path.join(evidenceDir, 'browser/pixel-qa.json');
   return fs.existsSync(gate) ? JSON.parse(fs.readFileSync(gate, 'utf8')) : { status: 'not_run', passed: false };
@@ -236,6 +280,9 @@ async function evaluate() {
         context: context.id, symbol: context.symbol, interval: context.interval, strategyId: definition.strategyId, strategyName: definition.name,
         developmentRange: context.development, holdoutRange: context.holdout, developmentCandles: development.length, holdoutCandles: holdout.length,
         native, holdout: holdoutMetrics, costStress, gates, semanticBlockers,
+        validationScope: strategyValidationCapability(definition).scope,
+        unvalidatedLiveOnly: unvalidatedLiveOnly(definition),
+        ...scopedVerdicts(gates),
         promoted: Object.values(gates).every(Boolean),
         adaptiveLegacyDrawdownPct: definition.strategyId === 'adaptive-long-short-trend-portfolio-v1' ? legacyDrawdown(holdoutResult) : undefined,
       });
@@ -254,11 +301,14 @@ async function evaluate() {
     if (nativeScannerIds.includes(run.strategyId)) {
       const evidence = separation.find((item) => item.context === run.context && item.strategyId === run.strategyId);
       run.gates.distinctTradeSequence = evidence?.distinctFromEveryOther === true;
+      Object.assign(run, scopedVerdicts(run.gates));
       run.promoted = Object.values(run.gates).every(Boolean);
     }
   }
 
   const promoted = runs.filter((run) => run.promoted);
+  const replayScope = runs.filter((run) => run.replayScopePromotable);
+  const performanceOnly = runs.filter((run) => run.performanceGatesPassed);
   const resultCore = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
@@ -271,6 +321,18 @@ async function evaluate() {
     separation,
     runs,
     promotion: { promoted: promoted.map((run) => ({ context: run.context, strategyId: run.strategyId })), passedCount: promoted.length, evaluatedCount: runs.length },
+    replayScopePromotion: {
+      scopeMeaning: 'All gates EXCEPT fullStrategySemantics. Does not assert that LIVE_ONLY fusion evidence was validated; see unvalidatedLiveOnly per run. Strictly weaker than promotion, and not execution authorization.',
+      candidates: replayScope.map((run) => ({ context: run.context, strategyId: run.strategyId })),
+      passedCount: replayScope.length,
+      evaluatedCount: runs.length,
+    },
+    performanceDiagnostic: {
+      scopeMeaning: 'Diagnostic only, NOT a promotion claim: performance and evidence-validity gates only (sample, return, profitFactor, drawdown, costStress, riskPolicy, distinctTradeSequence).',
+      candidates: performanceOnly.map((run) => ({ context: run.context, strategyId: run.strategyId })),
+      passedCount: performanceOnly.length,
+      evaluatedCount: runs.length,
+    },
     verdict: promoted.length ? 'CONDITIONAL_CANDIDATES_EXIST' : 'NOT_YET_PROFITABLE_OR_PROMOTABLE',
   };
   const result = { ...resultCore, integrity: { algorithm: 'sha256', contentSha256: sha256(JSON.stringify(resultCore)) } };

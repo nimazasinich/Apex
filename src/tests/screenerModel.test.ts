@@ -82,6 +82,40 @@ describe('screener model', () => {
     expect(rows[0].score).toBe(88);
   });
 
+  // The rule `signalStrengthOf` exists for: position reflects how clean a signal is,
+  // not just how high its number is. Without the guard, tier and flag terms the 90
+  // below leads the list while contradicting its own RISK badge.
+  it('ranks a clean signal above a noisier one carrying a higher raw score', () => {
+    const noisy = candidate({
+      symbol: 'NOISY-USDT',
+      score: 90,
+      readinessTier: 'CAUTION',
+      guardPass: false,
+      guardReasons: ['Spread exceeds the configured maximum.', 'Funding is against the thesis.'],
+      timeframeConfluence: false,
+      timeframeDetails: { tf15m: 'BULLISH', tf1h: 'BEARISH' },
+    });
+    const clean = candidate({ symbol: 'CLEAN-USDT', score: 82, readinessTier: 'CONFIRMED' });
+    const rows = buildScreenerRows(
+      [noisy, clean],
+      [ticker({ symbol: 'NOISY-USDT' }), ticker({ symbol: 'CLEAN-USDT' })],
+    );
+    expect(rows.map((row) => row.symbol)).toEqual(['CLEAN-USDT', 'NOISY-USDT']);
+    expect(rows.map((row) => row.rank)).toEqual([1, 2]);
+    // Reordering must never touch the published numbers — only the position.
+    expect(rows.map((row) => row.score)).toEqual([82, 90]);
+    expect(rows[0].signalStrength).toBeGreaterThan(rows[1].signalStrength);
+    expect(rows[1].warnings.length).toBeGreaterThan(rows[0].warnings.length);
+  });
+
+  // Strength is a ranking key, never a second score: it is not displayed, and a raw
+  // score sort must still be a raw score sort.
+  it('keeps the score column sorting on the published score, not on strength', () => {
+    const rows = buildScreenerRows(universe, tickers);
+    expect(sortScreenerRows(rows, { key: 'score', ascending: false }).map((row) => row.score))
+      .toEqual([88, 74, 55, 31]);
+  });
+
   it('sorts by any column with a total order and a stable rank tie-break', () => {
     const rows = buildScreenerRows(universe, tickers);
     expect(sortScreenerRows(rows, { key: 'score', ascending: true }).map((row) => row.symbol))

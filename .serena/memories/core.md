@@ -22,6 +22,7 @@ Desktop crypto trading terminal: APEX-NEXT UI + APEX Trading Engine backend, uni
 - Languages, frameworks, key deps, version pins: `mem:tech_stack`
 - Frontend architecture + the three entry points (Overview, Strategy Studio, App Shell) + key dirs: `mem:frontend/core`
 - Commands the user actually runs + Windows shell util differences: `mem:suggested_commands`
-- Canonical verify/gate pipeline that defines "done" + failure workflow: `mem:task_completion`
+- Canonical verify/gate pipeline that defines "done" + failure workflow, plus the `verify:fast` dev-loop runner and why it is not release evidence: `mem:task_completion`
 - Code style, file layout, naming, contract-string conventions: `mem:conventions`
-- Windows-only run requirement, DC/Playwright/Serena roles, prohibitions, viewport: `mem:execution_environment`
+- Windows-only run requirement, DC/Playwright/Serena tool division, prohibitions, viewport, fixed-port co-tenant traps, and Serena tool-usage rules (activate-project first, recursive globs, symbolic-tools-first): `mem:execution_environment`
+- Standing strategy-profitability program — shadow-only/one-shot-holdout invariants, the phase order from diagnosis to Paper Canary, and the dated per-strategy classification scoreboard. Read before touching any strategy, backtesting, or promotion-gate code: `mem:strategy/profitability_roadmap`

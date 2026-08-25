@@ -24,11 +24,16 @@ test-results/
 # Local source/tooling archives. These are snapshots of the repository itself,
 # not inputs to npm ci or the build, and tools.zip alone is 91 MB.
 /*.zip
+# Snapshot archives that land inside the source tree (e.g. src/services.zip, a 647 KB
+# duplicate of src/services/). Scoped to src/ on purpose: vendor/*.tgz are deliberately
+# tracked lockfile inputs and must not be caught by a blanket archive rule.
+/src/**/*.zip
 
 # Local browser binaries for the visual gates. Playwright is installed from the
 # lockfile in CI, so these must not be versioned.
 /chrome/
 /chromedriver/
+.playwright-browsers/
 
 # Working notes that live at the repo root during a task, not shipped source.
 /AUDIT_FIX_PLAN.md
@@ -44,6 +49,17 @@ test-results/
 .supplemental*
 .external-api-sources*
 !.external-api-sources.config.example.json
+# Owner-provided provider credential sheet. Read at runtime only; never committed.
+api-config*.txt
+# Token/credential sheet variants. `.env.txt` is covered above; this catches the
+# undotted form so neither spelling can ever be staged.
+env.txt
+
+# Local databases. No SQLite file is expected in this tree; these patterns exist so
+# one can never be committed by accident.
+*.db
+*.sqlite
+*.sqlite3
 
 # Local state / logs
 .apex-data/

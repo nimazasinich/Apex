@@ -74,9 +74,35 @@ export function liquidityLabel(turnover24h: number): string {
   return 'Low';
 }
 
-export function providerLatencyMs(row: OperationsProviderRow, now = Date.now()): number | null {
+/**
+ * Age of a provider's last health check, in milliseconds.
+ *
+ * Deliberately NOT named "latency": `OperationsProviderRow` carries no round-trip timing
+ * field (only the `lastCheckTime` / `lastSuccessTime` epochs), so no request duration is
+ * derivable from this data. The former name `providerLatencyMs` caused the Provider / Data
+ * Health table to render check age beneath a "Latency" heading, which is why every row
+ * showed the same implausible figure (~5,601,384ms == ~93 minutes since the last sweep).
+ */
+export function providerCheckAgeMs(row: OperationsProviderRow, now = Date.now()): number | null {
   if (row.lastCheckTime == null) return null;
   return Math.max(0, now - row.lastCheckTime);
+}
+
+/** Compact human-readable age for a check timestamp: "12s", "4m", "1h 33m", "2d 4h". */
+export function formatCheckAge(ms: number | null): string {
+  if (ms == null || !Number.isFinite(ms)) return '—';
+  const totalSeconds = Math.floor(ms / 1000);
+  if (totalSeconds < 60) return `${totalSeconds}s`;
+  const minutes = Math.floor(totalSeconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    const remainderMinutes = minutes % 60;
+    return remainderMinutes ? `${hours}h ${remainderMinutes}m` : `${hours}h`;
+  }
+  const days = Math.floor(hours / 24);
+  const remainderHours = hours % 24;
+  return remainderHours ? `${days}d ${remainderHours}h` : `${days}d`;
 }
 
 export function providerRowState(row: OperationsProviderRow): string {
@@ -130,10 +156,13 @@ export function buildExecutionSnapshot(
   providerRows: OperationsProviderRow[],
   orderFillRatePct: number | null = null,
 ): ExecutionSnapshotView {
-  const latencies = providerRows
-    .map((row) => providerLatencyMs(row))
-    .filter((v): v is number => v != null && v < 60_000);
-  const avgLatencyMs = latencies.length ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : null;
+  // Execution latency is NOT measurable in this build. Neither `SystemHealthReport` nor
+  // `OperationsProviderRow` carries a request duration, so there is nothing honest to average.
+  // This previously averaged provider *check age* behind a `< 60_000` cutoff, which meant that
+  // whenever a health sweep happened to be under 60s old the panel printed that age as
+  // "Avg Latency" — a plausible-looking but fabricated number. Reported as unavailable until
+  // real timing instrumentation is wired in.
+  const avgLatencyMs: number | null = null;
   const fillRatePct = orderFillRatePct;
   const slippagePct = null;
   const timeouts1h = reconciliation?.unresolvedIntentCount ?? 0;
@@ -155,10 +184,22 @@ export function fundingBiasLabel(rate: number | undefined): string {
   return `${side} ${rate >= 0 ? '+' : ''}${(rate * 100).toFixed(3)}%`;
 }
 
+/**
+ * A breadth triple is a distribution and must sum to 100, otherwise the stacked bar
+ * under-fills its track. The sentiment overlay below clamps bullish/bearish but used to
+ * pass `neutralPct` through untouched, which left the rendered bar summing to roughly 73%
+ * of its width. Neutral is therefore derived as the remainder rather than carried over.
+ */
+function normalizeBreadth(bullishPct: number, bearishPct: number): MarketBreadth {
+  const bullish = Math.max(0, Math.min(100, Math.round(bullishPct)));
+  const bearish = Math.max(0, Math.min(100 - bullish, Math.round(bearishPct)));
+  return { bullishPct: bullish, neutralPct: 100 - bullish - bearish, bearishPct: bearish };
+}
+
 export function sentimentBreadthOverlay(sentiment: SentimentComposite | null, breadth: MarketBreadth): MarketBreadth {
   if (!sentiment) return breadth;
   const zone = sentiment.zone;
-  if (zone === 'Extreme Greed' || zone === 'Greed') return { bullishPct: Math.max(breadth.bullishPct, 45), neutralPct: breadth.neutralPct, bearishPct: Math.min(breadth.bearishPct, 25) };
-  if (zone === 'Extreme Fear' || zone === 'Fear') return { bullishPct: Math.min(breadth.bullishPct, 25), neutralPct: breadth.neutralPct, bearishPct: Math.max(breadth.bearishPct, 45) };
+  if (zone === 'Extreme Greed' || zone === 'Greed') return normalizeBreadth(Math.max(breadth.bullishPct, 45), Math.min(breadth.bearishPct, 25));
+  if (zone === 'Extreme Fear' || zone === 'Fear') return normalizeBreadth(Math.min(breadth.bullishPct, 25), Math.max(breadth.bearishPct, 45));
   return breadth;
 }

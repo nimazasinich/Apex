@@ -63,6 +63,14 @@ export function OverviewAccountSummary({
     ],
   ];
 
+  // Presentation only: the currency suffix produced by money()/signedMoney() is
+  // peeled off so it can render small and muted next to the amount. No value is
+  // reformatted, rounded or synthesised here.
+  const splitUnit = (value: string): [string, string | null] => {
+    const match = /^(.*)\s(USDT)$/.exec(value);
+    return match ? [match[1], match[2]] : [value, null];
+  };
+
   return (
     <section className="apex-overview-account apex-panel" aria-labelledby="overview-account-title">
       <header className="apex-overview-section-head">
@@ -75,7 +83,7 @@ export function OverviewAccountSummary({
             {row.map((cell) => (
               <button type="button" key={cell.label} className="apex-overview-account-cell" onClick={() => onNavigate(cell.page)}>
                 <span>{cell.label}</span>
-                <strong className={cell.cls}>{cell.value}</strong>
+                <strong className={cell.cls}>{splitUnit(cell.value)[0]}{splitUnit(cell.value)[1] ? <i>{splitUnit(cell.value)[1]}</i> : null}</strong>
                 {cell.sub ? <small className={cell.cls}>{cell.sub}</small> : null}
                 {'bar' in cell && cell.bar != null ? (
                   <div className="apex-overview-margin-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, Math.max(0, cell.bar))}%` }} /></div>

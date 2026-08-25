@@ -37,7 +37,6 @@ project_name: "APEX-Unified-Terminal-v1.0.68-LATEST-PATCHED-SOURCE-20260815"
 # Note that when using the JetBrains backend, language servers are not used and this list is correspondingly ignored.
 language_servers:
 - typescript
-- svelte
 - powershell
 
 # the encoding used by text files in the project
@@ -55,7 +54,7 @@ activation_command:
 
 # maximum time in seconds to wait for activation_command to complete before killing it (default 180s).
 # must be a positive number.
-activation_command_timeout: 180
+activation_command_timeout: 180.0
 
 # line ending convention to use when writing source files.
 # Possible values: unset (use global setting), "lf", "crlf", or "native" (platform default)
@@ -87,7 +86,8 @@ ls_specific_settings: {}
 #   ls_workspace_folders:
 #     - "./subproject1"
 #     - "./subproject2"
-ls_workspace_folders: ["."]
+ls_workspace_folders:
+- "."
 
 # list of additional workspace folder paths for cross-package reference support.
 # Paths can be absolute or relative to the project root.
@@ -159,7 +159,15 @@ symbol_info_budget:
 
 # list of regex patterns which, when matched, mark a memory entry as read‑only.
 # Extends the list from the global configuration, merging the two lists.
-read_only_memory_patterns: []
+# Pinned 2026-08-23: these four are structural anchors of the memory graph, not living logs.
+# Patterns are ANCHORED on purpose — an unanchored `core` would also match `frontend/core`,
+# which IS a living log and must stay editable. Deliberately NOT pinned:
+# execution_environment, gate_hazards, windows_gate_ops, task_completion.
+read_only_memory_patterns:
+- "^core$"
+- "^tech_stack$"
+- "^conventions$"
+- "^memory_maintenance$"
 
 # list of regex patterns for memories to completely ignore.
 # Matching memories will not appear in list_memories or activate_project output

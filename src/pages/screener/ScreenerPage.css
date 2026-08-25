@@ -16,14 +16,78 @@
      reasons and warnings all read as sentences and wrap badly below this. */
   grid-template-columns: minmax(0, 1fr) 322px;
   gap: 10px;
-  /* The project ships no @font-face and no font CDN link, so the only honest
-     "matches the app" choice is a stack that already resolves elsewhere in the
-     build: --screener-text mirrors the shell UI face (workspace-shell.css) and
-     --screener-mono is the same market-data stack reference-ui.css uses.
-     Declaring a family the build never loads would silently fall back and look
-     foreign on some machines. */
+  /* Both families really do load: src/index.css imports @fontsource/inter
+     400/500/600/700 and @fontsource/jetbrains-mono 400/500/600, so --screener-text
+     mirrors the shell UI face (workspace-shell.css) and --screener-mono is the same
+     market-data stack reference-ui.css uses — self-hosted, not a CDN, and not a
+     silent fallback. (An earlier comment here claimed the build ships no
+     @font-face at all; that was wrong and is why this page kept naming stacks
+     defensively.)
+     The consequence that matters for weights: the heaviest face actually served is
+     Inter 700 and JetBrains Mono 600. A declaration of 800 on a numeral cannot
+     render heavier than 600 — it just matches the 600 face — so emphasis on this
+     page comes from size, plate contrast and colour, never from a weight the build
+     does not carry. Values like 620/650/730 round to a served face and are
+     harmless; anything above 700 is not. */
   --screener-text: Inter, "Segoe UI", system-ui, sans-serif;
   --screener-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Row column contract. Every element to the right of the identity block used
+     to be content-sized, and .apex-screener-symbol is the only flexible item —
+     so the slack it absorbs (and therefore the x of every column after it)
+     changed with the widest metric string in that row. Measured drift at
+     1368x753 before this contract: bias 23.9px, score/equalizer/metrics 18.9px,
+     badge/guard 4.8px across eight rows. Fixing the width of each variable cell
+     makes the slack row-invariant, so the columns line up without a grid — and
+     the existing wrap fallback still applies uniformly under pressure.
+     Each value is the measured border-box maximum of its worst-case content
+     (getBoundingClientRect, live 1368 render), plus ~1px:
+       bias    65.72px  "Short" pill (vs 58.61px "Long")
+       metric  68.15px  "MOMENTUM" label (vs 62.28px "118,432.10" value)
+       badge  106.94px  "Opportunity" (widest TIER_LABELS / confluence / state)
+       guard   56.46px  "12 flags" (vs 40.08px "Pass")
+     Re-measured on the live 1368 render after the sub-10px typography lift.
+     The previous badge (94.94px) and guard (58.81px) figures did not reproduce
+     against a real row; bias did, which is what validated the method. The old
+     badge width was ~11px under its own worst case, and because the status dot
+     is the only shrinkable item in the pill it absorbed the whole deficit and
+     collapsed to 0px on exactly the CONFIRMED / "Opportunity" rows. */
+  --screener-col-bias: 67px;
+  --screener-col-metric: 70px;
+  --screener-col-badge: 108px;
+  --screener-col-guard: 58px;
+
+  /* The remaining column widths, promoted from hardcoded values inside the row
+     rules so that the header row and the body rows can consume ONE definition.
+     Before this, the sort affordance was a left-packed chip group with no column
+     geometry at all, so nothing above the stream lined up with anything in it.
+     Any change here moves the header and the data together, by construction.
+     Re-sum against the 714px row content box (see .apex-screener-symbol) before
+     editing: rank 17 + symbol 132 + bias 67 + factors 34 + metrics 226 +
+     state 173 + 5 gaps x 10 = 699, leaving 15px of slack for the symbol cell.
+     Symbol went 128 -> 132px when the score chip took a fixed three-digit lane
+     (30 -> 34px): the chip is inside the identity block, so its width is part of
+     that cell's intrinsic width and the sum above moves with it. */
+  --screener-col-rank: 17px;
+  --screener-col-symbol: 132px;
+  --screener-col-factors: 34px;
+  --screener-col-actions: 82px;
+  --screener-row-gap: 10px;
+  --screener-row-pad-left: 11px;
+
+  /* One shared easing curve for every hover/press micro-interaction on the
+     page, so a row lifting, a button pressing and a tile settling all decelerate
+     the same way instead of each animation feeling like a slightly different
+     hand wrote it. */
+  --screener-ease: cubic-bezier(.22, .61, .36, 1);
+
+  /* Every transition on this page already routes through --duration-fast, which
+     is 120ms globally. At that length a hover lift plus a colour change reads as
+     a snap rather than a settle. Re-pointing the token once, page-scoped, moves
+     all of them together — including the shared primitives rendered inside this
+     page — instead of leaving twenty hand-tuned durations to drift apart. The
+     override cannot leak: it lives on .apex-screener-page. */
+  --duration-fast: 170ms;
 }
 
 .apex-screener-page .apex-page-main {
@@ -73,7 +137,7 @@
   display: grid;
   place-items: center;
   border: 1px solid var(--apex-green-200);
-  border-radius: 14px;
+  border-radius: var(--radius-panel);
   background: linear-gradient(145deg, var(--apex-surface), var(--apex-green-050));
   color: var(--apex-green-700);
   box-shadow: 0 8px 22px color-mix(in srgb, var(--apex-green-500) 14%, transparent);
@@ -110,7 +174,7 @@
   align-items: center;
   gap: 4px;
   color: var(--apex-green-700);
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 760;
   letter-spacing: .07em;
   text-transform: uppercase;
@@ -128,7 +192,7 @@
 .apex-screener-hero-copy p {
   margin: 3px 0 0;
   color: var(--apex-muted-600);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .apex-screener-page .spin {
@@ -151,24 +215,6 @@
   75%, 100% { opacity: 0; transform: scale(1.25); }
 }
 
-/* Every animation on this page is decorative: the same information is present
-   without it, so reduced-motion callers lose nothing by switching it all off.
-   Each selector is page-scoped so it outranks the rule that declares the
-   animation — the score ring is declared later in this file, so an
-   equal-specificity override here would have lost the cascade and left the ring
-   animating for exactly the users who asked it not to. */
-@media (prefers-reduced-motion: reduce) {
-  .apex-screener-page .spin,
-  .apex-screener-page .apex-screener-hero-mark::before,
-  .apex-screener-page .apex-screener-hero-mark::after,
-  .apex-screener-page .apex-screener-row,
-  .apex-screener-page .apex-screener-equalizer i,
-  .apex-screener-page .apex-screener-score-glyph .value { animation: none; }
-
-  .apex-screener-page .apex-screener-row:hover,
-  .apex-screener-page .apex-screener-row:focus-within { transform: none; }
-}
-
 /* ---------- status chips ---------- */
 
 .apex-screener-chips {
@@ -178,7 +224,7 @@
   align-items: center;
   gap: 6px;
   color: var(--apex-muted-600);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .apex-screener-chips > span {
@@ -238,10 +284,10 @@
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--apex-muted-600);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 680;
   cursor: pointer;
-  transition: color var(--duration-fast), background-color var(--duration-fast), transform var(--duration-fast);
+  transition: color var(--duration-fast), background-color var(--duration-fast), transform var(--duration-fast) var(--screener-ease);
 }
 
 .apex-screener-presets button > span {
@@ -258,6 +304,11 @@
 .apex-screener-presets button:hover {
   background: var(--apex-green-050);
   color: var(--apex-green-700);
+  transform: translateY(-1px);
+}
+
+.apex-screener-presets button:active {
+  transform: translateY(0) scale(.97);
 }
 
 .apex-screener-presets button.active {
@@ -284,7 +335,7 @@
   align-items: center;
   gap: 5px;
   color: var(--apex-muted-600);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -297,7 +348,14 @@
   border-radius: var(--radius-control);
   background: var(--apex-surface);
   color: var(--apex-ink-900);
-  font-size: 8.5px;
+  font-size: 10px;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.apex-screener-saved-select select:hover,
+.apex-screener-view-tools select:hover,
+.apex-screener-save-form input:hover {
+  border-color: color-mix(in srgb, var(--apex-green-400) 45%, var(--apex-border));
 }
 
 .apex-screener-saved-select select { width: 112px; }
@@ -326,7 +384,7 @@
   border-radius: var(--radius-control);
   background: var(--apex-surface-soft);
   color: var(--apex-ink-700);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .apex-screener-stale svg {
@@ -343,9 +401,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--apex-border);
-  border-radius: var(--radius-panel);
-  border-color: color-mix(in srgb, var(--apex-green-300) 42%, var(--apex-border));
+  border: 1px solid color-mix(in srgb, var(--apex-green-300) 42%, var(--apex-border));
   border-radius: var(--radius-card);
   background: linear-gradient(135deg, color-mix(in srgb, var(--apex-green-050) 68%, var(--apex-surface)), var(--apex-surface-soft));
   box-shadow: 0 7px 20px color-mix(in srgb, var(--apex-ink-950) 5%, transparent);
@@ -356,7 +412,7 @@
   align-items: center;
   gap: 5px;
   color: var(--apex-muted-600);
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -380,29 +436,78 @@
   min-width: 0;
 }
 
+/* In the always-visible filter bar the label sits BESIDE its control, not above
+   it. Stacked labels doubled the bar's height (each pair was two lines tall) and
+   pushed half the controls onto a second wrapped row for no information gain.
+   Inline pairs collapse the bar to a single row and reclaim that vertical band
+   for the ranked stream. Scoped to .apex-screener-filters on purpose: the
+   Advanced drawer lays the same .apex-screener-field out in a grid with
+   `align-items: end`, where stacked labels are still the correct shape. */
+.apex-screener-filters .apex-screener-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.apex-screener-filters .apex-screener-field > span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.apex-screener-filters .apex-screener-field select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Filter-bar contrast (item 4 — contrast and weight only; the inline
+   label-beside-control layout from the previous pass is deliberately untouched,
+   as is every height, so the bar cannot reflow).
+   The labels were --apex-muted-600 at 650 — the same ink family and nearly the
+   same weight as the values inside the controls they name, which is why the whole
+   bar read as one flat grey band. Label ink moves to --apex-ink-700 at 700 (a face
+   the build actually serves; see the font note at the top) and the live value in
+   `Min score 30` moves to --apex-ink-950 in the mono face, so label and value are
+   two clearly separate steps instead of one. */
 .apex-screener-field > span {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--apex-muted-600);
-  font-size: 8px;
-  font-weight: 650;
+  color: var(--apex-ink-700);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .01em;
 }
 
 .apex-screener-field > span b {
-  color: var(--apex-ink-900);
+  color: var(--apex-ink-950);
+  font-family: var(--screener-mono);
+  font-size: 10px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
+/* A control has to look like something you can open. --apex-border is the divider
+   token doing double duty as a control edge (#dde7e1 on #fff), which is what made
+   these read as plain text: the edge moves to --apex-border-strong, and a shallow
+   top-down fill plus a 1px inner highlight gives the control a body instead of a
+   hairline. Height, padding and font-size are unchanged. */
 .apex-screener-field select {
   height: 26px;
   padding: 0 6px;
-  border: 1px solid var(--apex-border);
+  border: 1px solid color-mix(in srgb, var(--apex-ink-950) 40%, var(--apex-border-strong)); /* measured live: --apex-border-strong alone is only 1.27:1 against the filter bar, below the 3:1 WCAG 1.4.11 floor for a control boundary; the 40% ink mix measures 3.16:1 */
   border-radius: var(--radius-control);
-  background: var(--apex-surface);
-  color: var(--apex-ink-900);
-  font-size: 9px;
+  background: linear-gradient(180deg, var(--apex-surface), color-mix(in srgb, var(--apex-ink-950) 6%, var(--apex-surface)));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--apex-canvas) 80%, transparent);
+  color: var(--apex-ink-950);
+  font-size: 10px;
   font-weight: 600;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.apex-screener-field select:hover {
+  border-color: color-mix(in srgb, var(--apex-green-600) 55%, var(--apex-border-strong));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--apex-canvas) 80%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--apex-green-500) 15%, transparent);
 }
 
 /* Focus rings are deliberately absent from this file. src/styles/interaction-polish.css
@@ -416,11 +521,92 @@
   min-width: 132px;
 }
 
+/* Inline in the filter bar the slider is a fixed compact track beside its label,
+   not a full-width control that would swallow the row. The live value stays in
+   the label (`Min score 30`), so the numeric readout is never lost. */
+.apex-screener-filters .apex-screener-score-filter {
+  min-width: 0;
+}
+
+.apex-screener-filters .apex-screener-score-filter input[type="range"] {
+  flex: 0 0 auto;
+  width: 92px;
+}
+
+/* The slider had no track or thumb of its own — only `accent-color`, which tints
+   the filled part and the thumb but leaves the *unfilled* track at the UA default:
+   a ~2px near-white hairline on --apex-surface, which is why this control looked
+   like a line with a dot on it. A visible high-contrast track and thumb (item 4)
+   is not reachable through accent-color, so the control is drawn here: an 8px pill
+   track that carries its own edge, a fill that stops at --slider-fill — set inline
+   from the same state that renders the value in the label, so the bar and the
+   number can never disagree — and a 15px thumb ringed in the surface colour so it
+   stays visible over both halves of the track. accent-color is kept for any engine
+   that ignores these vendor pseudo-elements. The 26px box is unchanged, so neither
+   the filter bar nor the advanced grid reflows. */
 .apex-screener-score-filter input[type="range"] {
+  --slider-fill: 0%;
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 26px;
   margin: 0;
+  background: transparent;
   accent-color: var(--apex-green-600);
+  transition: filter var(--duration-fast);
+}
+
+.apex-screener-score-filter input[type="range"]::-webkit-slider-runnable-track {
+  box-sizing: border-box;
+  height: 8px;
+  border: 1px solid color-mix(in srgb, var(--apex-ink-950) 16%, var(--apex-border-strong));
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    var(--apex-green-700) 0 var(--slider-fill),
+    color-mix(in srgb, var(--apex-ink-950) 11%, var(--apex-surface)) var(--slider-fill) 100%);
+}
+
+.apex-screener-score-filter input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 15px;
+  height: 15px;
+  /* (track 8px - thumb 15px) / 2: keeps the thumb centred on the track instead of
+     hanging off its top edge, which is what WebKit does by default once the track
+     is no longer the UA's. */
+  margin-top: -3.5px;
+  border: 2px solid var(--apex-surface);
+  border-radius: 999px;
+  background: var(--apex-green-700);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--apex-ink-950) 28%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--apex-green-700) 65%, transparent);
+}
+
+.apex-screener-score-filter input[type="range"]::-moz-range-track {
+  height: 8px;
+  border: 1px solid color-mix(in srgb, var(--apex-ink-950) 16%, var(--apex-border-strong));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--apex-ink-950) 11%, var(--apex-surface));
+}
+
+.apex-screener-score-filter input[type="range"]::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--apex-green-700);
+}
+
+.apex-screener-score-filter input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--apex-surface);
+  border-radius: 999px;
+  background: var(--apex-green-700);
+}
+
+.apex-screener-score-filter input[type="range"]:hover {
+  filter: saturate(1.15);
 }
 
 .apex-screener-reset {
@@ -453,7 +639,7 @@
   align-items: center;
   gap: 5px;
   color: var(--apex-ink-700);
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -469,7 +655,7 @@
 .apex-screener-view-tools {
   padding: 2px;
   border: 1px solid var(--apex-border);
-  border-radius: 9px;
+  border-radius: var(--radius-control);
   background: var(--apex-surface-soft);
 }
 
@@ -483,10 +669,18 @@
   border-radius: 7px;
   background: transparent;
   color: var(--apex-muted-600);
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 680;
   cursor: pointer;
-  transition: color var(--duration-fast), background-color var(--duration-fast), box-shadow var(--duration-fast);
+  transition: color var(--duration-fast), background-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast) var(--screener-ease);
+}
+
+.apex-screener-view-tools > button:hover:not(.active) {
+  color: var(--apex-green-700);
+}
+
+.apex-screener-view-tools > button:active {
+  transform: scale(.94);
 }
 
 .apex-screener-view-tools > button.active {
@@ -547,7 +741,7 @@
   align-items: center;
   gap: 4px;
   color: var(--apex-muted-600);
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -564,15 +758,22 @@
   background: var(--apex-surface);
   color: var(--apex-muted-600);
   font-family: inherit;
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 650;
   cursor: pointer;
-  transition: border-color var(--duration-fast), background-color var(--duration-fast), color var(--duration-fast);
+  transition: border-color var(--duration-fast), background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--screener-ease), box-shadow var(--duration-fast);
 }
 
 .apex-screener-page .apex-screener-sortbar button:hover {
   border-color: var(--apex-green-300);
   color: var(--apex-green-700);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--apex-green-500) 12%, transparent);
+}
+
+.apex-screener-page .apex-screener-sortbar button:active {
+  transform: translateY(0) scale(.97);
+  box-shadow: none;
 }
 
 .apex-screener-page .apex-screener-sortbar button.active {
@@ -601,9 +802,204 @@
   list-style: none;
 }
 
+/* ---------- ranked stream column header ---------- */
+
+/* The header for the ranked rows.
+   It replaces a left-packed chip group that carried NO column geometry at all —
+   the chips ended at x=649 while the data columns ran to x=996, and the chip
+   order did not match the data order either, so nothing above the stream lined
+   up with anything in it.
+   Three things make this a mirror rather than a second set of hardcoded widths:
+   1. Every width below reads the same `--screener-col-*` token the body cell
+      reads. There is one definition per column, not two.
+   2. The box model is reproduced exactly — the same two-track grid, the same
+      `padding-right`, the same `--screener-row-pad-left` on the inner element and
+      the same `--screener-row-gap` between cells.
+   3. It lives INSIDE `.apex-screener-stream`. A header placed above the scroller
+      would be one scrollbar-width wider, and because `.apex-screener-symbol` is
+      the row's only flexible cell that entire surplus would land on it, shifting
+      every column after it and re-creating the divergence in a new place. */
+.apex-screener-columns {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin-bottom: 5px;
+  padding-right: 9px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  /* Transparent rather than absent. The row's 1px border is part of the 19px
+     inset every body cell sits at (7px stream padding + 1px row border + 11px
+     row padding), so a border-less header would start its labels 1px left of
+     the values beneath them. `border-bottom` then re-colours that same 1px
+     without changing the box. */
+  border: 1px solid transparent;
+  border-bottom-color: var(--apex-border);
+  /* Opaque, and specifically the colour the stream's gradient starts with, so
+     rows scrolling underneath are covered with no seam at the sticky edge. */
+  background: var(--apex-surface-soft);
+}
+
+.apex-screener-columns-main {
+  min-height: 24px;
+  padding: 0 4px 0 var(--screener-row-pad-left);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--screener-row-gap);
+  min-width: 0;
+}
+
+.apex-screener-columns .apex-screener-col-rank,
+.apex-screener-columns .apex-screener-col-name,
+.apex-screener-columns .apex-screener-col-score,
+.apex-screener-columns .apex-screener-col-bias,
+.apex-screener-columns .apex-screener-col-metric,
+.apex-screener-columns .apex-screener-col-badge,
+.apex-screener-columns .apex-screener-col-guard {
+  color: var(--apex-muted-600);
+  font-family: var(--screener-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  /* Never wrap and never clip: an over-long label spills into the 8px gutter,
+     which is visible and fixable in review, where a clipped one is silent. */
+  white-space: nowrap;
+}
+
+.apex-screener-columns .apex-screener-col-rank {
+  flex: 0 0 var(--screener-col-rank);
+  width: var(--screener-col-rank);
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* The rank cell is 17px — exactly wide enough for the glyph and nothing else.
+   An active-sort chevron (10px icon + 3px gap) would push it to 20px, and because
+   every cell after it is `flex: 0 0`, those 3px would come out of the one flexible
+   cell (symbol), sliding the header's SYMBOL/SCORE labels off the identity column
+   they label. Rank keeps the affordance and drops only the arrow: active state
+   still reads through `.active`'s green ink, the `title`, and `aria-pressed`. */
+.apex-screener-columns .apex-screener-col-rank svg {
+  display: none;
+}
+
+/* Two labels in one cell, because the row puts two things here: the identity at
+   the left edge and the score glyph hard against the right. `space-between` is
+   what puts SCORE over the glyph rather than floating between the two. */
+.apex-screener-col-symbol {
+  flex: 1 1 var(--screener-col-symbol);
+  min-width: var(--screener-col-symbol);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.apex-screener-columns .apex-screener-col-bias {
+  flex: 0 0 auto;
+  width: var(--screener-col-bias);
+}
+
+.apex-screener-col-factors {
+  flex: 0 0 auto;
+  width: var(--screener-col-factors);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--apex-muted-600);
+}
+
+.apex-screener-col-metrics {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 8px;
+}
+
+.apex-screener-columns .apex-screener-col-metric {
+  flex: 0 0 auto;
+  width: var(--screener-col-metric);
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.apex-screener-col-state {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 7px;
+}
+
+.apex-screener-columns .apex-screener-col-badge {
+  flex: 0 0 auto;
+  width: var(--screener-col-badge);
+  justify-content: center;
+  text-align: center;
+}
+
+.apex-screener-columns .apex-screener-col-guard {
+  flex: 0 0 auto;
+  width: var(--screener-col-guard);
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.apex-screener-col-actions {
+  flex: 0 0 auto;
+  width: var(--screener-col-actions);
+}
+
+/* Sortable heads deliberately keep the head's own typography: only `font-family`
+   has to be reclaimed from the UA button stylesheet, and writing `font: inherit`
+   here would reset the 10px/700 the shared rule above just set. */
+.apex-screener-page .apex-screener-columns .apex-screener-col-sort {
+  padding: 2px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--duration-fast);
+}
+
+.apex-screener-page .apex-screener-columns .apex-screener-col-sort:hover {
+  color: var(--apex-green-700);
+}
+
+.apex-screener-page .apex-screener-columns .apex-screener-col-sort.active {
+  color: var(--apex-green-700);
+}
+
+.apex-screener-page .apex-screener-columns .apex-screener-col-sort svg {
+  flex: 0 0 auto;
+}
+
+
 .apex-screener-row {
   --row-accent: var(--apex-green-500);
   --row-accent-soft: var(--apex-green-050);
+  /* Selection is deliberately NOT bias-toned, and that is why it needs its own
+     accent token. `--row-accent` flips to red on `.short` below and to amber on a
+     flagged row's hover, which is correct for the surfaces that actually carry
+     bias or a guard objection (resting wash, hover tint, evidence bars) and wrong
+     for selection: a red "you selected this" wash reads as an error state, and
+     every peer table in the app selects green unconditionally
+     (interaction-polish.css, light-theme-hardening.css,
+     light-theme-workspace-refinement.css). Bias is already carried by the badge,
+     the 24h change and the evidence bars, so re-encoding it here would be both
+     redundant and ambiguous. Never let `.short` or `.flagged` override this. */
+  --row-select-accent: var(--apex-green-500);
   position: relative;
   padding-right: 9px;
   display: grid;
@@ -621,7 +1017,7 @@
      so releasing the fill produces no jump. */
   animation: apex-screener-row-in 420ms cubic-bezier(.2,.7,.2,1) backwards;
   animation-delay: calc(var(--row-index) * 28ms);
-  transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast) var(--screener-ease), background var(--duration-fast);
 }
 
 .apex-screener-row.short {
@@ -641,21 +1037,57 @@
   inset: 9px auto 9px 0;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--row-accent);
+  background: var(--row-select-accent);
   opacity: 0;
   transition: opacity var(--duration-fast);
 }
 
+/* Item 9. Hover now carries the row's own signal, so moving down the stream tells
+   you what kind of signal you are pointing at before you commit to a click: the
+   wash is mixed from --row-accent, which is green on a long and red on a short,
+   and a guard-flagged row overrides both immediately below with the amber of its
+   own badge.
+   Hover and selection are deliberately built from the SAME construction so their
+   strengths are comparable and ordered — resting green-050 at 58%, hover accent at
+   8%, selection accent at 14% — and they are separated by more than strength:
+   hover adds a 2px lift, a tinted border and a drop shadow and is transient, while
+   selection adds the 3px inset rail, does not lift, and is unconditionally green
+   through --row-select-*. On a hovered selected row .selected wins the background
+   (equal specificity, later in the file) and only the lift is layered on, so the
+   two states cannot collapse into one appearance. */
 .apex-screener-row:hover,
 .apex-screener-row:focus-within {
   border-color: color-mix(in srgb, var(--row-accent) 38%, var(--apex-border));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--row-accent) 8%, var(--apex-surface)), var(--apex-surface) 44%);
   box-shadow: 0 7px 16px color-mix(in srgb, var(--row-accent) 13%, transparent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+/* A flagged row hovers amber whichever way it is pointing, because "the risk guard
+   objected" outranks "this is a long" — and it is the same hue as the guard chip
+   the row already shows, so the tint names its own cause. Scoped to :hover and
+   :focus-within on purpose: the resting wash and the evidence bars stay bias-toned,
+   which is this page's existing language. --apex-orange-050 does not exist in
+   tokens.css (only -500 does), so the accent is mixed at the same percentage as
+   every other state here rather than inventing a token. */
+.apex-screener-row.flagged:hover,
+.apex-screener-row.flagged:focus-within {
+  --row-accent: var(--apex-orange-500);
+}
+
+/* A quick, gentle settle back on release — without it the lift above feels like
+   it belongs to the cursor rather than the row. */
+.apex-screener-row:has(.apex-screener-row-main:active) {
+  transform: translateY(-1px) scale(.997);
+  transition-duration: 90ms;
 }
 
 .apex-screener-row.selected {
-  border-color: color-mix(in srgb, var(--row-accent) 52%, var(--apex-border));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--row-accent-soft) 90%, var(--apex-surface)), var(--apex-surface) 62%);
+  border-color: color-mix(in srgb, var(--row-select-accent) 52%, var(--apex-border));
+  /* 14% of the accent against hover's 8%, in the same construction, so selection
+     is unambiguously the stronger of the two states and stays green whatever the
+     row's bias is. */
+  background: linear-gradient(90deg, color-mix(in srgb, var(--row-select-accent) 14%, var(--apex-surface)), var(--apex-surface) 66%);
 }
 
 .apex-screener-row.selected::before { opacity: 1; }
@@ -669,11 +1101,21 @@
    ring and screen-reader semantics all come for free, and the row actions can
    be siblings instead of interactive elements nested inside a clickable row. */
 .apex-screener-page .apex-screener-row-main {
-  min-height: 60px;
-  padding: 8px 4px 8px 11px;
+  /* 50px is the floor set by real content, not a guess: the tallest cell in the
+     row is the 26px coin plate and the 24.57px metric stack, so 26 + 12px of
+     padding = 38px of content and 50px still leaves 12px of breathing room.
+     Column gap trimmed 11px -> 10px, which also widens the wrap headroom at
+     1368 from 14px to 19px, so density and layout safety move the same way. */
+  min-height: 50px;
+  padding: 6px 4px 6px var(--screener-row-pad-left);
   display: flex;
   align-items: center;
-  gap: 11px;
+  /* Wrap is the overpressure escape between the phone breakpoint and the width
+     where the fixed columns stop fitting: a whole box moves to a second line,
+     identically in every row, so the columns stay aligned and nothing is ever
+     clipped by the `overflow: hidden` on .apex-page-main. */
+  flex-wrap: wrap;
+  gap: var(--screener-row-gap);
   min-width: 0;
   border: 0;
   border-radius: 13px 0 0 13px;
@@ -689,7 +1131,7 @@
   min-width: 17px;
   color: var(--apex-muted-600);
   font-family: var(--screener-mono);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -699,11 +1141,50 @@
    horizontal pressure and asset names are what truncate. Numbers are fixed-size
    further down the row and therefore can never be cut off mid-digit. */
 .apex-screener-symbol {
-  flex: 1 1 150px;
-  min-width: 84px;
+  /* Basis equals min-width on purpose. Flexbox breaks lines using each item's
+     HYPOTHETICAL main size (basis clamped by min/max) BEFORE flex-shrink is ever
+     applied, so a basis larger than the content needs buys nothing and only
+     brings the wrap threshold closer: at 1368 the row's content box is 714px and
+     a 150px basis summed to 722px, which wrapped .apex-screener-row-state onto a
+     second line and broke the column alignment this file's widths exist to hold.
+     Measured intrinsic width here is min-content == max-content == 126.8px (icon 26
+     + label 48.8 + score glyph 34 + 2x9 gap = 126.8), so the 132px token cannot
+     clip anything that min-width: 132px would not already clip, and it leaves 15px
+     of wrap headroom at 1368.
+     This element still grows into all leftover space (142.39px at 1368). */
+  flex: 1 1 var(--screener-col-symbol);
+  min-width: var(--screener-col-symbol);
   display: flex;
   align-items: center;
   gap: 9px;
+}
+
+/* Scanner score now lives inside the identity block, pinned to its right edge.
+   Grouping it with the symbol frees the slot it used to occupy between the bias
+   pill and the equalizer, so that slot no longer forces a wrap on its own — rows
+   that used to spill onto a second line can now sit on one, and the ones below
+   shift up to fill the freed height.
+   Items 1 and 7. This is the primary ranking signal in the row, so its numeral is
+   now the LARGEST thing in the identity block rather than the smallest: 13px mono
+   against 11.5px for the asset name and 10px for the pair, so the number dominates
+   the chip instead of the chip dominating the number.
+   The lane is a FIXED 34px, not `min-width: 30px`. Content-sized, the chip was
+   wider for "100" than for "75", and because it is the last item in a flex row
+   every re-render with a different digit count shifted the numeral sideways — that
+   is the "score does not reposition correctly on value change" defect, and a fixed
+   lane removes the width that was changing. 34px holds three tabular digits at
+   13px (JetBrains Mono advances .6em, so 3 digits is ~23.4px), and the 4px it adds
+   is spent once in --screener-col-symbol instead of being absorbed by the row. */
+.apex-screener-symbol .apex-screener-score-glyph {
+  margin-left: auto;
+  width: 34px;
+  height: 26px;
+  min-width: 0;
+  padding: 0;
+}
+
+.apex-screener-symbol .apex-screener-score-glyph b {
+  font-size: 13px;
 }
 
 .apex-screener-symbol > span {
@@ -727,61 +1208,85 @@
   margin-top: 1px;
   color: var(--apex-muted-600);
   font-family: var(--screener-mono);
-  font-size: 8.5px;
+  font-size: 10px;
   letter-spacing: .01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* A bold, saturated score chip: a solid tone-tinted gradient fill with a big
+   tabular number, and a thin progress rail along its bottom edge so the 0-100
+   position still reads at a glance without drawing a full ring for it. Replaces
+   the earlier thin-stroke ring gauge, which read as a faint outline next to the
+   identity block rather than the primary signal it actually is.
+   The plate is deliberately NOT the raw --*-500 hue any more. --apex-canvas ink on
+   an undarkened plate measured 2.28:1 on orange and 2.45:1 on green — every tone
+   failed AA, and orange (the RISK tone) was the worst, exactly as suspected. Both
+   stops are now mixed toward --apex-ink-950, which darkens the plate in the light
+   theme and lightens it in the dark one *by construction*, because ink-950 and
+   canvas flip together: the numeral therefore keeps its contrast in both themes
+   from one declaration. Computed for the light theme at the lightest point of the
+   gradient (the 58% stop): orange 5.10, green 5.19, blue 6.54, red 7.47 : 1, all
+   AA at any size. Hue still identifies the tier; it just no longer competes with
+   the number, which is the point of item 1. */
 .apex-screener-score-glyph {
   --score-color: var(--apex-green-500);
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 8px;
   position: relative;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--score-color) 58%, var(--apex-ink-950)), color-mix(in srgb, var(--score-color) 34%, var(--apex-ink-950)));
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--score-color) 30%, transparent);
+  transition: transform var(--duration-fast) var(--screener-ease), box-shadow var(--duration-fast);
 }
 
-.apex-screener-score-glyph.tone-watchlist { --score-color: var(--apex-blue-500, #2f8de4); }
+.apex-screener-row:hover .apex-screener-score-glyph {
+  transform: scale(1.06);
+  box-shadow: 0 5px 13px color-mix(in srgb, var(--score-color) 38%, transparent);
+}
+
+.apex-screener-score-glyph.tone-watchlist { --score-color: var(--apex-blue-500); }
 .apex-screener-score-glyph.tone-caution { --score-color: var(--apex-orange-500); }
 .apex-screener-score-glyph.tone-blocked { --score-color: var(--apex-red-500); }
 
-.apex-screener-score-glyph svg {
-  width: 36px;
-  height: 36px;
-  position: absolute;
-  inset: 0;
-  overflow: visible;
-  transform: rotate(-90deg);
-}
-
-.apex-screener-score-glyph circle {
-  fill: none;
-  stroke-width: 3;
-}
-
-.apex-screener-score-glyph .track { stroke: var(--apex-divider); }
-
-.apex-screener-score-glyph .value {
-  stroke: var(--score-color);
-  stroke-linecap: round;
-  stroke-dasharray: 100;
-  stroke-dashoffset: calc(100 - var(--score-ring));
-  animation: apex-screener-ring-in 700ms cubic-bezier(.2,.7,.2,1) both;
-}
-
+/* 600, not 800. JetBrains Mono is served at 400/500/600 only (src/index.css), so
+   800 matched the same 600 face and bought nothing — declaring it just hid the
+   fact that the weight ceiling was already reached. The extra emphasis item 1 asks
+   for comes from size (13px here vs 10px around it), the tabular lane and the
+   darkened plate instead. */
 .apex-screener-score-glyph b {
   position: relative;
-  color: var(--apex-ink-950);
+  z-index: 1;
+  color: var(--apex-canvas);
   font-family: var(--screener-mono);
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  line-height: 1;
 }
 
-@keyframes apex-screener-ring-in {
-  from { stroke-dashoffset: 100; }
+/* The fill rail: a solid strip that grows from the left edge to `--score-fill`,
+   so the chip still reads as a gauge rather than a static number chip — it just
+   draws that gauge as a bar instead of a stroke-dashoffset ring. */
+.apex-screener-score-glyph i {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: color-mix(in srgb, var(--apex-canvas) 65%, transparent);
+  width: var(--score-fill);
+  animation: apex-screener-score-fill-in 700ms cubic-bezier(.2,.7,.2,1) backwards;
+  transition: width 550ms var(--screener-ease);
+}
+
+@keyframes apex-screener-score-fill-in {
+  from { width: 0; }
 }
 
 /* Evidence equalizer: one bar per published score factor, so the row shows *why*
@@ -791,7 +1296,7 @@
    short bar would read as "scored low" instead of "not reported". */
 .apex-screener-equalizer {
   flex: 0 0 auto;
-  width: 34px;
+  width: var(--screener-col-factors);
   height: 22px;
   display: flex;
   align-items: flex-end;
@@ -807,6 +1312,11 @@
   transform-origin: 50% 100%;
   animation: apex-screener-bar-in 460ms cubic-bezier(.2,.7,.2,1) backwards;
   animation-delay: calc(var(--bar-index) * 40ms);
+  transition: transform var(--duration-fast) var(--screener-ease);
+}
+
+.apex-screener-row:hover .apex-screener-equalizer i {
+  transform: scaleY(1.08);
 }
 
 .apex-screener-equalizer i.absent {
@@ -820,20 +1330,27 @@
 
 .apex-screener-bias {
   flex: 0 0 auto;
+  width: var(--screener-col-bias);
   min-height: 22px;
   padding: 0 7px 0 5px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   border: 1px solid var(--apex-green-200);
   border-radius: 999px;
   background: var(--apex-green-050);
   color: var(--apex-green-700);
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 720;
   letter-spacing: .035em;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: transform var(--duration-fast) var(--screener-ease);
+}
+
+.apex-screener-row:hover .apex-screener-bias {
+  transform: scale(1.04);
 }
 
 .apex-screener-bias.short {
@@ -844,30 +1361,61 @@
 
 /* Metrics and state wrap onto a second line under pressure instead of being
    clipped: each cell stays `flex: 0 0 auto`, so a narrow row gets taller rather
-   than losing digits. */
+   than losing digits.
+   These two boxes are `flex: 0 0 auto` rather than `0 1 auto` so that the
+   identity block really is the only element that absorbs pressure. With a
+   shrink factor here, the boxes lost width first and their fixed-width cells
+   wrapped internally at 1368 — aligned, but two lines tall for no reason. The
+   row itself now carries `flex-wrap`, so genuine overpressure moves a whole box
+   to a second line instead of clipping it. */
 .apex-screener-row-metrics {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 4px 12px;
+  /* 8px, not 12px: the cells below are now fixed-width, so the column gutter no
+     longer has to do the visual separating on its own, and the 12px reclaimed
+     here goes back to the identity block. */
+  gap: 4px 8px;
 }
 
+/* Right-aligned inside a fixed cell: the digits of a numeric column then share
+   one right edge across every row, which is what makes a scan readable. A value
+   wider than the cell still overflows into the gutter rather than being clipped
+   or wrapped mid-digit. */
 .apex-screener-metric {
   flex: 0 0 auto;
+  width: var(--screener-col-metric);
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 1px;
   line-height: 1.15;
+  text-align: right;
 }
 
 .apex-screener-metric > span {
   color: var(--apex-muted-600);
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: .06em;
   text-transform: uppercase;
+}
+
+/* The metric label now heads its column, so printing it again on every row would
+   stack the same word twelve times directly beneath itself — which is what made
+   this stream feel loose. It is folded away visually rather than removed: the
+   value has no other label, so the text has to stay in the accessible name, and
+   it is restored to view in the phone breakpoint where the header is hidden. */
+.apex-screener-metric > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .apex-screener-metric > b {
@@ -890,7 +1438,7 @@
 }
 
 .apex-screener-row-state {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -899,17 +1447,80 @@
 }
 
 /* Badges wrap as whole units; shrinking one would clip its label, and a clipped
-   readiness tier is worse than a taller row. */
+   readiness tier is worse than a taller row. The fixed width is scoped to the
+   row so the shared .apex-v3-status component keeps its intrinsic sizing
+   everywhere else in the app; it already centres its own content. */
 .apex-screener-row-state > .apex-v3-status {
+  flex: 0 0 auto;
+  width: var(--screener-col-badge);
+}
+
+/* The tone dot is the pill's only shrinkable child, so a label wider than the
+   cell is paid for entirely by the dot: it collapsed to 0px and the strongest
+   rows lost the marker that encodes their tone. Pinning it means a future label
+   overshoot spills visibly into the gutter — recoverable and obvious in review —
+   instead of silently deleting the icon. */
+.apex-screener-row-state > .apex-v3-status > svg {
   flex: 0 0 auto;
 }
 
+/* The shared tone palette is tuned for larger text, and at this badge's 10px/800
+   it fails outright. Measured in the browser against each badge's own tinted
+   plate: mint on mint 1.74:1, amber 1.71:1, blue 2.37:1, red 2.90:1 — every one
+   far below the 4.5:1 floor, which is why the states read as decoration instead
+   of information.
+   Only the INK moves, by mixing the tone token toward --apex-ink-950; the plate
+   is deliberately left alone so the familiar colour stays and the measurements
+   above remain the ones being fixed. Re-measured after: 5.55 / 5.39 / 5.81 /
+   5.63:1. The vivid -500 token moves to the dot instead, so hue still carries
+   the tone at a glance while the label carries the reading. */
+.apex-screener-page .apex-v3-status.tone-positive {
+  color: color-mix(in srgb, var(--apex-green-500) 56%, var(--apex-ink-950));
+  border-color: color-mix(in srgb, var(--apex-green-500) 34%, var(--apex-border));
+}
+
+.apex-screener-page .apex-v3-status.tone-warning {
+  color: color-mix(in srgb, var(--apex-orange-500) 56%, var(--apex-ink-950));
+  border-color: color-mix(in srgb, var(--apex-orange-500) 34%, var(--apex-border));
+}
+
+.apex-screener-page .apex-v3-status.tone-info {
+  color: color-mix(in srgb, var(--apex-blue-500) 64%, var(--apex-ink-950));
+  border-color: color-mix(in srgb, var(--apex-blue-500) 34%, var(--apex-border));
+}
+
+.apex-screener-page .apex-v3-status.tone-negative {
+  color: color-mix(in srgb, var(--apex-red-500) 72%, var(--apex-ink-950));
+  border-color: color-mix(in srgb, var(--apex-red-500) 34%, var(--apex-border));
+}
+
+/* Hue lives on the dot now that the label is dark. Overriding `color` on the svg
+   works because the icons stroke with currentColor. */
+.apex-screener-page .apex-v3-status.tone-positive > svg { color: var(--apex-green-500); }
+.apex-screener-page .apex-v3-status.tone-warning > svg { color: var(--apex-orange-500); }
+.apex-screener-page .apex-v3-status.tone-info > svg { color: var(--apex-blue-500); }
+.apex-screener-page .apex-v3-status.tone-negative > svg { color: var(--apex-red-500); }
+
+/* The shared rule is `transition: all`, which animates layout too: a badge whose
+   width changes on re-render visibly slides sideways. Paint properties only. */
+.apex-screener-page .apex-v3-status {
+  transition:
+    color 160ms var(--screener-ease),
+    background-color 160ms var(--screener-ease),
+    border-color 160ms var(--screener-ease);
+}
+
+/* flex-start, not flex-end: the guard is the last cell, so anchoring the shield
+   icon to the left of the cell keeps the icon on one x across rows and lets the
+   shorter "Pass" label leave its slack on the outside, where nothing follows. */
 .apex-screener-guard {
   flex: 0 0 auto;
+  width: var(--screener-col-guard);
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 4px;
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -919,6 +1530,11 @@
 
 .apex-screener-page .apex-screener-row-actions {
   padding-left: 3px;
+  /* Pinned rather than content-sized so the header row can reserve exactly the
+     same trailing gutter from the same token. Content measures 81.6px, so 82px
+     is the measured width promoted to a shared definition, not a new guess. */
+  flex: 0 0 auto;
+  width: var(--screener-col-actions);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -929,8 +1545,17 @@
   width: 26px;
   min-height: 26px;
   border-color: transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-control);
   background: var(--apex-surface-soft);
+  transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--screener-ease);
+}
+
+.apex-screener-page .apex-screener-row-actions .apex-v3-icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.apex-screener-page .apex-screener-row-actions .apex-v3-icon-button:active {
+  transform: translateY(0) scale(.92);
 }
 
 .apex-screener-page .apex-screener-row-actions .apex-v3-icon-button.active {
@@ -942,86 +1567,24 @@
 .apex-screener-page .apex-screener-row-actions .apex-v3-button {
   min-height: 26px;
   padding: 0 8px;
-  border-radius: 9px;
+  border-radius: var(--radius-control);
   background: var(--apex-surface-soft);
+  transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--screener-ease);
 }
 
-/* ---------- visual signal map ---------- */
-
-.apex-screener-map {
-  height: 100%;
-  min-height: 0;
-  padding: 7px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
-  grid-auto-rows: minmax(86px, 1fr);
-  gap: 6px;
-  overflow-y: auto;
-  border-top: 1px solid var(--apex-divider);
-}
-
-.apex-screener-map-tile {
-  --tile-accent: var(--apex-green-500);
-  padding: 8px;
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-content: space-between;
-  gap: 3px 7px;
-  overflow: hidden;
-  border: 1px solid var(--apex-border);
-  border-radius: var(--radius-card);
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--tile-accent) 9%, transparent), transparent 58%),
-    var(--apex-surface);
-  color: var(--apex-ink-900);
-  text-align: left;
-  box-shadow: var(--apex-shadow-xs);
-  cursor: pointer;
-}
-
-.apex-screener-map-tile.short { --tile-accent: var(--apex-red-500); }
-
-.apex-screener-map-tile::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: var(--signal-strength);
-  height: 2px;
-  background: var(--tile-accent);
-}
-
-.apex-screener-map-tile:hover,
-.apex-screener-map-tile.selected {
-  border-color: color-mix(in srgb, var(--tile-accent) 55%, var(--apex-border));
+.apex-screener-page .apex-screener-row-actions .apex-v3-button:hover {
   transform: translateY(-1px);
 }
 
-.apex-screener-map-head {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 5px;
+.apex-screener-page .apex-screener-row-actions .apex-v3-button:active {
+  transform: translateY(0) scale(.96);
 }
-
-.apex-screener-map-head b { overflow: hidden; font-size: 9px; text-overflow: ellipsis; }
-.apex-screener-map-head em { color: var(--apex-muted-400); font-size: 7.5px; font-style: normal; }
-.apex-screener-map-tile > strong { font-size: 20px; font-weight: 760; font-variant-numeric: tabular-nums; }
-.apex-screener-map-tile > span.positive,
-.apex-screener-map-tile > span.negative,
-.apex-screener-map-tile > span.neutral { align-self: center; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.apex-screener-map-tile > span.positive { color: var(--apex-positive); }
-.apex-screener-map-tile > span.negative { color: var(--apex-negative); }
-.apex-screener-map-tile > span.neutral { color: var(--apex-muted-600); }
-.apex-screener-map-tile > small { grid-column: 1 / -1; color: var(--apex-muted-600); font-size: 7.5px; }
 
 /* ---------- unavailable data, never a stand-in number ---------- */
 
 .apex-screener-unavailable {
   color: var(--apex-muted-400);
-  font-size: 8.5px;
+  font-size: 10px;
   font-style: italic;
   font-weight: 600;
   text-decoration: underline dotted var(--apex-border-strong);
@@ -1048,7 +1611,7 @@
 .apex-screener-empty span {
   max-width: 42ch;
   color: var(--apex-muted-600);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.45;
 }
 
@@ -1077,7 +1640,7 @@
 
 .apex-screener-identity {
   margin: 7px 7px 0;
-  padding: 9px 10px;
+  padding: 8px 10px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -1103,7 +1666,7 @@
   display: block;
   overflow: hidden;
   color: var(--apex-muted-600);
-  font-size: 8px;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1115,21 +1678,31 @@
   gap: 4px;
 }
 
+/* Density: 8px of block padding and 6px between blocks, down from 9/7. The five
+   detail cards were spending 70px of a 753px-tall panel on frame and gutter
+   alone, which is what pushed Market texture below the fold. */
 .apex-screener-block {
-  margin: 0 7px 7px;
-  padding: 9px 10px;
+  margin: 0 7px 6px;
+  padding: 8px 10px;
   border: 1px solid var(--apex-border);
   border-radius: 11px;
   background: color-mix(in srgb, var(--apex-surface) 96%, var(--apex-green-050));
   box-shadow: 0 4px 14px color-mix(in srgb, var(--apex-ink-950) 4%, transparent);
 }
 
+/* Section headers are the top of the panel's type hierarchy, so they get the
+   strongest ink and the widest tracking, not the weakest ink on the card.
+   --apex-muted-600 measured 4.15:1 against the block fill — under AA for text this
+   size — and it was also the same colour as the labels *below* it, so the panel had
+   no header level at all. The three steps are now unambiguous: header ink-950 / 700
+   / uppercase 10.5px, label ink-700 / 600 / 10px, value ink-950 / mono 600 / 11.5px
+   (item 3, and the token-only rule from item 5). */
 .apex-screener-block h3 {
   margin: 0 0 6px;
-  color: var(--apex-muted-600);
-  font-size: 8px;
+  color: var(--apex-ink-950);
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: .05em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   display: flex;
   align-items: center;
@@ -1142,8 +1715,8 @@
 
 .apex-screener-note {
   margin: 6px 0 0;
-  color: var(--apex-muted-600);
-  font-size: 7.5px;
+  color: var(--apex-ink-700);
+  font-size: 10px;
   line-height: 1.45;
 }
 
@@ -1151,35 +1724,45 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 5px;
+  gap: 6px;
   list-style: none;
 }
 
+/* Value column widened 26 -> 32px: the numbers are two type steps larger than they
+   were and three digits at 11.5px mono need the room, and a value that wraps or
+   ellipsises is worse than a slightly narrower meter. */
 .apex-screener-factors li {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) 26px;
+  grid-template-columns: 62px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 7px;
 }
 
 .apex-screener-factor-label {
   color: var(--apex-ink-700);
-  font-size: 8.5px;
-  font-weight: 620;
+  font-size: 10px;
+  font-weight: 600;
 }
 
+/* 8px, not 5px, and the track no longer uses --apex-divider (#edf2ee on a near-white
+   card is 1.05:1 — a bar you cannot see is not a bar). The track is mixed from
+   --apex-ink-950 so it darkens in the light theme and lightens in the dark one, and
+   the fill keeps the saturated token, so track and fill are separated by both
+   lightness and chroma at every zoom level. */
 .apex-screener-factor-meter {
-  height: 5px;
+  height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--apex-divider);
+  background: color-mix(in srgb, var(--apex-ink-950) 12%, var(--apex-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--apex-ink-950) 7%, transparent);
 }
 
 .apex-screener-factor-meter i {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--apex-green-500);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--apex-green-600) 80%, var(--apex-green-500)), var(--apex-green-500));
+  transition: width 550ms var(--screener-ease);
 }
 
 /* An absent factor gets a hatched track, so "no reading" cannot be misread as
@@ -1188,21 +1771,22 @@
   width: 100%;
   background: repeating-linear-gradient(
     135deg,
-    var(--apex-divider) 0 3px,
+    color-mix(in srgb, var(--apex-ink-950) 22%, var(--apex-surface)) 0 3px,
     transparent 3px 6px
   );
 }
 
 .apex-screener-factor-value {
   color: var(--apex-ink-950);
-  font-size: 9px;
-  font-weight: 700;
+  font-family: var(--screener-mono);
+  font-size: 11.5px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
 .apex-screener-factor-value .apex-screener-unavailable {
-  font-size: 7.5px;
+  font-size: 10px;
   text-decoration: none;
 }
 
@@ -1219,7 +1803,7 @@
   padding-left: 10px;
   position: relative;
   color: var(--apex-ink-700);
-  font-size: 8.5px;
+  font-size: 10px;
   line-height: 1.45;
 }
 
@@ -1240,7 +1824,7 @@
   align-items: start;
   gap: 5px;
   color: var(--apex-ink-700);
-  font-size: 8.5px;
+  font-size: 10px;
   line-height: 1.45;
 }
 
@@ -1250,25 +1834,396 @@
 }
 
 .apex-screener-page .apex-screener-detail .apex-v3-kv-list dd .apex-screener-unavailable {
-  font-size: 8px;
+  font-size: 10px;
+}
+
+/* ---------- score gauge ---------- */
+
+/* Shared shell for both gauge directions. The tone token is set once here and
+   every part of either gauge reads it, so a tier change re-colours the arc, the
+   needle, the numeral and the ladder marker from one place. */
+.apex-screener-gauge {
+  --gauge-tone: var(--apex-green-500);
+  --gauge-ink: var(--apex-green-700);
+  margin: 6px 7px;
+  padding: 10px 12px 9px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  border: 1px solid var(--apex-border);
+  border-radius: 11px;
+  background: linear-gradient(180deg, var(--apex-surface), color-mix(in srgb, var(--gauge-tone) 6%, var(--apex-surface)));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--apex-ink-950) 4%, transparent);
+}
+
+.apex-screener-gauge.tone-confirmed { --gauge-tone: var(--apex-green-500); --gauge-ink: var(--apex-green-700); }
+.apex-screener-gauge.tone-watchlist { --gauge-tone: var(--apex-blue-500); --gauge-ink: var(--apex-blue-700); }
+.apex-screener-gauge.tone-caution { --gauge-tone: var(--apex-orange-500); --gauge-ink: var(--apex-orange-700); }
+.apex-screener-gauge.tone-blocked { --gauge-tone: var(--apex-red-500); --gauge-ink: var(--apex-red-700); }
+
+/* Items 3 + 6. The card used to print the score as a numeral and then draw the
+   SAME axis twice below it — a proportional band track, and under that a
+   band-labelled scale — which is the duplication item 6 objects to. There is now
+   exactly ONE data visualization: a banded arc whose segments ARE the
+   Avoid/Risk/Watch/Opportunity zones, with the numeral inside the arc it belongs
+   to. What survives of the old track is a colour key (swatch, name, range) built
+   deliberately unlike a gauge so it cannot be read as a second one.
+   `.apex-screener-gauge-read` and every `.apex-screener-ladder-*` rule were removed
+   with the markup they styled; nothing else rendered them. */
+.apex-screener-gauge-arc {
+  justify-items: stretch;
+  gap: 5px;
+}
+
+/* Capped rather than full-width: the arc's height follows its own aspect ratio, so
+   letting it span the whole 286px of content in the context column would have spent
+   ~175px of a 753px panel on one number and pushed the trade levels below the fold.
+   `overflow: visible` because the marker deliberately crosses outside the band. */
+.apex-screener-arc {
+  display: block;
+  width: min(100%, 248px);
+  height: auto;
+  margin-inline: auto;
+  overflow: visible;
+}
+
+/* One stroke width for the track and every band, so the arc reads as a single ring
+   that changes colour rather than as several arcs of different weights. 15 units of
+   a 200-unit viewBox is ~18.6 CSS px at the capped width — thick enough that the
+   zone colour, not the needle, is the first thing the eye lands on (item 3). */
+.apex-screener-arc-track,
+.apex-screener-arc-band {
+  fill: none;
+  stroke-width: 15;
+  stroke-linecap: butt;
+}
+
+.apex-screener-arc-track {
+  stroke: color-mix(in srgb, var(--apex-ink-950) 9%, var(--apex-surface));
+}
+
+/* An off-zone band keeps its own hue at low strength, so the boundaries stay
+   readable while the band the score actually lands in is the only saturated one —
+   the arc therefore encodes the verdict, not just the magnitude. */
+.apex-screener-arc-band { stroke: color-mix(in srgb, var(--apex-ink-950) 14%, var(--apex-surface)); }
+.apex-screener-arc-band.tone-confirmed { stroke: color-mix(in srgb, var(--apex-green-500) 30%, var(--apex-surface)); }
+.apex-screener-arc-band.tone-watchlist { stroke: color-mix(in srgb, var(--apex-blue-500) 30%, var(--apex-surface)); }
+.apex-screener-arc-band.tone-caution { stroke: color-mix(in srgb, var(--apex-orange-500) 30%, var(--apex-surface)); }
+.apex-screener-arc-band.tone-blocked { stroke: color-mix(in srgb, var(--apex-red-500) 30%, var(--apex-surface)); }
+
+.apex-screener-arc-band.tone-confirmed.current { stroke: var(--apex-green-500); }
+.apex-screener-arc-band.tone-watchlist.current { stroke: var(--apex-blue-500); }
+.apex-screener-arc-band.tone-caution.current { stroke: var(--apex-orange-500); }
+.apex-screener-arc-band.tone-blocked.current { stroke: var(--apex-red-500); }
+
+/* The marker crosses the whole ring instead of sitting on top of it, and a halo in
+   the surface colour is drawn underneath so the needle stays legible over a
+   saturated band and over the pale track alike. */
+.apex-screener-arc-marker-halo {
+  stroke: var(--apex-surface);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.apex-screener-arc-marker {
+  stroke: var(--apex-ink-950);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.apex-screener-arc-marker-tip {
+  fill: var(--apex-ink-950);
+  stroke: var(--apex-surface);
+  stroke-width: 2;
+}
+
+/* 27 viewBox units is ~33px at the capped width — the largest type in the panel, as
+   the primary ranking signal should be (item 1), up from the old 30px numeral. Mono
+   600 is the heaviest numeric face the build actually serves.
+   This is an SVG text node with text-anchor="middle" set on the element: there is
+   no box width to re-measure, so 8, 88 and 100 are all centred on the same axis by
+   construction, on every re-render and every live refresh (item 7). */
+.apex-screener-arc-value {
+  fill: var(--apex-ink-950);
+  font-family: var(--screener-mono);
+  font-size: 27px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+
+.apex-screener-arc-tier {
+  fill: var(--gauge-ink);
+  font-family: var(--screener-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* The demoted duplicate: a legend, not a track. Swatch + name + range, laid out as
+   inline items, so there is no bar to mistake for a second reading of the score. */
+.apex-screener-arc-key {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 9px;
+  list-style: none;
+}
+
+.apex-screener-arc-key li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--apex-ink-700);
+  font-size: 10px;
+}
+
+.apex-screener-arc-key li.current {
+  color: var(--apex-ink-950);
+}
+
+.apex-screener-arc-key li i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--apex-ink-950) 20%, var(--apex-surface));
+}
+
+.apex-screener-arc-key li.tone-confirmed i { background: var(--apex-green-500); }
+.apex-screener-arc-key li.tone-watchlist i { background: var(--apex-blue-500); }
+.apex-screener-arc-key li.tone-caution i { background: var(--apex-orange-500); }
+.apex-screener-arc-key li.tone-blocked i { background: var(--apex-red-500); }
+
+.apex-screener-arc-key li b {
+  font-weight: 700;
+}
+
+.apex-screener-arc-key li span {
+  font-family: var(--screener-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  opacity: .75;
+}
+
+/* Left as a block, not a flex row: the caption is a sentence with a number in it,
+   and flex would make every text run its own item and open a gap inside the
+   sentence. */
+.apex-screener-gauge-caption {
+  margin: 2px 0 0;
+  color: var(--apex-ink-700);
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.apex-screener-gauge-caption b {
+  color: var(--apex-ink-950);
+  font-family: var(--screener-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The separator between the distance-to-next-zone clause and the coverage reading:
+   drawn, not typed, so it is neither selectable nor read aloud. */
+.apex-screener-gauge-caption i {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--apex-ink-950) 30%, var(--apex-surface));
+  vertical-align: middle;
+}
+
+/* ---------- trade levels ---------- */
+
+/* The panel's primary block (item 3), so it carries a slightly greener frame than
+   its siblings: it is the answer to "what do I do with this", and it is now the
+   first thing in the panel rather than something below three paragraphs. */
+.apex-screener-levels-block {
+  border-color: color-mix(in srgb, var(--apex-green-500) 26%, var(--apex-border));
+  background: color-mix(in srgb, var(--apex-surface) 92%, var(--apex-green-050));
+}
+
+/* Rows, not three columns. A three-up comparison is prettier but the widest real
+   price on this venue ("118,432.10") needs ~75px at this type size and a third of
+   the block's 286px content box leaves ~75px including padding — i.e. it would clip
+   or ellipsise exactly the assets people look at most. Rows give the number the
+   whole width, which is this file's standing rule: names truncate, numbers never
+   do. */
+.apex-screener-levels {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  list-style: none;
+}
+
+.apex-screener-levels li {
+  --level-tone: var(--apex-border-strong);
+  min-width: 0;
+  padding: 3px 7px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-left: 3px solid var(--level-tone);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: color-mix(in srgb, var(--level-tone) 8%, var(--apex-surface));
+}
+
+/* One hue each, and they are the hues the app already uses for these three ideas —
+   the target is the win, the stop is the loss, the entry is the reference. No new
+   colour language is introduced for this block. */
+.apex-screener-levels li.entry { --level-tone: var(--apex-blue-500); }
+.apex-screener-levels li.stop { --level-tone: var(--apex-red-500); }
+.apex-screener-levels li.target { --level-tone: var(--apex-green-500); }
+
+.apex-screener-levels li > span {
+  overflow: hidden;
+  color: var(--apex-ink-700);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.apex-screener-levels li > b {
+  color: var(--apex-ink-950);
+  font-family: var(--screener-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* An unavailable level drops back to the text face at label size: it is a phrase,
+   not a number, and setting it in the price step would give a missing reading the
+   same visual weight as a real one. */
+.apex-screener-levels li > b .apex-screener-unavailable {
+  font-family: var(--screener-text);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.apex-screener-levels-meta {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 9px;
+}
+
+.apex-screener-levels-meta > span {
+  min-width: 0;
+  padding-top: 3px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  border-top: 1px solid var(--apex-divider);
+}
+
+.apex-screener-levels-meta i {
+  color: var(--apex-ink-700);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.apex-screener-levels-meta b {
+  color: var(--apex-ink-950);
+  font-family: var(--screener-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.apex-screener-levels-meta b .apex-screener-unavailable {
+  font-family: var(--screener-text);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ---------- collapsed explanations ---------- */
+
+/* Item 3: the educational paragraphs are now one line each until asked for, so the
+   panel opens on levels and numbers instead of on prose. A native <details> rather
+   than a scripted disclosure, so the open/closed state, keyboard operation and the
+   accessible name all come from the element itself. */
+.apex-screener-explain {
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--apex-divider);
+}
+
+.apex-screener-explain > summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--apex-ink-700);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  list-style: none;
+}
+
+.apex-screener-explain > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A drawn caret instead of the UA triangle, so it inherits the page's ink and
+   rotates on the page's own easing curve rather than snapping. */
+.apex-screener-explain > summary::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--duration-fast) var(--screener-ease);
+}
+
+.apex-screener-explain[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.apex-screener-explain > summary:hover {
+  color: var(--apex-ink-950);
+}
+
+.apex-screener-explain p {
+  margin: 5px 0 0;
+  color: var(--apex-ink-700);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+/* The interpretation line: the one sentence the bar chart above cannot say, so it
+   is set as prose at reading weight rather than as another bullet. */
+.apex-screener-thesis {
+  margin: 0 0 6px;
+  color: var(--apex-ink-950);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .apex-screener-actions {
   margin: 0 7px 7px;
-  padding: 9px 10px;
+  padding: 8px 10px;
   display: grid;
-  gap: 6px;
+  gap: 5px;
   border: 1px solid var(--apex-border);
   border-radius: 11px;
   background: var(--apex-surface);
 }
 
-.apex-screener-page .apex-screener-detail .apex-v3-donut {
-  margin-block: 10px 12px;
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--donut-color) 14%, transparent);
-}
-
-/* Not defined globally in this project, so the screener scopes its own. */
 .apex-screener-page .sr-only {
   position: absolute;
   width: 1px;
@@ -1309,6 +2264,22 @@
    moves under it at full width. The row is already a card, so nothing has to be
    re-shaped into one — this only relaxes the single-line constraint. */
 @media (max-width: 760px) {
+  /* The rows stop being a matrix here — the metric and state boxes each take a
+     full line and left-align — so a column header would describe a layout that no
+     longer exists. It is hidden, and the per-row labels it replaced come back. */
+  .apex-screener-columns {
+    display: none;
+  }
+
+  .apex-screener-metric > span {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+  }
+
   .apex-screener-row {
     grid-template-columns: minmax(0, 1fr);
     padding-right: 0;
@@ -1333,6 +2304,9 @@
 
   .apex-screener-page .apex-screener-row-actions {
     padding: 0 11px 9px;
+    /* Releases the shared column width: stacked under the row, the actions are a
+       full-width strip rather than a trailing gutter aligned to the header. */
+    width: auto;
     justify-content: stretch;
   }
 
@@ -1369,8 +2343,43 @@
   .apex-screener-advanced {
     grid-template-columns: repeat(2, minmax(118px, 1fr));
   }
+}
 
-  .apex-screener-map {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* ---------- reduced motion ---------- */
+
+/* Every animation and hover/press transform on this page is decorative: the
+   same information and the same end state are present without it, so
+   reduced-motion callers lose nothing by switching all of it off. This block
+   is deliberately the last thing in the file — several of the rules it
+   cancels already carry the full `.apex-screener-page` prefix themselves, so
+   matching their selector exactly (down to the same pseudo-class) only ties
+   on specificity; placement after every rule it overrides is what lets the
+   tie resolve in its favour, without reaching for `!important`. */
+@media (prefers-reduced-motion: reduce) {
+  .apex-screener-page .spin,
+  .apex-screener-page .apex-screener-hero-mark::before,
+  .apex-screener-page .apex-screener-hero-mark::after,
+  .apex-screener-page .apex-screener-row,
+  .apex-screener-page .apex-screener-equalizer i,
+  .apex-screener-page .apex-screener-score-glyph i { animation: none; }
+
+  .apex-screener-page .apex-screener-row:hover,
+  .apex-screener-page .apex-screener-row:focus-within,
+  .apex-screener-page .apex-screener-row:has(.apex-screener-row-main:active),
+  .apex-screener-page .apex-screener-row:hover .apex-screener-score-glyph,
+  .apex-screener-page .apex-screener-row:hover .apex-screener-equalizer i,
+  .apex-screener-page .apex-screener-row:hover .apex-screener-bias,
+  .apex-screener-page .apex-screener-presets button:hover,
+  .apex-screener-page .apex-screener-presets button:active,
+  .apex-screener-page .apex-screener-sortbar button:hover,
+  .apex-screener-page .apex-screener-sortbar button:active,
+  .apex-screener-page .apex-screener-view-tools > button:active,
+  .apex-screener-page .apex-screener-row-actions .apex-v3-icon-button:hover,
+  .apex-screener-page .apex-screener-row-actions .apex-v3-icon-button:active,
+  .apex-screener-page .apex-screener-row-actions .apex-v3-button:hover,
+  .apex-screener-page .apex-screener-row-actions .apex-v3-button:active { transform: none; }
+
+  /* The caret still rotates — that is state, not decoration, and an open accordion
+     has to look open. Only the animation between the two positions is dropped. */
+  .apex-screener-page .apex-screener-explain > summary::before { transition: none; }
 }

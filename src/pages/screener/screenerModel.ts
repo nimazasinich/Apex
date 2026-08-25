@@ -1,5 +1,5 @@
 import { baseAssetFromMarket } from '../../lib/marketPresentation';
-import type { CandidateScore, FeatureQualityState, FeatureQualityMeta, SymbolTicker } from '../../types';
+import type { CandidateScore, FeatureQualityState, FeatureQualityMeta, ReadinessTier, SymbolTicker } from '../../types';
 import {
   DEFAULT_SCREENER_FILTERS,
   type ScreenerFactor,
@@ -25,7 +25,8 @@ import {
  *    full. Summing the five published sub-scores here would replace an
  *    authoritative number with a strictly worse client-side approximation that
  *    silently disagrees with every other surface in the app. The screener ranks
- *    on the published score and uses the sub-scores only to explain it.
+ *    with the published score as the base of `signalStrengthOf` — never in place
+ *    of it — and uses the sub-scores only to explain the result.
  *
  * 2. Absent inputs stay absent. Every value that can fail to arrive is wrapped in
  *    `ScreenerMetric` with an explicit note, so an unavailable reading can never
@@ -173,7 +174,101 @@ function warningsFor(
   return warnings;
 }
 
-function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, contestedDirection: boolean): Omit<ScreenerRow, 'rank'> {
+/**
+ * The scanner's published trade levels, copied rather than derived.
+ *
+ * `lifecycleContext.entryPrice / stopLoss / takeProfit` are attached to every
+ * scan candidate server-side by `deriveSymbolLevels(ticker, candles1h,
+ * 'ATR_BANDS')` (`apexNextMarketRoutes.ts`), for the long and the short thesis
+ * alike, from 1h candles the browser never receives. So they are read straight
+ * through: no ATR is recomputed here, no swing scan, no rounding to a nicer
+ * number, and a candidate that arrives without a level says so.
+ *
+ * Reward-to-risk and the risk percentage ARE computed, because they are
+ * arithmetic over two prices the scanner already published — not a new market
+ * reading — and they are the division a user would otherwise do by hand on the
+ * one panel meant to answer "is this worth taking". Direction decides which side
+ * the risk leg is on: entry − stop for a long, stop − entry for a short.
+ */
+function levelsFor(candidate: CandidateScore): Pick<ScreenerRow, 'entryPrice' | 'stopLoss' | 'takeProfit' | 'riskReward' | 'riskPct'> {
+  const context = candidate.lifecycleContext;
+  const priceMetric = (value: number | undefined): ScreenerMetric => value == null || !Number.isFinite(value) || value <= 0
+    ? unavailable('The scanner published no trade levels for this candidate in the current scan.')
+    : available(value);
+
+  const entryPrice = priceMetric(context?.entryPrice);
+  const stopLoss = priceMetric(context?.stopLoss);
+  const takeProfit = priceMetric(context?.takeProfit);
+  const entry = entryPrice.value;
+  const stop = stopLoss.value;
+  const target = takeProfit.value;
+  const risk = entry != null && stop != null ? (candidate.direction === 'LONG' ? entry - stop : stop - entry) : null;
+  const reward = entry != null && target != null ? (candidate.direction === 'LONG' ? target - entry : entry - target) : null;
+
+  return {
+    entryPrice,
+    stopLoss,
+    takeProfit,
+    riskReward: risk != null && risk > 0 && reward != null && reward > 0
+      ? available(reward / risk)
+      : unavailable('Reward-to-risk needs an entry, a stop and a target on the expected side of entry.'),
+    riskPct: risk != null && risk > 0 && entry != null
+      ? available((risk / entry) * 100)
+      : unavailable('The risk distance needs an entry and a stop on the expected side of it.'),
+  };
+}
+
+/** Tier weight in `signalStrengthOf` — a nudge, not a partition. See that function. */
+const TIER_STRENGTH_BONUS: Record<ReadinessTier, number> = {
+  CONFIRMED: 6,
+  WATCHLIST: 3,
+  CAUTION: 0,
+  BLOCKED: -6,
+};
+
+/**
+ * Signal strength — what "strongest first" means on this page, defined once, here.
+ *
+ * The list used to sort on `score` alone, which answers "what number did the
+ * scanner print" rather than "how much of a tradeable signal is this". Those
+ * diverge constantly in live data: the scan that prompted this change opened with
+ * a 90 that had failed its risk guard and carried five objections, ranked above
+ * clean rows in the low 80s. Strength is the composite that decides `rank`. It is
+ * NOT a second score: `score` is untouched, authoritative, and still the number
+ * the UI prints.
+ *
+ * Four terms, in the order they dominate:
+ *
+ * 1. `score` — the scanner's published 0-100, the base. Never recomputed.
+ * 2. Risk guard: −12 when it fails. The guard is an explicit objection to trading
+ *    the symbol at all, so it outweighs any plausible score gap between two
+ *    otherwise comparable rows.
+ * 3. Readiness tier: CONFIRMED +6, WATCHLIST +3, CAUTION 0, BLOCKED −6. The
+ *    scanner's own verdict, weighted as a nudge so a strong CAUTION can still beat
+ *    a weak WATCHLIST rather than being partitioned below it.
+ * 4. Conviction: −1.5 per warning, capped at −9 so one noisy row cannot fall off
+ *    the end of the list, plus up to −6 for missing evidence coverage (−1.5 when
+ *    coverage was not reported at all). At equal score the cleaner, better-evidenced
+ *    row ranks higher — which is the whole point.
+ *
+ * Deliberately NOT a term: LONG vs SHORT. The scanner publishes short theses as
+ * first-class setups, so ranking one bias above the other would be a directional
+ * opinion the data does not support. "Opportunity over Risk over Avoid" is
+ * `readinessTier`, which term 3 already carries.
+ */
+function signalStrengthOf(row: Omit<ScreenerRow, 'rank' | 'signalStrength'>): number {
+  const base = Number.isFinite(row.score) ? row.score : 0;
+  const guard = row.guardPass ? 0 : -12;
+  const tier = TIER_STRENGTH_BONUS[row.readinessTier];
+  const flags = -Math.min(9, row.warnings.length * 1.5);
+  const coverage = row.scoreCoveragePct == null || !Number.isFinite(row.scoreCoveragePct)
+    ? -1.5
+    : Math.max(-6, (Math.min(100, Math.max(0, row.scoreCoveragePct)) - 100) * 0.06);
+  // Rounded so the ordering can never turn on floating-point noise.
+  return Math.round((base + guard + tier + flags + coverage) * 10_000) / 10_000;
+}
+
+function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, contestedDirection: boolean): Omit<ScreenerRow, 'rank' | 'signalStrength'> {
   const factors = factorsFor(candidate);
   const coverage = candidate.featureCompletenessPct;
   // The only per-symbol observation time the payloads carry is the ticker
@@ -216,6 +311,21 @@ function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, con
     // depth is only fetched for the selected chart symbol, so there is no honest
     // market-wide spread column to draw.
     spreadDepth: unavailable('Order-book depth is only fetched for the symbol open in Trading, so spread quality is not available across the market list.'),
+    ...levelsFor(candidate),
+    high24h: ticker == null
+      ? unavailable('No ticker snapshot for this symbol in the current market payload.')
+      : metricFrom(
+        Number.isFinite(ticker.high24h) && ticker.high24h > 0 ? ticker.high24h : undefined,
+        undefined,
+        'No 24h high was reported for this market.',
+      ),
+    low24h: ticker == null
+      ? unavailable('No ticker snapshot for this symbol in the current market payload.')
+      : metricFrom(
+        Number.isFinite(ticker.low24h) && ticker.low24h > 0 ? ticker.low24h : undefined,
+        undefined,
+        'No 24h low was reported for this market.',
+      ),
     factors,
     timeframeConfluence: candidate.timeframeConfluence,
     timeframeConfluenceState: candidate.timeframeConfluenceState ?? null,
@@ -234,6 +344,9 @@ function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, con
  * for the same symbol the higher-scoring one wins — matching how the Watchlist
  * page already picks a candidate — and the loser is recorded as a contested
  * direction warning rather than dropped silently.
+ *
+ * Rows are ordered by `signalStrengthOf`, not by raw score. See that function for
+ * what "strength" means and why the raw number alone was the wrong order.
  */
 export function buildScreenerRows(candidates: CandidateScore[], tickers: SymbolTicker[]): ScreenerRow[] {
   const tickerBySymbol = new Map(tickers.map((ticker) => [ticker.symbol, ticker]));
@@ -253,7 +366,14 @@ export function buildScreenerRows(candidates: CandidateScore[], tickers: SymbolT
   });
 
   return rows
-    .sort((left, right) => right.score - left.score || left.symbol.localeCompare(right.symbol))
+    // Rank is strength order, not raw-score order. `score` is still the scanner's
+    // and still what the row prints; the tie-breaks below keep the sequence total
+    // and stable — equal strength falls back to the published score, then to the
+    // symbol — so the output stays byte-identical for identical input.
+    .map((row) => ({ ...row, signalStrength: signalStrengthOf(row) }))
+    .sort((left, right) => right.signalStrength - left.signalStrength
+      || right.score - left.score
+      || left.symbol.localeCompare(right.symbol))
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 

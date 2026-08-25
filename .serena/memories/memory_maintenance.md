@@ -27,6 +27,14 @@ Keep guidance durable and generalizable, not task-local.
 Add or update memories only with stable, non-obvious project conventions that avoid complex rediscovery in the future.
 Do not add: quick-read facts; generic language/framework knowledge; one-off task notes; volatile line-level details; behavior likely to change soon.
 
+## Time-boxing unverified entries
+
+Any entry under an "unverified" / "speed idea" heading must carry the date it was written.
+If it is still unverified after 3 sessions that touched this project, delete it rather than let it accumulate —
+an untried idea is dead weight that costs context on every read. Promote it to a normal invariant once tested,
+or remove it. Same rule applies to resolved incidents: once a fix has held for multiple sessions, collapse the
+investigation narrative to the single durable invariant and let git history carry the forensics.
+
 ## Maintenance Actions
 
 - Renaming memories: References are updated automatically if handled via Serena's memory rename tool.

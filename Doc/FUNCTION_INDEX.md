@@ -13,25 +13,25 @@ Use this index before opening large files. Search by function name, tag, or file
 
 ## Summary
 
-- Total indexed symbols: 3630
-- Generated at: 2026-08-23T10:07:27.842Z
+- Total indexed symbols: 3676
+- Generated at: 2026-08-25T06:55:36.311Z
 
 ## Tag Index
 
 - `adaptive`: 101
 - `api-route`: 3
-- `component`: 197
+- `component`: 199
 - `decision-memory`: 155
 - `hook`: 9
-- `market-data`: 557
-- `ml`: 177
+- `market-data`: 559
+- `ml`: 182
 - `provider`: 106
 - `scanner`: 30
-- `script`: 676
+- `script`: 688
 - `server`: 80
-- `service`: 1906
+- `service`: 1912
 - `test`: 151
-- `ui`: 340
+- `ui`: 355
 
 ## Functions By File
 
@@ -595,13 +595,13 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `ticker` | arrow | 33-33 | no | no | `script` |
-| `OfflineWebSocket` | class | 44-50 | no | no | `script` |
-| `OfflineWebSocket.close` | method | 47-47 | no | no | `script` |
-| `OfflineWebSocket.send` | method | 47-47 | no | no | `script` |
-| `OfflineWebSocket.addEventListener` | method | 48-48 | no | no | `script` |
-| `OfflineWebSocket.dispatchEvent` | method | 49-49 | no | no | `script` |
-| `OfflineWebSocket.removeEventListener` | method | 49-49 | no | no | `script` |
+| `ticker` | arrow | 42-42 | no | no | `script` |
+| `OfflineWebSocket` | class | 53-59 | no | no | `script` |
+| `OfflineWebSocket.close` | method | 56-56 | no | no | `script` |
+| `OfflineWebSocket.send` | method | 56-56 | no | no | `script` |
+| `OfflineWebSocket.addEventListener` | method | 57-57 | no | no | `script` |
+| `OfflineWebSocket.dispatchEvent` | method | 58-58 | no | no | `script` |
+| `OfflineWebSocket.removeEventListener` | method | 58-58 | no | no | `script` |
 
 ### scripts/qa/runProxyFetchOptionalDependencyRuntime.mjs
 
@@ -1027,26 +1027,35 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `sha256` | function | 35-37 | no | no | `script` |
-| `iso` | function | 39-41 | no | no | `script` |
-| `sleep` | function | 43-45 | no | no | `script` |
-| `fetchBytes` | function | 47-66 | no | yes | `script` |
-| `fetchJsonPage` | function | 68-75 | no | yes | `script` |
-| `writeSeries` | function | 77-93 | no | no | `script` |
-| `coverage` | function | 95-101 | no | no | `script` |
-| `mapLimit` | function | 103-115 | no | yes | `script` |
-| `utcDates` | function | 117-123 | no | no | `script` |
-| `utcMonths` | function | 125-135 | no | no | `script` |
-| `acquireKlines` | function | 137-164 | no | yes | `script` |
-| `acquireFunding` | function | 166-193 | no | yes | `script` |
-| `unzipCsv` | function | 195-202 | no | no | `script` |
-| `acquireMetrics` | function | 204-233 | no | yes | `script` |
-| `acquireBookDepth` | function | 235-273 | no | yes | `script` |
-| `decodeXml` | function | 275-278 | no | no | `ml`, `script` |
-| `tag` | function | 280-283 | no | no | `script` |
-| `acquireNews` | function | 285-308 | no | yes | `script` |
-| `acquireSentiment` | function | 310-320 | no | yes | `script` |
-| `main` | function | 322-355 | no | yes | `script` |
+| `sha256` | function | 42-44 | no | no | `script` |
+| `iso` | function | 46-48 | no | no | `script` |
+| `sleep` | function | 50-52 | no | no | `script` |
+| `fetchBytes` | function | 54-73 | no | yes | `script` |
+| `fetchJsonPage` | function | 75-82 | no | yes | `script` |
+| `writeSeries` | function | 84-102 | no | no | `script` |
+| `coverage` | function | 104-110 | no | no | `script` |
+| `mapLimit` | function | 112-124 | no | yes | `script` |
+| `utcDates` | function | 126-132 | no | no | `script` |
+| `utcMonths` | function | 134-144 | no | no | `script` |
+| `acquireKlines` | function | 146-173 | no | yes | `script` |
+| `acquireFunding` | function | 175-202 | no | yes | `script` |
+| `csvCell` | function | 204-207 | no | no | `script` |
+| `epochKeyedCsvRows` | function | 210-212 | no | no | `script` |
+| `utcMonthKeys` | function | 214-216 | no | no | `script` |
+| `archivePages` | function | 218-233 | no | yes | `script` |
+| `acquireArchiveKlines` | function | 238-279 | no | yes | `script` |
+| `parse` | arrow | 241-243 | no | no | `script` |
+| `acquireArchiveFunding` | function | 283-317 | no | yes | `script` |
+| `unzipCsv` | function | 322-348 | no | no | `script` |
+| `acquireMetrics` | function | 350-373 | no | yes | `script` |
+| `acquireBookDepth` | function | 375-407 | no | yes | `script` |
+| `decodeXml` | function | 409-412 | no | no | `ml`, `script` |
+| `tag` | function | 414-417 | no | no | `script` |
+| `acquireNews` | function | 419-442 | no | yes | `script` |
+| `acquireSentiment` | function | 444-454 | no | yes | `script` |
+| `amendManifest` | function | 462-480 | no | no | `script` |
+| `acquireAddedSymbols` | function | 485-498 | no | yes | `script` |
+| `main` | function | 500-537 | no | yes | `script` |
 
 ### scripts/research/runStructuralProfitabilityStudy.mts
 
@@ -1063,11 +1072,14 @@ Use this index before opening large files. Search by function name, tag, or file
 | `legacyDrawdown` | function | 94-105 | no | no | `script` |
 | `runDefinition` | function | 107-129 | no | yes | `script` |
 | `fullSemanticsBlockers` | function | 131-140 | no | no | `script` |
-| `readBrowserQa` | function | 142-145 | no | no | `script` |
-| `sealHoldout` | function | 147-172 | no | no | `script` |
-| `verifySeal` | function | 174-183 | no | no | `script` |
-| `markdownTable` | function | 185-187 | no | no | `script` |
-| `evaluate` | function | 189-302 | no | yes | `script` |
+| `scopedVerdicts` | function | 162-177 | no | no | `script` |
+| `passes` | arrow | 163-163 | no | no | `script` |
+| `unvalidatedLiveOnly` | function | 180-184 | no | no | `script` |
+| `readBrowserQa` | function | 186-189 | no | no | `script` |
+| `sealHoldout` | function | 191-216 | no | no | `script` |
+| `verifySeal` | function | 218-227 | no | no | `script` |
+| `markdownTable` | function | 229-231 | no | no | `script` |
+| `evaluate` | function | 233-364 | no | yes | `script` |
 
 ### scripts/utilities/analyzeDirectionDivergence.mts
 
@@ -1440,98 +1452,98 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `routerFetch` | arrow | 172-173 | no | no | `server` |
-| `quote` | method | 234-255 | no | yes | `server` |
-| `exchangeSessionId` | function | 551-553 | no | no | `market-data`, `server` |
-| `exchangeSessionCookie` | function | 555-566 | no | no | `market-data`, `server` |
-| `clearExchangeSessionCookie` | function | 568-579 | no | no | `market-data`, `server` |
-| `scopedCookie` | function | 581-592 | no | no | `server` |
-| `requestedAccountMode` | function | 594-596 | no | no | `server` |
-| `ensureDemoSession` | function | 598-601 | no | no | `server` |
-| `accountCookies` | function | 603-609 | no | no | `server` |
-| `accountRouteError` | function | 611-640 | no | no | `server` |
-| `testnetStore` | arrow | 856-861 | no | no | `server` |
-| `testnetAdapter` | arrow | 862-865 | no | no | `server` |
-| `validationStore` | arrow | 866-871 | no | no | `server` |
-| `validationAdapter` | arrow | 872-875 | no | no | `server` |
-| `validationConfigured` | arrow | 876-879 | no | no | `server` |
-| `mapTestnetStatus` | arrow | 880-885 | no | no | `server` |
-| `normalizeTestnetFills` | arrow | 886-909 | no | no | `server` |
-| `reconcileTestnetOrder` | arrow | 910-933 | no | yes | `server` |
-| `handleManualTestnetOrder` | arrow | 1027-1198 | no | yes | `server` |
-| `positionNotional` | arrow | 1060-1060 | no | no | `server` |
-| `verifyOperatorToken` | function | 1399-1409 | no | no | `server` |
-| `buildLiquidityHunterShadowContext` | function | 1450-1530 | no | yes | `server` |
-| `ExchangeProxyError` | class | 1707-1716 | no | no | `market-data`, `server` |
-| `reportDebugEvent` | function | 1725-1740 | no | no | `server` |
-| `exchangeRouteCooldownKey` | function | 1743-1750 | no | no | `market-data`, `server` |
-| `assertExchangeRouteNotCoolingDown` | function | 1752-1763 | no | no | `market-data`, `server` |
-| `recordExchangeRouteTransportFailure` | function | 1765-1767 | no | no | `market-data`, `server` |
-| `classifyStatus` | arrow | 1769-1775 | no | no | `server` |
-| `fetchExchangeJson` | function | 1777-1846 | no | yes | `market-data`, `server` |
-| `assertKuCoinSuccess` | function | 1848-1856 | no | no | `market-data`, `server` |
-| `sendExchangeError` | function | 1858-1891 | no | no | `market-data`, `server` |
-| `sendExchangeOk` | function | 1897-1912 | no | no | `market-data`, `server` |
-| `sendExchangeErr` | function | 1917-1948 | no | no | `market-data`, `server` |
-| `sendLive` | function | 1951-1953 | no | no | `server` |
-| `getBacktestProfile` | function | 2033-2036 | no | no | `server` |
-| `backtestPublicProfile` | function | 2038-2048 | no | no | `server` |
-| `assertBacktestUrlAllowed` | function | 2050-2060 | no | no | `server` |
-| `normalizeBacktestInterval` | function | 2062-2066 | no | no | `server` |
-| `sanitizeBacktestEndpointPath` | function | 2068-2079 | no | no | `server` |
-| `backtestSymbolContext` | function | 2088-2095 | no | no | `server` |
-| `intervalToHistoryDays` | function | 2097-2101 | no | no | `server` |
-| `applyBacktestEndpointTemplate` | function | 2103-2112 | no | no | `server` |
-| `buildBacktestUrl` | function | 2114-2132 | no | no | `server` |
-| `fetchBacktestText` | function | 2134-2150 | no | yes | `server` |
-| `num` | function | 2152-2156 | no | no | `server` |
-| `timeString` | function | 2158-2172 | no | no | `server` |
-| `candleFromArray` | function | 2174-2184 | no | no | `server` |
-| `candleFromObject` | function | 2186-2196 | no | no | `server` |
-| `chartObjectToCandles` | function | 2198-2210 | no | no | `server` |
-| `normalizeBacktestCandles` | function | 2212-2243 | no | no | `server` |
-| `parseCsvCandles` | function | 2245-2259 | no | no | `server` |
-| `compactRawSample` | function | 2261-2271 | no | no | `server` |
-| `sendSentimentEnvelope` | function | 2577-2608 | no | no | `server` |
-| `readSavedSupplementalConfig` | function | 2850-2882 | no | no | `server` |
-| `supplementalVerifiedStatus` | function | 2917-2923 | no | no | `server` |
-| `persistSupplementalKeys` | function | 2925-2934 | no | no | `server` |
-| `restoreSupplementalProbeCache` | function | 2936-2945 | no | no | `server` |
-| `rebuildSupplementalOrchestrator` | function | 2954-2978 | no | no | `server` |
-| `supplementalConfigStatus` | function | 2980-2989 | no | no | `server` |
-| `clearSupplementalVerification` | function | 2991-2997 | no | no | `server` |
-| `sanitizeExternalSource` | function | 3135-3138 | no | no | `server` |
-| `normalizeExternalSource` | function | 3140-3166 | no | no | `server` |
-| `readExternalApiSources` | function | 3168-3177 | no | no | `server` |
-| `persistExternalApiSources` | function | 3181-3185 | no | no | `server` |
-| `seedCompletedDefaultExternalSources` | function | 3187-3198 | no | no | `server` |
-| `appendAuthToExternalRequest` | function | 3214-3225 | no | no | `server` |
-| `slim` | arrow | 3534-3537 | no | no | `server` |
-| `persistTelegramConfig` | function | 3625-3633 | no | no | `server` |
-| `telegramConfigured` | function | 3635-3637 | no | no | `server` |
-| `sendTelegramMessage` | function | 3639-3667 | no | yes | `server` |
-| `historicalResearchWindow` | function | 3717-3722 | no | no | `server` |
-| `initializeDecisionMemoryDatasetDurability` | function | 3806-3819 | no | yes | `decision-memory`, `ml`, `server` |
-| `initializeOpenInterestHistorySampler` | function | 3821-3846 | no | no | `server` |
-| `reconcilePersistedTestnetOrders` | function | 3848-3862 | no | yes | `server` |
-| `logProxyStartup` | function | 3864-3878 | no | no | `market-data`, `server` |
-| `startServer` | route | 3880-3968 | no | yes | `api-route`, `server` |
-| `transformIndexHtml` | method | 3947-3949 | no | no | `ml`, `server` |
-| `closeHttpServer` | function | 3985-4005 | no | yes | `server` |
-| `finish` | arrow | 3991-3996 | no | no | `server` |
-| `gracefulShutdown` | function | 4007-4038 | no | yes | `server` |
+| `routerFetch` | arrow | 173-174 | no | no | `server` |
+| `quote` | method | 235-256 | no | yes | `server` |
+| `exchangeSessionId` | function | 566-568 | no | no | `market-data`, `server` |
+| `exchangeSessionCookie` | function | 570-581 | no | no | `market-data`, `server` |
+| `clearExchangeSessionCookie` | function | 583-594 | no | no | `market-data`, `server` |
+| `scopedCookie` | function | 596-607 | no | no | `server` |
+| `requestedAccountMode` | function | 609-611 | no | no | `server` |
+| `ensureDemoSession` | function | 613-616 | no | no | `server` |
+| `accountCookies` | function | 618-624 | no | no | `server` |
+| `accountRouteError` | function | 626-655 | no | no | `server` |
+| `testnetStore` | arrow | 871-876 | no | no | `server` |
+| `testnetAdapter` | arrow | 877-880 | no | no | `server` |
+| `validationStore` | arrow | 881-886 | no | no | `server` |
+| `validationAdapter` | arrow | 887-890 | no | no | `server` |
+| `validationConfigured` | arrow | 891-894 | no | no | `server` |
+| `mapTestnetStatus` | arrow | 895-900 | no | no | `server` |
+| `normalizeTestnetFills` | arrow | 901-924 | no | no | `server` |
+| `reconcileTestnetOrder` | arrow | 925-948 | no | yes | `server` |
+| `handleManualTestnetOrder` | arrow | 1042-1213 | no | yes | `server` |
+| `positionNotional` | arrow | 1075-1075 | no | no | `server` |
+| `verifyOperatorToken` | function | 1414-1424 | no | no | `server` |
+| `buildLiquidityHunterShadowContext` | function | 1465-1545 | no | yes | `server` |
+| `ExchangeProxyError` | class | 1722-1731 | no | no | `market-data`, `server` |
+| `reportDebugEvent` | function | 1740-1755 | no | no | `server` |
+| `exchangeRouteCooldownKey` | function | 1758-1765 | no | no | `market-data`, `server` |
+| `assertExchangeRouteNotCoolingDown` | function | 1767-1778 | no | no | `market-data`, `server` |
+| `recordExchangeRouteTransportFailure` | function | 1780-1782 | no | no | `market-data`, `server` |
+| `classifyStatus` | arrow | 1784-1790 | no | no | `server` |
+| `fetchExchangeJson` | function | 1792-1861 | no | yes | `market-data`, `server` |
+| `assertKuCoinSuccess` | function | 1863-1871 | no | no | `market-data`, `server` |
+| `sendExchangeError` | function | 1873-1906 | no | no | `market-data`, `server` |
+| `sendExchangeOk` | function | 1912-1927 | no | no | `market-data`, `server` |
+| `sendExchangeErr` | function | 1932-1963 | no | no | `market-data`, `server` |
+| `sendLive` | function | 1966-1968 | no | no | `server` |
+| `getBacktestProfile` | function | 2048-2051 | no | no | `server` |
+| `backtestPublicProfile` | function | 2053-2063 | no | no | `server` |
+| `assertBacktestUrlAllowed` | function | 2065-2075 | no | no | `server` |
+| `normalizeBacktestInterval` | function | 2077-2081 | no | no | `server` |
+| `sanitizeBacktestEndpointPath` | function | 2083-2094 | no | no | `server` |
+| `backtestSymbolContext` | function | 2103-2110 | no | no | `server` |
+| `intervalToHistoryDays` | function | 2112-2116 | no | no | `server` |
+| `applyBacktestEndpointTemplate` | function | 2118-2127 | no | no | `server` |
+| `buildBacktestUrl` | function | 2129-2147 | no | no | `server` |
+| `fetchBacktestText` | function | 2149-2165 | no | yes | `server` |
+| `num` | function | 2167-2171 | no | no | `server` |
+| `timeString` | function | 2173-2187 | no | no | `server` |
+| `candleFromArray` | function | 2189-2199 | no | no | `server` |
+| `candleFromObject` | function | 2201-2211 | no | no | `server` |
+| `chartObjectToCandles` | function | 2213-2225 | no | no | `server` |
+| `normalizeBacktestCandles` | function | 2227-2258 | no | no | `server` |
+| `parseCsvCandles` | function | 2260-2274 | no | no | `server` |
+| `compactRawSample` | function | 2276-2286 | no | no | `server` |
+| `sendSentimentEnvelope` | function | 2592-2623 | no | no | `server` |
+| `readSavedSupplementalConfig` | function | 2865-2897 | no | no | `server` |
+| `supplementalVerifiedStatus` | function | 2932-2938 | no | no | `server` |
+| `persistSupplementalKeys` | function | 2940-2949 | no | no | `server` |
+| `restoreSupplementalProbeCache` | function | 2951-2960 | no | no | `server` |
+| `rebuildSupplementalOrchestrator` | function | 2969-2993 | no | no | `server` |
+| `supplementalConfigStatus` | function | 2995-3004 | no | no | `server` |
+| `clearSupplementalVerification` | function | 3006-3012 | no | no | `server` |
+| `sanitizeExternalSource` | function | 3150-3153 | no | no | `server` |
+| `normalizeExternalSource` | function | 3155-3181 | no | no | `server` |
+| `readExternalApiSources` | function | 3183-3192 | no | no | `server` |
+| `persistExternalApiSources` | function | 3196-3200 | no | no | `server` |
+| `seedCompletedDefaultExternalSources` | function | 3202-3213 | no | no | `server` |
+| `appendAuthToExternalRequest` | function | 3229-3240 | no | no | `server` |
+| `slim` | arrow | 3549-3552 | no | no | `server` |
+| `persistTelegramConfig` | function | 3640-3648 | no | no | `server` |
+| `telegramConfigured` | function | 3650-3652 | no | no | `server` |
+| `sendTelegramMessage` | function | 3654-3682 | no | yes | `server` |
+| `historicalResearchWindow` | function | 3732-3737 | no | no | `server` |
+| `initializeDecisionMemoryDatasetDurability` | function | 3821-3834 | no | yes | `decision-memory`, `ml`, `server` |
+| `initializeOpenInterestHistorySampler` | function | 3836-3861 | no | no | `server` |
+| `reconcilePersistedTestnetOrders` | function | 3863-3877 | no | yes | `server` |
+| `logProxyStartup` | function | 3879-3893 | no | no | `market-data`, `server` |
+| `startServer` | route | 3895-3983 | no | yes | `api-route`, `server` |
+| `transformIndexHtml` | method | 3962-3964 | no | no | `ml`, `server` |
+| `closeHttpServer` | function | 4000-4020 | no | yes | `server` |
+| `finish` | arrow | 4006-4011 | no | no | `server` |
+| `gracefulShutdown` | function | 4022-4053 | no | yes | `server` |
 
 ### src/App.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `initialPage` | function | 119-123 | no | no |  |
-| `App` | component | 125-626 | yes | no | `component` |
-| `bootstrap` | arrow | 385-406 | no | yes |  |
-| `loadDetail` | arrow | 441-484 | no | yes |  |
-| `onHashChange` | arrow | 491-491 | no | no |  |
-| `navigate` | arrow | 500-504 | no | no |  |
-| `onConnectionChange` | arrow | 506-514 | no | no |  |
+| `App` | component | 125-628 | yes | no | `component` |
+| `bootstrap` | arrow | 386-408 | no | yes |  |
+| `loadDetail` | arrow | 443-486 | no | yes |  |
+| `onHashChange` | arrow | 493-493 | no | no |  |
+| `navigate` | arrow | 502-506 | no | no |  |
+| `onConnectionChange` | arrow | 508-516 | no | no |  |
 
 ### src/components/BacktestChart.tsx
 
@@ -1569,11 +1581,14 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `extractBase` | function | 102-106 | no | no | `ui` |
-| `resolveLogoSrc` | function | 109-116 | no | no | `ui` |
-| `BtcGlyph` | component | 118-125 | no | no | `component`, `ui` |
-| `EthGlyph` | component | 127-136 | no | no | `component`, `ui` |
-| `CoinIcon` | component | 138-198 | yes | no | `component`, `ui` |
+| `derivedTheme` | function | 52-57 | no | no | `ui` |
+| `extractBase` | function | 90-94 | no | no | `ui` |
+| `artworkKey` | function | 102-104 | no | no | `ui` |
+| `resolveLogoSrc` | function | 107-113 | no | no | `ui` |
+| `buildLogoCandidates` | function | 133-144 | no | no | `ui` |
+| `BtcGlyph` | component | 146-153 | no | no | `component`, `ui` |
+| `EthGlyph` | component | 155-164 | no | no | `component`, `ui` |
+| `CoinIcon` | component | 166-231 | yes | no | `component`, `ui` |
 
 ### src/components/ColoredGauge.tsx
 
@@ -1674,13 +1689,23 @@ Use this index before opening large files. Search by function name, tag, or file
 | `money` | function | 7-9 | no | no | `ui` |
 | `signedMoney` | function | 11-15 | no | no | `ui` |
 | `signedClass` | function | 17-19 | no | no | `ui` |
-| `OverviewAccountSummary` | component | 21-90 | yes | no | `component`, `ui` |
+| `OverviewAccountSummary` | component | 21-98 | yes | no | `component`, `ui` |
+| `splitUnit` | arrow | 69-72 | no | no | `ui` |
 
 ### src/components/overview/OverviewActivityPanel.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `OverviewActivityPanel` | component | 7-25 | yes | no | `component`, `ui` |
+| `utcTime` | function | 29-32 | no | no | `ui` |
+| `quantity` | function | 34-37 | no | no | `ui` |
+| `sideOf` | function | 39-45 | no | no | `ui` |
+| `epochMs` | function | 52-57 | no | no | `ui` |
+| `positionRows` | function | 59-75 | no | no | `ui` |
+| `orderRows` | function | 77-88 | no | no | `ui` |
+| `tradeRows` | function | 90-104 | no | no | `ui` |
+| `insightRows` | function | 106-120 | no | no | `ui` |
+| `ActivityRowsTable` | component | 128-163 | no | no | `component`, `ui` |
+| `OverviewActivityPanel` | component | 165-216 | yes | no | `component`, `ui` |
 
 ### src/components/overview/OverviewAttentionPanel.tsx
 
@@ -1710,7 +1735,7 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `OverviewMarketSummary` | component | 11-98 | yes | no | `component`, `market-data`, `ui` |
+| `OverviewMarketSummary` | component | 11-110 | yes | no | `component`, `market-data`, `ui` |
 
 ### src/components/overview/overviewModel.ts
 
@@ -1719,14 +1744,16 @@ Use this index before opening large files. Search by function name, tag, or file
 | `buildSignalFunnel` | function | 29-50 | yes | no | `ml`, `ui` |
 | `buildMarketBreadth` | function | 52-68 | yes | no | `market-data`, `ml`, `ui` |
 | `liquidityLabel` | function | 70-75 | yes | no | `ml`, `ui` |
-| `providerLatencyMs` | function | 77-80 | yes | no | `market-data`, `ml`, `ui` |
-| `providerRowState` | function | 82-89 | yes | no | `market-data`, `ml`, `ui` |
-| `dailyPnlFromInsights` | function | 91-99 | yes | no | `ml`, `ui` |
-| `openRiskUsd` | function | 101-107 | yes | no | `ml`, `ui` |
-| `averageOrderFillPct` | function | 109-114 | yes | no | `ml`, `ui` |
-| `buildExecutionSnapshot` | function | 127-150 | yes | no | `ml`, `ui` |
-| `fundingBiasLabel` | function | 152-156 | yes | no | `ml`, `ui` |
-| `sentimentBreadthOverlay` | function | 158-164 | yes | no | `ml`, `ui` |
+| `providerCheckAgeMs` | function | 86-89 | yes | no | `market-data`, `ml`, `ui` |
+| `formatCheckAge` | function | 92-106 | yes | no | `ml`, `ui` |
+| `providerRowState` | function | 108-115 | yes | no | `market-data`, `ml`, `ui` |
+| `dailyPnlFromInsights` | function | 117-125 | yes | no | `ml`, `ui` |
+| `openRiskUsd` | function | 127-133 | yes | no | `ml`, `ui` |
+| `averageOrderFillPct` | function | 135-140 | yes | no | `ml`, `ui` |
+| `buildExecutionSnapshot` | function | 153-179 | yes | no | `ml`, `ui` |
+| `fundingBiasLabel` | function | 181-185 | yes | no | `ml`, `ui` |
+| `normalizeBreadth` | function | 193-197 | no | no | `ml`, `ui` |
+| `sentimentBreadthOverlay` | function | 199-205 | yes | no | `ml`, `ui` |
 
 ### src/components/overview/OverviewProviderHealthPanel.tsx
 
@@ -1739,7 +1766,7 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `evidenceLine` | function | 7-11 | no | no | `ui` |
-| `OverviewSignalsPanel` | component | 13-70 | yes | no | `component`, `ui` |
+| `OverviewSignalsPanel` | component | 13-73 | yes | no | `component`, `ui` |
 
 ### src/components/overview/OverviewStatusCards.tsx
 
@@ -2034,11 +2061,11 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `numberFrom` | function | 67-76 | yes | no | `ui` |
-| `stringFrom` | function | 78-85 | no | no | `ui` |
+| `stringFrom` | function | 78-85 | yes | no | `ui` |
 | `money` | function | 87-90 | no | no | `ui` |
 | `decimal` | function | 92-95 | no | no | `ui` |
 | `signedClass` | function | 97-100 | no | no | `ui` |
-| `normalizeSymbol` | function | 102-104 | no | no | `ui` |
+| `normalizeSymbol` | function | 102-104 | yes | no | `ui` |
 | `readTradingActivityOpen` | function | 111-127 | no | no | `ui` |
 | `readLocalPriceAlerts` | function | 137-156 | no | no | `ui` |
 | `rows` | function | 158-161 | yes | no | `ui` |
@@ -2315,6 +2342,12 @@ Use this index before opening large files. Search by function name, tag, or file
 | `describeProviderCapability` | function | 146-171 | yes | no | `market-data` |
 | `listProviderCapabilities` | function | 174-176 | yes | no | `market-data` |
 | `listModuleCapabilities` | function | 179-181 | yes | no |  |
+
+### src/lib/coinIconManifest.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `hasShippedCoinIcon` | function | 73-75 | yes | no |  |
 
 ### src/lib/correlation.ts
 
@@ -2911,52 +2944,64 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `available` | arrow | 59-59 | no | no | `ml` |
-| `unavailable` | arrow | 60-60 | no | no | `ml` |
-| `metricFrom` | function | 62-68 | no | no | `ml` |
-| `factorsFor` | function | 70-86 | no | no | `ml` |
-| `reasonsFor` | function | 88-121 | no | no | `ml` |
-| `warningsFor` | function | 123-174 | no | no | `ml` |
-| `rowFor` | function | 176-228 | no | no | `ml` |
-| `buildScreenerRows` | function | 238-258 | yes | no | `ml` |
-| `applyScreenerFilters` | function | 260-292 | yes | no | `ml` |
-| `sortScreenerRows` | function | 301-338 | yes | no | `ml` |
-| `metricValue` | arrow | 302-305 | no | no | `ml` |
-| `optionalCompare` | arrow | 306-312 | no | no | `ml` |
-| `compare` | arrow | 313-330 | no | no | `ml` |
-| `screenerSummary` | function | 340-348 | yes | no | `ml` |
-| `resetScreenerFilters` | function | 350-352 | yes | no | `ml` |
-| `screenerFiltersActive` | function | 354-368 | yes | no | `ml` |
+| `available` | arrow | 60-60 | no | no | `ml` |
+| `unavailable` | arrow | 61-61 | no | no | `ml` |
+| `metricFrom` | function | 63-69 | no | no | `ml` |
+| `factorsFor` | function | 71-87 | no | no | `ml` |
+| `reasonsFor` | function | 89-122 | no | no | `ml` |
+| `warningsFor` | function | 124-175 | no | no | `ml` |
+| `levelsFor` | function | 193-219 | no | no | `ml` |
+| `priceMetric` | arrow | 195-197 | no | no | `ml` |
+| `signalStrengthOf` | function | 259-269 | no | no | `ml` |
+| `rowFor` | function | 271-338 | no | no | `ml` |
+| `buildScreenerRows` | function | 351-378 | yes | no | `ml` |
+| `applyScreenerFilters` | function | 380-412 | yes | no | `ml` |
+| `sortScreenerRows` | function | 421-458 | yes | no | `ml` |
+| `metricValue` | arrow | 422-425 | no | no | `ml` |
+| `optionalCompare` | arrow | 426-432 | no | no | `ml` |
+| `compare` | arrow | 433-450 | no | no | `ml` |
+| `screenerSummary` | function | 460-468 | yes | no | `ml` |
+| `resetScreenerFilters` | function | 470-472 | yes | no | `ml` |
+| `screenerFiltersActive` | function | 474-488 | yes | no | `ml` |
 
 ### src/pages/screener/ScreenerPage.tsx
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `directionTone` | arrow | 185-185 | no | no |  |
-| `changeTone` | arrow | 186-186 | no | no |  |
-| `usdCompact` | arrow | 187-187 | no | no |  |
-| `confluenceLabel` | arrow | 188-188 | no | no |  |
-| `MetricValue` | component | 191-196 | no | no | `component` |
-| `ScoreGlyph` | component | 198-207 | no | no | `component` |
-| `EvidenceEqualizer` | component | 219-245 | no | no | `component` |
-| `relativeAge` | function | 247-254 | no | no |  |
-| `FactorBreakdown` | component | 259-280 | no | no | `component` |
-| `ScreenerPage` | component | 282-816 | yes | no | `component` |
-| `sync` | arrow | 297-297 | no | no |  |
-| `toggleSort` | arrow | 336-341 | no | no |  |
-| `toggleFavorite` | arrow | 343-347 | no | no |  |
-| `applyWorkspace` | arrow | 349-355 | no | no |  |
-| `applyPreset` | arrow | 357-365 | no | no |  |
-| `saveNamedScreen` | arrow | 367-383 | no | no |  |
-| `deleteActiveScreen` | arrow | 385-393 | no | no |  |
-| `exportVisible` | arrow | 395-409 | no | no |  |
-| `factor` | arrow | 397-397 | no | no |  |
-| `quote` | arrow | 398-398 | no | no |  |
-| `copySymbol` | arrow | 411-420 | no | no |  |
-| `openInTrading` | arrow | 422-430 | no | no |  |
-| `factorMetric` | arrow | 432-434 | no | no |  |
-| `renderMetricSlot` | arrow | 437-457 | no | no |  |
-| `cell` | arrow | 438-439 | no | no |  |
+| `showConfluenceBadge` | arrow | 231-231 | no | no |  |
+| `showFeedBadge` | arrow | 232-232 | no | no |  |
+| `directionTone` | arrow | 249-249 | no | no |  |
+| `changeTone` | arrow | 250-250 | no | no |  |
+| `usdCompact` | arrow | 251-251 | no | no |  |
+| `confluenceLabel` | arrow | 252-252 | no | no |  |
+| `MetricValue` | component | 255-260 | no | no | `component` |
+| `ScoreGlyph` | component | 262-268 | no | no | `component` |
+| `EvidenceEqualizer` | component | 280-306 | no | no | `component` |
+| `relativeAge` | function | 308-315 | no | no |  |
+| `FactorBreakdown` | component | 320-341 | no | no | `component` |
+| `tierBands` | function | 361-365 | no | no |  |
+| `arcPoint` | arrow | 377-380 | no | no |  |
+| `arcPath` | arrow | 381-385 | no | no |  |
+| `ScoreArc` | component | 409-465 | no | no | `component` |
+| `ScreenerPage` | component | 467-1241 | yes | no | `component` |
+| `sync` | arrow | 482-482 | no | no |  |
+| `pickRow` | arrow | 526-529 | no | no |  |
+| `warningTopic` | arrow | 557-565 | no | no |  |
+| `toggleSort` | arrow | 602-607 | no | no |  |
+| `toggleFavorite` | arrow | 609-613 | no | no |  |
+| `applyWorkspace` | arrow | 615-621 | no | no |  |
+| `applyPreset` | arrow | 623-631 | no | no |  |
+| `saveNamedScreen` | arrow | 633-649 | no | no |  |
+| `deleteActiveScreen` | arrow | 651-659 | no | no |  |
+| `exportVisible` | arrow | 661-675 | no | no |  |
+| `factor` | arrow | 663-663 | no | no |  |
+| `quote` | arrow | 664-664 | no | no |  |
+| `copySymbol` | arrow | 677-686 | no | no |  |
+| `openInTrading` | arrow | 688-697 | no | no |  |
+| `factorMetric` | arrow | 699-701 | no | no |  |
+| `renderMetricSlot` | arrow | 712-732 | no | no |  |
+| `cell` | arrow | 713-714 | no | no |  |
+| `columnHead` | arrow | 753-773 | no | no |  |
 
 ### src/pages/screener/screenerPersistence.ts
 
@@ -3683,14 +3728,16 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `isValidIconAsset` | function | 27-29 | yes | no | `market-data`, `service` |
-| `buildIconUpstreamUrls` | function | 35-54 | yes | no | `market-data`, `service` |
-| `IconProxy` | class | 81-172 | yes | no | `market-data`, `service` |
-| `IconProxy.get` | method | 102-113 | no | yes | `market-data`, `service` |
-| `IconProxy.readCache` | method | 115-127 | no | no | `market-data`, `service` |
-| `IconProxy.store` | method | 129-136 | no | no | `market-data`, `service` |
-| `IconProxy.resolve` | method | 138-153 | no | yes | `market-data`, `service` |
-| `IconProxy.tryFetch` | method | 155-171 | no | yes | `market-data`, `service` |
+| `isValidIconAsset` | function | 44-46 | yes | no | `market-data`, `service` |
+| `buildIconUpstreamUrls` | function | 52-71 | yes | no | `market-data`, `service` |
+| `resolveProxyConnectUrl` | function | 86-109 | no | no | `market-data`, `service` |
+| `loadProxyDispatcher` | function | 113-128 | no | no | `market-data`, `service` |
+| `IconProxy` | class | 171-291 | yes | no | `market-data`, `service` |
+| `IconProxy.get` | method | 197-208 | no | yes | `market-data`, `service` |
+| `IconProxy.readCache` | method | 210-222 | no | no | `market-data`, `service` |
+| `IconProxy.store` | method | 224-231 | no | no | `market-data`, `service` |
+| `IconProxy.resolve` | method | 233-263 | no | yes | `market-data`, `service` |
+| `IconProxy.tryFetch` | method | 265-290 | no | yes | `market-data`, `service` |
 
 ### src/services/intelligenceFeedProbe.ts
 
@@ -4118,6 +4165,15 @@ Use this index before opening large files. Search by function name, tag, or file
 | `positionNotional` | function | 39-44 | no | no | `service` |
 | `positionRiskUsd` | function | 46-61 | no | no | `service` |
 | `deriveLiveRiskTelemetry` | function | 73-124 | yes | no | `service` |
+
+### src/services/localIconAssets.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `remember` | function | 45-52 | no | no | `service` |
+| `readLocalIcon` | function | 60-77 | yes | no | `service` |
+| `hasLocalIcon` | function | 80-82 | yes | no | `service` |
+| `clearLocalIconCache` | function | 85-87 | yes | no | `service` |
 
 ### src/services/marketDataService.ts
 

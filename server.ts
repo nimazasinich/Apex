@@ -95,6 +95,7 @@ import {
 } from './src/services/providers/newsApiRequest';
 import { fetchIntelligenceFeedSnapshot } from './src/services/intelligenceFeedProbe';
 import { iconProxy } from './src/services/iconProxy';
+import { readLocalIcon } from './src/services/localIconAssets';
 import { fetchHfSpaceIntelStatus, fetchHfSpaceNews, fetchHfSpaceFearGreed, fetchHfSpaceWhales } from './src/services/hfSpaceIntel';
 import {
   analyzeSpace2Sentiment,
@@ -335,6 +336,20 @@ app.get('/api/readiness', (_req, res) => {
 // `/api` no-store middleware so icons can be cached by the browser.
 app.get('/api/icon/:asset', async (req, res) => {
   const asset = String(req.params.asset || '').toLowerCase().replace(/\.(png|svg|jpg|jpeg|webp|gif)$/i, '');
+
+  // Shipped artwork wins, so the top-300 set never depends on egress. This
+  // matters even though the frontend links /crypto-icons/<a>.png directly: any
+  // other consumer of /api/icon/* gets the same offline guarantee, and a symbol
+  // that resolves locally can no longer be poisoned by the 10-minute negative
+  // cache that a transport stall would otherwise write.
+  const shipped = readLocalIcon(asset);
+  if (shipped) {
+    res.setHeader('Content-Type', shipped.contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+    res.setHeader('X-Icon-Cache', 'local');
+    return res.status(200).end(shipped.body);
+  }
+
   const result = await iconProxy.get(asset);
   if (!result.ok || !result.body) {
     // Short negative cache: avoids hammering upstreams for unknown assets while

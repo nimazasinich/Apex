@@ -75,7 +75,7 @@ export function numberFrom(record: Record<string, unknown> | undefined, ...keys:
   return null;
 }
 
-function stringFrom(record: Record<string, unknown> | undefined, ...keys: string[]): string {
+export function stringFrom(record: Record<string, unknown> | undefined, ...keys: string[]): string {
   if (!record) return '—';
   for (const key of keys) {
     const value = record[key];
@@ -99,7 +99,7 @@ function signedClass(value: number | null) {
   return value > 0 ? 'positive' : 'negative';
 }
 
-function normalizeSymbol(symbol: string) {
+export function normalizeSymbol(symbol: string) {
   return symbol.replace('XBTUSDTM', 'BTC-USDT').replace(/USDTM$/, '-USDT');
 }
 

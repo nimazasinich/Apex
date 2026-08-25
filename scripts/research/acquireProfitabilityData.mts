@@ -1,8 +1,7 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { inflateRawSync } from 'node:zlib';
 
 type ProvenancePage = {
   url: string;
@@ -28,9 +27,17 @@ type SeriesPayload = {
 const root = path.resolve(import.meta.dirname, '../..');
 const defaultOut = path.join(root, 'QA/profitability-structural-remediation/data');
 const outDir = path.resolve(process.argv.find((value) => value.startsWith('--out='))?.slice(6) || defaultOut);
-const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-profitability-data-'));
 const fetchedAt = new Date().toISOString();
 const USER_AGENT = 'APEX-Structural-Remediation/1.0 (+historical-research)';
+const VISION_BASE = 'https://data.binance.vision/data/futures/um';
+
+// Additive mode. `--add-symbols=SOLUSDT,BNBUSDT` appends new per-symbol series to the existing
+// dataset and amends the manifest in place. It never rewrites an existing symbol, and never
+// re-derives the shared news/sentiment series, because those two files feed the per-symbol
+// identitySha256 that the sealed holdout is pinned to.
+const ADD_SYMBOLS = (process.argv.find((value) => value.startsWith('--add-symbols='))?.slice(14) ?? '')
+  .split(',').map((value) => value.trim().toUpperCase()).filter(Boolean);
+const SEALED_SYMBOLS = new Set(['BTCUSDT', 'ETHUSDT']);
 
 function sha256(value: string | Buffer): string {
   return createHash('sha256').update(value).digest('hex');
@@ -89,7 +96,9 @@ function writeSeries(fileName: string, payload: SeriesPayload): { file: string; 
   const file = path.join(outDir, fileName);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, bytes);
-  return { file: path.relative(root, file), contentSha256, fileSha256: sha256(bytes), bytes: bytes.length, coverage: payload.coverage };
+  // Recorded with forward slashes on every platform so the manifest stays byte-comparable
+  // regardless of where it was generated.
+  return { file: path.relative(root, file).split(path.sep).join('/'), contentSha256, fileSha256: sha256(bytes), bytes: bytes.length, coverage: payload.coverage };
 }
 
 function coverage(rows: Array<{ t: number }>): SeriesPayload['coverage'] {
@@ -192,83 +201,208 @@ async function acquireFunding(symbol: string, from: string, to: string) {
   });
 }
 
-function unzipCsv(body: Buffer, key: string): string {
-  const zipPath = path.join(tempDir, `${sha256(key).slice(0, 16)}.zip`);
-  fs.writeFileSync(zipPath, body);
-  const result = spawnSync('unzip', ['-p', zipPath], { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 });
-  fs.unlinkSync(zipPath);
-  if (result.status !== 0) throw new Error(`unzip_failed:${key}:${result.stderr}`);
-  return result.stdout;
+function csvCell(cells: string[], index: number): number {
+  const value = cells[index];
+  return value === undefined || value === '' ? Number.NaN : Number(value);
 }
 
-async function acquireMetrics(symbol: string, from: string, to: string) {
-  const rows: Array<{ t: number; oi: number; oiUsd: number; topAccountRatio: number; topPositionRatio: number; accountRatio: number; takerRatio: number }> = [];
-  const dates = utcDates(from, to);
-  const pages = await mapLimit(dates, 12, async (date) => {
-    const url = `https://data.binance.vision/data/futures/um/daily/metrics/${symbol}/${symbol}-metrics-${date}.zip`;
+// Drops the CSV header row (and any blank trailing line) by requiring a numeric first column.
+function epochKeyedCsvRows(text: string): string[][] {
+  return text.trim().split(/\r?\n/).map((line) => line.split(',')).filter((cells) => Number.isFinite(csvCell(cells, 0)));
+}
+
+function utcMonthKeys(from: string, to: string): string[] {
+  return utcMonths(from, to).map((month) => month.from.slice(0, 7));
+}
+
+async function archivePages<T>(urls: string[], limit: number, parse: (text: string) => T[]) {
+  const pages = await mapLimit(urls, limit, async (url) => {
     try {
       const body = await fetchBytes(url);
-      const lines = unzipCsv(body, url).trim().split(/\r?\n/).slice(1);
-      const parsed = lines.map((line) => {
-        const value = line.split(',');
-        return {
-          t: Date.parse(`${value[0].replace(' ', 'T')}Z`), oi: Number(value[2]), oiUsd: Number(value[3]), topAccountRatio: Number(value[4]),
-          topPositionRatio: Number(value[5]), accountRatio: Number(value[6]), takerRatio: Number(value[7]),
-        };
-      }).filter((row) => Number.isFinite(row.t) && Number.isFinite(row.oi) && row.t % 3_600_000 === 0);
-      return { parsed, provenance: { url, sha256: sha256(body), bytes: body.length, rows: parsed.length, fetchedAt } };
+      const parsed = parse(unzipCsv(body, url));
+      return { parsed, provenance: { url, sha256: sha256(body), bytes: body.length, rows: parsed.length, fetchedAt } as ProvenancePage | null };
     } catch (error) {
-      if (String(error).includes('not_found:')) return { parsed: [], provenance: null };
+      if (String(error).includes('not_found:')) return { parsed: [] as T[], provenance: null };
       throw error;
     }
   });
+  const rows: T[] = [];
   const provenance: ProvenancePage[] = [];
   pages.forEach((page) => { rows.push(...page.parsed); if (page.provenance) provenance.push(page.provenance); });
+  return { rows, provenance, missing: pages.filter((page) => !page.provenance).length };
+}
+
+// Monthly-archive equivalent of acquireKlines. Same row shape, same 1h interval; used for symbols
+// added after the original run because fapi.binance.com is not resolvable from this network while
+// the official archive host is. The two transports were checked against each other before use.
+async function acquireArchiveKlines(symbol: string, from: string, to: string) {
+  const start = Date.parse(`${from}T00:00:00.000Z`);
+  const end = Date.parse(`${to}T23:59:59.999Z`);
+  const parse = (text: string) => epochKeyedCsvRows(text).map((cells) => ({
+    t: csvCell(cells, 0), o: csvCell(cells, 1), h: csvCell(cells, 2), l: csvCell(cells, 3), c: csvCell(cells, 4), v: csvCell(cells, 5),
+  })).filter((row) => Number.isFinite(row.t) && Number.isFinite(row.c) && row.t % 3_600_000 === 0 && row.t >= start && row.t <= end);
+  const monthlyUrls = utcMonthKeys(from, to).map((month) => `${VISION_BASE}/monthly/klines/${symbol}/1h/${symbol}-1h-${month}.zip`);
+  const monthly = await archivePages(monthlyUrls, 6, parse);
+  const byTimestamp = new Map(monthly.rows.map((row) => [row.t, row]));
+
+  // Monthly archives are not always complete: SOLUSDT-1h-2022-02 stops on the 25th even though the
+  // daily archives for the 26th-28th exist. Any day with a missing hour is therefore refetched at
+  // daily granularity rather than left as a silent hole in the series.
+  const allDates = utcDates(from, to);
+  const incompleteDates = allDates.filter((date) => {
+    const dayStart = Date.parse(`${date}T00:00:00.000Z`);
+    for (let hour = 0; hour < 24; hour += 1) {
+      const timestamp = dayStart + hour * 3_600_000;
+      if (timestamp >= start && timestamp <= end && !byTimestamp.has(timestamp)) return true;
+    }
+    return false;
+  });
+  const daily = incompleteDates.length
+    ? await archivePages(incompleteDates.map((date) => `${VISION_BASE}/daily/klines/${symbol}/1h/${symbol}-1h-${date}.zip`), 8, parse)
+    : { rows: [], provenance: [], missing: 0 };
+  daily.rows.forEach((row) => byTimestamp.set(row.t, row));
+
+  const unique = [...byTimestamp.values()].sort((left, right) => left.t - right.t);
+  const stillMissing = allDates.length * 24 - unique.length;
+  return writeSeries(`${symbol.toLowerCase()}-candles-1h.json`, {
+    schemaVersion: 1, kind: 'candles', source: 'Binance Public Data monthly klines archives, with daily archives filling incomplete months',
+    semanticLabel: 'verified closed OHLCV candles', symbol, interval: '1h', coverage: coverage(unique),
+    limitations: [
+      'Single-venue perpetual-futures candles.',
+      'Sourced from the official Binance archive rather than the fapi REST endpoint, which is not resolvable from the acquiring network. The archive was verified value-identical to the existing REST-derived btcusdt 1h series for 2022-01 (744/744 rows matched, 0 differing).',
+      ...(monthly.missing ? [`${monthly.missing} of ${monthlyUrls.length} monthly archives were absent upstream.`] : []),
+      ...(incompleteDates.length ? [`${incompleteDates.length} day(s) were incomplete in the monthly archives and were backfilled from daily archives: ${incompleteDates.join(', ')}.`] : []),
+      ...(stillMissing > 0 ? [`${stillMissing} of ${allDates.length * 24} expected hourly rows are absent from both the monthly and daily archives and are not represented.`] : []),
+    ],
+    provenance: [...monthly.provenance, ...daily.provenance], rows: unique,
+  });
+}
+
+// Monthly-archive equivalent of acquireFunding. The archive carries calc_time,
+// funding_interval_hours and last_funding_rate only, so there is no mark price to record.
+async function acquireArchiveFunding(symbol: string, from: string, to: string) {
+  const start = Date.parse(`${from}T00:00:00.000Z`);
+  const end = Date.parse(`${to}T23:59:59.999Z`);
+  const urls = utcMonthKeys(from, to).map((month) => `${VISION_BASE}/monthly/fundingRate/${symbol}/${symbol}-fundingRate-${month}.zip`);
+  const { rows, provenance, missing } = await archivePages(urls, 6, (text) => epochKeyedCsvRows(text).map((cells) => ({
+    t: csvCell(cells, 0), rate: csvCell(cells, 2), mark: null as number | null,
+  })).filter((row) => Number.isFinite(row.t) && Number.isFinite(row.rate) && row.t >= start && row.t <= end));
   const unique = [...new Map(rows.map((row) => [row.t, row])).values()].sort((left, right) => left.t - right.t);
+  // The funding interval is a venue setting, not a constant: it was shortened for some symbols
+  // during stress windows. The label and limitations are therefore derived from the observed
+  // spacing rather than asserted as 8h.
+  const spacing = new Map<number, number>();
+  for (let index = 1; index < unique.length; index += 1) {
+    const hours = Math.round((unique[index].t - unique[index - 1].t) / 3_600_000);
+    spacing.set(hours, (spacing.get(hours) ?? 0) + 1);
+  }
+  const cadence = [...spacing.entries()].sort((left, right) => right[1] - left[1]);
+  const modalHours = cadence[0]?.[0] ?? 8;
+  const offCadenceMonths = [...new Set(unique
+    .filter((row, index) => index > 0 && Math.round((row.t - unique[index - 1].t) / 3_600_000) !== modalHours)
+    .map((row) => iso(row.t).slice(0, 7)))].sort();
+  return writeSeries(`${symbol.toLowerCase()}-funding.json`, {
+    schemaVersion: 1, kind: 'funding_rate', source: 'Binance Public Data monthly fundingRate archives', semanticLabel: 'realized perpetual funding rate', symbol,
+    interval: offCadenceMonths.length ? `${modalHours}h-event (mixed interval)` : `${modalHours}h-event`, coverage: coverage(unique),
+    limitations: [
+      'Single-venue funding; basis leg is not reconstructed.',
+      'The monthly fundingRate archive exposes calc_time, funding_interval_hours and last_funding_rate only, so mark is null on every row. The REST-derived btcusdt/ethusdt files carry mark 0 on every row, so neither transport supplies a usable mark price.',
+      ...(offCadenceMonths.length
+        ? [`Funding cadence is not uniform. Observed spacing histogram in hours: ${JSON.stringify(Object.fromEntries(cadence))}. Non-${modalHours}h spacing occurs in ${offCadenceMonths.join(', ')}; these are real venue interval changes, not missing rows.`]
+        : []),
+      ...(missing ? [`${missing} of ${urls.length} monthly archives were absent upstream and are simply not represented.`] : []),
+    ],
+    provenance, rows: unique,
+  });
+}
+
+// Binance publishes every archive as a ZIP holding a single deflated CSV. This is decoded in
+// process rather than by shelling out to `unzip`, which does not exist on the Windows release
+// target; the decoded text is byte-identical to `unzip -p` output.
+function unzipCsv(body: Buffer, key: string): string {
+  const endOfCentralDirectory = body.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+  if (endOfCentralDirectory < 0) throw new Error(`zip_missing_central_directory:${key}`);
+  const entryCount = body.readUInt16LE(endOfCentralDirectory + 10);
+  if (entryCount < 1) throw new Error(`zip_no_entries:${key}`);
+  let cursor = body.readUInt32LE(endOfCentralDirectory + 16);
+  const parts: string[] = [];
+  for (let index = 0; index < entryCount; index += 1) {
+    if (body.readUInt32LE(cursor) !== 0x02014b50) throw new Error(`zip_bad_central_header:${key}`);
+    const method = body.readUInt16LE(cursor + 10);
+    const compressedSize = body.readUInt32LE(cursor + 20);
+    const uncompressedSize = body.readUInt32LE(cursor + 24);
+    const nameLength = body.readUInt16LE(cursor + 28);
+    const extraLength = body.readUInt16LE(cursor + 30);
+    const commentLength = body.readUInt16LE(cursor + 32);
+    const localOffset = body.readUInt32LE(cursor + 42);
+    if (body.readUInt32LE(localOffset) !== 0x04034b50) throw new Error(`zip_bad_local_header:${key}`);
+    const dataOffset = localOffset + 30 + body.readUInt16LE(localOffset + 26) + body.readUInt16LE(localOffset + 28);
+    const compressed = body.subarray(dataOffset, dataOffset + compressedSize);
+    const inflated = method === 0 ? compressed : method === 8 ? inflateRawSync(compressed) : null;
+    if (!inflated) throw new Error(`zip_unsupported_compression_${method}:${key}`);
+    if (inflated.length !== uncompressedSize) throw new Error(`zip_size_mismatch:${key}`);
+    parts.push(inflated.toString('utf8'));
+    cursor += 46 + nameLength + extraLength + commentLength;
+  }
+  return parts.join('\n');
+}
+
+async function acquireMetrics(symbol: string, from: string, to: string) {
+  const dates = utcDates(from, to);
+  const urls = dates.map((date) => `${VISION_BASE}/daily/metrics/${symbol}/${symbol}-metrics-${date}.zip`);
+  const { rows, provenance, missing } = await archivePages(urls, 12, (text) => text.trim().split(/\r?\n/).slice(1).map((line) => {
+    const value = line.split(',');
+    return {
+      t: Date.parse(`${value[0].replace(' ', 'T')}Z`), oi: csvCell(value, 2), oiUsd: csvCell(value, 3), topAccountRatio: csvCell(value, 4),
+      topPositionRatio: csvCell(value, 5), accountRatio: csvCell(value, 6), takerRatio: csvCell(value, 7),
+    };
+  }).filter((row) => Number.isFinite(row.t) && Number.isFinite(row.oi) && row.t % 3_600_000 === 0));
+  const unique = [...new Map(rows.map((row) => [row.t, row])).values()].sort((left, right) => left.t - right.t);
+  // The four ratio columns are absent from the upstream archive for much of 2022 and serialize as
+  // null. Reported as measured rather than as a fixed claim, because the cutover date is not uniform.
+  const withRatios = unique.filter((row) => [row.topAccountRatio, row.topPositionRatio, row.accountRatio, row.takerRatio].every((value) => Number.isFinite(value)));
   return writeSeries(`${symbol.toLowerCase()}-open-interest-top-trader-1h.json`, {
     schemaVersion: 1, kind: 'open_interest_top_trader_flow', source: 'Binance Public Data daily metrics archives',
     semanticLabel: 'open interest plus top-trader and taker-flow ratios', symbol, interval: '1h', coverage: coverage(unique),
-    limitations: ['Top-trader and taker ratios are a large-participant proxy, not entity-classified on-chain whale transfers.'], provenance, rows: unique,
+    limitations: [
+      'Top-trader and taker ratios are a large-participant proxy, not entity-classified on-chain whale transfers.',
+      `Open interest is populated across the whole window, but the four ratio columns are absent upstream for much of 2022 and serialize as null. Measured here: ${withRatios.length}/${unique.length} rows carry all four ratios; the earliest such row is ${withRatios.length ? iso(withRatios[0].t) : 'none'}.`,
+      ...(missing ? [`${missing} of ${urls.length} daily archives were absent upstream and are simply not represented.`] : []),
+    ], provenance, rows: unique,
   });
 }
 
 async function acquireBookDepth(symbol: string, from: string, to: string) {
-  const rows: Array<{ t: number; bidDepth: number; askDepth: number; bidNotional: number; askNotional: number; imbalance: number }> = [];
   const dates = utcDates(from, to, 7);
-  const pages = await mapLimit(dates, 8, async (date) => {
-    const url = `https://data.binance.vision/data/futures/um/daily/bookDepth/${symbol}/${symbol}-bookDepth-${date}.zip`;
-    try {
-      const body = await fetchBytes(url);
-      const lines = unzipCsv(body, url).trim().split(/\r?\n/).slice(1);
-      const groups = new Map<number, { bidDepth: number; askDepth: number; bidNotional: number; askNotional: number }>();
-      for (const line of lines) {
-        const value = line.split(',');
-        const rawTime = Date.parse(`${value[0].replace(' ', 'T')}Z`);
-        if (!Number.isFinite(rawTime)) continue;
-        const t = Math.floor(rawTime / 3_600_000) * 3_600_000;
-        const pct = Number(value[1]);
-        if (Math.abs(pct) !== 1) continue;
-        const group = groups.get(t) ?? { bidDepth: 0, askDepth: 0, bidNotional: 0, askNotional: 0 };
-        if (pct < 0) { group.bidDepth += Number(value[2]); group.bidNotional += Number(value[3]); }
-        else { group.askDepth += Number(value[2]); group.askNotional += Number(value[3]); }
-        groups.set(t, group);
-      }
-      const parsed = [...groups.entries()].map(([t, value]) => ({
-        t, ...value, imbalance: (value.bidNotional - value.askNotional) / Math.max(1, value.bidNotional + value.askNotional),
-      })).sort((left, right) => left.t - right.t);
-      return { parsed, provenance: { url, sha256: sha256(body), bytes: body.length, rows: parsed.length, fetchedAt } };
-    } catch (error) {
-      if (String(error).includes('not_found:')) return { parsed: [], provenance: null };
-      throw error;
+  const urls = dates.map((date) => `${VISION_BASE}/daily/bookDepth/${symbol}/${symbol}-bookDepth-${date}.zip`);
+  const { rows, provenance, missing } = await archivePages(urls, 8, (text) => {
+    const groups = new Map<number, { bidDepth: number; askDepth: number; bidNotional: number; askNotional: number }>();
+    for (const line of text.trim().split(/\r?\n/).slice(1)) {
+      const value = line.split(',');
+      const rawTime = Date.parse(`${value[0].replace(' ', 'T')}Z`);
+      if (!Number.isFinite(rawTime)) continue;
+      const t = Math.floor(rawTime / 3_600_000) * 3_600_000;
+      const pct = Number(value[1]);
+      if (Math.abs(pct) !== 1) continue;
+      const group = groups.get(t) ?? { bidDepth: 0, askDepth: 0, bidNotional: 0, askNotional: 0 };
+      if (pct < 0) { group.bidDepth += Number(value[2]); group.bidNotional += Number(value[3]); }
+      else { group.askDepth += Number(value[2]); group.askNotional += Number(value[3]); }
+      groups.set(t, group);
     }
+    return [...groups.entries()].map(([t, value]) => ({
+      t, ...value, imbalance: (value.bidNotional - value.askNotional) / Math.max(1, value.bidNotional + value.askNotional),
+    })).sort((left, right) => left.t - right.t);
   });
-  const provenance: ProvenancePage[] = [];
-  pages.forEach((page) => { rows.push(...page.parsed); if (page.provenance) provenance.push(page.provenance); });
   const unique = [...new Map(rows.map((row) => [row.t, row])).values()].sort((left, right) => left.t - right.t);
   return writeSeries(`${symbol.toLowerCase()}-order-book-depth-weekly-sample.json`, {
     schemaVersion: 1, kind: 'order_book_depth', source: 'Binance Public Data bookDepth archives', semanticLabel: 'real ±1% order-book depth imbalance', symbol,
     interval: '1h within weekly sampled days', coverage: coverage(unique),
-    limitations: ['Weekly sampled days only.', 'Provides depth, not top-of-book spread.', 'Single venue.'], provenance, rows: unique,
+    limitations: [
+      'Weekly sampled days only.',
+      'Provides depth, not top-of-book spread.',
+      'Single venue.',
+      ...(missing ? [`${missing} of ${urls.length} sampled daily archives were absent upstream and are simply not represented.`] : []),
+    ], provenance, rows: unique,
   });
 }
 
@@ -319,8 +453,56 @@ async function acquireSentiment() {
   });
 }
 
+type Artifact = ReturnType<typeof writeSeries>;
+
+// Merges new artifact entries into the existing manifest and recomputes integrity.contentSha256,
+// which loadHistoricalSignalBundle recomputes on every read. Existing entries are left byte-for-byte
+// alone unless the same file was re-acquired. Called once per symbol so an interrupted run still
+// leaves a manifest that validates.
+function amendManifest(added: Artifact[]): number {
+  const manifestPath = path.join(outDir, 'manifest.json');
+  if (!fs.existsSync(manifestPath)) throw new Error(`manifest_missing_for_additive_run:${manifestPath}`);
+  const core = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as Record<string, unknown> & { artifacts: Artifact[] };
+  delete (core as Record<string, unknown>).integrity;
+  const artifacts = [...core.artifacts];
+  for (const artifact of added) {
+    // Keyed on basename because that is the identity loadHistoricalSignalBundle resolves by, and it
+    // stays stable if a historical entry was recorded with a different path separator.
+    const index = artifacts.findIndex((value) => path.basename(value.file) === path.basename(artifact.file));
+    if (index >= 0) artifacts[index] = artifact;
+    else artifacts.push(artifact);
+  }
+  core.artifacts = artifacts;
+  core.amendedAt = fetchedAt;
+  const manifest = { ...core, integrity: { algorithm: 'sha256', contentSha256: sha256(JSON.stringify(core)) } };
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  return artifacts.length;
+}
+
+// Time windows match the existing per-symbol convention: candles and funding over the ethusdt
+// window, open interest over the shared 2022-2025 window, book depth over the shared weekly-sample
+// window. All four files are written because loadHistoricalSignalBundle requires the full set.
+async function acquireAddedSymbols(): Promise<void> {
+  for (const symbol of ADD_SYMBOLS) {
+    if (SEALED_SYMBOLS.has(symbol)) throw new Error(`refusing_to_rewrite_sealed_symbol:${symbol}`);
+  }
+  for (const symbol of ADD_SYMBOLS) {
+    const added: Artifact[] = [];
+    added.push(await acquireArchiveKlines(symbol, '2021-01-01', '2025-12-31'));
+    added.push(await acquireArchiveFunding(symbol, '2021-01-01', '2025-12-31'));
+    added.push(await acquireMetrics(symbol, '2022-01-01', '2025-12-31'));
+    added.push(await acquireBookDepth(symbol, '2023-01-02', '2025-12-29'));
+    const total = amendManifest(added);
+    console.log(`[additive] ${symbol} ${added.map((value) => `${path.basename(value.file)}=${value.coverage.rows}`).join(' ')} manifestArtifacts=${total}`);
+  }
+}
+
 async function main() {
   fs.mkdirSync(outDir, { recursive: true });
+  if (ADD_SYMBOLS.length) {
+    await acquireAddedSymbols();
+    return;
+  }
   const artifacts = [];
   artifacts.push(await acquireKlines('BTCUSDT', '2020-09-01', '2025-12-31'));
   artifacts.push(await acquireKlines('ETHUSDT', '2021-01-01', '2025-12-31'));
@@ -354,4 +536,7 @@ async function main() {
   console.log(JSON.stringify({ outDir, artifacts: artifacts.map((value) => ({ file: value.file, coverage: value.coverage, bytes: value.bytes })), unavailable }, null, 2));
 }
 
-main().finally(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

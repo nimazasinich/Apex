@@ -360,8 +360,9 @@ export default function App() {
     setAccountError(null);
     try {
       const result = await getWorkspaceData({ signal: AbortSignal.timeout(12_000) });
-      connectionRef.current = result.connection;
-      setConnection(result.connection);
+      const nextConnection = result.connection ?? INITIAL_CONNECTION;
+      connectionRef.current = nextConnection;
+      setConnection(nextConnection);
       setSnapshot(result.snapshot);
       setInsights(result.insights);
       setReconciliation(result.reconciliation);
@@ -369,7 +370,7 @@ export default function App() {
       const aborted = error instanceof DOMException && error.name === 'AbortError';
       if (!aborted) setAccountError(error instanceof Error ? error.message : 'account_sync_failed');
       try {
-        const current = await getConnection({ signal: AbortSignal.timeout(8_000) });
+        const current = (await getConnection({ signal: AbortSignal.timeout(8_000) })) ?? INITIAL_CONNECTION;
         connectionRef.current = current;
         setConnection(current);
         if (!accountIsAvailable(current)) { setSnapshot(null); setInsights(null); setReconciliation(null); }
@@ -385,15 +386,16 @@ export default function App() {
     const bootstrap = async () => {
       setAccountLoading(true);
       try {
-        const current = await getConnection({ signal: AbortSignal.timeout(12_000) });
+        const current = (await getConnection({ signal: AbortSignal.timeout(12_000) })) ?? INITIAL_CONNECTION;
         if (!active) return;
         connectionRef.current = current;
         setConnection(current);
         if (accountIsAvailable(current)) {
           const result = await getWorkspaceData({ signal: AbortSignal.timeout(12_000) });
           if (!active) return;
-          connectionRef.current = result.connection;
-          setConnection(result.connection);
+          const nextConnection = result.connection ?? INITIAL_CONNECTION;
+          connectionRef.current = nextConnection;
+          setConnection(nextConnection);
           setSnapshot(result.snapshot);
           setInsights(result.insights);
           setReconciliation(result.reconciliation);
@@ -428,7 +430,7 @@ export default function App() {
     if (!accountIsAvailable(connection)) return;
     const id = window.setInterval(() => void refreshAccount({ silent: true }), 8_000);
     return () => window.clearInterval(id);
-  }, [connection.status, connection.mode, refreshAccount]);
+  }, [connection?.status, connection?.mode, refreshAccount]);
 
   useEffect(() => {
     if (page !== 'overview' && page !== 'trading') return undefined;

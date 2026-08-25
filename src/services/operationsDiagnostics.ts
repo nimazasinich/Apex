@@ -153,9 +153,9 @@ export function summarizeOperationsDiagnostics(
 
   return {
     usableResources: countUsableDiagnostics(snapshot),
-    serviceStatus: operations?.service.status ?? 'UNAVAILABLE',
-    configuredProviders: operations?.providers.summary.configuredProviders ?? null,
-    healthyProviders: operations?.providers.summary.configuredHealthyProviders ?? null,
+    serviceStatus: operations?.service?.status ?? 'UNAVAILABLE',
+    configuredProviders: operations?.providers?.summary?.configuredProviders ?? null,
+    healthyProviders: operations?.providers?.summary?.configuredHealthyProviders ?? null,
     decisionRows: operations?.decisionMemory.stats?.total ?? null,
     resolvedDecisions: operations?.decisionMemory.stats?.resolved ?? null,
     adaptiveSource: recommendation?.sourceHorizon ?? 'none',

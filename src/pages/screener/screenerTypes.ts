@@ -46,6 +46,16 @@ export interface ScreenerFactor {
 export interface ScreenerRow {
   /** 1-based position in the deterministic full-universe ranking. */
   rank: number;
+  /**
+   * The composite that decides `rank` — defined once, in `signalStrengthOf`
+   * (`screenerModel.ts`).
+   *
+   * This is NOT a second score and is never printed as one. `score` stays the
+   * scanner's authoritative 0-100 and is what the UI shows; strength only orders
+   * the list, so a guard-flagged 90 with five objections cannot sit above a clean
+   * 82.
+   */
+  signalStrength: number;
   symbol: string;
   baseAsset: string;
   direction: TradeDirection;
@@ -72,6 +82,32 @@ export interface ScreenerRow {
    * gap the user might assume is covered.
    */
   spreadDepth: ScreenerMetric;
+  /**
+   * The scanner's own trade levels for this candidate.
+   *
+   * Copied from `CandidateScore.lifecycleContext`, where the server attaches
+   * `entryPrice`, `stopLoss` and `takeProfit` produced by
+   * `deriveSymbolLevels(ticker, candles1h, 'ATR_BANDS')` on every scan candidate,
+   * long and short. Nothing is re-derived in the browser — no ATR, no swing
+   * scan, no rounding to a nicer number — and a candidate that arrives without a
+   * level reports it `UNAVAILABLE` instead of showing an invented price.
+   */
+  entryPrice: ScreenerMetric;
+  stopLoss: ScreenerMetric;
+  takeProfit: ScreenerMetric;
+  /**
+   * Reward-to-risk of those three prices, in R.
+   *
+   * Arithmetic over two distances the scanner already published, not a new market
+   * reading: `|target − entry| / |entry − stop|`, direction-aware, and absent
+   * whenever a leg is missing or sits on the wrong side of entry.
+   */
+  riskReward: ScreenerMetric;
+  /** The risk leg as a percentage of entry, from the same two published prices. */
+  riskPct: ScreenerMetric;
+  /** Reported 24h extremes — the only real reference levels the market-wide snapshot carries. */
+  high24h: ScreenerMetric;
+  low24h: ScreenerMetric;
   factors: ScreenerFactor[];
   timeframeConfluence: boolean;
   timeframeConfluenceState: TimeframeConfluenceState | null;

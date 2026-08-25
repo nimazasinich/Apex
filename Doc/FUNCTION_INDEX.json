@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-23T10:07:27.828Z",
+  "generatedAt": "2026-08-25T06:55:36.294Z",
   "process": "Apex Function Atlas",
   "fileHashes": {
-    "server.ts": "dc4ba382f58e2bda",
-    "src/App.tsx": "842e5096fa1831fb",
+    "server.ts": "4a1829fbb3a096f5",
+    "src/App.tsx": "ebf556e70f316026",
     "src/components/BacktestChart.tsx": "f7917fa3ca7d1815",
     "src/components/BacktestModal.tsx": "3308cc596722523e",
     "src/components/BacktestTradesTable.tsx": "be60529f928ec9cf",
     "src/components/BrandMark.tsx": "fc4c7be533db38c9",
     "src/components/CandidatesCard.tsx": "bb26b3f21d69b4ec",
-    "src/components/CoinIcon.tsx": "bf1717d403011a4b",
+    "src/components/CoinIcon.tsx": "436849dba3e232cb",
     "src/components/ColoredGauge.tsx": "93afba66cd241d9b",
     "src/components/CorrelationMatrixCard.tsx": "50a16dacf91a57f1",
     "src/components/CryptoIcon.tsx": "efcd17321151f533",
@@ -20,15 +20,15 @@
     "src/components/MarketVisuals.tsx": "001e2375c34f0b63",
     "src/components/MiniSparkline.tsx": "a2790b9f52143acd",
     "src/components/NavBar.tsx": "b37f398f2d8fb6ad",
-    "src/components/overview/OverviewAccountSummary.tsx": "321da8ecff1e4b6e",
-    "src/components/overview/OverviewActivityPanel.tsx": "89e1daeefb66296f",
+    "src/components/overview/OverviewAccountSummary.tsx": "aaf133ca85f62465",
+    "src/components/overview/OverviewActivityPanel.tsx": "9cedc6e5091a6e60",
     "src/components/overview/OverviewAttentionPanel.tsx": "ab8bdbd6b682d355",
     "src/components/overview/OverviewExecutionSnapshotPanel.tsx": "797c3d8b642bf61f",
     "src/components/overview/OverviewKpiStrip.tsx": "ef39c1f8da057b4a",
-    "src/components/overview/OverviewMarketSummary.tsx": "f103606bf5fc70f0",
-    "src/components/overview/overviewModel.ts": "70a2f363d8bc8d7d",
-    "src/components/overview/OverviewProviderHealthPanel.tsx": "477fa716b04efaaf",
-    "src/components/overview/OverviewSignalsPanel.tsx": "0541dd905584abb4",
+    "src/components/overview/OverviewMarketSummary.tsx": "56930c61ce9261dc",
+    "src/components/overview/overviewModel.ts": "b9b8a9d646e360f4",
+    "src/components/overview/OverviewProviderHealthPanel.tsx": "0a74ca0d076a2c4a",
+    "src/components/overview/OverviewSignalsPanel.tsx": "5ac531b004b101af",
     "src/components/overview/OverviewStatusCards.tsx": "969431034faf0da2",
     "src/components/overview/OverviewSystemHealthPanel.tsx": "3c5213a9744873e3",
     "src/components/PriceChart.tsx": "245b3420a12b1576",
@@ -62,7 +62,7 @@
     "src/components/ui/WorkspaceFeedbackCenter.tsx": "633b99b40057deae",
     "src/components/ui/WorkspacePrimitives.tsx": "abb316ef1c6544cd",
     "src/components/WatchlistPanel.tsx": "d9e8a6534901ad66",
-    "src/components/workspace/AccountViews.tsx": "e802b4c20d057bde",
+    "src/components/workspace/AccountViews.tsx": "8a6e75c1a0a8a728",
     "src/components/workspace/AutopilotHeaderControl.tsx": "b8bb47ac8272dfe4",
     "src/components/workspace/DecisionJournalDrawer.tsx": "378d7b9fb3827998",
     "src/components/workspace/GeneralViews.tsx": "355f76b0754dea36",
@@ -92,6 +92,7 @@
     "src/contracts/scanner/scanContracts.ts": "1b65556698c08bb9",
     "src/lib/accountSnapshotStatus.ts": "ebf9c327d0fb3805",
     "src/lib/capabilityStatus.ts": "501302e8a2e4e882",
+    "src/lib/coinIconManifest.ts": "074f5899354f5be9",
     "src/lib/correlation.ts": "4a606a2de7314a99",
     "src/lib/dataProvenance.ts": "c4b565e61995bb0f",
     "src/lib/levels.ts": "7d6d28b75814d0c4",
@@ -157,10 +158,10 @@
     "src/pages/portfolio/PortfolioPage.tsx": "ca197a4215632033",
     "src/pages/positions/PositionsPage.tsx": "dba07c09a9eb2437",
     "src/pages/referenceUi.tsx": "d8c26d1aaec8420d",
-    "src/pages/screener/screenerModel.ts": "8bb3aa7f7c62711f",
-    "src/pages/screener/ScreenerPage.tsx": "9a34ca7d093479b7",
+    "src/pages/screener/screenerModel.ts": "1abe868d784d4d93",
+    "src/pages/screener/ScreenerPage.tsx": "d6655ee7ce5b7cae",
     "src/pages/screener/screenerPersistence.ts": "b759a5aebcf90184",
-    "src/pages/screener/screenerTypes.ts": "ba41b7ae8def1f67",
+    "src/pages/screener/screenerTypes.ts": "1b6b57680fd6ce58",
     "src/pages/settings/SettingsPage.tsx": "e2957e5b2384c6e0",
     "src/pages/strategies/directionPolicy.ts": "3743814d31a760b0",
     "src/pages/strategies/StrategyArtwork.tsx": "f12161926368afc3",
@@ -207,7 +208,7 @@
     "src/services/hfSpaceContracts.ts": "2e2ecec4d05d7ba2",
     "src/services/hfSpaceIntel.ts": "135b957404ab32c9",
     "src/services/hfSpacesClient.ts": "222abbfd51245ebe",
-    "src/services/iconProxy.ts": "bb0fb349d8efb736",
+    "src/services/iconProxy.ts": "20befa3e397bd35d",
     "src/services/intelligenceFeedProbe.ts": "2aebb6a59d0ee0ef",
     "src/services/kucoinPrivateOrderStream.ts": "c61ef12dd1fa6ed4",
     "src/services/kucoinStreaming.ts": "95a18a97a13860a0",
@@ -247,6 +248,7 @@
     "src/services/liquidityHunterReadPlaneClient.ts": "2e0ee2b4d1e4aba7",
     "src/services/liveExecutionIntentStore.ts": "607bcfb460cdd53a",
     "src/services/liveRiskTelemetry.ts": "24b6f0a9df99bd55",
+    "src/services/localIconAssets.ts": "08fce4829b170b16",
     "src/services/marketDataService.ts": "564ab28b3003200e",
     "src/services/marketRegimes.ts": "0a9569940a03deef",
     "src/services/mathEngine.ts": "21d0c34e171d4af7",
@@ -259,7 +261,7 @@
     "src/services/multiStrategyResearchOrchestrator.ts": "e8b93eaacb45f9c3",
     "src/services/onlineStatistics.ts": "1daeb03bc920c477",
     "src/services/openInterestHistory.ts": "c9cefb15303970c8",
-    "src/services/operationsDiagnostics.ts": "83eaef1bca01c096",
+    "src/services/operationsDiagnostics.ts": "9c063e8e78bc3de3",
     "src/services/operationsStatus.ts": "db46e804cd10213d",
     "src/services/orderErrorMessages.ts": "f186e3db9f67a34f",
     "src/services/paperForwardEvaluator.ts": "4db4f627abf91c66",
@@ -367,7 +369,7 @@
     "src/services/strategyCommander/strategyCompetence.ts": "bf6bf0a797c67b89",
     "src/services/strategyEngine/adaptiveTrendPortfolio.ts": "aaf1b8a3cf8b2e52",
     "src/services/strategyEngine/historicalSignals.ts": "26532d9ebb793a27",
-    "src/services/strategyEngine/index.ts": "d33b190be2b290c7",
+    "src/services/strategyEngine/index.ts": "a821a12d8dbc5739",
     "src/services/strategyEngine/orbVwapBreakout.ts": "fdc81065f50a3a8f",
     "src/services/strategyEngine/regimeRoutedComposite.ts": "7e99f9f0099389b6",
     "src/services/strategyEngine/replayHarness.ts": "05d989501d383292",
@@ -477,7 +479,7 @@
     "src/tests/scannerConfigPolicy.test.ts": "75a927e20dda2f36",
     "src/tests/scannerPresetWeights.test.ts": "a2618f1d2600333a",
     "src/tests/scoringConfluence.test.ts": "24dd5349a2cf0941",
-    "src/tests/screenerModel.test.ts": "55bd732aa2399323",
+    "src/tests/screenerModel.test.ts": "03e0e6adb41f51f9",
     "src/tests/screenerPersistence.test.ts": "2ba45ef73b826ed6",
     "src/tests/serverSecurity.test.ts": "f106bc8531c58dd2",
     "src/tests/signalId.test.ts": "c6ecb6ffc02dc1cb",
@@ -580,7 +582,7 @@
     "scripts/qa/runLiquidityHunterSafeCompletionRuntime.mjs": "1e39237c0dfdd785",
     "scripts/qa/runLiquidityHunterValidationAndProvidersRuntime.mjs": "45b66437c539da07",
     "scripts/qa/runMultiAgentMultiTradingRuntime.mjs": "8d130a5d3b8c2a95",
-    "scripts/qa/runOfflinePixelGate.mjs": "877aeda2a72417ac",
+    "scripts/qa/runOfflinePixelGate.mjs": "1a94eff79a5e512a",
     "scripts/qa/runProxyFetchOptionalDependencyRuntime.mjs": "ef4f68027a281f07",
     "scripts/qa/runStrategyOptimizationSafetyRuntime.mjs": "5889073a8895d84b",
     "scripts/qa/runSupplementalKeyRuntime.mjs": "03bbef6e5e36fb59",
@@ -638,8 +640,8 @@
     "scripts/qa/_qa_cdp_matched.mts": "1bf4a813dda045c8",
     "scripts/qa/_qa_metric_audit.mts": "500b261eb4b40c9d",
     "scripts/qa/_qa_range_probe.mts": "4fb6132390330a8f",
-    "scripts/research/acquireProfitabilityData.mts": "a842b4663675b5f3",
-    "scripts/research/runStructuralProfitabilityStudy.mts": "fce7353f30a109a3",
+    "scripts/research/acquireProfitabilityData.mts": "7c351219079af1b4",
+    "scripts/research/runStructuralProfitabilityStudy.mts": "4105a5c19792bae5",
     "scripts/utilities/analyzeDirectionDivergence.mts": "9fe70b113e4e4f5e",
     "scripts/utilities/auditOperationsPanel.mts": "dd0e6aca9058dbc8",
     "scripts/utilities/auditOverviewLayout.mts": "1373eb0fd998a44b",
@@ -5710,8 +5712,8 @@
       "qualname": "ticker",
       "kind": "arrow",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 33,
-      "lineEnd": 33,
+      "line": 42,
+      "lineEnd": 42,
       "exported": false,
       "async": false,
       "params": [
@@ -5730,8 +5732,8 @@
       "qualname": "OfflineWebSocket",
       "kind": "class",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 44,
-      "lineEnd": 50,
+      "line": 53,
+      "lineEnd": 59,
       "exported": false,
       "async": false,
       "params": [],
@@ -5747,8 +5749,8 @@
       "qualname": "OfflineWebSocket.close",
       "kind": "method",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 47,
-      "lineEnd": 47,
+      "line": 56,
+      "lineEnd": 56,
       "exported": false,
       "async": false,
       "params": [],
@@ -5764,8 +5766,8 @@
       "qualname": "OfflineWebSocket.send",
       "kind": "method",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 47,
-      "lineEnd": 47,
+      "line": 56,
+      "lineEnd": 56,
       "exported": false,
       "async": false,
       "params": [],
@@ -5781,8 +5783,8 @@
       "qualname": "OfflineWebSocket.addEventListener",
       "kind": "method",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 48,
-      "lineEnd": 48,
+      "line": 57,
+      "lineEnd": 57,
       "exported": false,
       "async": false,
       "params": [
@@ -5801,8 +5803,8 @@
       "qualname": "OfflineWebSocket.dispatchEvent",
       "kind": "method",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 49,
-      "lineEnd": 49,
+      "line": 58,
+      "lineEnd": 58,
       "exported": false,
       "async": false,
       "params": [],
@@ -5818,8 +5820,8 @@
       "qualname": "OfflineWebSocket.removeEventListener",
       "kind": "method",
       "file": "scripts/qa/runOfflinePixelGate.mjs",
-      "line": 49,
-      "lineEnd": 49,
+      "line": 58,
+      "lineEnd": 58,
       "exported": false,
       "async": false,
       "params": [],
@@ -9020,8 +9022,8 @@
       "qualname": "sha256",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 35,
-      "lineEnd": 37,
+      "line": 42,
+      "lineEnd": 44,
       "exported": false,
       "async": false,
       "params": [
@@ -9039,8 +9041,8 @@
       "qualname": "iso",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 39,
-      "lineEnd": 41,
+      "line": 46,
+      "lineEnd": 48,
       "exported": false,
       "async": false,
       "params": [
@@ -9058,8 +9060,8 @@
       "qualname": "sleep",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 43,
-      "lineEnd": 45,
+      "line": 50,
+      "lineEnd": 52,
       "exported": false,
       "async": false,
       "params": [
@@ -9077,8 +9079,8 @@
       "qualname": "fetchBytes",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 47,
-      "lineEnd": 66,
+      "line": 54,
+      "lineEnd": 73,
       "exported": false,
       "async": true,
       "params": [
@@ -9097,8 +9099,8 @@
       "qualname": "fetchJsonPage",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 68,
-      "lineEnd": 75,
+      "line": 75,
+      "lineEnd": 82,
       "exported": false,
       "async": true,
       "params": [
@@ -9116,8 +9118,8 @@
       "qualname": "writeSeries",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 77,
-      "lineEnd": 93,
+      "line": 84,
+      "lineEnd": 102,
       "exported": false,
       "async": false,
       "params": [
@@ -9136,8 +9138,8 @@
       "qualname": "coverage",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 95,
-      "lineEnd": 101,
+      "line": 104,
+      "lineEnd": 110,
       "exported": false,
       "async": false,
       "params": [
@@ -9155,8 +9157,8 @@
       "qualname": "mapLimit",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 103,
-      "lineEnd": 115,
+      "line": 112,
+      "lineEnd": 124,
       "exported": false,
       "async": true,
       "params": [
@@ -9176,8 +9178,8 @@
       "qualname": "utcDates",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 117,
-      "lineEnd": 123,
+      "line": 126,
+      "lineEnd": 132,
       "exported": false,
       "async": false,
       "params": [
@@ -9197,8 +9199,8 @@
       "qualname": "utcMonths",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 125,
-      "lineEnd": 135,
+      "line": 134,
+      "lineEnd": 144,
       "exported": false,
       "async": false,
       "params": [
@@ -9217,8 +9219,8 @@
       "qualname": "acquireKlines",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 137,
-      "lineEnd": 164,
+      "line": 146,
+      "lineEnd": 173,
       "exported": false,
       "async": true,
       "params": [
@@ -9238,8 +9240,8 @@
       "qualname": "acquireFunding",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 166,
-      "lineEnd": 193,
+      "line": 175,
+      "lineEnd": 202,
       "exported": false,
       "async": true,
       "params": [
@@ -9255,12 +9257,153 @@
       "docstring": ""
     },
     {
+      "name": "csvCell",
+      "qualname": "csvCell",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 204,
+      "lineEnd": 207,
+      "exported": false,
+      "async": false,
+      "params": [
+        "cells: string[]",
+        "index: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function csvCell(cells: string[], index: number): number {",
+      "docstring": ""
+    },
+    {
+      "name": "epochKeyedCsvRows",
+      "qualname": "epochKeyedCsvRows",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 210,
+      "lineEnd": 212,
+      "exported": false,
+      "async": false,
+      "params": [
+        "text: string"
+      ],
+      "returns": "string[][]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function epochKeyedCsvRows(text: string): string[][] {",
+      "docstring": ""
+    },
+    {
+      "name": "utcMonthKeys",
+      "qualname": "utcMonthKeys",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 214,
+      "lineEnd": 216,
+      "exported": false,
+      "async": false,
+      "params": [
+        "from: string",
+        "to: string"
+      ],
+      "returns": "string[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function utcMonthKeys(from: string, to: string): string[] {",
+      "docstring": ""
+    },
+    {
+      "name": "archivePages",
+      "qualname": "archivePages",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 218,
+      "lineEnd": 233,
+      "exported": false,
+      "async": true,
+      "params": [
+        "urls: string[]",
+        "limit: number",
+        "parse: (text: string) => T[]"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "async function archivePages<T>(urls: string[], limit: number, parse: (text: string) => T[]) {",
+      "docstring": ""
+    },
+    {
+      "name": "acquireArchiveKlines",
+      "qualname": "acquireArchiveKlines",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 238,
+      "lineEnd": 279,
+      "exported": false,
+      "async": true,
+      "params": [
+        "symbol: string",
+        "from: string",
+        "to: string"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "async function acquireArchiveKlines(symbol: string, from: string, to: string) {",
+      "docstring": ""
+    },
+    {
+      "name": "parse",
+      "qualname": "parse",
+      "kind": "arrow",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 241,
+      "lineEnd": 243,
+      "exported": false,
+      "async": false,
+      "params": [
+        "text: string"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "(text: string) => epochKeyedCsvRows(text).map((cells) => ({",
+      "docstring": ""
+    },
+    {
+      "name": "acquireArchiveFunding",
+      "qualname": "acquireArchiveFunding",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 283,
+      "lineEnd": 317,
+      "exported": false,
+      "async": true,
+      "params": [
+        "symbol: string",
+        "from: string",
+        "to: string"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "async function acquireArchiveFunding(symbol: string, from: string, to: string) {",
+      "docstring": ""
+    },
+    {
       "name": "unzipCsv",
       "qualname": "unzipCsv",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 195,
-      "lineEnd": 202,
+      "line": 322,
+      "lineEnd": 348,
       "exported": false,
       "async": false,
       "params": [
@@ -9279,8 +9422,8 @@
       "qualname": "acquireMetrics",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 204,
-      "lineEnd": 233,
+      "line": 350,
+      "lineEnd": 373,
       "exported": false,
       "async": true,
       "params": [
@@ -9300,8 +9443,8 @@
       "qualname": "acquireBookDepth",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 235,
-      "lineEnd": 273,
+      "line": 375,
+      "lineEnd": 407,
       "exported": false,
       "async": true,
       "params": [
@@ -9321,8 +9464,8 @@
       "qualname": "decodeXml",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 275,
-      "lineEnd": 278,
+      "line": 409,
+      "lineEnd": 412,
       "exported": false,
       "async": false,
       "params": [
@@ -9341,8 +9484,8 @@
       "qualname": "tag",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 280,
-      "lineEnd": 283,
+      "line": 414,
+      "lineEnd": 417,
       "exported": false,
       "async": false,
       "params": [
@@ -9361,8 +9504,8 @@
       "qualname": "acquireNews",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 285,
-      "lineEnd": 308,
+      "line": 419,
+      "lineEnd": 442,
       "exported": false,
       "async": true,
       "params": [
@@ -9381,8 +9524,8 @@
       "qualname": "acquireSentiment",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 310,
-      "lineEnd": 320,
+      "line": 444,
+      "lineEnd": 454,
       "exported": false,
       "async": true,
       "params": [],
@@ -9394,12 +9537,48 @@
       "docstring": ""
     },
     {
+      "name": "amendManifest",
+      "qualname": "amendManifest",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 462,
+      "lineEnd": 480,
+      "exported": false,
+      "async": false,
+      "params": [
+        "added: Artifact[]"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function amendManifest(added: Artifact[]): number {",
+      "docstring": ""
+    },
+    {
+      "name": "acquireAddedSymbols",
+      "qualname": "acquireAddedSymbols",
+      "kind": "function",
+      "file": "scripts/research/acquireProfitabilityData.mts",
+      "line": 485,
+      "lineEnd": 498,
+      "exported": false,
+      "async": true,
+      "params": [],
+      "returns": "Promise<void>",
+      "tags": [
+        "script"
+      ],
+      "signature": "async function acquireAddedSymbols(): Promise<void> {",
+      "docstring": ""
+    },
+    {
       "name": "main",
       "qualname": "main",
       "kind": "function",
       "file": "scripts/research/acquireProfitabilityData.mts",
-      "line": 322,
-      "lineEnd": 355,
+      "line": 500,
+      "lineEnd": 537,
       "exported": false,
       "async": true,
       "params": [],
@@ -9622,12 +9801,69 @@
       "docstring": ""
     },
     {
+      "name": "scopedVerdicts",
+      "qualname": "scopedVerdicts",
+      "kind": "function",
+      "file": "scripts/research/runStructuralProfitabilityStudy.mts",
+      "line": 162,
+      "lineEnd": 177,
+      "exported": false,
+      "async": false,
+      "params": [
+        "gates: Record<string, boolean | undefined>"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function scopedVerdicts(gates: Record<string, boolean | undefined>) {",
+      "docstring": ""
+    },
+    {
+      "name": "passes",
+      "qualname": "passes",
+      "kind": "arrow",
+      "file": "scripts/research/runStructuralProfitabilityStudy.mts",
+      "line": 163,
+      "lineEnd": 163,
+      "exported": false,
+      "async": false,
+      "params": [
+        "keys: string[]"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "(keys: string[]) => keys.length > 0 && keys.every((key) => gates[key] === true)",
+      "docstring": ""
+    },
+    {
+      "name": "unvalidatedLiveOnly",
+      "qualname": "unvalidatedLiveOnly",
+      "kind": "function",
+      "file": "scripts/research/runStructuralProfitabilityStudy.mts",
+      "line": 180,
+      "lineEnd": 184,
+      "exported": false,
+      "async": false,
+      "params": [
+        "definition: StrategyDefinition"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function unvalidatedLiveOnly(definition: StrategyDefinition) {",
+      "docstring": "Weighted LIVE_ONLY fusion components — quantifies what a replay cannot validate."
+    },
+    {
       "name": "readBrowserQa",
       "qualname": "readBrowserQa",
       "kind": "function",
       "file": "scripts/research/runStructuralProfitabilityStudy.mts",
-      "line": 142,
-      "lineEnd": 145,
+      "line": 186,
+      "lineEnd": 189,
       "exported": false,
       "async": false,
       "params": [],
@@ -9643,8 +9879,8 @@
       "qualname": "sealHoldout",
       "kind": "function",
       "file": "scripts/research/runStructuralProfitabilityStudy.mts",
-      "line": 147,
-      "lineEnd": 172,
+      "line": 191,
+      "lineEnd": 216,
       "exported": false,
       "async": false,
       "params": [],
@@ -9660,8 +9896,8 @@
       "qualname": "verifySeal",
       "kind": "function",
       "file": "scripts/research/runStructuralProfitabilityStudy.mts",
-      "line": 174,
-      "lineEnd": 183,
+      "line": 218,
+      "lineEnd": 227,
       "exported": false,
       "async": false,
       "params": [],
@@ -9677,8 +9913,8 @@
       "qualname": "markdownTable",
       "kind": "function",
       "file": "scripts/research/runStructuralProfitabilityStudy.mts",
-      "line": 185,
-      "lineEnd": 187,
+      "line": 229,
+      "lineEnd": 231,
       "exported": false,
       "async": false,
       "params": [
@@ -9697,8 +9933,8 @@
       "qualname": "evaluate",
       "kind": "function",
       "file": "scripts/research/runStructuralProfitabilityStudy.mts",
-      "line": 189,
-      "lineEnd": 302,
+      "line": 233,
+      "lineEnd": 364,
       "exported": false,
       "async": true,
       "params": [],
@@ -13717,8 +13953,8 @@
       "qualname": "routerFetch",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 172,
-      "lineEnd": 173,
+      "line": 173,
+      "lineEnd": 174,
       "exported": false,
       "async": false,
       "params": [
@@ -13737,8 +13973,8 @@
       "qualname": "quote",
       "kind": "method",
       "file": "server.ts",
-      "line": 234,
-      "lineEnd": 255,
+      "line": 235,
+      "lineEnd": 256,
       "exported": false,
       "async": true,
       "params": [
@@ -13756,8 +13992,8 @@
       "qualname": "exchangeSessionId",
       "kind": "function",
       "file": "server.ts",
-      "line": 551,
-      "lineEnd": 553,
+      "line": 566,
+      "lineEnd": 568,
       "exported": false,
       "async": false,
       "params": [
@@ -13776,8 +14012,8 @@
       "qualname": "exchangeSessionCookie",
       "kind": "function",
       "file": "server.ts",
-      "line": 555,
-      "lineEnd": 566,
+      "line": 570,
+      "lineEnd": 581,
       "exported": false,
       "async": false,
       "params": [
@@ -13798,8 +14034,8 @@
       "qualname": "clearExchangeSessionCookie",
       "kind": "function",
       "file": "server.ts",
-      "line": 568,
-      "lineEnd": 579,
+      "line": 583,
+      "lineEnd": 594,
       "exported": false,
       "async": false,
       "params": [
@@ -13818,8 +14054,8 @@
       "qualname": "scopedCookie",
       "kind": "function",
       "file": "server.ts",
-      "line": 581,
-      "lineEnd": 592,
+      "line": 596,
+      "lineEnd": 607,
       "exported": false,
       "async": false,
       "params": [
@@ -13841,8 +14077,8 @@
       "qualname": "requestedAccountMode",
       "kind": "function",
       "file": "server.ts",
-      "line": 594,
-      "lineEnd": 596,
+      "line": 609,
+      "lineEnd": 611,
       "exported": false,
       "async": false,
       "params": [
@@ -13860,8 +14096,8 @@
       "qualname": "ensureDemoSession",
       "kind": "function",
       "file": "server.ts",
-      "line": 598,
-      "lineEnd": 601,
+      "line": 613,
+      "lineEnd": 616,
       "exported": false,
       "async": false,
       "params": [
@@ -13881,8 +14117,8 @@
       "qualname": "accountCookies",
       "kind": "function",
       "file": "server.ts",
-      "line": 603,
-      "lineEnd": 609,
+      "line": 618,
+      "lineEnd": 624,
       "exported": false,
       "async": false,
       "params": [
@@ -13902,8 +14138,8 @@
       "qualname": "accountRouteError",
       "kind": "function",
       "file": "server.ts",
-      "line": 611,
-      "lineEnd": 640,
+      "line": 626,
+      "lineEnd": 655,
       "exported": false,
       "async": false,
       "params": [
@@ -13923,8 +14159,8 @@
       "qualname": "testnetStore",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 856,
-      "lineEnd": 861,
+      "line": 871,
+      "lineEnd": 876,
       "exported": false,
       "async": false,
       "params": [],
@@ -13940,8 +14176,8 @@
       "qualname": "testnetAdapter",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 862,
-      "lineEnd": 865,
+      "line": 877,
+      "lineEnd": 880,
       "exported": false,
       "async": false,
       "params": [],
@@ -13957,8 +14193,8 @@
       "qualname": "validationStore",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 866,
-      "lineEnd": 871,
+      "line": 881,
+      "lineEnd": 886,
       "exported": false,
       "async": false,
       "params": [],
@@ -13974,8 +14210,8 @@
       "qualname": "validationAdapter",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 872,
-      "lineEnd": 875,
+      "line": 887,
+      "lineEnd": 890,
       "exported": false,
       "async": false,
       "params": [],
@@ -13991,8 +14227,8 @@
       "qualname": "validationConfigured",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 876,
-      "lineEnd": 879,
+      "line": 891,
+      "lineEnd": 894,
       "exported": false,
       "async": false,
       "params": [],
@@ -14008,8 +14244,8 @@
       "qualname": "mapTestnetStatus",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 880,
-      "lineEnd": 885,
+      "line": 895,
+      "lineEnd": 900,
       "exported": false,
       "async": false,
       "params": [
@@ -14027,8 +14263,8 @@
       "qualname": "normalizeTestnetFills",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 886,
-      "lineEnd": 909,
+      "line": 901,
+      "lineEnd": 924,
       "exported": false,
       "async": false,
       "params": [
@@ -14047,8 +14283,8 @@
       "qualname": "reconcileTestnetOrder",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 910,
-      "lineEnd": 933,
+      "line": 925,
+      "lineEnd": 948,
       "exported": false,
       "async": true,
       "params": [
@@ -14066,8 +14302,8 @@
       "qualname": "handleManualTestnetOrder",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 1027,
-      "lineEnd": 1198,
+      "line": 1042,
+      "lineEnd": 1213,
       "exported": false,
       "async": true,
       "params": [
@@ -14087,8 +14323,8 @@
       "qualname": "positionNotional",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 1060,
-      "lineEnd": 1060,
+      "line": 1075,
+      "lineEnd": 1075,
       "exported": false,
       "async": false,
       "params": [
@@ -14106,8 +14342,8 @@
       "qualname": "verifyOperatorToken",
       "kind": "function",
       "file": "server.ts",
-      "line": 1399,
-      "lineEnd": 1409,
+      "line": 1414,
+      "lineEnd": 1424,
       "exported": false,
       "async": false,
       "params": [
@@ -14126,8 +14362,8 @@
       "qualname": "buildLiquidityHunterShadowContext",
       "kind": "function",
       "file": "server.ts",
-      "line": 1450,
-      "lineEnd": 1530,
+      "line": 1465,
+      "lineEnd": 1545,
       "exported": false,
       "async": true,
       "params": [
@@ -14146,8 +14382,8 @@
       "qualname": "ExchangeProxyError",
       "kind": "class",
       "file": "server.ts",
-      "line": 1707,
-      "lineEnd": 1716,
+      "line": 1722,
+      "lineEnd": 1731,
       "exported": false,
       "async": false,
       "params": [],
@@ -14164,8 +14400,8 @@
       "qualname": "reportDebugEvent",
       "kind": "function",
       "file": "server.ts",
-      "line": 1725,
-      "lineEnd": 1740,
+      "line": 1740,
+      "lineEnd": 1755,
       "exported": false,
       "async": false,
       "params": [
@@ -14187,8 +14423,8 @@
       "qualname": "exchangeRouteCooldownKey",
       "kind": "function",
       "file": "server.ts",
-      "line": 1743,
-      "lineEnd": 1750,
+      "line": 1758,
+      "lineEnd": 1765,
       "exported": false,
       "async": false,
       "params": [
@@ -14207,8 +14443,8 @@
       "qualname": "assertExchangeRouteNotCoolingDown",
       "kind": "function",
       "file": "server.ts",
-      "line": 1752,
-      "lineEnd": 1763,
+      "line": 1767,
+      "lineEnd": 1778,
       "exported": false,
       "async": false,
       "params": [
@@ -14227,8 +14463,8 @@
       "qualname": "recordExchangeRouteTransportFailure",
       "kind": "function",
       "file": "server.ts",
-      "line": 1765,
-      "lineEnd": 1767,
+      "line": 1780,
+      "lineEnd": 1782,
       "exported": false,
       "async": false,
       "params": [
@@ -14247,8 +14483,8 @@
       "qualname": "classifyStatus",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 1769,
-      "lineEnd": 1775,
+      "line": 1784,
+      "lineEnd": 1790,
       "exported": false,
       "async": false,
       "params": [
@@ -14266,8 +14502,8 @@
       "qualname": "fetchExchangeJson",
       "kind": "function",
       "file": "server.ts",
-      "line": 1777,
-      "lineEnd": 1846,
+      "line": 1792,
+      "lineEnd": 1861,
       "exported": false,
       "async": true,
       "params": [
@@ -14288,8 +14524,8 @@
       "qualname": "assertKuCoinSuccess",
       "kind": "function",
       "file": "server.ts",
-      "line": 1848,
-      "lineEnd": 1856,
+      "line": 1863,
+      "lineEnd": 1871,
       "exported": false,
       "async": false,
       "params": [
@@ -14309,8 +14545,8 @@
       "qualname": "sendExchangeError",
       "kind": "function",
       "file": "server.ts",
-      "line": 1858,
-      "lineEnd": 1891,
+      "line": 1873,
+      "lineEnd": 1906,
       "exported": false,
       "async": false,
       "params": [
@@ -14334,8 +14570,8 @@
       "qualname": "sendExchangeOk",
       "kind": "function",
       "file": "server.ts",
-      "line": 1897,
-      "lineEnd": 1912,
+      "line": 1912,
+      "lineEnd": 1927,
       "exported": false,
       "async": false,
       "params": [
@@ -14358,8 +14594,8 @@
       "qualname": "sendExchangeErr",
       "kind": "function",
       "file": "server.ts",
-      "line": 1917,
-      "lineEnd": 1948,
+      "line": 1932,
+      "lineEnd": 1963,
       "exported": false,
       "async": false,
       "params": [
@@ -14384,8 +14620,8 @@
       "qualname": "sendLive",
       "kind": "function",
       "file": "server.ts",
-      "line": 1951,
-      "lineEnd": 1953,
+      "line": 1966,
+      "lineEnd": 1968,
       "exported": false,
       "async": false,
       "params": [
@@ -14404,8 +14640,8 @@
       "qualname": "getBacktestProfile",
       "kind": "function",
       "file": "server.ts",
-      "line": 2033,
-      "lineEnd": 2036,
+      "line": 2048,
+      "lineEnd": 2051,
       "exported": false,
       "async": false,
       "params": [
@@ -14423,8 +14659,8 @@
       "qualname": "backtestPublicProfile",
       "kind": "function",
       "file": "server.ts",
-      "line": 2038,
-      "lineEnd": 2048,
+      "line": 2053,
+      "lineEnd": 2063,
       "exported": false,
       "async": false,
       "params": [
@@ -14442,8 +14678,8 @@
       "qualname": "assertBacktestUrlAllowed",
       "kind": "function",
       "file": "server.ts",
-      "line": 2050,
-      "lineEnd": 2060,
+      "line": 2065,
+      "lineEnd": 2075,
       "exported": false,
       "async": false,
       "params": [
@@ -14461,8 +14697,8 @@
       "qualname": "normalizeBacktestInterval",
       "kind": "function",
       "file": "server.ts",
-      "line": 2062,
-      "lineEnd": 2066,
+      "line": 2077,
+      "lineEnd": 2081,
       "exported": false,
       "async": false,
       "params": [
@@ -14480,8 +14716,8 @@
       "qualname": "sanitizeBacktestEndpointPath",
       "kind": "function",
       "file": "server.ts",
-      "line": 2068,
-      "lineEnd": 2079,
+      "line": 2083,
+      "lineEnd": 2094,
       "exported": false,
       "async": false,
       "params": [
@@ -14500,8 +14736,8 @@
       "qualname": "backtestSymbolContext",
       "kind": "function",
       "file": "server.ts",
-      "line": 2088,
-      "lineEnd": 2095,
+      "line": 2103,
+      "lineEnd": 2110,
       "exported": false,
       "async": false,
       "params": [
@@ -14519,8 +14755,8 @@
       "qualname": "intervalToHistoryDays",
       "kind": "function",
       "file": "server.ts",
-      "line": 2097,
-      "lineEnd": 2101,
+      "line": 2112,
+      "lineEnd": 2116,
       "exported": false,
       "async": false,
       "params": [
@@ -14539,8 +14775,8 @@
       "qualname": "applyBacktestEndpointTemplate",
       "kind": "function",
       "file": "server.ts",
-      "line": 2103,
-      "lineEnd": 2112,
+      "line": 2118,
+      "lineEnd": 2127,
       "exported": false,
       "async": false,
       "params": [
@@ -14561,8 +14797,8 @@
       "qualname": "buildBacktestUrl",
       "kind": "function",
       "file": "server.ts",
-      "line": 2114,
-      "lineEnd": 2132,
+      "line": 2129,
+      "lineEnd": 2147,
       "exported": false,
       "async": false,
       "params": [
@@ -14584,8 +14820,8 @@
       "qualname": "fetchBacktestText",
       "kind": "function",
       "file": "server.ts",
-      "line": 2134,
-      "lineEnd": 2150,
+      "line": 2149,
+      "lineEnd": 2165,
       "exported": false,
       "async": true,
       "params": [
@@ -14603,8 +14839,8 @@
       "qualname": "num",
       "kind": "function",
       "file": "server.ts",
-      "line": 2152,
-      "lineEnd": 2156,
+      "line": 2167,
+      "lineEnd": 2171,
       "exported": false,
       "async": false,
       "params": [
@@ -14622,8 +14858,8 @@
       "qualname": "timeString",
       "kind": "function",
       "file": "server.ts",
-      "line": 2158,
-      "lineEnd": 2172,
+      "line": 2173,
+      "lineEnd": 2187,
       "exported": false,
       "async": false,
       "params": [
@@ -14641,8 +14877,8 @@
       "qualname": "candleFromArray",
       "kind": "function",
       "file": "server.ts",
-      "line": 2174,
-      "lineEnd": 2184,
+      "line": 2189,
+      "lineEnd": 2199,
       "exported": false,
       "async": false,
       "params": [
@@ -14660,8 +14896,8 @@
       "qualname": "candleFromObject",
       "kind": "function",
       "file": "server.ts",
-      "line": 2186,
-      "lineEnd": 2196,
+      "line": 2201,
+      "lineEnd": 2211,
       "exported": false,
       "async": false,
       "params": [
@@ -14679,8 +14915,8 @@
       "qualname": "chartObjectToCandles",
       "kind": "function",
       "file": "server.ts",
-      "line": 2198,
-      "lineEnd": 2210,
+      "line": 2213,
+      "lineEnd": 2225,
       "exported": false,
       "async": false,
       "params": [
@@ -14698,8 +14934,8 @@
       "qualname": "normalizeBacktestCandles",
       "kind": "function",
       "file": "server.ts",
-      "line": 2212,
-      "lineEnd": 2243,
+      "line": 2227,
+      "lineEnd": 2258,
       "exported": false,
       "async": false,
       "params": [
@@ -14718,8 +14954,8 @@
       "qualname": "parseCsvCandles",
       "kind": "function",
       "file": "server.ts",
-      "line": 2245,
-      "lineEnd": 2259,
+      "line": 2260,
+      "lineEnd": 2274,
       "exported": false,
       "async": false,
       "params": [
@@ -14737,8 +14973,8 @@
       "qualname": "compactRawSample",
       "kind": "function",
       "file": "server.ts",
-      "line": 2261,
-      "lineEnd": 2271,
+      "line": 2276,
+      "lineEnd": 2286,
       "exported": false,
       "async": false,
       "params": [
@@ -14756,8 +14992,8 @@
       "qualname": "sendSentimentEnvelope",
       "kind": "function",
       "file": "server.ts",
-      "line": 2577,
-      "lineEnd": 2608,
+      "line": 2592,
+      "lineEnd": 2623,
       "exported": false,
       "async": false,
       "params": [
@@ -14777,8 +15013,8 @@
       "qualname": "readSavedSupplementalConfig",
       "kind": "function",
       "file": "server.ts",
-      "line": 2850,
-      "lineEnd": 2882,
+      "line": 2865,
+      "lineEnd": 2897,
       "exported": false,
       "async": false,
       "params": [],
@@ -14794,8 +15030,8 @@
       "qualname": "supplementalVerifiedStatus",
       "kind": "function",
       "file": "server.ts",
-      "line": 2917,
-      "lineEnd": 2923,
+      "line": 2932,
+      "lineEnd": 2938,
       "exported": false,
       "async": false,
       "params": [],
@@ -14811,8 +15047,8 @@
       "qualname": "persistSupplementalKeys",
       "kind": "function",
       "file": "server.ts",
-      "line": 2925,
-      "lineEnd": 2934,
+      "line": 2940,
+      "lineEnd": 2949,
       "exported": false,
       "async": false,
       "params": [],
@@ -14828,8 +15064,8 @@
       "qualname": "restoreSupplementalProbeCache",
       "kind": "function",
       "file": "server.ts",
-      "line": 2936,
-      "lineEnd": 2945,
+      "line": 2951,
+      "lineEnd": 2960,
       "exported": false,
       "async": false,
       "params": [
@@ -14847,8 +15083,8 @@
       "qualname": "rebuildSupplementalOrchestrator",
       "kind": "function",
       "file": "server.ts",
-      "line": 2954,
-      "lineEnd": 2978,
+      "line": 2969,
+      "lineEnd": 2993,
       "exported": false,
       "async": false,
       "params": [],
@@ -14864,8 +15100,8 @@
       "qualname": "supplementalConfigStatus",
       "kind": "function",
       "file": "server.ts",
-      "line": 2980,
-      "lineEnd": 2989,
+      "line": 2995,
+      "lineEnd": 3004,
       "exported": false,
       "async": false,
       "params": [],
@@ -14881,8 +15117,8 @@
       "qualname": "clearSupplementalVerification",
       "kind": "function",
       "file": "server.ts",
-      "line": 2991,
-      "lineEnd": 2997,
+      "line": 3006,
+      "lineEnd": 3012,
       "exported": false,
       "async": false,
       "params": [
@@ -14900,8 +15136,8 @@
       "qualname": "sanitizeExternalSource",
       "kind": "function",
       "file": "server.ts",
-      "line": 3135,
-      "lineEnd": 3138,
+      "line": 3150,
+      "lineEnd": 3153,
       "exported": false,
       "async": false,
       "params": [
@@ -14919,8 +15155,8 @@
       "qualname": "normalizeExternalSource",
       "kind": "function",
       "file": "server.ts",
-      "line": 3140,
-      "lineEnd": 3166,
+      "line": 3155,
+      "lineEnd": 3181,
       "exported": false,
       "async": false,
       "params": [
@@ -14939,8 +15175,8 @@
       "qualname": "readExternalApiSources",
       "kind": "function",
       "file": "server.ts",
-      "line": 3168,
-      "lineEnd": 3177,
+      "line": 3183,
+      "lineEnd": 3192,
       "exported": false,
       "async": false,
       "params": [],
@@ -14956,8 +15192,8 @@
       "qualname": "persistExternalApiSources",
       "kind": "function",
       "file": "server.ts",
-      "line": 3181,
-      "lineEnd": 3185,
+      "line": 3196,
+      "lineEnd": 3200,
       "exported": false,
       "async": false,
       "params": [],
@@ -14973,8 +15209,8 @@
       "qualname": "seedCompletedDefaultExternalSources",
       "kind": "function",
       "file": "server.ts",
-      "line": 3187,
-      "lineEnd": 3198,
+      "line": 3202,
+      "lineEnd": 3213,
       "exported": false,
       "async": false,
       "params": [],
@@ -14990,8 +15226,8 @@
       "qualname": "appendAuthToExternalRequest",
       "kind": "function",
       "file": "server.ts",
-      "line": 3214,
-      "lineEnd": 3225,
+      "line": 3229,
+      "lineEnd": 3240,
       "exported": false,
       "async": false,
       "params": [
@@ -15010,8 +15246,8 @@
       "qualname": "slim",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 3534,
-      "lineEnd": 3537,
+      "line": 3549,
+      "lineEnd": 3552,
       "exported": false,
       "async": false,
       "params": [
@@ -15029,8 +15265,8 @@
       "qualname": "persistTelegramConfig",
       "kind": "function",
       "file": "server.ts",
-      "line": 3625,
-      "lineEnd": 3633,
+      "line": 3640,
+      "lineEnd": 3648,
       "exported": false,
       "async": false,
       "params": [],
@@ -15046,8 +15282,8 @@
       "qualname": "telegramConfigured",
       "kind": "function",
       "file": "server.ts",
-      "line": 3635,
-      "lineEnd": 3637,
+      "line": 3650,
+      "lineEnd": 3652,
       "exported": false,
       "async": false,
       "params": [],
@@ -15063,8 +15299,8 @@
       "qualname": "sendTelegramMessage",
       "kind": "function",
       "file": "server.ts",
-      "line": 3639,
-      "lineEnd": 3667,
+      "line": 3654,
+      "lineEnd": 3682,
       "exported": false,
       "async": true,
       "params": [
@@ -15082,8 +15318,8 @@
       "qualname": "historicalResearchWindow",
       "kind": "function",
       "file": "server.ts",
-      "line": 3717,
-      "lineEnd": 3722,
+      "line": 3732,
+      "lineEnd": 3737,
       "exported": false,
       "async": false,
       "params": [
@@ -15101,8 +15337,8 @@
       "qualname": "initializeDecisionMemoryDatasetDurability",
       "kind": "function",
       "file": "server.ts",
-      "line": 3806,
-      "lineEnd": 3819,
+      "line": 3821,
+      "lineEnd": 3834,
       "exported": false,
       "async": true,
       "params": [],
@@ -15120,8 +15356,8 @@
       "qualname": "initializeOpenInterestHistorySampler",
       "kind": "function",
       "file": "server.ts",
-      "line": 3821,
-      "lineEnd": 3846,
+      "line": 3836,
+      "lineEnd": 3861,
       "exported": false,
       "async": false,
       "params": [],
@@ -15137,8 +15373,8 @@
       "qualname": "reconcilePersistedTestnetOrders",
       "kind": "function",
       "file": "server.ts",
-      "line": 3848,
-      "lineEnd": 3862,
+      "line": 3863,
+      "lineEnd": 3877,
       "exported": false,
       "async": true,
       "params": [],
@@ -15154,8 +15390,8 @@
       "qualname": "logProxyStartup",
       "kind": "function",
       "file": "server.ts",
-      "line": 3864,
-      "lineEnd": 3878,
+      "line": 3879,
+      "lineEnd": 3893,
       "exported": false,
       "async": false,
       "params": [],
@@ -15172,8 +15408,8 @@
       "qualname": "startServer",
       "kind": "route",
       "file": "server.ts",
-      "line": 3880,
-      "lineEnd": 3968,
+      "line": 3895,
+      "lineEnd": 3983,
       "exported": false,
       "async": true,
       "params": [],
@@ -15190,8 +15426,8 @@
       "qualname": "transformIndexHtml",
       "kind": "method",
       "file": "server.ts",
-      "line": 3947,
-      "lineEnd": 3949,
+      "line": 3962,
+      "lineEnd": 3964,
       "exported": false,
       "async": false,
       "params": [
@@ -15210,8 +15446,8 @@
       "qualname": "closeHttpServer",
       "kind": "function",
       "file": "server.ts",
-      "line": 3985,
-      "lineEnd": 4005,
+      "line": 4000,
+      "lineEnd": 4020,
       "exported": false,
       "async": true,
       "params": [
@@ -15229,8 +15465,8 @@
       "qualname": "finish",
       "kind": "arrow",
       "file": "server.ts",
-      "line": 3991,
-      "lineEnd": 3996,
+      "line": 4006,
+      "lineEnd": 4011,
       "exported": false,
       "async": false,
       "params": [],
@@ -15246,8 +15482,8 @@
       "qualname": "gracefulShutdown",
       "kind": "function",
       "file": "server.ts",
-      "line": 4007,
-      "lineEnd": 4038,
+      "line": 4022,
+      "lineEnd": 4053,
       "exported": false,
       "async": true,
       "params": [
@@ -15281,7 +15517,7 @@
       "kind": "component",
       "file": "src/App.tsx",
       "line": 125,
-      "lineEnd": 626,
+      "lineEnd": 628,
       "exported": true,
       "async": false,
       "params": [],
@@ -15297,8 +15533,8 @@
       "qualname": "bootstrap",
       "kind": "arrow",
       "file": "src/App.tsx",
-      "line": 385,
-      "lineEnd": 406,
+      "line": 386,
+      "lineEnd": 408,
       "exported": false,
       "async": true,
       "params": [],
@@ -15312,8 +15548,8 @@
       "qualname": "loadDetail",
       "kind": "arrow",
       "file": "src/App.tsx",
-      "line": 441,
-      "lineEnd": 484,
+      "line": 443,
+      "lineEnd": 486,
       "exported": false,
       "async": true,
       "params": [],
@@ -15327,8 +15563,8 @@
       "qualname": "onHashChange",
       "kind": "arrow",
       "file": "src/App.tsx",
-      "line": 491,
-      "lineEnd": 491,
+      "line": 493,
+      "lineEnd": 493,
       "exported": false,
       "async": false,
       "params": [],
@@ -15342,8 +15578,8 @@
       "qualname": "navigate",
       "kind": "arrow",
       "file": "src/App.tsx",
-      "line": 500,
-      "lineEnd": 504,
+      "line": 502,
+      "lineEnd": 506,
       "exported": false,
       "async": false,
       "params": [
@@ -15359,8 +15595,8 @@
       "qualname": "onConnectionChange",
       "kind": "arrow",
       "file": "src/App.tsx",
-      "line": 506,
-      "lineEnd": 514,
+      "line": 508,
+      "lineEnd": 516,
       "exported": false,
       "async": false,
       "params": [
@@ -15510,12 +15746,31 @@
       "docstring": ""
     },
     {
+      "name": "derivedTheme",
+      "qualname": "derivedTheme",
+      "kind": "function",
+      "file": "src/components/CoinIcon.tsx",
+      "line": 52,
+      "lineEnd": 57,
+      "exported": false,
+      "async": false,
+      "params": [
+        "base: string"
+      ],
+      "returns": "CoinTheme",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function derivedTheme(base: string): CoinTheme {",
+      "docstring": "Every asset without shipped artwork used to collapse onto one flat grey plate,\nso a screen of them read as \"icons failed to load\" rather than \"initials\".\nThis derives a stable plate colour from the ticker itself: same symbol always\ngets the same hue, different symbols separate visually.\nThis is deco"
+    },
+    {
       "name": "extractBase",
       "qualname": "extractBase",
       "kind": "function",
       "file": "src/components/CoinIcon.tsx",
-      "line": 102,
-      "lineEnd": 106,
+      "line": 90,
+      "lineEnd": 94,
       "exported": false,
       "async": false,
       "params": [
@@ -15529,31 +15784,69 @@
       "docstring": ""
     },
     {
-      "name": "resolveLogoSrc",
-      "qualname": "resolveLogoSrc",
+      "name": "artworkKey",
+      "qualname": "artworkKey",
       "kind": "function",
       "file": "src/components/CoinIcon.tsx",
-      "line": 109,
-      "lineEnd": 116,
+      "line": 102,
+      "lineEnd": 104,
       "exported": false,
       "async": false,
       "params": [
         "base: string"
       ],
+      "returns": "string",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function artworkKey(base: string): string {",
+      "docstring": "Canonical lowercase artwork key for a base ticker: alias first, then drop a\ncontract multiplier. Bybit lists 1000PEPE-USDT and the artwork is filed under\n`pepe`, so this has to run before the local lookup too — not just before the\nproxy lookup, which is all the previous version did."
+    },
+    {
+      "name": "resolveLogoSrc",
+      "qualname": "resolveLogoSrc",
+      "kind": "function",
+      "file": "src/components/CoinIcon.tsx",
+      "line": 107,
+      "lineEnd": 113,
+      "exported": false,
+      "async": false,
+      "params": [
+        "asset: string"
+      ],
       "returns": "string | null",
       "tags": [
         "ui"
       ],
-      "signature": "function resolveLogoSrc(base: string): string | null {",
-      "docstring": "Resolve a base symbol to a local logo path, or null when we ship no artwork."
+      "signature": "function resolveLogoSrc(asset: string): string | null {",
+      "docstring": "Resolve an artwork key to a shipped logo path, or null when we ship none."
+    },
+    {
+      "name": "buildLogoCandidates",
+      "qualname": "buildLogoCandidates",
+      "kind": "function",
+      "file": "src/components/CoinIcon.tsx",
+      "line": 133,
+      "lineEnd": 144,
+      "exported": false,
+      "async": false,
+      "params": [
+        "base: string"
+      ],
+      "returns": "string[]",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function buildLogoCandidates(base: string): string[] {",
+      "docstring": "Ordered artwork candidates: shipped PNG first, then the server-side icon proxy\n(src/services/iconProxy.ts), then nothing and the monogram takes over.\nThe proxy is why this component can reach past its own manifest without giving\nup the properties the manifest was protecting: the browser only ever re"
     },
     {
       "name": "BtcGlyph",
       "qualname": "BtcGlyph",
       "kind": "component",
       "file": "src/components/CoinIcon.tsx",
-      "line": 118,
-      "lineEnd": 125,
+      "line": 146,
+      "lineEnd": 153,
       "exported": false,
       "async": false,
       "params": [
@@ -15572,8 +15865,8 @@
       "qualname": "EthGlyph",
       "kind": "component",
       "file": "src/components/CoinIcon.tsx",
-      "line": 127,
-      "lineEnd": 136,
+      "line": 155,
+      "lineEnd": 164,
       "exported": false,
       "async": false,
       "params": [
@@ -15592,8 +15885,8 @@
       "qualname": "CoinIcon",
       "kind": "component",
       "file": "src/components/CoinIcon.tsx",
-      "line": 138,
-      "lineEnd": 198,
+      "line": 166,
+      "lineEnd": 231,
       "exported": true,
       "async": false,
       "params": [
@@ -16486,7 +16779,7 @@
       "kind": "component",
       "file": "src/components/overview/OverviewAccountSummary.tsx",
       "line": 21,
-      "lineEnd": 90,
+      "lineEnd": 98,
       "exported": true,
       "async": false,
       "params": [
@@ -16501,23 +16794,216 @@
       "docstring": ""
     },
     {
-      "name": "OverviewActivityPanel",
-      "qualname": "OverviewActivityPanel",
-      "kind": "component",
-      "file": "src/components/overview/OverviewActivityPanel.tsx",
-      "line": 7,
-      "lineEnd": 25,
-      "exported": true,
+      "name": "splitUnit",
+      "qualname": "splitUnit",
+      "kind": "arrow",
+      "file": "src/components/overview/OverviewAccountSummary.tsx",
+      "line": 69,
+      "lineEnd": 72,
+      "exported": false,
       "async": false,
       "params": [
-        "{ snapshot, connection, insights, onNavigate }: { snapshot: AccountSnapshot | null; connection: ConnectionState; insights: import('../../services/workspaceInsights').WorkspaceInsights | null; onNavigate: (page: WorkspacePage) => void }"
+        "value: string"
+      ],
+      "returns": "[string, string | null]",
+      "tags": [
+        "ui"
+      ],
+      "signature": "(value: string): [string, string | null] => {",
+      "docstring": ""
+    },
+    {
+      "name": "utcTime",
+      "qualname": "utcTime",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 29,
+      "lineEnd": 32,
+      "exported": false,
+      "async": false,
+      "params": [
+        "ms: number | null"
+      ],
+      "returns": "string",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function utcTime(ms: number | null): string {",
+      "docstring": ""
+    },
+    {
+      "name": "quantity",
+      "qualname": "quantity",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 34,
+      "lineEnd": 37,
+      "exported": false,
+      "async": false,
+      "params": [
+        "value: number | null",
+        "digits = 4"
+      ],
+      "returns": "string",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function quantity(value: number | null, digits = 4): string {",
+      "docstring": ""
+    },
+    {
+      "name": "sideOf",
+      "qualname": "sideOf",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 39,
+      "lineEnd": 45,
+      "exported": false,
+      "async": false,
+      "params": [
+        "raw: string",
+        "qty: number | null"
+      ],
+      "returns": "'long' | 'short' | null",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function sideOf(raw: string, qty: number | null): 'long' | 'short' | null {",
+      "docstring": ""
+    },
+    {
+      "name": "epochMs",
+      "qualname": "epochMs",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 52,
+      "lineEnd": 57,
+      "exported": false,
+      "async": false,
+      "params": [
+        "value: number | null"
+      ],
+      "returns": "number | null",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function epochMs(value: number | null): number | null {",
+      "docstring": "Normalise an epoch to milliseconds. Some venue trade feeds report `tradeTime` in\nnanoseconds; 4e12 ms is already the year 2096, so anything larger is finer-grained\nthan milliseconds and must be scaled down rather than formatted as-is."
+    },
+    {
+      "name": "positionRows",
+      "qualname": "positionRows",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 59,
+      "lineEnd": 75,
+      "exported": false,
+      "async": false,
+      "params": [
+        "snapshot: AccountSnapshot | null"
+      ],
+      "returns": "OverviewActivityRow[]",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function positionRows(snapshot: AccountSnapshot | null): OverviewActivityRow[] {",
+      "docstring": ""
+    },
+    {
+      "name": "orderRows",
+      "qualname": "orderRows",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 77,
+      "lineEnd": 88,
+      "exported": false,
+      "async": false,
+      "params": [
+        "snapshot: AccountSnapshot | null"
+      ],
+      "returns": "OverviewActivityRow[]",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function orderRows(snapshot: AccountSnapshot | null): OverviewActivityRow[] {",
+      "docstring": ""
+    },
+    {
+      "name": "tradeRows",
+      "qualname": "tradeRows",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 90,
+      "lineEnd": 104,
+      "exported": false,
+      "async": false,
+      "params": [
+        "snapshot: AccountSnapshot | null"
+      ],
+      "returns": "OverviewActivityRow[]",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function tradeRows(snapshot: AccountSnapshot | null): OverviewActivityRow[] {",
+      "docstring": ""
+    },
+    {
+      "name": "insightRows",
+      "qualname": "insightRows",
+      "kind": "function",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 106,
+      "lineEnd": 120,
+      "exported": false,
+      "async": false,
+      "params": [
+        "insights: WorkspaceInsights | null"
+      ],
+      "returns": "OverviewActivityRow[]",
+      "tags": [
+        "ui"
+      ],
+      "signature": "function insightRows(insights: WorkspaceInsights | null): OverviewActivityRow[] {",
+      "docstring": ""
+    },
+    {
+      "name": "ActivityRowsTable",
+      "qualname": "ActivityRowsTable",
+      "kind": "component",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 128,
+      "lineEnd": 163,
+      "exported": false,
+      "async": false,
+      "params": [
+        "{ activityRows, emptyLabel }: { activityRows: OverviewActivityRow[]; emptyLabel: string }"
       ],
       "returns": "inferred",
       "tags": [
         "component",
         "ui"
       ],
-      "signature": "export function OverviewActivityPanel({ snapshot, connection, insights, onNavigate }: { snapshot: AccountSnapshot | null; connection: ConnectionState; insights: import('../../services/workspaceInsights').WorkspaceInsights | null; onNavigate: (page: WorkspacePage) => void }) {",
+      "signature": "function ActivityRowsTable({ activityRows, emptyLabel }: { activityRows: OverviewActivityRow[]; emptyLabel: string }) {",
+      "docstring": "The table frame (header row + column structure) stays mounted even with zero rows, so an\nempty tab reads as \"this table has nothing in it\" rather than as a missing panel. The\nprevious implementation swapped the whole table out for a bare `HonestEmpty` card, which\nis why the Positions tab appeared to"
+    },
+    {
+      "name": "OverviewActivityPanel",
+      "qualname": "OverviewActivityPanel",
+      "kind": "component",
+      "file": "src/components/overview/OverviewActivityPanel.tsx",
+      "line": 165,
+      "lineEnd": 216,
+      "exported": true,
+      "async": false,
+      "params": [
+        "{ snapshot, connection, insights, onNavigate, }: { snapshot: AccountSnapshot | null; connection: ConnectionState; insights: WorkspaceInsights | null; onNavigate: (page: WorkspacePage) => void; }"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "signature": "export function OverviewActivityPanel({",
       "docstring": ""
     },
     {
@@ -16700,7 +17186,7 @@
       "kind": "component",
       "file": "src/components/overview/OverviewMarketSummary.tsx",
       "line": 11,
-      "lineEnd": 98,
+      "lineEnd": 110,
       "exported": true,
       "async": false,
       "params": [
@@ -16778,12 +17264,12 @@
       "docstring": ""
     },
     {
-      "name": "providerLatencyMs",
-      "qualname": "providerLatencyMs",
+      "name": "providerCheckAgeMs",
+      "qualname": "providerCheckAgeMs",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 77,
-      "lineEnd": 80,
+      "line": 86,
+      "lineEnd": 89,
       "exported": true,
       "async": false,
       "params": [
@@ -16796,16 +17282,36 @@
         "ml",
         "ui"
       ],
-      "signature": "export function providerLatencyMs(row: OperationsProviderRow, now = Date.now()): number | null {",
-      "docstring": ""
+      "signature": "export function providerCheckAgeMs(row: OperationsProviderRow, now = Date.now()): number | null {",
+      "docstring": "Age of a provider's last health check, in milliseconds.\rDeliberately NOT named \"latency\": `OperationsProviderRow` carries no round-trip timing\rfield (only the `lastCheckTime` / `lastSuccessTime` epochs), so no request duration is\rderivable from this data. The former name `providerLatencyMs` caused t"
+    },
+    {
+      "name": "formatCheckAge",
+      "qualname": "formatCheckAge",
+      "kind": "function",
+      "file": "src/components/overview/overviewModel.ts",
+      "line": 92,
+      "lineEnd": 106,
+      "exported": true,
+      "async": false,
+      "params": [
+        "ms: number | null"
+      ],
+      "returns": "string",
+      "tags": [
+        "ml",
+        "ui"
+      ],
+      "signature": "export function formatCheckAge(ms: number | null): string {",
+      "docstring": "Compact human-readable age for a check timestamp: \"12s\", \"4m\", \"1h 33m\", \"2d 4h\"."
     },
     {
       "name": "providerRowState",
       "qualname": "providerRowState",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 82,
-      "lineEnd": 89,
+      "line": 108,
+      "lineEnd": 115,
       "exported": true,
       "async": false,
       "params": [
@@ -16825,8 +17331,8 @@
       "qualname": "dailyPnlFromInsights",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 91,
-      "lineEnd": 99,
+      "line": 117,
+      "lineEnd": 125,
       "exported": true,
       "async": false,
       "params": [
@@ -16845,8 +17351,8 @@
       "qualname": "openRiskUsd",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 101,
-      "lineEnd": 107,
+      "line": 127,
+      "lineEnd": 133,
       "exported": true,
       "async": false,
       "params": [
@@ -16865,8 +17371,8 @@
       "qualname": "averageOrderFillPct",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 109,
-      "lineEnd": 114,
+      "line": 135,
+      "lineEnd": 140,
       "exported": true,
       "async": false,
       "params": [
@@ -16885,8 +17391,8 @@
       "qualname": "buildExecutionSnapshot",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 127,
-      "lineEnd": 150,
+      "line": 153,
+      "lineEnd": 179,
       "exported": true,
       "async": false,
       "params": [
@@ -16908,8 +17414,8 @@
       "qualname": "fundingBiasLabel",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 152,
-      "lineEnd": 156,
+      "line": 181,
+      "lineEnd": 185,
       "exported": true,
       "async": false,
       "params": [
@@ -16924,12 +17430,33 @@
       "docstring": ""
     },
     {
+      "name": "normalizeBreadth",
+      "qualname": "normalizeBreadth",
+      "kind": "function",
+      "file": "src/components/overview/overviewModel.ts",
+      "line": 193,
+      "lineEnd": 197,
+      "exported": false,
+      "async": false,
+      "params": [
+        "bullishPct: number",
+        "bearishPct: number"
+      ],
+      "returns": "MarketBreadth",
+      "tags": [
+        "ml",
+        "ui"
+      ],
+      "signature": "function normalizeBreadth(bullishPct: number, bearishPct: number): MarketBreadth {",
+      "docstring": "A breadth triple is a distribution and must sum to 100, otherwise the stacked bar\runder-fills its track. The sentiment overlay below clamps bullish/bearish but used to\rpass `neutralPct` through untouched, which left the rendered bar summing to roughly 73%\rof its width. Neutral is therefore derived a"
+    },
+    {
       "name": "sentimentBreadthOverlay",
       "qualname": "sentimentBreadthOverlay",
       "kind": "function",
       "file": "src/components/overview/overviewModel.ts",
-      "line": 158,
-      "lineEnd": 164,
+      "line": 199,
+      "lineEnd": 205,
       "exported": true,
       "async": false,
       "params": [
@@ -16990,7 +17517,7 @@
       "kind": "component",
       "file": "src/components/overview/OverviewSignalsPanel.tsx",
       "line": 13,
-      "lineEnd": 70,
+      "lineEnd": 73,
       "exported": true,
       "async": false,
       "params": [
@@ -19447,7 +19974,7 @@
       "file": "src/components/workspace/AccountViews.tsx",
       "line": 78,
       "lineEnd": 85,
-      "exported": false,
+      "exported": true,
       "async": false,
       "params": [
         "record: Record<string, unknown> | undefined",
@@ -19457,7 +19984,7 @@
       "tags": [
         "ui"
       ],
-      "signature": "function stringFrom(record: Record<string, unknown> | undefined, ...keys: string[]): string {",
+      "signature": "export function stringFrom(record: Record<string, unknown> | undefined, ...keys: string[]): string {",
       "docstring": ""
     },
     {
@@ -19526,7 +20053,7 @@
       "file": "src/components/workspace/AccountViews.tsx",
       "line": 102,
       "lineEnd": 104,
-      "exported": false,
+      "exported": true,
       "async": false,
       "params": [
         "symbol: string"
@@ -19535,7 +20062,7 @@
       "tags": [
         "ui"
       ],
-      "signature": "function normalizeSymbol(symbol: string) {",
+      "signature": "export function normalizeSymbol(symbol: string) {",
       "docstring": ""
     },
     {
@@ -22779,6 +23306,23 @@
       "tags": [],
       "signature": "export function listModuleCapabilities(): ModuleCapabilityStatus[] {",
       "docstring": "Every registered trading module, classified."
+    },
+    {
+      "name": "hasShippedCoinIcon",
+      "qualname": "hasShippedCoinIcon",
+      "kind": "function",
+      "file": "src/lib/coinIconManifest.ts",
+      "line": 73,
+      "lineEnd": 75,
+      "exported": true,
+      "async": false,
+      "params": [
+        "asset: string"
+      ],
+      "returns": "boolean",
+      "tags": [],
+      "signature": "export function hasShippedCoinIcon(asset: string): boolean {",
+      "docstring": "True when `public/crypto-icons/<asset>.png` ships with the app."
     },
     {
       "name": "computePercentageReturns",
@@ -27697,8 +28241,8 @@
       "qualname": "available",
       "kind": "arrow",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 59,
-      "lineEnd": 59,
+      "line": 60,
+      "lineEnd": 60,
       "exported": false,
       "async": false,
       "params": [
@@ -27716,8 +28260,8 @@
       "qualname": "unavailable",
       "kind": "arrow",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 60,
-      "lineEnd": 60,
+      "line": 61,
+      "lineEnd": 61,
       "exported": false,
       "async": false,
       "params": [
@@ -27735,8 +28279,8 @@
       "qualname": "metricFrom",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 62,
-      "lineEnd": 68,
+      "line": 63,
+      "lineEnd": 69,
       "exported": false,
       "async": false,
       "params": [
@@ -27756,8 +28300,8 @@
       "qualname": "factorsFor",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 70,
-      "lineEnd": 86,
+      "line": 71,
+      "lineEnd": 87,
       "exported": false,
       "async": false,
       "params": [
@@ -27775,8 +28319,8 @@
       "qualname": "reasonsFor",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 88,
-      "lineEnd": 121,
+      "line": 89,
+      "lineEnd": 122,
       "exported": false,
       "async": false,
       "params": [
@@ -27796,8 +28340,8 @@
       "qualname": "warningsFor",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 123,
-      "lineEnd": 174,
+      "line": 124,
+      "lineEnd": 175,
       "exported": false,
       "async": false,
       "params": [
@@ -27814,12 +28358,69 @@
       "docstring": ""
     },
     {
+      "name": "levelsFor",
+      "qualname": "levelsFor",
+      "kind": "function",
+      "file": "src/pages/screener/screenerModel.ts",
+      "line": 193,
+      "lineEnd": 219,
+      "exported": false,
+      "async": false,
+      "params": [
+        "candidate: CandidateScore"
+      ],
+      "returns": "Pick<ScreenerRow, 'entryPrice' | 'stopLoss' | 'takeProfit' | 'riskReward' | 'riskPct'>",
+      "tags": [
+        "ml"
+      ],
+      "signature": "function levelsFor(candidate: CandidateScore): Pick<ScreenerRow, 'entryPrice' | 'stopLoss' | 'takeProfit' | 'riskReward' | 'riskPct'> {",
+      "docstring": "The scanner's published trade levels, copied rather than derived.\n`lifecycleContext.entryPrice / stopLoss / takeProfit` are attached to every\nscan candidate server-side by `deriveSymbolLevels(ticker, candles1h,\n'ATR_BANDS')` (`apexNextMarketRoutes.ts`), for the long and the short thesis\nalike, from "
+    },
+    {
+      "name": "priceMetric",
+      "qualname": "priceMetric",
+      "kind": "arrow",
+      "file": "src/pages/screener/screenerModel.ts",
+      "line": 195,
+      "lineEnd": 197,
+      "exported": false,
+      "async": false,
+      "params": [
+        "value: number | undefined"
+      ],
+      "returns": "ScreenerMetric",
+      "tags": [
+        "ml"
+      ],
+      "signature": "(value: number | undefined): ScreenerMetric => value == null || !Number.isFinite(value) || value <= 0",
+      "docstring": ""
+    },
+    {
+      "name": "signalStrengthOf",
+      "qualname": "signalStrengthOf",
+      "kind": "function",
+      "file": "src/pages/screener/screenerModel.ts",
+      "line": 259,
+      "lineEnd": 269,
+      "exported": false,
+      "async": false,
+      "params": [
+        "row: Omit<ScreenerRow, 'rank' | 'signalStrength'>"
+      ],
+      "returns": "number",
+      "tags": [
+        "ml"
+      ],
+      "signature": "function signalStrengthOf(row: Omit<ScreenerRow, 'rank' | 'signalStrength'>): number {",
+      "docstring": "Signal strength — what \"strongest first\" means on this page, defined once, here.\nThe list used to sort on `score` alone, which answers \"what number did the\nscanner print\" rather than \"how much of a tradeable signal is this\". Those\ndiverge constantly in live data: the scan that prompted this change o"
+    },
+    {
       "name": "rowFor",
       "qualname": "rowFor",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 176,
-      "lineEnd": 228,
+      "line": 271,
+      "lineEnd": 338,
       "exported": false,
       "async": false,
       "params": [
@@ -27827,11 +28428,11 @@
         "ticker: SymbolTicker | undefined",
         "contestedDirection: boolean"
       ],
-      "returns": "Omit<ScreenerRow, 'rank'>",
+      "returns": "Omit<ScreenerRow, 'rank' | 'signalStrength'>",
       "tags": [
         "ml"
       ],
-      "signature": "function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, contestedDirection: boolean): Omit<ScreenerRow, 'rank'> {",
+      "signature": "function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, contestedDirection: boolean): Omit<ScreenerRow, 'rank' | 'signalStrength'> {",
       "docstring": ""
     },
     {
@@ -27839,8 +28440,8 @@
       "qualname": "buildScreenerRows",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 238,
-      "lineEnd": 258,
+      "line": 351,
+      "lineEnd": 378,
       "exported": true,
       "async": false,
       "params": [
@@ -27859,8 +28460,8 @@
       "qualname": "applyScreenerFilters",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 260,
-      "lineEnd": 292,
+      "line": 380,
+      "lineEnd": 412,
       "exported": true,
       "async": false,
       "params": [
@@ -27880,8 +28481,8 @@
       "qualname": "sortScreenerRows",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 301,
-      "lineEnd": 338,
+      "line": 421,
+      "lineEnd": 458,
       "exported": true,
       "async": false,
       "params": [
@@ -27900,8 +28501,8 @@
       "qualname": "metricValue",
       "kind": "arrow",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 302,
-      "lineEnd": 305,
+      "line": 422,
+      "lineEnd": 425,
       "exported": false,
       "async": false,
       "params": [
@@ -27920,8 +28521,8 @@
       "qualname": "optionalCompare",
       "kind": "arrow",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 306,
-      "lineEnd": 312,
+      "line": 426,
+      "lineEnd": 432,
       "exported": false,
       "async": false,
       "params": [
@@ -27940,8 +28541,8 @@
       "qualname": "compare",
       "kind": "arrow",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 313,
-      "lineEnd": 330,
+      "line": 433,
+      "lineEnd": 450,
       "exported": false,
       "async": false,
       "params": [
@@ -27960,8 +28561,8 @@
       "qualname": "screenerSummary",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 340,
-      "lineEnd": 348,
+      "line": 460,
+      "lineEnd": 468,
       "exported": true,
       "async": false,
       "params": [
@@ -27980,8 +28581,8 @@
       "qualname": "resetScreenerFilters",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 350,
-      "lineEnd": 352,
+      "line": 470,
+      "lineEnd": 472,
       "exported": true,
       "async": false,
       "params": [],
@@ -27997,8 +28598,8 @@
       "qualname": "screenerFiltersActive",
       "kind": "function",
       "file": "src/pages/screener/screenerModel.ts",
-      "line": 354,
-      "lineEnd": 368,
+      "line": 474,
+      "lineEnd": 488,
       "exported": true,
       "async": false,
       "params": [
@@ -28012,12 +28613,46 @@
       "docstring": ""
     },
     {
+      "name": "showConfluenceBadge",
+      "qualname": "showConfluenceBadge",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 231,
+      "lineEnd": 231,
+      "exported": false,
+      "async": false,
+      "params": [
+        "set: ScreenerColumnSet"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(set: ScreenerColumnSet) => set === 'momentum' || set === 'quality'",
+      "docstring": "Which optional badges the row's state cell carries, per lens.\rThese two predicates are the single source consumed by BOTH the column header\rand the row body. The header reserves one `--screener-col-badge` slot per\rbadge, so if a lens ever gains or loses a badge the header cannot silently\rkeep reserv"
+    },
+    {
+      "name": "showFeedBadge",
+      "qualname": "showFeedBadge",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 232,
+      "lineEnd": 232,
+      "exported": false,
+      "async": false,
+      "params": [
+        "set: ScreenerColumnSet"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(set: ScreenerColumnSet) => set === 'quality'",
+      "docstring": ""
+    },
+    {
       "name": "directionTone",
       "qualname": "directionTone",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 185,
-      "lineEnd": 185,
+      "line": 249,
+      "lineEnd": 249,
       "exported": false,
       "async": false,
       "params": [
@@ -28033,8 +28668,8 @@
       "qualname": "changeTone",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 186,
-      "lineEnd": 186,
+      "line": 250,
+      "lineEnd": 250,
       "exported": false,
       "async": false,
       "params": [
@@ -28050,8 +28685,8 @@
       "qualname": "usdCompact",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 187,
-      "lineEnd": 187,
+      "line": 251,
+      "lineEnd": 251,
       "exported": false,
       "async": false,
       "params": [
@@ -28067,8 +28702,8 @@
       "qualname": "confluenceLabel",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 188,
-      "lineEnd": 188,
+      "line": 252,
+      "lineEnd": 252,
       "exported": false,
       "async": false,
       "params": [
@@ -28084,8 +28719,8 @@
       "qualname": "MetricValue",
       "kind": "component",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 191,
-      "lineEnd": 196,
+      "line": 255,
+      "lineEnd": 260,
       "exported": false,
       "async": false,
       "params": [
@@ -28103,8 +28738,8 @@
       "qualname": "ScoreGlyph",
       "kind": "component",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 198,
-      "lineEnd": 207,
+      "line": 262,
+      "lineEnd": 268,
       "exported": false,
       "async": false,
       "params": [
@@ -28122,8 +28757,8 @@
       "qualname": "EvidenceEqualizer",
       "kind": "component",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 219,
-      "lineEnd": 245,
+      "line": 280,
+      "lineEnd": 306,
       "exported": false,
       "async": false,
       "params": [
@@ -28134,15 +28769,15 @@
         "component"
       ],
       "signature": "function EvidenceEqualizer({ row }: { row: ScreenerRow }) {",
-      "docstring": "The five published score factors as one small column chart.\nThis is the page's signature detail: it makes the shape of the evidence legible\nat a glance without repeating five numbers on every card. An unavailable factor\nis drawn as a full-height hatched column, never as a short one, because a bar\nsc"
+      "docstring": "The five published score factors as one small column chart.\rThis is the page's signature detail: it makes the shape of the evidence legible\rat a glance without repeating five numbers on every card. An unavailable factor\ris drawn as a full-height hatched column, never as a short one, because a bar\rsc"
     },
     {
       "name": "relativeAge",
       "qualname": "relativeAge",
       "kind": "function",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 247,
-      "lineEnd": 254,
+      "line": 308,
+      "lineEnd": 315,
       "exported": false,
       "async": false,
       "params": [
@@ -28159,8 +28794,8 @@
       "qualname": "FactorBreakdown",
       "kind": "component",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 259,
-      "lineEnd": 280,
+      "line": 320,
+      "lineEnd": 341,
       "exported": false,
       "async": false,
       "params": [
@@ -28174,12 +28809,84 @@
       "docstring": ""
     },
     {
+      "name": "tierBands",
+      "qualname": "tierBands",
+      "kind": "function",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 361,
+      "lineEnd": 365,
+      "exported": false,
+      "async": false,
+      "params": [
+        "guardPass: boolean"
+      ],
+      "returns": "Array<{ tier: ReadinessTier; from: number }>",
+      "tags": [],
+      "signature": "function tierBands(guardPass: boolean): Array<{ tier: ReadinessTier; from: number }> {",
+      "docstring": "The score cut points `deriveReadinessTier` actually compares against\r(`src/lib/scoring.ts:246`), expressed as a band axis for the gauge.\rThis is not a re-derivation of the tier — the tier stays the scanner's, read\rfrom `row.readinessTier`. These are the published thresholds that decided it,\rwhich is"
+    },
+    {
+      "name": "arcPoint",
+      "qualname": "arcPoint",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 377,
+      "lineEnd": 380,
+      "exported": false,
+      "async": false,
+      "params": [
+        "fraction: number",
+        "radius: number = ARC_RADIUS"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(fraction: number, radius: number = ARC_RADIUS) => {",
+      "docstring": ""
+    },
+    {
+      "name": "arcPath",
+      "qualname": "arcPath",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 381,
+      "lineEnd": 385,
+      "exported": false,
+      "async": false,
+      "params": [
+        "from: number",
+        "to: number"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(from: number, to: number) => {",
+      "docstring": ""
+    },
+    {
+      "name": "ScoreArc",
+      "qualname": "ScoreArc",
+      "kind": "component",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 409,
+      "lineEnd": 465,
+      "exported": false,
+      "async": false,
+      "params": [
+        "{ score, tier, guardPass, coveragePct }: { score: number; tier: ReadinessTier; guardPass: boolean; coveragePct: number | null }"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "component"
+      ],
+      "signature": "function ScoreArc({ score, tier, guardPass, coveragePct }: { score: number; tier: ReadinessTier; guardPass: boolean; coveragePct: number | null }) {",
+      "docstring": "The panel's score gauge: one arc, banded by the real tier thresholds.\rThis replaces a stack of two pictures of the same fact — a big numeral over a\rsegmented bar, with a second labelled scale under it repeating the same cut\rpoints a third time. One representation now carries all of it: the arc's own"
+    },
+    {
       "name": "ScreenerPage",
       "qualname": "ScreenerPage",
       "kind": "component",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 282,
-      "lineEnd": 816,
+      "line": 467,
+      "lineEnd": 1241,
       "exported": true,
       "async": false,
       "params": [
@@ -28197,8 +28904,8 @@
       "qualname": "sync",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 297,
-      "lineEnd": 297,
+      "line": 482,
+      "lineEnd": 482,
       "exported": false,
       "async": false,
       "params": [],
@@ -28208,12 +28915,46 @@
       "docstring": ""
     },
     {
+      "name": "pickRow",
+      "qualname": "pickRow",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 526,
+      "lineEnd": 529,
+      "exported": false,
+      "async": false,
+      "params": [
+        "symbol: string"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(symbol: string) => {",
+      "docstring": ""
+    },
+    {
+      "name": "warningTopic",
+      "qualname": "warningTopic",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 557,
+      "lineEnd": 565,
+      "exported": false,
+      "async": false,
+      "params": [
+        "warning: string"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(warning: string) => {",
+      "docstring": ""
+    },
+    {
       "name": "toggleSort",
       "qualname": "toggleSort",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 336,
-      "lineEnd": 341,
+      "line": 602,
+      "lineEnd": 607,
       "exported": false,
       "async": false,
       "params": [
@@ -28229,8 +28970,8 @@
       "qualname": "toggleFavorite",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 343,
-      "lineEnd": 347,
+      "line": 609,
+      "lineEnd": 613,
       "exported": false,
       "async": false,
       "params": [
@@ -28246,8 +28987,8 @@
       "qualname": "applyWorkspace",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 349,
-      "lineEnd": 355,
+      "line": 615,
+      "lineEnd": 621,
       "exported": false,
       "async": false,
       "params": [
@@ -28264,8 +29005,8 @@
       "qualname": "applyPreset",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 357,
-      "lineEnd": 365,
+      "line": 623,
+      "lineEnd": 631,
       "exported": false,
       "async": false,
       "params": [
@@ -28281,8 +29022,8 @@
       "qualname": "saveNamedScreen",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 367,
-      "lineEnd": 383,
+      "line": 633,
+      "lineEnd": 649,
       "exported": false,
       "async": false,
       "params": [],
@@ -28296,8 +29037,8 @@
       "qualname": "deleteActiveScreen",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 385,
-      "lineEnd": 393,
+      "line": 651,
+      "lineEnd": 659,
       "exported": false,
       "async": false,
       "params": [],
@@ -28311,8 +29052,8 @@
       "qualname": "exportVisible",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 395,
-      "lineEnd": 409,
+      "line": 661,
+      "lineEnd": 675,
       "exported": false,
       "async": false,
       "params": [],
@@ -28326,8 +29067,8 @@
       "qualname": "factor",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 397,
-      "lineEnd": 397,
+      "line": 663,
+      "lineEnd": 663,
       "exported": false,
       "async": false,
       "params": [
@@ -28344,8 +29085,8 @@
       "qualname": "quote",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 398,
-      "lineEnd": 398,
+      "line": 664,
+      "lineEnd": 664,
       "exported": false,
       "async": false,
       "params": [
@@ -28361,8 +29102,8 @@
       "qualname": "copySymbol",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 411,
-      "lineEnd": 420,
+      "line": 677,
+      "lineEnd": 686,
       "exported": false,
       "async": false,
       "params": [
@@ -28378,8 +29119,8 @@
       "qualname": "openInTrading",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 422,
-      "lineEnd": 430,
+      "line": 688,
+      "lineEnd": 697,
       "exported": false,
       "async": false,
       "params": [
@@ -28395,8 +29136,8 @@
       "qualname": "factorMetric",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 432,
-      "lineEnd": 434,
+      "line": 699,
+      "lineEnd": 701,
       "exported": false,
       "async": false,
       "params": [
@@ -28413,8 +29154,8 @@
       "qualname": "renderMetricSlot",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 437,
-      "lineEnd": 457,
+      "line": 712,
+      "lineEnd": 732,
       "exported": false,
       "async": false,
       "params": [
@@ -28424,25 +29165,45 @@
       "returns": "inferred",
       "tags": [],
       "signature": "(row: ScreenerRow, slot: ScreenerMetricSlot) => {",
-      "docstring": "One measure on a card: a quiet uppercase label over a monospaced value."
+      "docstring": "One measure on a row.\rThe label is no longer written here — it comes from `METRIC_SLOT_LABELS`,\rwhich the column header reads too, so the two can never disagree. The label\rstays in the DOM on every row (it is the cell's accessible name and the only\rlabel present once the header is hidden at narrow w"
     },
     {
       "name": "cell",
       "qualname": "cell",
       "kind": "arrow",
       "file": "src/pages/screener/ScreenerPage.tsx",
-      "line": 438,
-      "lineEnd": 439,
+      "line": 713,
+      "lineEnd": 714,
       "exported": false,
       "async": false,
       "params": [
-        "label: string",
         "node: React.ReactNode",
         "tone: 'positive' | 'negative' | 'neutral' = 'neutral'"
       ],
       "returns": "inferred",
       "tags": [],
-      "signature": "(label: string, node: React.ReactNode, tone: 'positive' | 'negative' | 'neutral' = 'neutral') =>",
+      "signature": "(node: React.ReactNode, tone: 'positive' | 'negative' | 'neutral' = 'neutral') =>",
+      "docstring": ""
+    },
+    {
+      "name": "columnHead",
+      "qualname": "columnHead",
+      "kind": "arrow",
+      "file": "src/pages/screener/ScreenerPage.tsx",
+      "line": 753,
+      "lineEnd": 773,
+      "exported": false,
+      "async": false,
+      "params": [
+        "key: ScreenerSortKey | null",
+        "label: string",
+        "className: string",
+        "id: string",
+        "name = label"
+      ],
+      "returns": "inferred",
+      "tags": [],
+      "signature": "(key: ScreenerSortKey | null, label: string, className: string, id: string, name = label) => {",
       "docstring": ""
     },
     {
@@ -38109,8 +38870,8 @@
       "qualname": "isValidIconAsset",
       "kind": "function",
       "file": "src/services/iconProxy.ts",
-      "line": 27,
-      "lineEnd": 29,
+      "line": 44,
+      "lineEnd": 46,
       "exported": true,
       "async": false,
       "params": [
@@ -38129,8 +38890,8 @@
       "qualname": "buildIconUpstreamUrls",
       "kind": "function",
       "file": "src/services/iconProxy.ts",
-      "line": 35,
-      "lineEnd": 54,
+      "line": 52,
+      "lineEnd": 71,
       "exported": true,
       "async": false,
       "params": [
@@ -38145,12 +38906,48 @@
       "docstring": "Fixed upstream templates, tried in order until one yields an image. Hosts\nmust all be members of ICON_UPSTREAM_HOSTS (asserted by buildIconUpstreamUrls)."
     },
     {
+      "name": "resolveProxyConnectUrl",
+      "qualname": "resolveProxyConnectUrl",
+      "kind": "function",
+      "file": "src/services/iconProxy.ts",
+      "line": 86,
+      "lineEnd": 109,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "string",
+      "tags": [
+        "market-data",
+        "service"
+      ],
+      "signature": "function resolveProxyConnectUrl(): string {",
+      "docstring": "Lazily-built undici dispatcher for the local HTTP CONNECT tunnel.\nCONNECT only, on purpose. A SOCKS5 route cannot work here: `socks-proxy-agent`\nreturns a Node `http.Agent`, which is not an undici `Dispatcher`, so global\nfetch rejects it with \"agent.dispatch is not a function\". The same local\nendpoi"
+    },
+    {
+      "name": "loadProxyDispatcher",
+      "qualname": "loadProxyDispatcher",
+      "kind": "function",
+      "file": "src/services/iconProxy.ts",
+      "line": 113,
+      "lineEnd": 128,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "unknown",
+      "tags": [
+        "market-data",
+        "service"
+      ],
+      "signature": "function loadProxyDispatcher(): unknown {",
+      "docstring": ""
+    },
+    {
       "name": "IconProxy",
       "qualname": "IconProxy",
       "kind": "class",
       "file": "src/services/iconProxy.ts",
-      "line": 81,
-      "lineEnd": 172,
+      "line": 171,
+      "lineEnd": 291,
       "exported": true,
       "async": false,
       "params": [],
@@ -38167,8 +38964,8 @@
       "qualname": "IconProxy.get",
       "kind": "method",
       "file": "src/services/iconProxy.ts",
-      "line": 102,
-      "lineEnd": 113,
+      "line": 197,
+      "lineEnd": 208,
       "exported": false,
       "async": true,
       "params": [
@@ -38187,8 +38984,8 @@
       "qualname": "IconProxy.readCache",
       "kind": "method",
       "file": "src/services/iconProxy.ts",
-      "line": 115,
-      "lineEnd": 127,
+      "line": 210,
+      "lineEnd": 222,
       "exported": false,
       "async": false,
       "params": [
@@ -38207,8 +39004,8 @@
       "qualname": "IconProxy.store",
       "kind": "method",
       "file": "src/services/iconProxy.ts",
-      "line": 129,
-      "lineEnd": 136,
+      "line": 224,
+      "lineEnd": 231,
       "exported": false,
       "async": false,
       "params": [
@@ -38228,8 +39025,8 @@
       "qualname": "IconProxy.resolve",
       "kind": "method",
       "file": "src/services/iconProxy.ts",
-      "line": 138,
-      "lineEnd": 153,
+      "line": 233,
+      "lineEnd": 263,
       "exported": false,
       "async": true,
       "params": [
@@ -38248,19 +39045,20 @@
       "qualname": "IconProxy.tryFetch",
       "kind": "method",
       "file": "src/services/iconProxy.ts",
-      "line": 155,
-      "lineEnd": 171,
+      "line": 265,
+      "lineEnd": 290,
       "exported": false,
       "async": true,
       "params": [
-        "url: string"
+        "url: string",
+        "dispatcher?: unknown"
       ],
-      "returns": "Promise<{ contentType: string; body: Buffer } | null>",
+      "returns": "Promise<Attempt>",
       "tags": [
         "market-data",
         "service"
       ],
-      "signature": "private async tryFetch(url: string): Promise<{ contentType: string; body: Buffer } | null> {",
+      "signature": "private async tryFetch(url: string, dispatcher?: unknown): Promise<Attempt> {",
       "docstring": ""
     },
     {
@@ -42833,6 +43631,81 @@
       ],
       "signature": "export function deriveLiveRiskTelemetry(input: {",
       "docstring": ""
+    },
+    {
+      "name": "remember",
+      "qualname": "remember",
+      "kind": "function",
+      "file": "src/services/localIconAssets.ts",
+      "line": 45,
+      "lineEnd": 52,
+      "exported": false,
+      "async": false,
+      "params": [
+        "asset: string",
+        "value: LocalIconAsset | null"
+      ],
+      "returns": "LocalIconAsset | null",
+      "tags": [
+        "service"
+      ],
+      "signature": "function remember(asset: string, value: LocalIconAsset | null): LocalIconAsset | null {",
+      "docstring": ""
+    },
+    {
+      "name": "readLocalIcon",
+      "qualname": "readLocalIcon",
+      "kind": "function",
+      "file": "src/services/localIconAssets.ts",
+      "line": 60,
+      "lineEnd": 77,
+      "exported": true,
+      "async": false,
+      "params": [
+        "asset: string"
+      ],
+      "returns": "LocalIconAsset | null",
+      "tags": [
+        "service"
+      ],
+      "signature": "export function readLocalIcon(asset: string): LocalIconAsset | null {",
+      "docstring": "Read the shipped PNG for `asset`, or null when the app ships none.\n`asset` is validated against the same pattern the proxy enforces before it is\njoined onto a path, so `..` and separators cannot escape the icon directory."
+    },
+    {
+      "name": "hasLocalIcon",
+      "qualname": "hasLocalIcon",
+      "kind": "function",
+      "file": "src/services/localIconAssets.ts",
+      "line": 80,
+      "lineEnd": 82,
+      "exported": true,
+      "async": false,
+      "params": [
+        "asset: string"
+      ],
+      "returns": "boolean",
+      "tags": [
+        "service"
+      ],
+      "signature": "export function hasLocalIcon(asset: string): boolean {",
+      "docstring": "True when the app ships artwork for `asset` on disk."
+    },
+    {
+      "name": "clearLocalIconCache",
+      "qualname": "clearLocalIconCache",
+      "kind": "function",
+      "file": "src/services/localIconAssets.ts",
+      "line": 85,
+      "lineEnd": 87,
+      "exported": true,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "service"
+      ],
+      "signature": "export function clearLocalIconCache(): void {",
+      "docstring": "Test seam: drops memoised lookups so a fixture directory can be swapped."
     },
     {
       "name": "MarketDataError",

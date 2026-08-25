@@ -7,6 +7,15 @@ import { chromium } from 'playwright';
 const root = process.cwd();
 const executablePath = String(process.env.APEX_PLAYWRIGHT_EXECUTABLE || '').trim();
 if (!executablePath || !fs.existsSync(executablePath)) throw new Error('APEX_PLAYWRIGHT_EXECUTABLE must name an existing Chromium binary.');
+const pythonExe = (() => {
+  const explicit = String(process.env.APEX_PYTHON || '').trim();
+  const candidates = explicit ? [[explicit, []]] : [['python3', []], ['python', []], ['py', ['-3']]];
+  for (const [exe, prefix] of candidates) {
+    const probe = spawnSync(exe, [...prefix, '--version'], { encoding: 'utf8' });
+    if (probe.status === 0 && /^Python 3/.test(String(probe.stdout || probe.stderr || '').trim())) return { exe, prefix };
+  }
+  throw new Error(`No working Python 3 interpreter found (tried: ${candidates.map(([exe, prefix]) => [exe, ...prefix].join(' ')).join(', ')}). Set APEX_PYTHON to an absolute interpreter path.`);
+})();
 const outDir = path.resolve(root, process.env.APEX_PIXEL_QA_OUT_DIR || 'QA/profitability-structural-remediation/browser');
 const captureDir = path.join(outDir, 'captures');
 const diffDir = path.join(outDir, 'diffs');
@@ -68,7 +77,7 @@ for (const route of routes) {
   await page.screenshot({ path: capture, fullPage: false });
   const reference = path.join(root, 'Doc/reference/v20', `${route}-1368x753.png`);
   const routeDiffDir = path.join(diffDir, route);
-  const diff = spawnSync('python3', ['scripts/utilities/apex_visual_diff.py', reference, capture, '--out', routeDiffDir], { cwd: root, encoding: 'utf8' });
+  const diff = spawnSync(pythonExe.exe, [...pythonExe.prefix, 'scripts/utilities/apex_visual_diff.py', reference, capture, '--out', routeDiffDir], { cwd: root, encoding: 'utf8' });
   const reportFile = path.join(routeDiffDir, 'report.json');
   const report = fs.existsSync(reportFile) ? JSON.parse(fs.readFileSync(reportFile, 'utf8')) : null;
   results.push({
@@ -83,13 +92,15 @@ for (const route of routes) {
   });
 }
 const rootTextLength = await page.locator('#root').innerText().then((value) => value.trim().length).catch(() => 0);
+const browserVersion = browser.version();
 await browser.close();
 
 const runtimeGatePassed = rootTextLength >= 40 && pageErrors.length === 0;
 const report = {
   status: 'completed',
   generatedAt: new Date().toISOString(),
-  browser: { version: 'Google Chrome for Testing 151.0.7922.34', executablePath, archiveSha256: 'ae8736ac28bc69278551500f219fc749575648263c43ec5990749eff43b9fcf8' },
+  browser: { version: browserVersion, executablePath },
+  visualDiff: { interpreter: [pythonExe.exe, ...pythonExe.prefix].join(' '), tool: 'scripts/utilities/apex_visual_diff.py' },
   testedBuild: buildInfo,
   viewport: { width: 1368, height: 753, deviceScaleFactor: 1 },
   mode: 'OFFLINE_REAL_CHROMIUM_FILE_BUILD_WITH_DETERMINISTIC_API_STUB',

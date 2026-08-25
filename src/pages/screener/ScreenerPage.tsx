@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  Crosshair,
   Download,
   Gauge,
   LayoutList,
@@ -29,7 +30,6 @@ import {
 import { CoinIcon } from '../../components/CoinIcon';
 import {
   DataState,
-  Donut,
   KeyValueList,
   Panel,
   PanelHeader,
@@ -112,6 +112,21 @@ const MARKET_STATE_LABELS: Record<MarketDataState, string> = {
   unavailable: 'Market data unavailable',
 };
 
+/**
+ * Row-cell equivalents of MARKET_STATE_LABELS. The row badge is a fixed-width
+ * column, and printing the enum key was wrong twice over: `not_configured`
+ * renders as "not configured", which is the codebase's vocabulary rather than
+ * the product's, and it measures 125px against a 108px cell. The full sentence
+ * is still reachable — it stays on the header chip and is passed as this
+ * badge's `detail`, which becomes its title and accessible name.
+ */
+const MARKET_STATE_ROW_LABELS: Record<MarketDataState, string> = {
+  live: 'Live',
+  degraded: 'Delayed',
+  not_configured: 'No feed',
+  unavailable: 'No data',
+};
+
 /** Compact presets beat a free-text box for a liquidity floor most users only coarsely tune. */
 const TURNOVER_STEPS: Array<{ value: number; label: string }> = [
   { value: 0, label: 'Any liquidity' },
@@ -167,6 +182,55 @@ const LENS_METRICS: Record<ScreenerColumnSet, ScreenerMetricSlot[]> = {
   quality: ['coverage', 'warningCount'],
 };
 
+/**
+ * Metric column labels, hoisted out of `renderMetricSlot`.
+ *
+ * The column header and the cell beneath it now read the same entry, so a label
+ * cannot be renamed in one place and left stale in the other. Every string here
+ * was measured to fit the 70px `--screener-col-metric` cell at 10px/650.
+ */
+const METRIC_SLOT_LABELS: Record<ScreenerMetricSlot, string> = {
+  price: 'Price',
+  change: '24h',
+  turnover: 'Turnover',
+  range: 'Range',
+  momentum: 'Momentum',
+  structure: 'Structure',
+  funding: 'Funding',
+  openInterest: 'Open int.',
+  coverage: 'Coverage',
+  warningCount: 'Flags',
+};
+
+/**
+ * The sort key each metric column is the affordance for.
+ *
+ * `price` is absent because `ScreenerSortKey` has no price ordering — the header
+ * for it therefore renders as a plain label rather than a dead button.
+ */
+const METRIC_SLOT_SORT: Partial<Record<ScreenerMetricSlot, ScreenerSortKey>> = {
+  change: 'change',
+  turnover: 'turnover',
+  range: 'range',
+  momentum: 'momentum',
+  structure: 'structure',
+  funding: 'funding',
+  openInterest: 'openInterest',
+  coverage: 'coverage',
+  warningCount: 'warnings',
+};
+
+/**
+ * Which optional badges the row's state cell carries, per lens.
+ *
+ * These two predicates are the single source consumed by BOTH the column header
+ * and the row body. The header reserves one `--screener-col-badge` slot per
+ * badge, so if a lens ever gains or loses a badge the header cannot silently
+ * keep reserving the old number of columns.
+ */
+const showConfluenceBadge = (set: ScreenerColumnSet) => set === 'momentum' || set === 'quality';
+const showFeedBadge = (set: ScreenerColumnSet) => set === 'quality';
+
 const COLUMN_SET_OPTIONS: Array<{ id: ScreenerColumnSet; label: string; icon: React.ComponentType<{ size?: number }> }> = [
   { id: 'overview', label: 'Overview', icon: LayoutList },
   { id: 'momentum', label: 'Momentum', icon: Waves },
@@ -198,11 +262,8 @@ function MetricValue({ metric, render }: { metric: ScreenerMetric; render: (valu
 function ScoreGlyph({ value, tone }: { value: number; tone: ReadinessTier }) {
   const safe = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
   return <span className={`apex-screener-score-glyph tone-${tone.toLowerCase()}`} aria-label={`Scanner score ${Math.round(safe)} out of 100`}>
-    <svg viewBox="0 0 38 38" role="img" aria-hidden="true">
-      <circle className="track" cx="19" cy="19" r="15" />
-      <circle className="value" cx="19" cy="19" r="15" pathLength="100" style={{ '--score-ring': safe } as React.CSSProperties} />
-    </svg>
     <b>{Math.round(safe)}</b>
+    <i style={{ '--score-fill': `${safe}%` } as React.CSSProperties} />
   </span>;
 }
 
@@ -279,6 +340,130 @@ function FactorBreakdown({ row }: { row: ScreenerRow }) {
   );
 }
 
+/**
+ * The score cut points `deriveReadinessTier` actually compares against
+ * (`src/lib/scoring.ts:246`), expressed as a band axis for the gauge.
+ *
+ * This is not a re-derivation of the tier — the tier stays the scanner's, read
+ * from `row.readinessTier`. These are the published thresholds that decided it,
+ * which is the one thing a bare 0-100 number cannot say on its own: how much room
+ * is left before the verdict changes.
+ *
+ * The axis depends on the guard because the real function does. A passing guard
+ * splits the range at 55 and 75. A failing guard discards that ladder entirely and
+ * splits at 65 only, between BLOCKED and CAUTION — so an 83 with a failed guard is
+ * CAUTION, not CONFIRMED. Drawing the passing-guard bands unconditionally is what
+ * put an 83 inside an "Opportunity" band next to a RISK badge: a gauge
+ * contradicting its own label, and an invented 35 threshold that exists nowhere in
+ * the scoring code. Any future edit here must be checked against scoring.ts, not
+ * chosen for even spacing.
+ */
+function tierBands(guardPass: boolean): Array<{ tier: ReadinessTier; from: number }> {
+  return guardPass
+    ? [{ tier: 'CAUTION', from: 0 }, { tier: 'WATCHLIST', from: 55 }, { tier: 'CONFIRMED', from: 75 }]
+    : [{ tier: 'BLOCKED', from: 0 }, { tier: 'CAUTION', from: 65 }];
+}
+
+/**
+ * Geometry for the score arc, in the SVG's own 200×124 user space.
+ *
+ * One semicircle of radius 82 centred at (100,100): fraction 0 is the left
+ * terminus and 1 the right. The zone bands, the value marker and the tick all
+ * read their position from these two helpers, so no part of the dial can disagree
+ * with another part about where a score sits.
+ */
+const ARC_CENTRE = { x: 100, y: 100 };
+const ARC_RADIUS = 82;
+const arcPoint = (fraction: number, radius: number = ARC_RADIUS) => {
+  const angle = Math.PI * (1 - Math.max(0, Math.min(1, fraction)));
+  return { x: ARC_CENTRE.x + radius * Math.cos(angle), y: ARC_CENTRE.y - radius * Math.sin(angle) };
+};
+const arcPath = (from: number, to: number) => {
+  const start = arcPoint(from);
+  const end = arcPoint(to);
+  return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${ARC_RADIUS} ${ARC_RADIUS} 0 0 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+};
+
+/**
+ * The panel's score gauge: one arc, banded by the real tier thresholds.
+ *
+ * This replaces a stack of two pictures of the same fact — a big numeral over a
+ * segmented bar, with a second labelled scale under it repeating the same cut
+ * points a third time. One representation now carries all of it: the arc's own
+ * segments ARE the Avoid/Risk/Watch/Opportunity zones, the marker is the score,
+ * the numeral sits inside the arc it belongs to, and the row beneath is a compact
+ * colour key — a legend, not a second data visualization.
+ *
+ * The zone boundaries come from `tierBands(guardPass)`, which mirrors
+ * `deriveReadinessTier` exactly: two zones under a failed guard, three under a
+ * passing one. That is the whole reason the arc cannot contradict the badge beside
+ * it — the band the marker lands in IS the verdict. The caption keeps the one
+ * reading a bare 0-100 cannot give, distance to the next verdict, from those same
+ * published cut points.
+ *
+ * The numeral is SVG `text` with `text-anchor="middle"`, not an HTML box: a
+ * two-digit and a three-digit score are then centred by construction on every
+ * update, with no width to re-measure and nothing to shift when the value changes
+ * under a live refresh.
+ */
+function ScoreArc({ score, tier, guardPass, coveragePct }: { score: number; tier: ReadinessTier; guardPass: boolean; coveragePct: number | null }) {
+  const safe = Math.max(0, Math.min(100, Number.isFinite(score) ? score : 0));
+  const shown = Math.round(safe);
+  const bands = tierBands(guardPass).map((band, index, all) => ({
+    ...band,
+    to: index + 1 < all.length ? all[index + 1].from : 100,
+  }));
+  const nextBand = bands.find((band) => band.from > safe) ?? null;
+  const markerInner = arcPoint(safe / 100, ARC_RADIUS - 21);
+  const markerOuter = arcPoint(safe / 100, ARC_RADIUS + 8);
+  const markerTip = arcPoint(safe / 100, ARC_RADIUS);
+  return (
+    <div className={`apex-screener-gauge apex-screener-gauge-arc tone-${tier.toLowerCase()}`}>
+      <svg
+        className="apex-screener-arc"
+        viewBox="0 0 200 124"
+        role="img"
+        aria-label={`Scanner score ${shown} of 100, ${TIER_LABELS[tier]}`}
+      >
+        <path className="apex-screener-arc-track" d={arcPath(0, 1)} />
+        {bands.map((band) => <path
+          key={band.tier}
+          className={`apex-screener-arc-band tone-${band.tier.toLowerCase()}${band.tier === tier ? ' current' : ''}`}
+          d={arcPath(band.from / 100, band.to / 100)}
+        ><title>{`${TIER_LABELS[band.tier]}: ${band.from} to ${band.to}`}</title></path>)}
+        <line
+          className="apex-screener-arc-marker-halo"
+          x1={markerInner.x} y1={markerInner.y} x2={markerOuter.x} y2={markerOuter.y}
+        />
+        <line
+          className="apex-screener-arc-marker"
+          x1={markerInner.x} y1={markerInner.y} x2={markerOuter.x} y2={markerOuter.y}
+        />
+        <circle className="apex-screener-arc-marker-tip" cx={markerTip.x} cy={markerTip.y} r={4.5} />
+        <text className="apex-screener-arc-value" x={ARC_CENTRE.x} y={86} textAnchor="middle">{shown}</text>
+        <text className="apex-screener-arc-tier" x={ARC_CENTRE.x} y={110} textAnchor="middle">{TIER_LABELS[tier]}</text>
+      </svg>
+      <ul className="apex-screener-arc-key">
+        {bands.map((band) => <li
+          key={band.tier}
+          className={`tone-${band.tier.toLowerCase()}${band.tier === tier ? ' current' : ''}`}
+        >
+          <i aria-hidden="true" />
+          <b>{TIER_LABELS[band.tier]}</b>
+          <span>{band.from}–{band.to}</span>
+        </li>)}
+      </ul>
+      <p className="apex-screener-gauge-caption">
+        {nextBand
+          ? <><b>{Math.round(nextBand.from - safe)}</b> points to {TIER_LABELS[nextBand.tier]} at {nextBand.from}</>
+          : <>Top zone of this axis</>}
+        <i aria-hidden="true" />
+        {coveragePct == null ? 'coverage not reported' : `${Math.round(coveragePct)}% evidence coverage`}
+      </p>
+    </div>
+  );
+}
+
 export function ScreenerPage(props: ScreenerPageProps) {
   const [initialWorkspace] = useState(() => loadScreenerWorkspace());
   const [filters, setFilters] = useState<ScreenerFilters>(() => initialWorkspace.filters);
@@ -318,10 +503,91 @@ export function ScreenerPage(props: ScreenerPageProps) {
   const summary = useMemo(() => screenerSummary(rows, visible), [rows, visible]);
   const filtersActive = screenerFiltersActive(filters);
 
-  const selected = visible.find((row) => row.symbol === props.selectedSymbol)
-    || rows.find((row) => row.symbol === props.selectedSymbol)
+  /**
+   * Which row the detail panel describes.
+   *
+   * This used to read `props.selectedSymbol` first — the app-global symbol, whose
+   * default is the Trading page's, not the screener's. The panel therefore opened
+   * on BTC no matter where BTC ranked, which contradicted the ranked list beside
+   * it. The screener now keeps its own pick: nothing is picked until the user
+   * picks something, and until then the panel describes whatever is currently
+   * first in the active sort, so changing the sort moves the detail with it.
+   *
+   * `rows.find` stays as the last resort so a pick that the filters have since
+   * excluded is still described rather than blanking the panel; `visible[0]`
+   * deliberately outranks it, so a filtered-out pick yields to the visible rank 1.
+   */
+  const [pickedSymbol, setPickedSymbol] = useState<string | null>(null);
+  const selected = (pickedSymbol == null ? null : visible.find((row) => row.symbol === pickedSymbol))
     || visible[0]
+    || (pickedSymbol == null ? null : rows.find((row) => row.symbol === pickedSymbol))
     || null;
+
+  const pickRow = (symbol: string) => {
+    setPickedSymbol(symbol);
+    props.onSelectSymbol(symbol);
+  };
+
+  /**
+   * The detail panel's prose, de-duplicated where it is read rather than where it
+   * is produced.
+   *
+   * `screenerModel.ts` is the scanner-facing contract and 23 unit tests assert its
+   * exact strings, so nothing below changes the model. What was wrong is only what
+   * the panel DID with the model's output:
+   *
+   * - Why it surfaced printed `Liquidity scored 100 of 100.` three rules under a
+   *   bar chart already showing Liquidity at 100. Those lines are the bar chart
+   *   read aloud, so they are dropped here; the reasons that carry an actual
+   *   judgement (the checklist verdict, timeframe agreement) stay.
+   * - Risk notes printed the guard's own wording AND the screener's paraphrase of
+   *   the same objection — "Cross-timeframe contradiction: 15m and 1h momentum
+   *   signals conflict" followed by "15m and 1h momentum disagree." Warnings are
+   *   now collapsed by topic with the first wording winning, and `warningsFor`
+   *   emits the guard's authoritative phrasing first, so the surviving line is
+   *   always the more specific one.
+   */
+  const factorRestatement = /^(.+?) scored \d+ of 100\.$/;
+  const factorLabels = new Set((selected?.factors ?? []).map((factor) => factor.label.toLowerCase()));
+  const detailReasons = (selected?.reasons ?? []).filter((reason) => {
+    const restated = factorRestatement.exec(reason);
+    return !(restated && factorLabels.has(restated[1].toLowerCase()));
+  });
+
+  const warningTopic = (warning: string) => {
+    const text = warning.toLowerCase();
+    if (text.includes('timeframe') || text.includes('confluence') || (text.includes('15m') && text.includes('1h'))) return 'timeframe';
+    if (text.includes('turnover') || text.includes('liquid') || text.includes('volume')) return 'liquidity';
+    if (text.includes('spread') || text.includes('depth') || text.includes('order book')) return 'spread';
+    if (text.includes('funding')) return 'funding';
+    if (text.includes('coverage') || text.includes('partial') || text.includes('incomplete')) return 'coverage';
+    return text;
+  };
+  const detailWarnings = (selected?.warnings ?? []).filter((warning, index, all) =>
+    all.findIndex((other) => warningTopic(other) === warningTopic(warning)) === index);
+
+  /**
+   * The one sentence the bar chart cannot say.
+   *
+   * Both operands are published factor values, so this interprets the evidence
+   * without adding any: it names which factor is holding the rank up and which one
+   * is holding it back. That is the reading a user would otherwise have to do by
+   * eye across five bars, and it is what Why it surfaced should lead with instead
+   * of restating the bars.
+   */
+  const factorReadings = (selected?.factors ?? [])
+    .map((factor) => ({
+      label: factor.label,
+      value: factor.metric.state === 'AVAILABLE' ? factor.metric.value : null,
+    }))
+    .filter((reading): reading is { label: string; value: number } => reading.value != null);
+  const strongestFactor = factorReadings.reduce<{ label: string; value: number } | null>(
+    (best, reading) => best == null || reading.value > best.value ? reading : best, null);
+  const weakestFactor = factorReadings.reduce<{ label: string; value: number } | null>(
+    (worst, reading) => worst == null || reading.value < worst.value ? reading : worst, null);
+  const detailThesis = strongestFactor && weakestFactor && strongestFactor.label !== weakestFactor.label
+    ? `${strongestFactor.label} at ${Math.round(strongestFactor.value)} carries this rank. ${weakestFactor.label} at ${Math.round(weakestFactor.value)} is the binding constraint.`
+    : null;
 
   // The freshest input timestamp any row reported: a real observation time from the
   // market snapshot, not a render clock dressed up as one.
@@ -420,6 +686,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
   };
 
   const openInTrading = (symbol: string) => {
+    setPickedSymbol(symbol);
     props.onSelectSymbol(symbol);
     props.onOpenTrading(symbol);
     notifyWorkspace({
@@ -433,28 +700,119 @@ export function ScreenerPage(props: ScreenerPageProps) {
     row.factors.find((factor) => factor.id === id)?.metric
     ?? { state: 'UNAVAILABLE', value: null, note: 'The scanner did not publish this factor.' };
 
-  /** One measure on a card: a quiet uppercase label over a monospaced value. */
+  /**
+   * One measure on a row.
+   *
+   * The label is no longer written here — it comes from `METRIC_SLOT_LABELS`,
+   * which the column header reads too, so the two can never disagree. The label
+   * stays in the DOM on every row (it is the cell's accessible name and the only
+   * label present once the header is hidden at narrow widths) and is visually
+   * folded away by CSS while the header is on screen.
+   */
   const renderMetricSlot = (row: ScreenerRow, slot: ScreenerMetricSlot) => {
-    const cell = (label: string, node: React.ReactNode, tone: 'positive' | 'negative' | 'neutral' = 'neutral') =>
-      <span key={slot} className={`apex-screener-metric ${tone}`}><span>{label}</span><b>{node}</b></span>;
+    const cell = (node: React.ReactNode, tone: 'positive' | 'negative' | 'neutral' = 'neutral') =>
+      <span key={slot} className={`apex-screener-metric ${tone}`}><span>{METRIC_SLOT_LABELS[slot]}</span><b>{node}</b></span>;
     switch (slot) {
-      case 'price': return cell('Price', Number.isFinite(row.lastPrice)
+      case 'price': return cell(Number.isFinite(row.lastPrice)
         ? formatPrice(row.lastPrice)
         : <span className="apex-screener-unavailable" title="No last price was reported for this market.">Unavailable</span>);
-      case 'change': return cell('24h', formatPercent(row.priceChange24hPct), changeTone(row.priceChange24hPct));
-      case 'turnover': return cell('Turnover', usdCompact(Number.isFinite(row.turnover24h) ? row.turnover24h : null));
-      case 'range': return cell('Range', <MetricValue metric={row.range24hPct} render={(value) => `${value.toFixed(2)}%`} />);
-      case 'momentum': return cell('Momentum', <MetricValue metric={factorMetric(row, 'momentum')} render={(value) => Math.round(value).toString()} />);
-      case 'structure': return cell('Structure', <MetricValue metric={factorMetric(row, 'structure')} render={(value) => Math.round(value).toString()} />);
-      case 'funding': return cell('Funding', <MetricValue metric={row.fundingRate} render={(value) => `${(value * 100).toFixed(4)}%`} />);
-      case 'openInterest': return cell('Open int.', <MetricValue metric={row.openInterest} render={(value) => `$${formatCompactNumber(value)}`} />);
-      case 'coverage': return cell('Coverage', row.scoreCoveragePct == null
+      case 'change': return cell(formatPercent(row.priceChange24hPct), changeTone(row.priceChange24hPct));
+      case 'turnover': return cell(usdCompact(Number.isFinite(row.turnover24h) ? row.turnover24h : null));
+      case 'range': return cell(<MetricValue metric={row.range24hPct} render={(value) => `${value.toFixed(2)}%`} />);
+      case 'momentum': return cell(<MetricValue metric={factorMetric(row, 'momentum')} render={(value) => Math.round(value).toString()} />);
+      case 'structure': return cell(<MetricValue metric={factorMetric(row, 'structure')} render={(value) => Math.round(value).toString()} />);
+      case 'funding': return cell(<MetricValue metric={row.fundingRate} render={(value) => `${(value * 100).toFixed(4)}%`} />);
+      case 'openInterest': return cell(<MetricValue metric={row.openInterest} render={(value) => `$${formatCompactNumber(value)}`} />);
+      case 'coverage': return cell(row.scoreCoveragePct == null
         ? <span className="apex-screener-unavailable" title="The scanner did not report evidence coverage.">Unavailable</span>
         : `${Math.round(row.scoreCoveragePct)}%`);
-      case 'warningCount': return cell('Flags', row.warnings.length);
+      case 'warningCount': return cell(row.warnings.length);
       default: return null;
     }
   };
+
+  /**
+   * The ranked stream's column header.
+   *
+   * Item this replaces: a left-packed `.apex-screener-sortbar` chip group that had
+   * no column geometry at all, so nothing above the stream lined up with anything
+   * in it and the chip order did not even match the data order. The header now
+   * mirrors the row's box model exactly — same grid, same transparent 1px border,
+   * same `--screener-row-pad-left`, same `--screener-row-gap`, and every cell
+   * width read from the same `--screener-col-*` token the body cell reads. It
+   * lives INSIDE `.apex-screener-stream` and is sticky, because a header outside
+   * the scroller would be a scrollbar-width wider and that surplus would land
+   * entirely on the one flexible cell, re-creating the divergence somewhere new.
+   *
+   * `claimedSortKeys` is what makes the header a complete replacement for the
+   * chips rather than a partial one: each key is claimed by the first column that
+   * can express it, so no key gets two competing affordances, and anything left
+   * unclaimed falls through to the chip bar below instead of becoming unreachable.
+   */
+  const claimedSortKeys = new Set<ScreenerSortKey>();
+  const columnHead = (key: ScreenerSortKey | null, label: string, className: string, id: string, name = label) => {
+    if (key == null || !SORT_OPTIONS[columnSet].some((option) => option.key === key) || claimedSortKeys.has(key)) {
+      return <span key={id} className={className}>{label}</span>;
+    }
+    claimedSortKeys.add(key);
+    const active = sort.key === key;
+    return <button
+      key={id}
+      type="button"
+      className={`${className} apex-screener-col-sort${active ? ' active' : ''}`}
+      aria-pressed={active}
+      aria-label={name === label ? undefined : name}
+      title={active
+        ? `Sorted by ${name}, ${sort.ascending ? 'ascending' : 'descending'} — click to reverse`
+        : `Sort by ${name}`}
+      onClick={() => toggleSort(key)}
+    >
+      {label}
+      {active && (sort.ascending ? <ChevronUp size={10} /> : <ChevronDown size={10} />)}
+    </button>;
+  };
+
+  const columnsHeader = <div className="apex-screener-columns">
+    <div className="apex-screener-columns-main">
+      {/* `#` is the stable full-universe signal-strength rank (screenerTypes.ts,
+          `signalStrengthOf` in screenerModel.ts), not this view's row position — so
+          under a Turnover sort the leading row can legitimately read #14. The glyph
+          is all that fits a 17px cell, so the semantic is carried by the accessible
+          name and tooltip instead. */}
+      {columnHead('rank', '#', 'apex-screener-col-rank', 'rank', 'signal strength rank')}
+      <span className="apex-screener-col-symbol">
+        {columnHead('symbol', 'Symbol', 'apex-screener-col-name', 'symbol')}
+        {columnHead('score', 'Score', 'apex-screener-col-score', 'score')}
+      </span>
+      {columnHead('direction', 'Bias', 'apex-screener-col-bias', 'bias')}
+      {/* The factor column is a glyph, not a number, so its header is the same
+          icon that heads Score architecture in the detail panel rather than a
+          four-letter abbreviation crushed into 34px. */}
+      <span
+        className="apex-screener-col-factors"
+        role="img"
+        aria-label="Score factors"
+        title="Score factors: liquidity, momentum, order flow, structure and funding"
+      ><Activity size={11} /></span>
+      <span className="apex-screener-col-metrics">
+        {LENS_METRICS[columnSet].map((slot) =>
+          columnHead(METRIC_SLOT_SORT[slot] ?? null, METRIC_SLOT_LABELS[slot], 'apex-screener-col-metric', slot))}
+      </span>
+      <span className="apex-screener-col-state">
+        {columnHead('tier', 'Signal', 'apex-screener-col-badge', 'tier')}
+        {showConfluenceBadge(columnSet) && <span key="confluence" className="apex-screener-col-badge">Timeframes</span>}
+        {showFeedBadge(columnSet) && <span key="feed" className="apex-screener-col-badge">Feed</span>}
+        {columnHead('warnings', 'Guard', 'apex-screener-col-guard', 'guard')}
+      </span>
+    </div>
+    <span className="apex-screener-col-actions" aria-hidden="true" />
+  </div>;
+
+  // Structural guarantee, not a claim: every sort key the current lens offers is
+  // reachable from a column above, so this is empty for all four lenses today. If
+  // a future lens gains a sort key with no column to hang it on, the chip row
+  // reappears automatically instead of the key going missing.
+  const unclaimedSorts = SORT_OPTIONS[columnSet].filter((option) => !claimedSortKeys.has(option.key));
 
   const resultsBody = props.loading && !rows.length
     ? <DataState availability="loading" title="Scanning markets" detail="Ranked results appear as soon as the scanner returns its candidate set." />
@@ -475,6 +833,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
           <button type="button" className="apex-v3-button primary" onClick={() => setFilters(resetScreenerFilters())}>Reset filters</button>
         </div>
         : <div className="apex-v3-table-scroll apex-screener-stream">
+          {columnsHeader}
           <ol className="apex-screener-rows">
             {visible.map((row, rowIndex) => {
               const isSelected = row.symbol === selected?.symbol;
@@ -482,7 +841,11 @@ export function ScreenerPage(props: ScreenerPageProps) {
               return (
                 <li
                   key={row.symbol}
-                  className={`apex-screener-row ${row.direction.toLowerCase()}${isSelected ? ' selected' : ''}`}
+                  // `flagged` is what makes the hover tint signal-aware: guard
+                  // failure is the row's dominant fact, so it outranks the bias
+                  // hue in the hover rules. Selection stays unconditionally green
+                  // and keeps its rail, so hover and selected never converge.
+                  className={`apex-screener-row ${row.direction.toLowerCase()}${row.guardPass ? '' : ' flagged'}${isSelected ? ' selected' : ''}`}
                   // Capped so a long result set does not stagger itself into a
                   // visible wave; past the first screenful the delay is constant.
                   style={{ '--row-index': Math.min(rowIndex, 12) } as React.CSSProperties}
@@ -491,18 +854,24 @@ export function ScreenerPage(props: ScreenerPageProps) {
                     type="button"
                     className="apex-screener-row-main"
                     aria-current={isSelected || undefined}
-                    onClick={() => props.onSelectSymbol(row.symbol)}
+                    onClick={() => pickRow(row.symbol)}
                   >
                     <span className="apex-screener-row-rank">{row.rank}</span>
                     <span className="apex-screener-symbol">
                       <CoinIcon symbol={row.symbol} size={26} />
-                      <span><strong>{row.baseAsset}</strong><small>{row.symbol}</small></span>
+                      {/* The symbol block is the row's only flexible cell, so the pair
+                          label is the designated thing that truncates. It ellipsizes on
+                          the longest tickers (1000PEPE-USDT needs 79px of a 68px slot),
+                          and title is what makes the full pair recoverable on hover — it
+                          stays in the accessible name either way, since the text is not
+                          removed from the DOM. */}
+                      <span><strong>{row.baseAsset}</strong><small title={row.symbol}>{row.symbol}</small></span>
+                      <ScoreGlyph value={row.score} tone={row.readinessTier} />
                     </span>
                     <span className={`apex-screener-bias ${row.direction.toLowerCase()}`}>
                       {row.direction === 'LONG' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                       {row.direction === 'LONG' ? 'Long' : 'Short'}
                     </span>
-                    <ScoreGlyph value={row.score} tone={row.readinessTier} />
                     <EvidenceEqualizer row={row} />
                     <span className="apex-screener-row-metrics">
                       {LENS_METRICS[columnSet].map((slot) => renderMetricSlot(row, slot))}
@@ -511,11 +880,11 @@ export function ScreenerPage(props: ScreenerPageProps) {
                       <StatusBadge tone={TIER_TONES[row.readinessTier]} detail={`Scanner readiness: ${row.readinessTier}`}>
                         {TIER_LABELS[row.readinessTier]}
                       </StatusBadge>
-                      {(columnSet === 'momentum' || columnSet === 'quality') && <StatusBadge
+                      {(showConfluenceBadge(columnSet)) && <StatusBadge
                         tone={confluenceLabel(row) === 'ALIGNED' ? 'positive' : confluenceLabel(row) === 'CONFLICTING' ? 'negative' : 'warning'}
                       >{confluenceLabel(row)}</StatusBadge>}
-                      {columnSet === 'quality' && <StatusBadge tone={MARKET_STATE_TONES[row.dataState]}>
-                        {row.dataState.replace(/_/g, ' ')}
+                      {showFeedBadge(columnSet) && <StatusBadge tone={MARKET_STATE_TONES[row.dataState]} detail={MARKET_STATE_LABELS[row.dataState]}>
+                        {MARKET_STATE_ROW_LABELS[row.dataState]}
                       </StatusBadge>}
                       {/* Guard state shows on every lens: it is the risk objection,
                           not a column the user should have to go looking for. */}
@@ -538,6 +907,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
                     <button
                       type="button"
                       className="apex-v3-button secondary"
+                      aria-label={`Open ${row.symbol} in Trading`}
                       onClick={() => openInTrading(row.symbol)}
                     >Open</button>
                   </div>
@@ -563,7 +933,10 @@ export function ScreenerPage(props: ScreenerPageProps) {
 
     <div className="apex-screener-chips" aria-label="Scan status">
       <span><Activity size={11} /><b>{summary.scanned}</b> scanned</span>
-      <span><Sparkles size={11} /><b>{summary.opportunities}</b> opportunities</span>
+      {/* Count-dependent noun. `1 opportunities` was rendering on any single-hit
+          scan, which is the exact case a trader is most likely to be reading. The
+          empty-state copy at the top of this file already pluralizes this way. */}
+      <span><Sparkles size={11} /><b>{summary.opportunities}</b> {summary.opportunities === 1 ? 'opportunity' : 'opportunities'}</span>
       <span><LayoutList size={11} /><b>{summary.matched}</b> shown</span>
       <span><Radar size={11} />{age ? <>Updated <b>{age}</b></> : <>Update time <b>unknown</b></>}</span>
       <StatusBadge tone={MARKET_STATE_TONES[props.dataState]}>{MARKET_STATE_LABELS[props.dataState]}</StatusBadge>
@@ -571,7 +944,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
 
     <section className="apex-screener-screenbar" aria-label="Screens and presets">
       <div className="apex-screener-presets">
-        {PRESETS.map((preset) => <button key={preset.id} type="button" className={activePresetId === preset.id ? 'active' : ''} title={preset.detail} onClick={() => applyPreset(preset)}><span />{preset.label}</button>)}
+        {PRESETS.map((preset) => <button key={preset.id} type="button" className={activePresetId === preset.id ? 'active' : ''} title={preset.detail} aria-pressed={activePresetId === preset.id} onClick={() => applyPreset(preset)}><span />{preset.label}</button>)}
       </div>
       <span className="apex-screener-screen-divider" aria-hidden="true" />
       <label className="apex-screener-saved-select">
@@ -646,12 +1019,16 @@ export function ScreenerPage(props: ScreenerPageProps) {
 
       <label className="apex-screener-field apex-screener-score-filter">
         <span>Min score <b>{filters.minScore}</b></span>
+        {/* The track's filled portion is drawn in CSS from --slider-fill, which is
+            the same state this label prints, so the bar and the number cannot drift
+            apart. `accent-color` on its own left the unfilled track invisible. */}
         <input
           type="range"
           min={0}
           max={100}
           step={5}
           value={filters.minScore}
+          style={{ '--slider-fill': `${filters.minScore}%` } as React.CSSProperties}
           onChange={(event) => setFilters((current) => ({ ...current, minScore: Number(event.target.value) }))}
         />
       </label>
@@ -673,7 +1050,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
         </select>
       </label>
 
-      <button type="button" className={`apex-v3-button secondary apex-screener-advanced-toggle ${advancedOpen ? 'active' : ''}`} onClick={() => setAdvancedOpen((open) => !open)} aria-expanded={advancedOpen}>
+      <button type="button" className={`apex-v3-button secondary apex-screener-advanced-toggle ${advancedOpen ? 'active' : ''}`} onClick={() => setAdvancedOpen((open) => !open)} aria-expanded={advancedOpen} aria-controls="apex-screener-advanced-filters">
         <SlidersHorizontal size={13} /> Advanced
       </button>
 
@@ -685,13 +1062,13 @@ export function ScreenerPage(props: ScreenerPageProps) {
       >Reset filters</button>
     </section>
 
-    {advancedOpen && <section className="apex-screener-advanced" aria-label="Advanced screener filters">
+    {advancedOpen && <section id="apex-screener-advanced-filters" className="apex-screener-advanced" aria-label="Advanced screener filters">
       <label className="apex-screener-field"><span>Risk guard</span><select value={filters.guard} onChange={(event) => setFilters((current) => ({ ...current, guard: event.target.value as ScreenerFilters['guard'] }))}><option value="ALL">All</option><option value="PASS">Pass only</option><option value="FLAGGED">Flagged only</option></select></label>
       <label className="apex-screener-field"><span>Timeframes</span><select value={filters.confluence} onChange={(event) => setFilters((current) => ({ ...current, confluence: event.target.value as ScreenerFilters['confluence'] }))}><option value="ALL">All</option><option value="ALIGNED">Aligned</option><option value="CONFLICTING">Conflicting</option></select></label>
       <label className="apex-screener-field"><span>Funding</span><select value={filters.funding} onChange={(event) => setFilters((current) => ({ ...current, funding: event.target.value as ScreenerFilters['funding'] }))}><option value="ALL">All</option><option value="AVAILABLE">Available</option><option value="POSITIVE">Positive</option><option value="NEGATIVE">Negative</option></select></label>
       <label className="apex-screener-field"><span>Data quality</span><select value={filters.dataQuality} onChange={(event) => setFilters((current) => ({ ...current, dataQuality: event.target.value as ScreenerFilters['dataQuality'] }))}><option value="ALL">All</option><option value="LIVE">Live only</option><option value="PARTIAL">Needs review</option></select></label>
-      <label className="apex-screener-field apex-screener-score-filter"><span>Min momentum <b>{filters.minMomentum}</b></span><input type="range" min={0} max={100} step={5} value={filters.minMomentum} onChange={(event) => setFilters((current) => ({ ...current, minMomentum: Number(event.target.value) }))} /></label>
-      <label className="apex-screener-field apex-screener-score-filter"><span>Min coverage <b>{filters.minCoveragePct}%</b></span><input type="range" min={0} max={100} step={10} value={filters.minCoveragePct} onChange={(event) => setFilters((current) => ({ ...current, minCoveragePct: Number(event.target.value) }))} /></label>
+      <label className="apex-screener-field apex-screener-score-filter"><span>Min momentum <b>{filters.minMomentum}</b></span><input type="range" min={0} max={100} step={5} value={filters.minMomentum} style={{ '--slider-fill': `${filters.minMomentum}%` } as React.CSSProperties} onChange={(event) => setFilters((current) => ({ ...current, minMomentum: Number(event.target.value) }))} /></label>
+      <label className="apex-screener-field apex-screener-score-filter"><span>Min coverage <b>{filters.minCoveragePct}%</b></span><input type="range" min={0} max={100} step={10} value={filters.minCoveragePct} style={{ '--slider-fill': `${filters.minCoveragePct}%` } as React.CSSProperties} onChange={(event) => setFilters((current) => ({ ...current, minCoveragePct: Number(event.target.value) }))} /></label>
       <label className="apex-screener-check"><input type="checkbox" checked={filters.favoritesOnly} onChange={(event) => setFilters((current) => ({ ...current, favoritesOnly: event.target.checked }))} /><Star size={13} /> Watchlist only</label>
     </section>}
 
@@ -703,11 +1080,12 @@ export function ScreenerPage(props: ScreenerPageProps) {
           {COLUMN_SET_OPTIONS.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={columnSet === id ? 'active' : ''} onClick={() => setColumnSet(id)} aria-pressed={columnSet === id} title={`${label} result lens`}><Icon size={12} /><span>{label}</span></button>)}
         </div>}
       />
-      {/* Only shown alongside a populated stream: sorting an empty or errored
-          result set is a control with nothing to act on. */}
-      {visible.length > 0 && <div className="apex-screener-sortbar" role="group" aria-label="Sort ranked results">
+      {/* Sorting is expressed by the column header inside the stream now. This
+          chip row is the overflow for any sort key a lens offers that no column
+          can host — empty for all four lenses today, so it renders nothing. */}
+      {visible.length > 0 && unclaimedSorts.length > 0 && <div className="apex-screener-sortbar" role="group" aria-label="Additional sort options">
         <span className="apex-screener-sortbar-lead"><ArrowUpDown size={11} /> Sort</span>
-        {SORT_OPTIONS[columnSet].map((option) => <button
+        {unclaimedSorts.map((option) => <button
           key={option.key}
           type="button"
           className={sort.key === option.key ? 'active' : ''}
@@ -749,35 +1127,82 @@ export function ScreenerPage(props: ScreenerPageProps) {
           </div>
         </div>
 
-        <Donut
-          value={Number.isFinite(selected.score) ? selected.score : null}
-          label="Scanner score"
-          detail={selected.scoreCoveragePct == null
-            ? 'Evidence coverage not reported'
-            : `${Math.round(selected.scoreCoveragePct)}% of scoring weight evidence-backed`}
-          tone={TIER_TONES[selected.readinessTier]}
+        <ScoreArc
+          score={selected.score}
+          tier={selected.readinessTier}
+          guardPass={selected.guardPass}
+          coveragePct={selected.scoreCoveragePct}
         />
+
+        {/* First block in the panel, above every explanation, because it is the
+            reason a trader opens this panel at all. Every price here is the
+            scanner's own published ATR-band level for this candidate — see
+            `levelsFor` in screenerModel.ts — and a level the scan did not publish
+            says "Unavailable" rather than showing a plausible-looking number. */}
+        <div className="apex-screener-block apex-screener-levels-block">
+          <h3><Crosshair size={11} /> Trade levels</h3>
+          <ul className="apex-screener-levels">
+            <li className="entry">
+              <span>Entry</span>
+              <b><MetricValue metric={selected.entryPrice} render={formatPrice} /></b>
+            </li>
+            <li className="stop">
+              <span>Stop</span>
+              <b><MetricValue metric={selected.stopLoss} render={formatPrice} /></b>
+            </li>
+            <li className="target">
+              <span>Target</span>
+              <b><MetricValue metric={selected.takeProfit} render={formatPrice} /></b>
+            </li>
+          </ul>
+          <div className="apex-screener-levels-meta">
+            <span><i>Reward / risk</i><b><MetricValue metric={selected.riskReward} render={(value) => `${value.toFixed(2)}R`} /></b></span>
+            <span><i>Risk from entry</i><b><MetricValue metric={selected.riskPct} render={(value) => `${value.toFixed(2)}%`} /></b></span>
+            <span><i>24h high</i><b><MetricValue metric={selected.high24h} render={formatPrice} /></b></span>
+            <span><i>24h low</i><b><MetricValue metric={selected.low24h} render={formatPrice} /></b></span>
+          </div>
+          <details className="apex-screener-explain">
+            <summary>Where these levels come from</summary>
+            <p>
+              The scanner derives them from 1h ATR bands around its own entry reference and publishes
+              them with the candidate ({selected.direction === 'LONG' ? 'long' : 'short'} side shown here).
+              The screener copies them and divides the two distances for reward/risk — it computes no
+              level of its own. Swing support and resistance beyond these bands, and order-book depth,
+              are not part of the market-wide scan.
+            </p>
+          </details>
+        </div>
 
         <div className="apex-screener-block">
           <h3><Activity size={11} /> Score architecture</h3>
           <FactorBreakdown row={selected} />
-          <p className="apex-screener-note">Sub-scores are published by the scanner. The screener ranks on its score rather than re-deriving one.</p>
+          <details className="apex-screener-explain">
+            <summary>How this rank is decided</summary>
+            <p>
+              The scanner publishes these five sub-scores and the 0-100 above; the screener never
+              re-derives either. Position in the list weights that score together with the risk guard,
+              the readiness tier and how many flags a row carries, so a cleaner signal can outrank a
+              marginally higher raw number.
+            </p>
+          </details>
         </div>
 
         <div className="apex-screener-block">
           <h3><Sparkles size={11} /> Why it surfaced</h3>
-          <ul className="apex-screener-reasons">
-            {selected.reasons.map((reason) => <li key={reason}>{reason}</li>)}
-          </ul>
+          {detailThesis && <p className="apex-screener-thesis">{detailThesis}</p>}
+          {detailReasons.length > 0 && <ul className="apex-screener-reasons">
+            {detailReasons.map((reason) => <li key={reason}>{reason}</li>)}
+          </ul>}
+          {!detailThesis && detailReasons.length === 0 && <p className="apex-screener-note">The scanner published no rationale beyond the sub-scores above.</p>}
         </div>
 
         <div className="apex-screener-block">
           <h3><AlertTriangle size={11} /> Risk notes</h3>
-          {selected.warnings.length
+          {detailWarnings.length
             ? <ul className="apex-screener-warnings">
-              {selected.warnings.map((warning) => <li key={warning}><AlertTriangle size={13} /> {warning}</li>)}
+              {detailWarnings.map((warning) => <li key={warning}><AlertTriangle size={13} /> {warning}</li>)}
             </ul>
-            : <p className="apex-screener-note">No warnings were raised for this symbol.</p>}
+            : <p className="apex-screener-note">The risk guard raised no objection against this candidate.</p>}
         </div>
 
         <div className="apex-screener-block">

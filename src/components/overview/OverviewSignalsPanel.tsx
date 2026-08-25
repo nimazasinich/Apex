@@ -34,6 +34,7 @@ export function OverviewSignalsPanel({
       <header className="apex-overview-section-head">
         <span className="apex-overview-section-num">3</span>
         <h2 id="overview-signals-title">Signal / Opportunity Summary</h2>
+        <button type="button" className="apex-overview-head-link" onClick={onNavigateStrategies}>View scanner</button>
       </header>
 
       <div className="apex-overview-funnel">
@@ -63,8 +64,10 @@ export function OverviewSignalsPanel({
         )}
       </div>
 
-      {funnel.topRejection ? <p className="apex-overview-rejection">Top rejection: {funnel.topRejection}</p> : null}
-      <footer><button type="button" className="apex-secondary-button" onClick={onNavigateStrategies}>View scanner</button></footer>
+      <div className="apex-overview-rejection-block">
+        <span>Top Rejection Reason</span>
+        <p className="apex-overview-rejection" title={funnel.topRejection ?? undefined}>{funnel.topRejection ?? '—'}</p>
+      </div>
     </section>
   );
 }

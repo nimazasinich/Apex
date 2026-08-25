@@ -66,15 +66,27 @@ export function OverviewMarketSummary({
 
       {ticker ? (
         <>
-          <div className="apex-overview-summary-chart-wide" role="img" aria-label={`${ticker.symbol} summary trend`}>
-            {closes.length >= 2 ? <MiniSparkline values={closes} tone={positive ? 'positive' : 'negative'} /> : <div className="apex-overview-summary-empty">No verified summary series yet.</div>}
+          <div className="apex-overview-summary-focus">
+            <div className="apex-overview-summary-hero">
+              <span className="apex-eyebrow">Selected market</span>
+              <div className="apex-overview-summary-hero-head">
+                <CoinIcon symbol={ticker.symbol} size={18} />
+                <strong>{ticker.symbol}</strong>
+              </div>
+              <b>{formatPrice(ticker.lastPrice)}</b>
+              <em className={ticker.priceChange24hPct >= 0 ? 'positive' : 'negative'}>{formatPercent(ticker.priceChange24hPct)} (24h)</em>
+              <div className="apex-overview-summary-chart-wide" role="img" aria-label={`${ticker.symbol} summary trend`}>
+                {closes.length >= 2 ? <MiniSparkline values={closes} tone={positive ? 'positive' : 'negative'} /> : <div className="apex-overview-summary-empty">No verified summary series yet.</div>}
+              </div>
+            </div>
+            <dl className="apex-overview-summary-statlist">
+              <div><dt>24h High</dt><dd>{formatPrice(ticker.high24h)}</dd></div>
+              <div><dt>24h Low</dt><dd>{formatPrice(ticker.low24h)}</dd></div>
+              <div><dt>Volatility</dt><dd>{volatility}</dd></div>
+              <div><dt>Liquidity Score</dt><dd>{liquidityLabel(ticker.turnover24h)}</dd></div>
+              <div><dt>Funding Bias</dt><dd>{fundingBiasLabel(ticker.fundingRate)}</dd></div>
+            </dl>
           </div>
-          <dl className="apex-overview-summary-stats apex-overview-summary-stats-4">
-            <div><dt>24h High / Low</dt><dd>{formatPrice(ticker.high24h)} / {formatPrice(ticker.low24h)}</dd></div>
-            <div><dt>Volatility</dt><dd>{volatility}</dd></div>
-            <div><dt>Liquidity Score</dt><dd>{liquidityLabel(ticker.turnover24h)}</dd></div>
-            <div><dt>Funding Bias</dt><dd>{fundingBiasLabel(ticker.fundingRate)}</dd></div>
-          </dl>
           <div className="apex-overview-breadth" aria-label="Market breadth">
             <span className="bullish">Bullish {breadth.bullishPct}%</span>
             <div className="apex-overview-breadth-bar">
@@ -91,7 +103,7 @@ export function OverviewMarketSummary({
 
       <footer>
         {feed.error && <button type="button" className="apex-secondary-button" onClick={onRetry}><RefreshCw size={14} /> Retry</button>}
-        <button type="button" className="apex-primary-button" onClick={onOpenTrading} disabled={!ticker}>Open Trading <ArrowRight size={14} /></button>
+        <button type="button" className="apex-overview-head-link" onClick={onOpenTrading} disabled={!ticker}>Open Trading <ArrowRight size={14} /></button>
       </footer>
     </section>
   );

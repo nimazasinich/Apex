@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { SHIPPED_COIN_ICONS } from '../lib/coinIconManifest';
+
 type CoinIconProps = {
   symbol: string;
   size?: number;
@@ -38,49 +40,35 @@ const COIN_THEMES: Record<string, CoinTheme> = {
 const FALLBACK_THEME: CoinTheme = { bg: '#eef2f0', fg: '#4a5a52', glyph: 'letter' };
 
 /**
+ * Every asset without shipped artwork used to collapse onto one flat grey plate,
+ * so a screen of them read as "icons failed to load" rather than "initials".
+ * This derives a stable plate colour from the ticker itself: same symbol always
+ * gets the same hue, different symbols separate visually.
+ *
+ * This is decoration, not data — it encodes nothing about the market and must
+ * never be read as a signal. Lightness/saturation are fixed so contrast stays
+ * constant across hues (light plate, dark ink) instead of varying per symbol.
+ */
+function derivedTheme(base: string): CoinTheme {
+  if (!base) return FALLBACK_THEME;
+  let hash = 0;
+  for (let i = 0; i < base.length; i += 1) hash = (hash * 31 + base.charCodeAt(i)) % 360;
+  return { bg: `hsl(${hash} 58% 94%)`, fg: `hsl(${hash} 52% 31%)`, glyph: 'letter' };
+}
+
+/**
  * Real logo artwork that ships with the app in `public/crypto-icons/`.
  *
- * This list is an explicit manifest rather than a glob so the mapping is
- * deterministic and reviewable: every entry here MUST exist on disk. Adding a
- * new logo is a two-step change (drop the PNG in, add the base symbol here),
- * which keeps a missing file from silently degrading to initials.
+ * The manifest is now GENERATED into `src/lib/coinIconManifest.ts` from what is
+ * actually on disk (top 300 tickers by market cap) instead of being a 25-entry
+ * list maintained by hand here. Same guarantee as before — every entry must
+ * exist on disk, and the mapping stays deterministic and reviewable in a diff —
+ * but it no longer has to be extended by hand for every newly listed asset.
  *
  * Deliberately local: no remote CDN URLs, so icons cannot break offline, on a
  * locked-down network, or when a third-party host rotates its paths.
  */
-const LOCAL_LOGO_ASSETS: Record<string, string> = {
-  AAVE: 'aave',
-  ADA: 'ada',
-  ALGO: 'algo',
-  ATOM: 'atom',
-  AVAX: 'avax',
-  BCH: 'bch',
-  BNB: 'bnb',
-  BSV: 'bsv',
-  BTC: 'btc',
-  DASH: 'dash',
-  DOGE: 'doge',
-  DOT: 'dot',
-  EOS: 'eos',
-  ETC: 'etc',
-  ETH: 'eth',
-  LINK: 'link',
-  LTC: 'ltc',
-  MATIC: 'matic',
-  SOL: 'sol',
-  TRX: 'trx',
-  UNI: 'uni',
-  XLM: 'xlm',
-  XMR: 'xmr',
-  XRP: 'xrp',
-  XTZ: 'xtz',
-};
 
-/**
- * Tickers that denote the same underlying asset as an entry above. Wrapped and
- * renamed tokens are the common case on perpetual venues, and without these the
- * user sees initials for an asset whose logo we actually ship.
- */
 const LOGO_ALIASES: Record<string, string> = {
   XBT: 'BTC',
   WBTC: 'BTC',
@@ -105,14 +93,54 @@ function extractBase(symbol: string): string {
   return (base || cleaned || '?').replace(/USDT$|USDC$|USD$/, '') || (base || '?');
 }
 
-/** Resolve a base symbol to a local logo path, or null when we ship no artwork. */
-function resolveLogoSrc(base: string): string | null {
-  const asset = LOCAL_LOGO_ASSETS[base] || LOCAL_LOGO_ASSETS[LOGO_ALIASES[base] || ''];
-  if (!asset) return null;
+/**
+ * Canonical lowercase artwork key for a base ticker: alias first, then drop a
+ * contract multiplier. Bybit lists 1000PEPE-USDT and the artwork is filed under
+ * `pepe`, so this has to run before the local lookup too — not just before the
+ * proxy lookup, which is all the previous version did.
+ */
+function artworkKey(base: string): string {
+  return (LOGO_ALIASES[base] || base).replace(/^\d+(?=[A-Z])/, '').toLowerCase();
+}
+
+/** Resolve an artwork key to a shipped logo path, or null when we ship none. */
+function resolveLogoSrc(asset: string): string | null {
+  if (!SHIPPED_COIN_ICONS.has(asset)) return null;
   // BASE_URL keeps the path correct if the app is ever served from a sub-path;
   // it is '/' for the current build, so this resolves to /crypto-icons/<a>.png.
   const publicBase = (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/';
   return `${publicBase.endsWith('/') ? publicBase : `${publicBase}/`}crypto-icons/${asset}.png`;
+}
+
+/**
+ * Ordered artwork candidates: shipped PNG first, then the server-side icon proxy
+ * (src/services/iconProxy.ts), then nothing and the monogram takes over.
+ *
+ * The proxy is why this component can reach past its own manifest without giving
+ * up the properties the manifest was protecting: the browser only ever requests
+ * a same-origin `/api/icon/*` URL, so the strict `img-src 'self'` CSP still
+ * holds and no per-symbol request reaches a CDN from the user's machine. The
+ * server fetches from a closed host allowlist and caches hits and misses.
+ *
+ * The manifest now covers the top 300 by market cap, so in practice the proxy
+ * only serves the long tail below that line. Assets no upstream carries answer
+ * 204 and correctly fall through to the monogram, so an unshipped symbol
+ * degrades to a themed initial rather than a broken-image box.
+ *
+ * The numeric multiplier has to go: Bybit lists 1000PEPE-USDT, and the artwork
+ * is filed under `pepe`.
+ */
+function buildLogoCandidates(base: string): string[] {
+  const asset = artworkKey(base);
+  const local = resolveLogoSrc(asset);
+  const candidates = local ? [local] : [];
+  // The proxy stays as the LAST candidate rather than the only one. For a
+  // shipped symbol it is never requested: the browser only advances to it if
+  // the local PNG itself fails to decode, which is the dead-file safety net the
+  // index-based `attempt` state was built for. For an unshipped symbol it is
+  // the sole network path, which is the intended top-300-and-beyond split.
+  if (/^[a-z0-9-]{1,16}$/.test(asset)) candidates.push(`/api/icon/${asset}`);
+  return candidates;
 }
 
 function BtcGlyph({ color }: { color: string }) {
@@ -137,17 +165,21 @@ function EthGlyph({ color }: { color: string }) {
 
 export function CoinIcon({ symbol, size = 32, className }: CoinIconProps) {
   const base = extractBase(symbol);
-  const theme = COIN_THEMES[base] || FALLBACK_THEME;
+  const theme = COIN_THEMES[base] || derivedTheme(base);
   const label = base.slice(0, base.length > 4 ? 1 : 2);
-  const logoSrc = resolveLogoSrc(base);
+  const candidates = React.useMemo(() => buildLogoCandidates(base), [base]);
+  const candidateKey = candidates.join('|');
 
   // A failed decode must not leave a blank circle, so the themed glyph/initials
-  // path stays mounted as the last-resort fallback. Keyed by src so switching
-  // symbols in a virtualised table re-arms the attempt.
-  const [logoFailed, setLogoFailed] = React.useState(false);
-  React.useEffect(() => { setLogoFailed(false); }, [logoSrc]);
+  // path stays mounted as the last-resort fallback. An index rather than a
+  // boolean, so a 204 from the proxy or a dead local file advances to the next
+  // candidate instead of ending the chain. Keyed by the candidate list so
+  // switching symbols in a virtualised table re-arms the attempt.
+  const [attempt, setAttempt] = React.useState(0);
+  React.useEffect(() => { setAttempt(0); }, [candidateKey]);
 
-  const showLogo = Boolean(logoSrc) && !logoFailed;
+  const logoSrc = candidates[attempt] ?? null;
+  const showLogo = logoSrc != null;
 
   return (
     <span
@@ -182,7 +214,8 @@ export function CoinIcon({ symbol, size = 32, className }: CoinIconProps) {
           decoding="async"
           width={size}
           height={size}
-          onError={() => setLogoFailed(true)}
+          key={logoSrc as string}
+          onError={() => setAttempt((current) => current + 1)}
           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
         />
       ) : theme.glyph === 'letter' ? (
