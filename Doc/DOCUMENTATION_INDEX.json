@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-25T09:32:50.045Z",
+  "generatedAt": "2026-08-29T09:02:04.298Z",
   "root": "Doc",
   "count": 241,
   "categories": {
@@ -17,31 +17,49 @@
     "APEX_INCREMENTAL_UPGRADE_GAPS_FOUND_AND_FIXED.md": "3601c1f7fbae19e2f0e09bc559011b7a454b68a8676f702261e206af5f9c02e3",
     "APEX_INCREMENTAL_UPGRADE_IMPLEMENTATION_REPORT_V3.md": "c9a59a2cc8dd326cb50078c9d71efa2a77efcc759092fa2bfe374003c01206de",
     "APEX_TRADING_LOGIC_INVENTORY_V3.md": "68efbfa9174d4fbf3ed2227e1c6c63a65f5b2d9b7fdf68fb76734d4a66895bf2",
-    "architecture/agent-reference/APEX_WINDOWS_ENGINEERING_SKILL(2).md": "7bfa9b184ac792f2b14948b1b2031d1649133c59f301075450ab1ce31cd5f306",
-    "architecture/agent-reference/APEX_WINDOWS_ENGINEERING_SKILL.md": "d2c5ee3a3bcc7e0d4dac1a4c871c85f83d28d642efb70bec493f9675a01d3bf4",
+    "ARCHIVE_CHECKSUMS.json": "999070386f46eee5ecb0c6adf090469db6b84cc0302dbb40cf5f967f30ccf378",
+    "BACKTESTING_REFERENCE_1368x753_COMPLETION.md": "50d45ffdb37719c55167a78136847cd722bdca80c405e50975e9edef9d3cebf9",
+    "BACKTESTING_WORKSPACE_UPGRADE.md": "6c919102133eb2c3442f5402e767949cd7b62af19b23f0af9ee332bbac8cced8",
+    "CLAUDE_SCRIPTS_TOOLING_MEMORY.md": "2edc7de005bd894f21d28e36386242b00ee932c7621bc9eca6b8c8c3790bc298",
+    "CLAUDE_UI_HANDOFF_20260816.md": "1a13866c447111a6dd960709df7b646e5b395012fa9371f22e3d09747e6f5907",
+    "CLAUDE_agent_rules_IMPROVED.md": "78beb3fefe10b752e12a0eafa9fa4fcb6efb6107f76e31ad1a68fdad3b8f20cd",
+    "CONSOLIDATION_MANIFEST.json": "6d78308db7917e5d2ab7c79bd3064625ada87ba36903b71d043c4916facbc7da",
+    "FUNCTION_INDEX.json": "fe004cddf6bcec5c77af8e320e4942c64abc7259fe9f3ac750d72c12ed053af8",
+    "FUNCTION_INDEX.md": "b46504bd75c3afaf4e76d9dde99c7fba0b6d1c14404c71787e4bb4efe3962538",
+    "FUNCTION_INDEX_AUTOMATION.md": "661734fa2528078f1e2b02959983958bec81948d6c7fbc49ab5396a64bdc48c1",
+    "PROJECT_README.md": "90d3b780e051a18d87cf483e5989a700eb8f70f300ff48b650526b031a1d502e",
+    "README.md": "6fc3427212df252aa678e02c9b347e1b53a694ee4981b0fb302687fb537898b4",
+    "SOURCE_DELIVERY_STATUS.md": "02f47b2de5a00d5798710c6e929a4e276dcec4a4fb4c70b7d26be035bdbdcfdd",
+    "STRATEGY_STUDIO_UI_IMPLEMENTATION.md": "399518676a122583b8bc1f0cfb156f3193ddbeab45ef8167fbdf34f18ef18916",
+    "UPGRADE_COMPLETION_REPORT.md": "43fb93a84ebcd3be8ed904ab80ccafada3642b7bb8312c6905a9bbe8fdeede67",
+    "V13_INPUT_POLISH_REQUIREMENTS.md": "a2db40616e86b9b6c0e36de4d6e7ad6d2be4e119738dd4ef78ada825e2220537",
+    "WINDOWS_OFFLINE_DEPENDENCY_RESTORE.md": "4edb787a0a900a496e550c7eadc9a11ef2f5fbe2359440d4d814d1d314e98854",
     "architecture/APEX_ARCHITECTURE_COMPLETE_INTEGRATION.md": "d80be1300f5cc9b355ca0a829a37439fcec19fe10fec80cfac0d4ba5042bb20b",
     "architecture/APEX_SYSTEM_LAYERS.md": "dcc61c32781dfa163253fc41fb7d28758cb0cf443a7e4870e09b9122000c4b89",
+    "architecture/APEX_VISUAL_ARCHITECTURE_METADATA.json": "e606193f900433993519aef55bb4f46d2c8f9dd3a6ca4004ca83d7fb0f6f901e",
     "architecture/APEX_v1.0.56_ARCHITECTURE_COMPLETE_SUBMITTED.html": "b6e81e9af4370ed7924d9881b68096930f6c11ee3b1be0d284580ef1ddd34dc7",
     "architecture/APEX_v1.0.56_COMPLETE_VISUAL_INTERACTIVE_DOCUMENT.html": "90b20a68a95863f0e8f4147866b0d9e78ac26d9d3119894c75105b1287fdb095",
-    "architecture/APEX_VISUAL_ARCHITECTURE_METADATA.json": "e606193f900433993519aef55bb4f46d2c8f9dd3a6ca4004ca83d7fb0f6f901e",
     "architecture/Refrence.md": "90dc8b5f4d8bd4cdb7faed203eb6bb2174f8e5fce3df91c09b57b8f80b14adce",
     "architecture/SUPPLEMENTAL_INTELLIGENCE.md": "01d10451672bf5dac024e38664f269885d9cfabf73382b2e8430eb6e83075e21",
+    "architecture/agent-reference/APEX_WINDOWS_ENGINEERING_SKILL(2).md": "7bfa9b184ac792f2b14948b1b2031d1649133c59f301075450ab1ce31cd5f306",
+    "architecture/agent-reference/APEX_WINDOWS_ENGINEERING_SKILL.md": "d2c5ee3a3bcc7e0d4dac1a4c871c85f83d28d642efb70bec493f9675a01d3bf4",
     "archive/legacy-deliverables-2026-08-09/APEX-autopilot-newsdata-20260809/DIFF_SUMMARY.md": "6679dc05ed8562f5e2d3d1bc8b5a598cd7ab57677e7f544676c89fa0b5d2f902",
-    "ARCHIVE_CHECKSUMS.json": "999070386f46eee5ecb0c6adf090469db6b84cc0302dbb40cf5f967f30ccf378",
     "audit/comprehensive-audit-2026-08-10/baseline/FILE_INDEX_INPUT_BASELINE_2026-08-10.md": "1858e79e90fdac8e7236011fe6a0a475bb3165c4d571d0312765cccc603c43bf",
-    "automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.json": "7b47a2f3398bc1f1b9faf540703555e8c0eb7096d7dba7e54861a78d5bc7e08d",
-    "automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.md": "09360b229c64aa361a78aa2bca3e62311941c3c68de2beb3f8ef44d254650663",
     "automation/AUTONOMOUS_LEARNING_STRESS_RESULT.md": "746ee630840163a6c7e4cd53a4f96fd69c57ff5793ae0b2747a93be67279d8c3",
     "automation/AUTONOMOUS_THRESHOLD_LEARNING_ENGINE.md": "a57783804447cadba2a1c8a2a2b5f124d815532f368b6b2357215c6810f403f1",
     "automation/DECISION_MEMORY_DATA_CONTRACT.md": "9254a966f9258d5018fdea6cc71f54f52a7c0249ad06a0e841b69168152012be",
-    "automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.json": "7994501b644c39e10066f7aaf386326ffd0b9e63af984ffdcdb06699d4d38d73",
-    "automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.md": "d88b5f92d3bb65b431b747dc9fe5d93f5b0b94baeb603c280afd8d3cc5231d6d",
     "automation/DIRECTION_DIVERGENCE_POSITION_DETECTOR.md": "61d8118b6cc6e1b3906d9b702a2feb9d8ae2774e44219ab6284d2db919b0c565",
     "automation/FAST_MINUTE_SELF_ADAPTATION_ENGINE.md": "9cdd1f619309eb311a9f2ec0a9d1e465170642a308dcf6e5d1c15045600525c3",
     "automation/LOAD_20M_HARDENED_ACCEPTANCE_RESULT.md": "92d0f99b5e5a7751d530fa9a157f466bc3f9f44883dbcac80c201f3f6fa1b88f",
     "automation/LOAD_20M_HARDENED_SUMMARY.json": "b03a3168e69630e98b4379b022b6cdfb4850282161a7a57d5f6c2a55c128a38a",
     "automation/LOAD_20M_SINGLE_SEED42.json": "0db175291c461986336738a94d6b552b50a578dbad9d870572ea4e05f74b953d",
     "automation/LOAD_AND_AUTOMATION_STRESS_PLAN.md": "64946953d929217dd0f8e8fe7c9b629ef5395480c486faec5cb657a6574088d4",
+    "automation/ML_SIGNAL_MODEL_METHODOLOGY.md": "db6a601157dfcfd85105824a054fb88702304620cd720afeed905338cdcdfd23",
+    "automation/SMART_MONEY_CONTEXT_ENGINE_RESULT.md": "f378635404a7d08c9ab3b93a4d6e7acf0c083c0d2b378f130b6eca7fb7d191e7",
+    "automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.json": "7b47a2f3398bc1f1b9faf540703555e8c0eb7096d7dba7e54861a78d5bc7e08d",
+    "automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.md": "09360b229c64aa361a78aa2bca3e62311941c3c68de2beb3f8ef44d254650663",
+    "automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.json": "7994501b644c39e10066f7aaf386326ffd0b9e63af984ffdcdb06699d4d38d73",
+    "automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.md": "d88b5f92d3bb65b431b747dc9fe5d93f5b0b94baeb603c280afd8d3cc5231d6d",
     "automation/load_matrix_100/15m_100.json": "a66739fd7af982447ed379f216896f9927a562980a30298c2af89c91f02379a6",
     "automation/load_matrix_100/5m_100.json": "24469da35644497be83036a35c947dfb12f5ac45b0c988aee84743dfb29cd15b",
     "automation/load_matrix_100/5m_warmup_plus_15m_100.json": "a5bc07d84edcb679f122a7207c93d11f953765873a3969dce6a10559aa03d903",
@@ -55,13 +73,12 @@
     "automation/load_matrix_fast_1m_5m/5m_100.json": "5f15e62820e6cf776e48cfe08d5751f79e2077a13d7aa13384bcaf200f0566c2",
     "automation/load_matrix_fast_1m_5m/FAST_MINUTE_MATRIX_RESULT.md": "23b07406fbc4221ef237b710f665f4a4d8b24eb41433239dee5b749d9f591930",
     "automation/load_matrix_fast_1m_5m/FAST_MINUTE_MATRIX_SUMMARY.json": "88da779f60960eee50fa45f55371211763dcc11a9de2876dd4d95bfacd104373",
-    "automation/ml_dataset/decision_dataset_v1.json": "2671d925d07796efb18f8899d5bb4358a71a3231ed455b89f47a2332b7501ce9",
     "automation/ml_dataset/VALIDATION_REPORT_v1.md": "15bebc70eac687417b04252047774519756740afa10debfc5b51a9270f79ab1a",
+    "automation/ml_dataset/decision_dataset_v1.json": "2671d925d07796efb18f8899d5bb4358a71a3231ed455b89f47a2332b7501ce9",
     "automation/ml_shadow/SHADOW_ML_COMPARISON_REPORT_v1.json": "b0ec508b384ee219af0350e9fdb2d340407fb6b1fd1822249a1b7b6b6001df9e",
     "automation/ml_shadow/SHADOW_ML_COMPARISON_REPORT_v1.md": "24db74613037d4e8a9ddcadbf955d669d5ad3b1882ec7cdf6369335288fef24d",
     "automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.json": "3b55ad3e9fbd628fcd7501998d71fdf2d8de22fec82e5c7fa7f9fda957ae4df5",
     "automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md": "539a839428b609cb2902ec2d724a8b0d5932f81692ae7d8c312d615f0140ff6e",
-    "automation/ML_SIGNAL_MODEL_METHODOLOGY.md": "db6a601157dfcfd85105824a054fb88702304620cd720afeed905338cdcdfd23",
     "automation/operations_status/OPERATIONS_PANEL_AUDIT_v1.json": "ea1be5d28ae47de3352290e0213e2f487c71031f5f07ed609d8696d2d0176ded",
     "automation/operations_status/OPERATIONS_STATUS_SMOKE_v1.json": "2392a28483fe6a471b10c119c383e6a71bcb417d92abca3eb43611625f4eeb88",
     "automation/operations_status/OPERATIONS_STATUS_SMOKE_v1.md": "aa262035153e13614c6288f7c9bcfb88f075d927619a21fe17055e2297a14a1c",
@@ -69,19 +86,9 @@
     "automation/provider_routing/PROVIDER_ROUTING_STRESS_v1.md": "0f56e84cc628fc52442a97747f7b27369f8d87a0c42f70822aabfba6ea0d68e9",
     "automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json": "bb0405ec0f54878b7b2ab865154ff1d3c84df9e660b859891fdb40c0ef2e20f1",
     "automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md": "1897f6428b1a3d583b048eb0d1742aaa9cc40b3ebcc61506c17e4615358ae743",
-    "automation/SMART_MONEY_CONTEXT_ENGINE_RESULT.md": "f378635404a7d08c9ab3b93a4d6e7acf0c083c0d2b378f130b6eca7fb7d191e7",
     "backend/MARKET_DATA_RECOVERY_V19.md": "8acb3f10dcb3d798aae37bb7e3dbfc3368647b540563cdeb178c8a5fe28d740a",
     "backend/WORKSPACE_VIEW_MODEL_V20.md": "38f867ca9429dfbf6c3ddafb0010cefb30c922729b68d0fa13c794d46ab61440",
-    "BACKTESTING_REFERENCE_1368x753_COMPLETION.md": "50d45ffdb37719c55167a78136847cd722bdca80c405e50975e9edef9d3cebf9",
-    "BACKTESTING_WORKSPACE_UPGRADE.md": "6c919102133eb2c3442f5402e767949cd7b62af19b23f0af9ee332bbac8cced8",
-    "CLAUDE_agent_rules_IMPROVED.md": "78beb3fefe10b752e12a0eafa9fa4fcb6efb6107f76e31ad1a68fdad3b8f20cd",
-    "CLAUDE_SCRIPTS_TOOLING_MEMORY.md": "2edc7de005bd894f21d28e36386242b00ee932c7621bc9eca6b8c8c3790bc298",
-    "CLAUDE_UI_HANDOFF_20260816.md": "1a13866c447111a6dd960709df7b646e5b395012fa9371f22e3d09747e6f5907",
     "components/public/crypto-icons/README.md": "ce017ea8eae3700808287dd10014ba1ffbaa8c1dd65c3726ef7b5ec9b99278ad",
-    "CONSOLIDATION_MANIFEST.json": "6d78308db7917e5d2ab7c79bd3064625ada87ba36903b71d043c4916facbc7da",
-    "FUNCTION_INDEX.json": "ada7bc60f39011daa7bb72a5a1c54aacec84a48d3fbba77499723b9993133f99",
-    "FUNCTION_INDEX.md": "3f25e1ce6ab782f5e351376707f73b589095709077f9852ec33eac598cd9d631",
-    "FUNCTION_INDEX_AUTOMATION.md": "661734fa2528078f1e2b02959983958bec81948d6c7fbc49ab5396a64bdc48c1",
     "generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html": "90b20a68a95863f0e8f4147866b0d9e78ac26d9d3119894c75105b1287fdb095",
     "handoff/DELIVERY_INTEGRATION_MANIFEST.md": "4aa4108a6a5adc7717db065607b23fffe3811846ab66ddf7e98f8d4f4b69b54e",
     "handoff/PROJECT_HANDOFF.md": "55c96389c0ad653471f5900375b578a9331718d8ece6fa02eb94c5fd2c77c419",
@@ -95,33 +102,31 @@
     "plans/active/COMMAND_BOARD_DOCKING_REDESIGN_PLAN.md": "df04039ee195093f5f52fe3915b35f5fa88003c17f5195cfb1b8b9465568ea40",
     "plans/active/COMMAND_CENTER_REDESIGN_PLAN.md": "80445b83666f020bf7fe3b6c4b454d0e499213366815fd622e580cd5235cad21",
     "plans/active/CURSOR_SYSTEM_DEFICIENCY_REMEDIATION_PROMPT.md": "11b468775c3331c671ed9716616853879d689689d016cf15ba1c61a7a3d8e47e",
-    "plans/active/layout-contract-v3.json": "1836d58d08591b7ebf9048b7d3151d4aa14dfdd885d4fc7b3687bda97525d746",
     "plans/active/PROJECT_UPGRADE_PLAN.md": "dd90ac7283a8bf82ea5cf0ed106bbfc2f7a30899418327aeca63abeb63242606",
     "plans/active/TRADING_LOGIC_UPGRADE_PHASE1_INVENTORY.md": "b34fa8e867b58ea050c1f19ac33f04ddddcb03c60a381dbffc6990d7e90837d8",
     "plans/active/V20_VISUAL_PARITY_REMEDIATION_PLAN.md": "fbde2f4e44d48202b0e423586e5f959b55502f1610cedc16eda7bd0a837c8465",
+    "plans/active/layout-contract-v3.json": "1836d58d08591b7ebf9048b7d3151d4aa14dfdd885d4fc7b3687bda97525d746",
     "plans/archive/APEX_DEFINITIVE_DESKTOP_UX_UI_CSS_MASTER_PLAN.md": "8a2ae05febe151efec5b7fe053546161819e362fe75301b926bc46acd3a2f109",
     "plans/archive/APEX_UI_UNIFICATION_EXECUTION_PROMPT_V3.md": "58fcae9677bf74ca2fcb7c21d449b0eac37429b98e89d34f3add1e404f642612",
     "plans/archive/APEX_UNIFIED_DESKTOP_UX_UI_MASTER_PLAN.md": "7827b9666ec016b071786fad6728704087991f52e20ab61ebfc915d20f93cebd",
     "plans/archive/FRONTEND_MASTER_REDESIGN_PLAN.md": "117d111f0fb9aca92da0f3fe338ebcfe05c247914e50332a1dbe4e9cd9a43976",
-    "plans/archive/legacy-root-2026-08-09/APEX_Backtesting_Claude_Desktop_1368x753_REFACTOR.md": "6b80a14bb8a6ac0965269487decb9380e025d51e0ad11c7a4d22bccb3a5b89a4",
-    "plans/archive/legacy-root-2026-08-09/apex_dashboard_implementation_spec.md": "f09edfac73232b57e8e5a9d5662af1f8b7f0801e1639d557cdc51b085ea51595",
-    "plans/archive/legacy-root-2026-08-09/REDESIGN_NOTES.md": "b73343a7954873592693a579af5ae77d333937736ad15a0de7513dc129de7cd8",
     "plans/archive/UI_SPACING_V3.md": "cf4c0e8f51d2cbf6b57cdccaa75208c7e9f7dcde04d6ac31e2971a0da43c37a6",
     "plans/archive/UI_UNIFICATION_V6.md": "8e4516917c109c01508cbb481f45db5a16c56493969b810624e420add213c721",
     "plans/archive/UI_UPGRADE_V2.md": "b271db821305a5cee3df863e102af3f6dcf2eb34e21d3e731583ac8b892e0c48",
     "plans/archive/UPGRADE_UI.md": "c284db825388a984153ae9daf507effb5e5b224992862c571524bb099100a02b",
     "plans/archive/UX_IA_IMPROVEMENT_PLAN_v1.md": "761705790bfcac1556a6087134b87665dca051cb62c42bff700f391b9a69bf39",
-    "PROJECT_README.md": "90d3b780e051a18d87cf483e5989a700eb8f70f300ff48b650526b031a1d502e",
+    "plans/archive/legacy-root-2026-08-09/APEX_Backtesting_Claude_Desktop_1368x753_REFACTOR.md": "6b80a14bb8a6ac0965269487decb9380e025d51e0ad11c7a4d22bccb3a5b89a4",
+    "plans/archive/legacy-root-2026-08-09/REDESIGN_NOTES.md": "b73343a7954873592693a579af5ae77d333937736ad15a0de7513dc129de7cd8",
+    "plans/archive/legacy-root-2026-08-09/apex_dashboard_implementation_spec.md": "f09edfac73232b57e8e5a9d5662af1f8b7f0801e1639d557cdc51b085ea51595",
     "provider-audits/2026-08-01-hf-space4-btc/round-1-orderbook.json": "b65e122a2c6526154cd1a961b0d192400b7461cf47292ef5d592fbc4fe5e2661",
     "provider-audits/2026-08-01-hf-space4-btc/round-1-snapshot.json": "a6e74dcea93dd3dde895f7af739fc44ec24f34c0b85fc76c74ae8f6ee7a37f48",
     "provider-audits/2026-08-01-hf-space4-btc/round-2-orderbook.json": "81fb29eb07494d636af1652ce926f65089440d9b3f33728f568f7085ca7651c1",
     "provider-audits/2026-08-01-hf-space4-btc/round-2-snapshot.json": "f2bfa98a6d87996472011b8ba89d2e137f4b1152a55877304cb95520041f469f",
     "provider-audits/2026-08-01-hf-spaces-deep-audit.md": "9a275dcba6b2f6c5063ace75f54656f5fa32f25a621349c0276b16ff17b32521",
-    "qa/backtesting-reference-enhancement/IMPLEMENTATION_BRIEF.md": "49073fad98faa60d66de17ff55064cb95e661cafbdf92b0448892a27b811694d",
-    "qa/cleanup-dry-run-summary.txt": "202f9710d95c4aed7849898eb150254f76b4f2bdbe7a5c08b2d5a6769ecc8ad0",
     "qa/QA_RETENTION_POLICY.md": "a14ad59e1f81ec056b148a857a8d956aa4a8045940a13085090e16ba843f07b7",
     "qa/V20_VISUAL_ACCEPTANCE.md": "f634603f62ba39c040cb746cc36269221d36c729cc098e33762cac8048217ca2",
-    "README.md": "6fc3427212df252aa678e02c9b347e1b53a694ee4981b0fb302687fb537898b4",
+    "qa/backtesting-reference-enhancement/IMPLEMENTATION_BRIEF.md": "49073fad98faa60d66de17ff55064cb95e661cafbdf92b0448892a27b811694d",
+    "qa/cleanup-dry-run-summary.txt": "202f9710d95c4aed7849898eb150254f76b4f2bdbe7a5c08b2d5a6769ecc8ad0",
     "reference/v20/alerts-1368x753.png": "426ff7b8cc85bb9cb5729c4d6567cd033470eefaa880c2695fef9741611f19ce",
     "reference/v20/analytics-1368x753.png": "0d3e4729696fdf68a432307c6e1b2b52db96234ace03303bcc645eea8b4e21a9",
     "reference/v20/help-1368x753.png": "f4cc1e4ae25a3c456ebe41f5bc12797f4b30220422daf539f0ca7bc908021d0d",
@@ -136,8 +141,8 @@
     "references/strategy-studio-reference-implementation-spec.md": "17973b35fc07bfa60aff5cff65203573b6a8cb0dd35735360ee5589a341cdfbe",
     "release-history/v19/FILE_ORGANIZATION.md": "bab480cfa50855069334b1907502fec70413845dc39983ad405ae6cda542343d",
     "release-history/v19/MERGE_REPORT.md": "deb7395214b245c87b8bc1986beec7eebc161c0d3ffcaa04ff9af42f6210228d",
-    "release-history/v19/reference/current-overview-before-v19.png": "c152f42a3438ad6e9cb809e474747e0e46e54dfbc9336c43f144cdc2112e28e0",
     "release-history/v19/VALIDATION_RESULTS.md": "e93d806a7afa6274857bcfab87a35d550f49a0d57ab6b78f8cc5008e75e35dfa",
+    "release-history/v19/reference/current-overview-before-v19.png": "c152f42a3438ad6e9cb809e474747e0e46e54dfbc9336c43f144cdc2112e28e0",
     "release-history/v20/MERGE_REPORT.md": "5b626198ac04f8929eb7737597d1da7ae7288ed6a88fbc7bd1dfa3d776c197d6",
     "release-history/v20/VALIDATION_RESULTS.txt": "9300438e3b34de6d0dd6872e09add2464dce1b52592521a5e8f52f23ebb3e7f7",
     "reports/APEX_V31_ADAPTIVE_MARKET_DATA_GOVERNOR_1.0.33.md": "3ad06d0ea3693834d5c9c8fb96ea335ee1845e7c39445f9b61882986da35a634",
@@ -153,17 +158,15 @@
     "reports/APEX_V31_UI_BACKEND_REFINEMENT_1.0.32.md": "aec177a45ffa5e0cea35307bfaa3500e5ca78851385b05d7133fbf7c7e27d4ce",
     "reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md": "30df7e3fa880031eb125ce8b95be525e3a0719bd3a955c7c6e000fd87b5c46c3",
     "reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md": "342a4cb0297facc0b58d84fc7e70466ad6b7a5fd09c9b43baa09fb12c52c14ce",
+    "reports/CURRENT_STATUS.md": "f7bf72ba9e22f3e06889613ce4a0b2e1af98d30c5e2bc5235b4502f529e47594",
     "reports/captures/screener-after-filters.png": "19c41f7b083b1008af34fa6469d3eef2b86703ad3f646dba38c74098b3e31140",
     "reports/captures/screener-after-rail.png": "f861ec4182b526f0f22982b9d3cd2182f247e808a052348c52a46683bb145bc1",
     "reports/captures/screener-after-viewport.png": "dfea673f98eee5ce40d5079f4958ccb2b0c62a5e5aad22b7c41d4cd64f441076",
-    "reports/CURRENT_STATUS.md": "f7bf72ba9e22f3e06889613ce4a0b2e1af98d30c5e2bc5235b4502f529e47594",
     "reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md": "31c734db9926667c652c5b809d648b57fe47449cb38acfacdcac871525a64ff8",
     "reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md": "267c8793b0e9e62fdb47718b4a49a688ffb3f2fff2d171ebef620e450fed439b",
     "reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md": "4369c7ca1640562d55fab284b65c73906a14f656b2ced217ac2f102ed6842668",
     "reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md": "698dc1aabbfe0938b207535236de0975cff478e648e21c80c3ae07f27fb9545b",
     "reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md": "cb9282de356b2bb43377e438767769e3275143a51a42c0764e25f0865b4691b8",
-    "reports/final/APEX_v1.0.56_MULTI_FUTURES_CONTEXT_REPORT.md": "be9c76df3524ed7ce4d34ff615a57b123944e0aa54a5ac2cf165b25c547a9179",
-    "reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md": "c156179442c338a142c5caff6b9120a3e5f303db2f5dfc0f48a36fa09934cdc2",
     "reports/final/APEX_V1_0_57_REMEDIATION_AND_DELIVERY.md": "e4e1206c4ea2d6978983c81f345207153b25ce2cefcbf3fb72f12baa785a97ef",
     "reports/final/APEX_V1_0_58_SIMULATION_QUALIFICATION_AND_REMEDIATION.md": "426dee9fc1c146584923365d4270fdbf5419d391c14c79890891f0987adca10d",
     "reports/final/APEX_V1_0_59_MAX_POWER_SIMULATION_AND_REMEDIATION.md": "893643db43e4a4db414154ea78fd97c27e6216845235bfd66ad3a0a664e571c5",
@@ -178,6 +181,8 @@
     "reports/final/APEX_V1_0_68_CURRENT_EXECUTION_STATUS_2026-08-15.md": "1fd0846f0247dd97af052be1ca93c29e95faed3e9be5de63476f833d518b0f7d",
     "reports/final/APEX_V1_0_68_REFERENCE_UI_AND_CAPTURE_HARDENING.md": "a07b900b8b44ab43710dc16e5c458ffb1cc43e417a221c3397f738f7046fb7c6",
     "reports/final/APEX_V3_VERIFICATION_LOG.txt": "00b5739afd487c81d2430b55a5c8d0ebc87257d2ae0075a8006549980f0b5020",
+    "reports/final/APEX_v1.0.56_MULTI_FUTURES_CONTEXT_REPORT.md": "be9c76df3524ed7ce4d34ff615a57b123944e0aa54a5ac2cf165b25c547a9179",
+    "reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md": "c156179442c338a142c5caff6b9120a3e5f303db2f5dfc0f48a36fa09934cdc2",
     "reports/final/DELIVERY_NOTES.md": "e46316c8ac5437bf6de585b137928772cdee88f15b53d06f18608115428f85dd",
     "reports/final/DESKTOP_VISUAL_UNIFICATION_FINAL_REPORT.md": "d08a02fc75e9591035563a45a00e98489c72fb2fcd49724676ee7492af0b6101",
     "reports/final/GAP_CLOSURE_SESSION_2026-08-10_all_gaps_max_power.md": "6a59ccd3440bf1f358fe45b52e5ff895f60542332ccdc0e377c0f817d5b631a0",
@@ -188,13 +193,13 @@
     "reports/final/GAP_CLOSURE_SESSION_2026-08-10_batch9_upload_review.md": "f7e65415932ad5cb4ddb97a384681953f155b544eb72240b3f078dbd957ef454",
     "reports/final/GAP_CLOSURE_SESSION_2026-08-10_current_state_upload_safe_merge.md": "2607098163b92aa6e2755cf62b48ad25f11d5e3216df3267977d6e249557c91e",
     "reports/final/GAP_CLOSURE_SESSION_2026-08-10_latest_complete_upload_safe_merge.md": "04c8a80978fc512b49a476083d4c3d3580755702c514714ef23c821765044d1e",
-    "reports/final/latest-complete-safe-merge-logs/latest_vs_reconciled_diff.json": "71f5f2e5e7cdd1e7cec76b5156e0b51b6ac9c3309d2a0d30ef41217651fc5af2",
     "reports/final/MERGED_FILES_V13.txt": "6a5f8959e859f682131a9eaf1dbd35bb929370b02a53bc4fe243493a0f72df8d",
     "reports/final/MERGE_REPORT_V13.md": "a23a01881153488e4cccd0dbb6d7f7096900f57363e016249250789d72430597",
-    "reports/final/reference-normalization-report-v3.json": "3c3b02cc58d3f3d7b1ffbe3a6a1b1486d7d58fbcbb4d439d4494f14b204dfd29",
     "reports/final/RELEASE_NOTES.md": "be64022ad7b0a8618ca4e4ab84dd03cb1e07e82fe3f63c0ce32d77e352d44446",
     "reports/final/SMART_AUTOPILOT_BUILD_NOTE.md": "7b87b604893f8a678161ef8052b96ff00ba9835ff6251c8bcf1869fc093d064e",
     "reports/final/SMART_AUTOPILOT_IMPLEMENTATION_REPORT_FA.md": "1c5b920e13da48dfb4ab09e47eeee72b92225eb10360fe6e7970d13a752e2de6",
+    "reports/final/latest-complete-safe-merge-logs/latest_vs_reconciled_diff.json": "71f5f2e5e7cdd1e7cec76b5156e0b51b6ac9c3309d2a0d30ef41217651fc5af2",
+    "reports/final/reference-normalization-report-v3.json": "3c3b02cc58d3f3d7b1ffbe3a6a1b1486d7d58fbcbb4d439d4494f14b204dfd29",
     "reports/historical/legacy-root-2026-08-09/APEX_AGENT_SAFE_MERGE_REPORT_v1.0.46_FA.md": "10b098d183923f900758be19b88e8ff858119254fb7c0b3627e3417f86841aa8",
     "reports/historical/legacy-root-2026-08-09/APEX_ATTACHED_VERSION_SAFE_MERGE_REPORT_v1.0.43_FA.md": "2aaae944fb95e717bc4bfb9007e84d21ea5879feb022a07027301916d2a139f4",
     "reports/historical/legacy-root-2026-08-09/APEX_BACKTESTING_LEARNING_OPTIMIZATION_REPORT.md": "e21486e69e5972472f22ba06ccb31a7cb01677a78c370eb2ab8281cd7fe30391",
@@ -227,10 +232,6 @@
     "repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md": "1a89bd74306a12003f469e986a17e0a0e5be77eda57bc10688e40047542fce8f",
     "repository/FILE_INDEX_2026-08-10.json": "8e9789041fe1032e5af4e48fa38a97064a85ab0735746783145910bb4409416a",
     "repository/FILE_INDEX_2026-08-10.md": "046caeeb0cbdb94c752d3b738d897ba023a01739d4b57b840b64bae28f0f4c9a",
-    "repository/handoffs/APEX_SESSION_HANDOFF.md": "3d47574de15fb10d87a4c3774533b65a48fe3ed197e5b367d3da227c9b8ea1f6",
-    "repository/manifests/FULL_PROJECT_MANIFEST.json": "a90af93571dea37b93aed04483d34835bd75d719b265a383f493713caad4beb4",
-    "repository/manifests/MERGE_MANIFEST.json": "caa3a6e390ef7432b5fafb003b638005f70cdd93be585c45b895c1ee4a1444f6",
-    "repository/metadata.json": "46e9908a055c37a7c4e2c2a1694ab9aa55a9e332adc55a8865cb1bd4b845643f",
     "repository/PROJECT_STRUCTURE_2026-08-10.json": "f6a8cd32f0ce0ff30afe2ce14712fe1e57728ba56e5397b01056cbddd111b28e",
     "repository/PROJECT_STRUCTURE_2026-08-10.md": "b250f2174d223284d1c103f80257633e2ef7612c3cfd8030c257d81afd67c8b3",
     "repository/REFERENCE_SCALE_1368x753.md": "507962fe6bbe5b3e1f0c3fe6b353eac6af0e94fbe1702e84fcfd6dc288d683ff",
@@ -242,18 +243,17 @@
     "repository/ROOT_SURFACE_AFTER_2026-08-10.md": "243d5634e9c34564e5c2e14a8975fee26f259faba4695522cedae598b0ba62c9",
     "repository/UNTRACKED_FILES_AUDIT.md": "854af7e5420848b694e00853148b659f1857e8a5662a5ca1d0adf125fc41ea34",
     "repository/VIEWPORT_1368x753_CONTRACT.md": "690078bae579fe18a615a1afafb8423e234a59e56d066cd43a64830c3eb94f6e",
-    "SOURCE_DELIVERY_STATUS.md": "02f47b2de5a00d5798710c6e929a4e276dcec4a4fb4c70b7d26be035bdbdcfdd",
+    "repository/handoffs/APEX_SESSION_HANDOFF.md": "3d47574de15fb10d87a4c3774533b65a48fe3ed197e5b367d3da227c9b8ea1f6",
+    "repository/manifests/FULL_PROJECT_MANIFEST.json": "a90af93571dea37b93aed04483d34835bd75d719b265a383f493713caad4beb4",
+    "repository/manifests/MERGE_MANIFEST.json": "caa3a6e390ef7432b5fafb003b638005f70cdd93be585c45b895c1ee4a1444f6",
+    "repository/metadata.json": "46e9908a055c37a7c4e2c2a1694ab9aa55a9e332adc55a8865cb1bd4b845643f",
     "strategy-library/APEX_CORE_10_DYNAMIC_FUSION_STRATEGIES.md": "aa4d624e4f3f87e4b4e16c90fbe1f6bdbd9ca560f16c5a128b898c31335187b4",
     "strategy-library/APEX_STRATEGY_LIBRARY_EXECUTION_PLAN.md": "ba3052529a5da315aa7424bb142650826ae844f0ca0a14bfd34f3c50f8435994",
     "strategy-library/APEX_STRATEGY_STUDIO_IMPLEMENTATION_SPEC.md": "1bae3c630b8034efbc72c8668d2c801a1bcb1e39d70bdc918981f867f3b80f26",
     "strategy-library/APEX_V29_IMPLEMENTATION_REPORT.md": "82251c34bcdefef335cd03b046c8b19f776465bff67c0ec27cf34e8e3a5cab62",
-    "STRATEGY_STUDIO_UI_IMPLEMENTATION.md": "399518676a122583b8bc1f0cfb156f3193ddbeab45ef8167fbdf34f18ef18916",
-    "tools/apex-host-runner/README.md": "4c7ce70cbf756a459a145f4e84369df4d22fa0583e2a6a0cadb27e1cbd11f13e",
     "tools/APEX_PROJECT_INTELLIGENCE_HUB_WINDOWS.md": "5bb3aa986badc30a8ea61433f8e805b99d34769c81eecb57fb29e53afc77a501",
-    "tools/subfinder/README.md": "9d3cc3e4dc3b5a543b04d7aebe4ab7c3a85966c632d0bbdcaf597bf988b45fab",
-    "UPGRADE_COMPLETION_REPORT.md": "43fb93a84ebcd3be8ed904ab80ccafada3642b7bb8312c6905a9bbe8fdeede67",
-    "V13_INPUT_POLISH_REQUIREMENTS.md": "a2db40616e86b9b6c0e36de4d6e7ad6d2be4e119738dd4ef78ada825e2220537",
-    "WINDOWS_OFFLINE_DEPENDENCY_RESTORE.md": "4edb787a0a900a496e550c7eadc9a11ef2f5fbe2359440d4d814d1d314e98854"
+    "tools/apex-host-runner/README.md": "4c7ce70cbf756a459a145f4e84369df4d22fa0583e2a6a0cadb27e1cbd11f13e",
+    "tools/subfinder/README.md": "9d3cc3e4dc3b5a543b04d7aebe4ab7c3a85966c632d0bbdcaf597bf988b45fab"
   },
   "entries": [
     {
@@ -262,7 +262,7 @@
       "format": "md",
       "title": "APEX account modes",
       "bytes": 1928,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.377Z"
     },
     {
       "path": "APEX_INCREMENTAL_UPGRADE_GAPS_FOUND_AND_FIXED.md",
@@ -270,7 +270,7 @@
       "format": "md",
       "title": "APEX Incremental Trading Logic Upgrade — Gaps Found and Fixed",
       "bytes": 2983,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "APEX_INCREMENTAL_UPGRADE_IMPLEMENTATION_REPORT_V3.md",
@@ -278,7 +278,7 @@
       "format": "md",
       "title": "APEX Incremental Trading Logic Upgrade — Implementation Report V3",
       "bytes": 5338,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "APEX_TRADING_LOGIC_INVENTORY_V3.md",
@@ -286,7 +286,7 @@
       "format": "md",
       "title": "APEX Trading Logic Inventory and Integrated Flow — V3",
       "bytes": 9201,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "architecture/agent-reference/APEX_WINDOWS_ENGINEERING_SKILL.md",
@@ -294,7 +294,7 @@
       "format": "md",
       "title": "APEX Windows Engineering — Environment Contract",
       "bytes": 10464,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.398Z"
     },
     {
       "path": "architecture/agent-reference/APEX_WINDOWS_ENGINEERING_SKILL(2).md",
@@ -302,7 +302,7 @@
       "format": "md",
       "title": "APEX Windows Engineering Skill",
       "bytes": 27336,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "architecture/APEX_ARCHITECTURE_COMPLETE_INTEGRATION.md",
@@ -310,7 +310,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Complete Architecture Artifact Integration",
       "bytes": 2747,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.393Z"
     },
     {
       "path": "architecture/APEX_SYSTEM_LAYERS.md",
@@ -318,7 +318,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Visual System Layers, File Layers, and Execution Map",
       "bytes": 21522,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "architecture/APEX_v1.0.56_ARCHITECTURE_COMPLETE_SUBMITTED.html",
@@ -326,7 +326,7 @@
       "format": "html",
       "title": "APEX v1.0.56 — Complete Architecture & Layer Map",
       "bytes": 109162,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "architecture/APEX_v1.0.56_COMPLETE_VISUAL_INTERACTIVE_DOCUMENT.html",
@@ -334,7 +334,7 @@
       "format": "html",
       "title": "APEX v1.0.56 — Visual Architecture & File Layer Atlas",
       "bytes": 48135,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "architecture/APEX_VISUAL_ARCHITECTURE_METADATA.json",
@@ -342,7 +342,7 @@
       "format": "json",
       "title": "APEX VISUAL ARCHITECTURE METADATA",
       "bytes": 1091,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "architecture/Refrence.md",
@@ -350,7 +350,7 @@
       "format": "md",
       "title": "Refrence.md — APEX Trading Engine Agent Navigation Reference",
       "bytes": 72463,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "architecture/SUPPLEMENTAL_INTELLIGENCE.md",
@@ -358,7 +358,7 @@
       "format": "md",
       "title": "APEX Supplemental Intelligence System",
       "bytes": 10922,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.395Z"
     },
     {
       "path": "ARCHIVE_CHECKSUMS.json",
@@ -366,7 +366,7 @@
       "format": "json",
       "title": "ARCHIVE CHECKSUMS",
       "bytes": 3832,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "backend/MARKET_DATA_RECOVERY_V19.md",
@@ -374,7 +374,7 @@
       "format": "md",
       "title": "Market Data Recovery — V19",
       "bytes": 2181,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "backend/WORKSPACE_VIEW_MODEL_V20.md",
@@ -382,7 +382,7 @@
       "format": "md",
       "title": "Backend Workspace View Model — V20",
       "bytes": 2064,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "BACKTESTING_REFERENCE_1368x753_COMPLETION.md",
@@ -390,7 +390,7 @@
       "format": "md",
       "title": "APEX Backtesting Lab — 1368×753 Completion Report",
       "bytes": 2946,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "BACKTESTING_WORKSPACE_UPGRADE.md",
@@ -398,7 +398,7 @@
       "format": "md",
       "title": "APEX Backtesting Workspace Upgrade",
       "bytes": 2396,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "CLAUDE_agent_rules_IMPROVED.md",
@@ -406,7 +406,7 @@
       "format": "md",
       "title": "Agent Operating Rules — v2 (proposed revision, 2026-08-23)",
       "bytes": 12848,
-      "updatedAt": "2026-08-23T23:40:35.326Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "CLAUDE_SCRIPTS_TOOLING_MEMORY.md",
@@ -414,7 +414,7 @@
       "format": "md",
       "title": "APEX Scripts Tooling Memory",
       "bytes": 45769,
-      "updatedAt": "2026-08-23T10:02:32.431Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "CLAUDE_UI_HANDOFF_20260816.md",
@@ -422,7 +422,7 @@
       "format": "md",
       "title": "APEX UI Handoff — 2026-08-16",
       "bytes": 11256,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "components/public/crypto-icons/README.md",
@@ -430,7 +430,7 @@
       "format": "md",
       "title": "Local cryptocurrency icons",
       "bytes": 538,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "CONSOLIDATION_MANIFEST.json",
@@ -438,7 +438,7 @@
       "format": "json",
       "title": "CONSOLIDATION MANIFEST",
       "bytes": 2197,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.378Z"
     },
     {
       "path": "FUNCTION_INDEX_AUTOMATION.md",
@@ -446,7 +446,7 @@
       "format": "md",
       "title": "Function Index Automation",
       "bytes": 1929,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.389Z"
     },
     {
       "path": "liquidity-hunter/FOUNDATION_IMPLEMENTATION.md",
@@ -454,7 +454,7 @@
       "format": "md",
       "title": "Liquidity Hunter Foundation Implementation",
       "bytes": 2482,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "liquidity-hunter/IMPLEMENTATION_STATUS.md",
@@ -462,7 +462,7 @@
       "format": "md",
       "title": "Liquidity Hunter Implementation Status",
       "bytes": 1459,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "liquidity-hunter/ROLLBACK.md",
@@ -470,7 +470,7 @@
       "format": "md",
       "title": "Liquidity Hunter Foundation Rollback",
       "bytes": 986,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/ANALYST_BOARD_UI_SYNC_PLAN.md",
@@ -478,7 +478,7 @@
       "format": "md",
       "title": "APEX Analyst Board — UI, Docking & Synchronization Plan",
       "bytes": 18923,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/APEX_NEXT_BUILD_SPEC.md",
@@ -486,7 +486,7 @@
       "format": "md",
       "title": "APEX-NEXT — Full Build Specification for Google AI Studio",
       "bytes": 25386,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/APEX_UI_REDESIGN_IMPLEMENTATION_PLAN_V3.md",
@@ -494,7 +494,7 @@
       "format": "md",
       "title": "APEX UI Redesign and Backend Integration Plan — V3",
       "bytes": 30709,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/APEX_V31_AGENT_IMPLEMENTATION_PLAN_EN.md",
@@ -502,7 +502,7 @@
       "format": "md",
       "title": "APEX V31 Consolidation and Feature-Recovery Implementation Plan",
       "bytes": 32525,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/COMMAND_BOARD_DOCKING_REDESIGN_PLAN.md",
@@ -510,7 +510,7 @@
       "format": "md",
       "title": "APEX Command Board — Docking System & Unified UI Redesign Plan",
       "bytes": 18105,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/COMMAND_CENTER_REDESIGN_PLAN.md",
@@ -518,7 +518,7 @@
       "format": "md",
       "title": "Command Center Redesign — Information Architecture, Wiring & Visual System",
       "bytes": 15735,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/CURSOR_SYSTEM_DEFICIENCY_REMEDIATION_PROMPT.md",
@@ -526,7 +526,7 @@
       "format": "md",
       "title": "Cursor Prompt — APEX System Deficiency Remediation",
       "bytes": 9567,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/layout-contract-v3.json",
@@ -534,7 +534,7 @@
       "format": "json",
       "title": "layout contract v3",
       "bytes": 3082,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/PROJECT_UPGRADE_PLAN.md",
@@ -542,7 +542,7 @@
       "format": "md",
       "title": "APEX Central Project Plan",
       "bytes": 29685,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/TRADING_LOGIC_UPGRADE_PHASE1_INVENTORY.md",
@@ -550,7 +550,7 @@
       "format": "md",
       "title": "APEX Trading Logic Upgrade — Phase 1 Inventory",
       "bytes": 25753,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "plans/active/V20_VISUAL_PARITY_REMEDIATION_PLAN.md",
@@ -558,7 +558,7 @@
       "format": "md",
       "title": "APEX V20 — Visual Parity Remediation Plan",
       "bytes": 15641,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.428Z"
     },
     {
       "path": "PROJECT_README.md",
@@ -566,7 +566,7 @@
       "format": "md",
       "title": "APEX Unified Terminal",
       "bytes": 21633,
-      "updatedAt": "2026-08-18T07:49:54.000Z"
+      "updatedAt": "2026-08-29T08:39:40.389Z"
     },
     {
       "path": "provider-audits/2026-08-01-hf-space4-btc/round-1-orderbook.json",
@@ -574,7 +574,7 @@
       "format": "json",
       "title": "round 1 orderbook",
       "bytes": 1617,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "provider-audits/2026-08-01-hf-space4-btc/round-1-snapshot.json",
@@ -582,7 +582,7 @@
       "format": "json",
       "title": "round 1 snapshot",
       "bytes": 54401,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "provider-audits/2026-08-01-hf-space4-btc/round-2-orderbook.json",
@@ -590,7 +590,7 @@
       "format": "json",
       "title": "round 2 orderbook",
       "bytes": 1621,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "provider-audits/2026-08-01-hf-space4-btc/round-2-snapshot.json",
@@ -598,7 +598,7 @@
       "format": "json",
       "title": "round 2 snapshot",
       "bytes": 54387,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "provider-audits/2026-08-01-hf-spaces-deep-audit.md",
@@ -606,7 +606,7 @@
       "format": "md",
       "title": "Hugging Face Spaces deep provider audit — 2026-08-01",
       "bytes": 10201,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "qa/backtesting-reference-enhancement/IMPLEMENTATION_BRIEF.md",
@@ -614,7 +614,7 @@
       "format": "md",
       "title": "APEX Backtesting Lab — Claude Desktop Production Implementation Brief",
       "bytes": 21908,
-      "updatedAt": "2026-08-14T05:25:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.434Z"
     },
     {
       "path": "qa/cleanup-dry-run-summary.txt",
@@ -622,7 +622,7 @@
       "format": "txt",
       "title": "cleanup dry run summary",
       "bytes": 2609,
-      "updatedAt": "2026-08-14T05:25:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.434Z"
     },
     {
       "path": "qa/QA_RETENTION_POLICY.md",
@@ -630,7 +630,7 @@
       "format": "md",
       "title": "QA Evidence Retention Policy",
       "bytes": 3455,
-      "updatedAt": "2026-08-14T05:25:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "qa/V20_VISUAL_ACCEPTANCE.md",
@@ -638,7 +638,7 @@
       "format": "md",
       "title": "V20 Visual Acceptance Contract",
       "bytes": 4002,
-      "updatedAt": "2026-08-14T05:25:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.434Z"
     },
     {
       "path": "README.md",
@@ -646,7 +646,7 @@
       "format": "md",
       "title": "APEX Current Documentation",
       "bytes": 4015,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.389Z"
     },
     {
       "path": "reports/APEX_V31_ADAPTIVE_MARKET_DATA_GOVERNOR_1.0.33.md",
@@ -654,7 +654,7 @@
       "format": "md",
       "title": "APEX V31 — Adaptive Market-Data Governor 1.0.33",
       "bytes": 3814,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.488Z"
     },
     {
       "path": "reports/APEX_V31_IMPLEMENTATION_REPORT_1.0.23.md",
@@ -662,7 +662,7 @@
       "format": "md",
       "title": "APEX V31 Consolidation Implementation Report — 1.0.23",
       "bytes": 7047,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_LIGHTWEIGHT_CLEANUP_1.0.25.json",
@@ -670,7 +670,7 @@
       "format": "json",
       "title": "APEX V31 LIGHTWEIGHT CLEANUP 1.0.25",
       "bytes": 21100,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_LIGHTWEIGHT_CLEANUP_1.0.25.md",
@@ -678,7 +678,7 @@
       "format": "md",
       "title": "APEX V31 Lightweight Cleanup Report — 1.0.25",
       "bytes": 2987,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_MERGED_FULLSTACK_UI_1.0.34.md",
@@ -686,7 +686,7 @@
       "format": "md",
       "title": "APEX V31 1.0.34 — Merged Full-Stack UI Implementation Report",
       "bytes": 5308,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_PAGE_UI_UPGRADE_1.0.27.md",
@@ -694,7 +694,7 @@
       "format": "md",
       "title": "APEX V31 Page UI Upgrade — 1.0.27",
       "bytes": 3434,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_REFERENCE_UI_REPORT_1.0.24.md",
@@ -702,7 +702,7 @@
       "format": "md",
       "title": "APEX V31 Reference UI Implementation Report — 1.0.24",
       "bytes": 3670,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_SECONDARY_PAGE_VISUAL_UPGRADE_1.0.31.md",
@@ -710,7 +710,7 @@
       "format": "md",
       "title": "APEX V31 — Secondary Page Visual Upgrade 1.0.31",
       "bytes": 2416,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_SYSTEM_INTEGRATION_UPGRADE_1.0.30.md",
@@ -718,7 +718,7 @@
       "format": "md",
       "title": "APEX V31 System Integration Upgrade — 1.0.30",
       "bytes": 6239,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_TRADING_STRUCTURE_RESEARCH_UPGRADE_1.0.29.md",
@@ -726,7 +726,7 @@
       "format": "md",
       "title": "APEX V31 Trading Structure Research Upgrade — 1.0.29",
       "bytes": 2917,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_UI_BACKEND_REFINEMENT_1.0.32.md",
@@ -734,7 +734,7 @@
       "format": "md",
       "title": "APEX V31 UI + Governor Refinement 1.0.32",
       "bytes": 1442,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_UI_DATA_RECOVERY_1.0.26.md",
@@ -742,7 +742,7 @@
       "format": "md",
       "title": "APEX V31 UI and Market-Data Recovery Report — 1.0.26",
       "bytes": 3758,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/APEX_V31_VERIFIED_UI_BACKTEST_1.0.28.md",
@@ -750,7 +750,7 @@
       "format": "md",
       "title": "APEX V31 Verified UI and Backtesting Recovery — 1.0.28",
       "bytes": 3101,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/captures/screener-after-filters.png",
@@ -758,7 +758,7 @@
       "format": "png",
       "title": "screener after filters",
       "bytes": 345948,
-      "updatedAt": "2026-08-24T13:18:19.081Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/captures/screener-after-rail.png",
@@ -766,7 +766,7 @@
       "format": "png",
       "title": "screener after rail",
       "bytes": 346273,
-      "updatedAt": "2026-08-24T13:18:20.492Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/captures/screener-after-viewport.png",
@@ -774,7 +774,7 @@
       "format": "png",
       "title": "screener after viewport",
       "bytes": 345804,
-      "updatedAt": "2026-08-24T13:18:17.932Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "reports/CURRENT_STATUS.md",
@@ -782,7 +782,7 @@
       "format": "md",
       "title": "APEX Unified Terminal — Current Status",
       "bytes": 5384,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.489Z"
     },
     {
       "path": "repository/API_ROUTE_INDEX_2026-08-10.json",
@@ -790,7 +790,7 @@
       "format": "json",
       "title": "API ROUTE INDEX 2026 08 10",
       "bytes": 22104,
-      "updatedAt": "2026-08-24T22:55:47.507Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "repository/API_ROUTE_INDEX_2026-08-10.md",
@@ -798,7 +798,7 @@
       "format": "md",
       "title": "APEX API Route Index — 2026-08-10",
       "bytes": 11372,
-      "updatedAt": "2026-08-24T22:55:47.507Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/DOCUMENT_RELOCATION_MANIFEST_2026-08-10.md",
@@ -806,7 +806,7 @@
       "format": "md",
       "title": "Documentation Relocation Manifest — 2026-08-10",
       "bytes": 1080,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/FILE_INDEX_2026-08-10.json",
@@ -814,7 +814,7 @@
       "format": "json",
       "title": "FILE INDEX 2026 08 10",
       "bytes": 316273,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/FILE_INDEX_2026-08-10.md",
@@ -822,7 +822,7 @@
       "format": "md",
       "title": "APEX Canonical File Index — 2026-08-10",
       "bytes": 129864,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/handoffs/APEX_SESSION_HANDOFF.md",
@@ -830,7 +830,7 @@
       "format": "md",
       "title": "APEX Session Handoff",
       "bytes": 17660,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.505Z"
     },
     {
       "path": "repository/manifests/FULL_PROJECT_MANIFEST.json",
@@ -838,7 +838,7 @@
       "format": "json",
       "title": "FULL PROJECT MANIFEST",
       "bytes": 593,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.505Z"
     },
     {
       "path": "repository/manifests/MERGE_MANIFEST.json",
@@ -846,7 +846,7 @@
       "format": "json",
       "title": "MERGE MANIFEST",
       "bytes": 7452,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "repository/metadata.json",
@@ -854,7 +854,7 @@
       "format": "json",
       "title": "metadata",
       "bytes": 252,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "repository/PROJECT_STRUCTURE_2026-08-10.json",
@@ -862,7 +862,7 @@
       "format": "json",
       "title": "PROJECT STRUCTURE 2026 08 10",
       "bytes": 7655,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/PROJECT_STRUCTURE_2026-08-10.md",
@@ -870,7 +870,7 @@
       "format": "md",
       "title": "APEX Project Structure — 2026-08-10",
       "bytes": 9868,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/REFERENCE_SCALE_1368x753.md",
@@ -878,7 +878,7 @@
       "format": "md",
       "title": "APEX V20 Reference Scale Contract — 1368 × 753",
       "bytes": 3019,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/REPOSITORY_STATE_AFTER_RELEASE_FREEZE.md",
@@ -886,7 +886,7 @@
       "format": "md",
       "title": "Repository State After Release Freeze",
       "bytes": 5431,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/ROOT_CLEANUP_2026-08-10.json",
@@ -894,7 +894,7 @@
       "format": "json",
       "title": "ROOT CLEANUP 2026 08 10",
       "bytes": 22284,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/ROOT_CLEANUP_2026-08-10.md",
@@ -902,7 +902,7 @@
       "format": "md",
       "title": "Root Cleanup — 2026-08-10",
       "bytes": 1885,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/ROOT_CLEANUP_REPORT.md",
@@ -910,7 +910,7 @@
       "format": "md",
       "title": "Root Cleanup Report",
       "bytes": 5707,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/ROOT_CONTRACT.md",
@@ -918,7 +918,7 @@
       "format": "md",
       "title": "Root Contract",
       "bytes": 6208,
-      "updatedAt": "2026-08-23T08:17:18.794Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/ROOT_SURFACE_AFTER_2026-08-10.md",
@@ -926,7 +926,7 @@
       "format": "md",
       "title": "Root surface after cleanup — 2026-08-10",
       "bytes": 491,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/UNTRACKED_FILES_AUDIT.md",
@@ -934,7 +934,7 @@
       "format": "md",
       "title": "Untracked Files Audit",
       "bytes": 66630,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "repository/VIEWPORT_1368x753_CONTRACT.md",
@@ -942,7 +942,7 @@
       "format": "md",
       "title": "APEX 1368×753 Desktop Viewport Contract",
       "bytes": 2318,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.501Z"
     },
     {
       "path": "SOURCE_DELIVERY_STATUS.md",
@@ -950,7 +950,7 @@
       "format": "md",
       "title": "APEX 1.0.21 Source Delivery Status",
       "bytes": 1485,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.389Z"
     },
     {
       "path": "STRATEGY_STUDIO_UI_IMPLEMENTATION.md",
@@ -958,7 +958,7 @@
       "format": "md",
       "title": "Strategy Studio UI Implementation",
       "bytes": 1229,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.389Z"
     },
     {
       "path": "strategy-library/APEX_CORE_10_DYNAMIC_FUSION_STRATEGIES.md",
@@ -966,7 +966,7 @@
       "format": "md",
       "title": "APEX Core 10 Dynamic-Fusion Strategy Portfolio",
       "bytes": 6533,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "strategy-library/APEX_STRATEGY_LIBRARY_EXECUTION_PLAN.md",
@@ -974,7 +974,7 @@
       "format": "md",
       "title": "APEX Composite Strategy Library — Executable Implementation Plan (v1)",
       "bytes": 39191,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "strategy-library/APEX_STRATEGY_STUDIO_IMPLEMENTATION_SPEC.md",
@@ -982,7 +982,7 @@
       "format": "md",
       "title": "APEX Strategy Studio — Pixel-Level Implementation Specification",
       "bytes": 33542,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "strategy-library/APEX_V29_IMPLEMENTATION_REPORT.md",
@@ -990,7 +990,7 @@
       "format": "md",
       "title": "APEX V29 — Strategy Library and 1368×753 UI Implementation Report",
       "bytes": 2849,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "tools/APEX_PROJECT_INTELLIGENCE_HUB_WINDOWS.md",
@@ -998,7 +998,7 @@
       "format": "md",
       "title": "APEX Project Intelligence Hub — Windows x64",
       "bytes": 2477,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.507Z"
     },
     {
       "path": "tools/apex-host-runner/README.md",
@@ -1006,7 +1006,7 @@
       "format": "md",
       "title": "apex-host-runner — MCP server for running the real APEX toolchain",
       "bytes": 5451,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.508Z"
     },
     {
       "path": "tools/subfinder/README.md",
@@ -1014,7 +1014,7 @@
       "format": "md",
       "title": "Function Index (subfinder) — automatic atlas",
       "bytes": 1846,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.508Z"
     },
     {
       "path": "UPGRADE_COMPLETION_REPORT.md",
@@ -1022,7 +1022,7 @@
       "format": "md",
       "title": "APEX V20 Integrated Upgrade Completion Report",
       "bytes": 9634,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.393Z"
     },
     {
       "path": "V13_INPUT_POLISH_REQUIREMENTS.md",
@@ -1030,7 +1030,7 @@
       "format": "md",
       "title": "V13 INPUT POLISH REQUIREMENTS",
       "bytes": 11335,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.393Z"
     },
     {
       "path": "WINDOWS_OFFLINE_DEPENDENCY_RESTORE.md",
@@ -1038,7 +1038,7 @@
       "format": "md",
       "title": "Windows offline dependency restore",
       "bytes": 1270,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.393Z"
     },
     {
       "path": "audit/comprehensive-audit-2026-08-10/baseline/FILE_INDEX_INPUT_BASELINE_2026-08-10.md",
@@ -1046,7 +1046,7 @@
       "format": "md",
       "title": "APEX Canonical File Index — 2026-08-10",
       "bytes": 128792,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.399Z"
     },
     {
       "path": "automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.json",
@@ -1054,7 +1054,7 @@
       "format": "json",
       "title": "ADAPTIVE LEARNING STRESS v1",
       "bytes": 3205,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/adaptive_learning/ADAPTIVE_LEARNING_STRESS_v1.md",
@@ -1062,7 +1062,7 @@
       "format": "md",
       "title": "Adaptive Learning Stress Report v1",
       "bytes": 1640,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.402Z"
     },
     {
       "path": "automation/AUTONOMOUS_LEARNING_STRESS_RESULT.md",
@@ -1070,7 +1070,7 @@
       "format": "md",
       "title": "Autonomous Learning Stress Result",
       "bytes": 1477,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.399Z"
     },
     {
       "path": "automation/AUTONOMOUS_THRESHOLD_LEARNING_ENGINE.md",
@@ -1078,7 +1078,7 @@
       "format": "md",
       "title": "APEX Autonomous Threshold Learning Engine",
       "bytes": 4286,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/DECISION_MEMORY_DATA_CONTRACT.md",
@@ -1086,7 +1086,7 @@
       "format": "md",
       "title": "Decision Memory Data Contract",
       "bytes": 4841,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/DIRECTION_DIVERGENCE_POSITION_DETECTOR.md",
@@ -1094,7 +1094,7 @@
       "format": "md",
       "title": "APEX Direction-Divergence Position Detector",
       "bytes": 4024,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.json",
@@ -1102,7 +1102,7 @@
       "format": "json",
       "title": "DIRECTION DIVERGENCE ANALYSIS v1",
       "bytes": 2998,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.402Z"
     },
     {
       "path": "automation/direction_divergence/DIRECTION_DIVERGENCE_ANALYSIS_v1.md",
@@ -1110,7 +1110,7 @@
       "format": "md",
       "title": "APEX Direction-Divergence Outcome Analysis v1",
       "bytes": 3368,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.402Z"
     },
     {
       "path": "automation/FAST_MINUTE_SELF_ADAPTATION_ENGINE.md",
@@ -1118,7 +1118,7 @@
       "format": "md",
       "title": "Fast Minute Self-Adaptation Engine",
       "bytes": 1616,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/LOAD_20M_HARDENED_ACCEPTANCE_RESULT.md",
@@ -1126,7 +1126,7 @@
       "format": "md",
       "title": "20-Minute Synthetic Load Test + Hardening Result",
       "bytes": 4381,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/LOAD_20M_HARDENED_SUMMARY.json",
@@ -1134,7 +1134,7 @@
       "format": "json",
       "title": "LOAD 20M HARDENED SUMMARY",
       "bytes": 2260,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/LOAD_20M_SINGLE_SEED42.json",
@@ -1142,7 +1142,7 @@
       "format": "json",
       "title": "LOAD 20M SINGLE SEED42",
       "bytes": 36667,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/LOAD_AND_AUTOMATION_STRESS_PLAN.md",
@@ -1150,7 +1150,7 @@
       "format": "md",
       "title": "Load and Automation Stress Plan",
       "bytes": 2655,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/ML_SIGNAL_MODEL_METHODOLOGY.md",
@@ -1158,7 +1158,7 @@
       "format": "md",
       "title": "APEX ML Signal Model - Phase 0 Methodology",
       "bytes": 3951,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/operations_status/OPERATIONS_PANEL_AUDIT_v1.json",
@@ -1166,7 +1166,7 @@
       "format": "json",
       "title": "OPERATIONS PANEL AUDIT v1",
       "bytes": 615,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.426Z"
     },
     {
       "path": "automation/operations_status/OPERATIONS_STATUS_SMOKE_v1.json",
@@ -1174,7 +1174,7 @@
       "format": "json",
       "title": "OPERATIONS STATUS SMOKE v1",
       "bytes": 591,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "automation/operations_status/OPERATIONS_STATUS_SMOKE_v1.md",
@@ -1182,7 +1182,7 @@
       "format": "md",
       "title": "Operations Status Smoke Report v1",
       "bytes": 595,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "automation/provider_routing/PROVIDER_ROUTING_STRESS_v1.json",
@@ -1190,7 +1190,7 @@
       "format": "json",
       "title": "PROVIDER ROUTING STRESS v1",
       "bytes": 7398,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "automation/provider_routing/PROVIDER_ROUTING_STRESS_v1.md",
@@ -1198,7 +1198,7 @@
       "format": "md",
       "title": "Provider Routing Stress Report v1",
       "bytes": 3442,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "automation/SMART_MONEY_CONTEXT_ENGINE_RESULT.md",
@@ -1206,7 +1206,7 @@
       "format": "md",
       "title": "APEX Smart Money Context Engine Upgrade",
       "bytes": 4555,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.400Z"
     },
     {
       "path": "automation/load_matrix_100/15m_100.json",
@@ -1214,7 +1214,7 @@
       "format": "json",
       "title": "15m 100",
       "bytes": 186918,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.402Z"
     },
     {
       "path": "automation/load_matrix_100/5m_100.json",
@@ -1222,7 +1222,7 @@
       "format": "json",
       "title": "5m 100",
       "bytes": 179716,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.404Z"
     },
     {
       "path": "automation/load_matrix_100/5m_warmup_plus_15m_100.json",
@@ -1230,7 +1230,7 @@
       "format": "json",
       "title": "5m warmup plus 15m 100",
       "bytes": 186868,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.404Z"
     },
     {
       "path": "automation/load_matrix_100/LOAD_MATRIX_100_RESULT.md",
@@ -1238,7 +1238,7 @@
       "format": "md",
       "title": "100-Run Load Matrix Result",
       "bytes": 2477,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.404Z"
     },
     {
       "path": "automation/load_matrix_100/LOAD_MATRIX_100_SUMMARY.json",
@@ -1246,7 +1246,7 @@
       "format": "json",
       "title": "LOAD MATRIX 100 SUMMARY",
       "bytes": 627513,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.409Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/1m_100.json",
@@ -1254,7 +1254,7 @@
       "format": "json",
       "title": "1m 100",
       "bytes": 183635,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.409Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/1m_warmup_plus_5m_100.json",
@@ -1262,7 +1262,7 @@
       "format": "json",
       "title": "1m warmup plus 5m 100",
       "bytes": 199305,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.414Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/2m_100.json",
@@ -1270,7 +1270,7 @@
       "format": "json",
       "title": "2m 100",
       "bytes": 187769,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.414Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/3m_100.json",
@@ -1278,7 +1278,7 @@
       "format": "json",
       "title": "3m 100",
       "bytes": 188696,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.414Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/4m_100.json",
@@ -1286,7 +1286,7 @@
       "format": "json",
       "title": "4m 100",
       "bytes": 190733,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.414Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/5m_100.json",
@@ -1294,7 +1294,7 @@
       "format": "json",
       "title": "5m 100",
       "bytes": 193539,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.417Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/FAST_MINUTE_MATRIX_RESULT.md",
@@ -1302,7 +1302,7 @@
       "format": "md",
       "title": "100-Run Fast 1–5 Minute Adaptive Matrix Result",
       "bytes": 4029,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.417Z"
     },
     {
       "path": "automation/load_matrix_fast_1m_5m/FAST_MINUTE_MATRIX_SUMMARY.json",
@@ -1310,7 +1310,7 @@
       "format": "json",
       "title": "FAST MINUTE MATRIX SUMMARY",
       "bytes": 1297231,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.421Z"
     },
     {
       "path": "automation/ml_dataset/decision_dataset_v1.json",
@@ -1318,7 +1318,7 @@
       "format": "json",
       "title": "decision dataset v1",
       "bytes": 4256,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.426Z"
     },
     {
       "path": "automation/ml_dataset/VALIDATION_REPORT_v1.md",
@@ -1326,7 +1326,7 @@
       "format": "md",
       "title": "APEX ML Signal Model - Phase 0 Validation Report v1",
       "bytes": 8988,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.421Z"
     },
     {
       "path": "automation/ml_shadow/SHADOW_ML_COMPARISON_REPORT_v1.json",
@@ -1334,7 +1334,7 @@
       "format": "json",
       "title": "SHADOW ML COMPARISON REPORT v1",
       "bytes": 978,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.426Z"
     },
     {
       "path": "automation/ml_shadow/SHADOW_ML_COMPARISON_REPORT_v1.md",
@@ -1342,7 +1342,7 @@
       "format": "md",
       "title": "APEX Shadow ML Comparison Report v1",
       "bytes": 1319,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.426Z"
     },
     {
       "path": "automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.json",
@@ -1350,7 +1350,7 @@
       "format": "json",
       "title": "SHADOW ML TRAINING REPORT v1",
       "bytes": 1153,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.426Z"
     },
     {
       "path": "automation/ml_shadow/SHADOW_ML_TRAINING_REPORT_v1.md",
@@ -1358,7 +1358,7 @@
       "format": "md",
       "title": "APEX Shadow ML Training Report v1",
       "bytes": 1533,
-      "updatedAt": "2026-08-17T04:04:58.000Z"
+      "updatedAt": "2026-08-29T08:39:40.426Z"
     },
     {
       "path": "automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.json",
@@ -1366,7 +1366,7 @@
       "format": "json",
       "title": "REJECTED REPLAY REPORT v1",
       "bytes": 465,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "automation/rejected_replay/REJECTED_REPLAY_REPORT_v1.md",
@@ -1374,23 +1374,23 @@
       "format": "md",
       "title": "APEX Rejected Candidate Replay Report v1",
       "bytes": 1254,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "FUNCTION_INDEX.json",
       "category": "generated-output",
       "format": "json",
       "title": "FUNCTION INDEX",
-      "bytes": 2083759,
-      "updatedAt": "2026-08-25T09:32:48.789Z"
+      "bytes": 2096685,
+      "updatedAt": "2026-08-29T08:56:04.241Z"
     },
     {
       "path": "FUNCTION_INDEX.md",
       "category": "generated-output",
       "format": "md",
       "title": "APEX Function Atlas",
-      "bytes": 331735,
-      "updatedAt": "2026-08-25T09:32:48.789Z"
+      "bytes": 336156,
+      "updatedAt": "2026-08-29T08:56:04.253Z"
     },
     {
       "path": "generated/APEX_COMPLETE_VISUAL_PROJECT_DOCUMENTATION.html",
@@ -1398,7 +1398,7 @@
       "format": "html",
       "title": "APEX v1.0.56 — Visual Architecture & File Layer Atlas",
       "bytes": 48135,
-      "updatedAt": "2026-08-25T01:33:34.948Z"
+      "updatedAt": "2026-08-29T08:41:40.899Z"
     },
     {
       "path": "archive/legacy-deliverables-2026-08-09/APEX-autopilot-newsdata-20260809/DIFF_SUMMARY.md",
@@ -1406,7 +1406,7 @@
       "format": "md",
       "title": "APEX Autopilot + Newsdata.io Patch Summary",
       "bytes": 7548,
-      "updatedAt": "2026-08-17T04:04:57.000Z"
+      "updatedAt": "2026-08-29T08:39:40.398Z"
     },
     {
       "path": "plans/archive/APEX_DEFINITIVE_DESKTOP_UX_UI_CSS_MASTER_PLAN.md",
@@ -1414,7 +1414,7 @@
       "format": "md",
       "title": "APEX Portal — Definitive Desktop UX/UI, CSS Architecture, and Full Grok Implementation Contract",
       "bytes": 57378,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/APEX_UI_UNIFICATION_EXECUTION_PROMPT_V3.md",
@@ -1422,7 +1422,7 @@
       "format": "md",
       "title": "APEX Portal — Complete Desktop UI Unification Execution Prompt",
       "bytes": 35128,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/APEX_UNIFIED_DESKTOP_UX_UI_MASTER_PLAN.md",
@@ -1430,7 +1430,7 @@
       "format": "md",
       "title": "APEX Portal — Unified Desktop UX/UI Master Plan",
       "bytes": 26791,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/FRONTEND_MASTER_REDESIGN_PLAN.md",
@@ -1438,7 +1438,7 @@
       "format": "md",
       "title": "APEX Frontend — Master Desktop Redesign Plan",
       "bytes": 13676,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/legacy-root-2026-08-09/APEX_Backtesting_Claude_Desktop_1368x753_REFACTOR.md",
@@ -1446,7 +1446,7 @@
       "format": "md",
       "title": "APEX Backtesting Lab — Claude Desktop UI Refactor Brief",
       "bytes": 11263,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/legacy-root-2026-08-09/apex_dashboard_implementation_spec.md",
@@ -1454,7 +1454,7 @@
       "format": "md",
       "title": "APEX Dashboard — 1368 × 753 Implementation Specification",
       "bytes": 2610,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "plans/archive/legacy-root-2026-08-09/REDESIGN_NOTES.md",
@@ -1462,7 +1462,7 @@
       "format": "md",
       "title": "APEX V22.2 Backtesting Lab Redesign",
       "bytes": 1879,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.433Z"
     },
     {
       "path": "plans/archive/UI_SPACING_V3.md",
@@ -1470,7 +1470,7 @@
       "format": "md",
       "title": "APEX UI spacing correction — v3",
       "bytes": 697,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/UI_UNIFICATION_V6.md",
@@ -1478,7 +1478,7 @@
       "format": "md",
       "title": "APEX UI Unification V6",
       "bytes": 1041,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/UI_UPGRADE_V2.md",
@@ -1486,7 +1486,7 @@
       "format": "md",
       "title": "APEX UI – Soft Green Upgrade V2",
       "bytes": 2571,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/UPGRADE_UI.md",
@@ -1494,7 +1494,7 @@
       "format": "md",
       "title": "APEX Overview UI — Soft Green Reference Pass and Visual QA",
       "bytes": 7884,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "plans/archive/UX_IA_IMPROVEMENT_PLAN_v1.md",
@@ -1502,7 +1502,7 @@
       "format": "md",
       "title": "APEX Portal — Professional UX / Information Architecture Improvement Plan",
       "bytes": 16583,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.429Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_AGENT_SAFE_MERGE_REPORT_v1.0.46_FA.md",
@@ -1510,7 +1510,7 @@
       "format": "md",
       "title": "گزارش ممیزی و ادغام امن پروژه ایجنت — APEX v1.0.46",
       "bytes": 5167,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_ATTACHED_VERSION_SAFE_MERGE_REPORT_v1.0.43_FA.md",
@@ -1518,7 +1518,7 @@
       "format": "md",
       "title": "گزارش مقایسه و ادغام امن نسخه پیوست — APEX v1.0.43",
       "bytes": 9587,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_BACKTESTING_LEARNING_OPTIMIZATION_REPORT.md",
@@ -1526,7 +1526,7 @@
       "format": "md",
       "title": "APEX Backtesting and Learning Load Optimization Report",
       "bytes": 2982,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_BACKTESTING_REFERENCE_OPTIMIZATION_REPORT_FA.md",
@@ -1534,7 +1534,7 @@
       "format": "md",
       "title": "گزارش پیاده‌سازی APEX Backtesting Lab — Reference Alignment + Robust Positive-Evidence Logic",
       "bytes": 9921,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_CONTINUATION_AUDIT_REPORT.md",
@@ -1542,7 +1542,7 @@
       "format": "md",
       "title": "APEX Continuation Audit Report",
       "bytes": 11021,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_FEATURE_PRESERVATION_AUDIT_REPORT.md",
@@ -1550,7 +1550,7 @@
       "format": "md",
       "title": "APEX v1.0.47 — Feature Preservation and Regression Audit",
       "bytes": 4018,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_INDEPENDENT_AUDIT_2026-08-08.md",
@@ -1558,7 +1558,7 @@
       "format": "md",
       "title": "APEX Unified Terminal — Independent Audit",
       "bytes": 12152,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_INTELLIGENT_THRESHOLD_OPTIMIZATION_REPORT.md",
@@ -1566,7 +1566,7 @@
       "format": "md",
       "title": "APEX v1.0.47 — Intelligent Threshold Optimization and Load Report",
       "bytes": 5910,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_LIGHT_THEME_RELEASE_REPORT_v1.0.41_FA.md",
@@ -1574,7 +1574,7 @@
       "format": "md",
       "title": "گزارش نهایی سخت‌سازی تم روشن APEX — نسخه 1.0.41",
       "bytes": 6676,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_LIGHT_THEME_RELEASE_REPORT_v1.0.42_FA.md",
@@ -1582,7 +1582,7 @@
       "format": "md",
       "title": "گزارش انتشار APEX — نسخه 1.0.42 (Light Theme Refinement)",
       "bytes": 4806,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_CORE_SAFE_IMPLEMENTATION_REPORT_v1.0.49.md",
@@ -1590,7 +1590,7 @@
       "format": "md",
       "title": "APEX v1.0.49 — Liquidity Hunter Core Safe Implementation Report",
       "bytes": 15471,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_EVIDENCE_SIMULATION_REPORT_v1.0.51.md",
@@ -1598,7 +1598,7 @@
       "format": "md",
       "title": "APEX v1.0.51 — Liquidity Hunter Evidence, Historical Grading & Microstructure Simulation",
       "bytes": 13810,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_RESEARCH_COMPLETION_REPORT_v1.0.52.md",
@@ -1606,7 +1606,7 @@
       "format": "md",
       "title": "APEX v1.0.52 — Liquidity Hunter Research Completion Safe",
       "bytes": 11423,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_LIQUIDITY_HUNTER_VALIDATION_CANARY_REPORT_v1.0.50.md",
@@ -1614,7 +1614,7 @@
       "format": "md",
       "title": "APEX v1.0.50 — Liquidity Hunter Validation, Public Evidence Observation & Paper Canary",
       "bytes": 11437,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_MERGED_STAGE_SEC_UI_IMPLEMENTATION_REPORT.md",
@@ -1622,7 +1622,7 @@
       "format": "md",
       "title": "APEX v1.0.47 — Merged Stage SEC/UI Implementation Report",
       "bytes": 12773,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_OPERATIONS_OBSERVABILITY_RUNTIME_QA_REPORT_FA.md",
@@ -1630,7 +1630,7 @@
       "format": "md",
       "title": "گزارش ارتقای Observability و Runtime QA پروژه APEX",
       "bytes": 8562,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_PROJECT_COMPARISON_AND_IMPLEMENTATION_REPORT.md",
@@ -1638,7 +1638,7 @@
       "format": "md",
       "title": "APEX Project Comparison and Stage UI Continuation Report",
       "bytes": 12173,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_SAFE_UI_MERGE_REPORT_v1.0.40.md",
@@ -1646,7 +1646,7 @@
       "format": "md",
       "title": "گزارش ادغام امن رابط کاربری APEX — v1.0.40",
       "bytes": 10318,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_STRATEGY_BACKTEST_PRODUCTION_REPORT_v1.0.45_FA.md",
@@ -1654,7 +1654,7 @@
       "format": "md",
       "title": "گزارش اصلاح Strategy Studio و Backtesting — APEX v1.0.45",
       "bytes": 7453,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_TRADING_DRAWER_DOCKING_REPORT_v1.0.44_FA.md",
@@ -1662,7 +1662,7 @@
       "format": "md",
       "title": "گزارش اصلاح نهایی Trading Workspace — APEX v1.0.44",
       "bytes": 4559,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_TRADING_ENGINE_UTILITY_INTEGRATION_REPORT_FA.md",
@@ -1670,7 +1670,7 @@
       "format": "md",
       "title": "گزارش ادغام ابزارهای مفید APEX Trading Engine",
       "bytes": 8411,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_TRADING_SUBMENU_RELOCATION_REPORT_v1.0.47_FA.md",
@@ -1678,7 +1678,7 @@
       "format": "md",
       "title": "گزارش اصلاح Trading و انتقال Submenuها — APEX v1.0.47",
       "bytes": 4523,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_UI_INTERACTION_POLISH_REPORT_v1.0.37.md",
@@ -1686,7 +1686,7 @@
       "format": "md",
       "title": "APEX UI Interaction & Feedback Polish Report — v1.0.37",
       "bytes": 7708,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_UI_TOKEN_FIX_REPORT_v1.0.38.md",
@@ -1694,7 +1694,7 @@
       "format": "md",
       "title": "APEX UI Design Token Fix — v1.0.38",
       "bytes": 3995,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_v1.0.53_SAFE_COMPLETION_REPORT.md",
@@ -1702,7 +1702,7 @@
       "format": "md",
       "title": "APEX v1.0.53 — Safe Completion and Integration Report",
       "bytes": 12069,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/APEX_v1.0.54_VERIFIED_UI_COMPLETION_REPORT.md",
@@ -1710,7 +1710,7 @@
       "format": "md",
       "title": "APEX v1.0.54 — Verified UI Completion & Preservation Report",
       "bytes": 6081,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "reports/historical/legacy-root-2026-08-09/REFERENCE_SUBSYSTEM_INTEGRATION_REPORT.md",
@@ -1718,7 +1718,7 @@
       "format": "md",
       "title": "گزارش یکپارچه‌سازی زیرسیستم‌های مرجع APEX",
       "bytes": 11085,
-      "updatedAt": "2026-08-17T04:05:02.000Z"
+      "updatedAt": "2026-08-29T08:39:40.498Z"
     },
     {
       "path": "handoff/DELIVERY_INTEGRATION_MANIFEST.md",
@@ -1726,7 +1726,7 @@
       "format": "md",
       "title": "APEX Complete Reference Integration — Delivery Manifest",
       "bytes": 947,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "handoff/PROJECT_HANDOFF.md",
@@ -1734,7 +1734,7 @@
       "format": "md",
       "title": "APEX Project Handoff",
       "bytes": 50189,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.427Z"
     },
     {
       "path": "release-history/v19/FILE_ORGANIZATION.md",
@@ -1742,7 +1742,7 @@
       "format": "md",
       "title": "V19 File Organization",
       "bytes": 1171,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.483Z"
     },
     {
       "path": "release-history/v19/MERGE_REPORT.md",
@@ -1750,7 +1750,7 @@
       "format": "md",
       "title": "APEX V19 — 1368×753 UI and Market-Data Hardening",
       "bytes": 4389,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.483Z"
     },
     {
       "path": "release-history/v19/reference/current-overview-before-v19.png",
@@ -1758,7 +1758,7 @@
       "format": "png",
       "title": "current overview before v19",
       "bytes": 515882,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.485Z"
     },
     {
       "path": "release-history/v19/VALIDATION_RESULTS.md",
@@ -1766,7 +1766,7 @@
       "format": "md",
       "title": "V19 Validation Results",
       "bytes": 839,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.483Z"
     },
     {
       "path": "release-history/v20/MERGE_REPORT.md",
@@ -1774,7 +1774,7 @@
       "format": "md",
       "title": "APEX V20 — Reference Image Implementation",
       "bytes": 2482,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.485Z"
     },
     {
       "path": "release-history/v20/VALIDATION_RESULTS.txt",
@@ -1782,7 +1782,7 @@
       "format": "txt",
       "title": "VALIDATION RESULTS",
       "bytes": 528,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.488Z"
     },
     {
       "path": "reports/final/APEX_COMPREHENSIVE_PROJECT_AUDIT_2026-08-10.md",
@@ -1790,7 +1790,7 @@
       "format": "md",
       "title": "APEX Comprehensive Project Architecture, File Index & Deficiency Audit — 2026-08-10",
       "bytes": 28193,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_LOAD_STRESS_REPORT_2026-08-10.md",
@@ -1798,7 +1798,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Heavy Load / Stress Verification Report",
       "bytes": 9491,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_STRATEGY_STUDIO_REFERENCE_IMPLEMENTATION_REPORT_FA.md",
@@ -1806,7 +1806,7 @@
       "format": "md",
       "title": "گزارش پیاده‌سازی APEX Strategy Studio Reference",
       "bytes": 6758,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_STRUCTURAL_PROFITABILITY_REMEDIATION_2026-08-22.md",
@@ -1814,7 +1814,7 @@
       "format": "md",
       "title": "APEX structural profitability remediation — 2026-08-22",
       "bytes": 15804,
-      "updatedAt": "2026-08-25T00:22:26.851Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_UI_REDESIGN_V3_IMPLEMENTATION_REPORT.md",
@@ -1822,7 +1822,7 @@
       "format": "md",
       "title": "APEX UI Redesign V3 — Implementation Handoff",
       "bytes": 2619,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_v1_0_56_MASTER_GAP_CLOSURE_PROMPT.md",
@@ -1830,7 +1830,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Master Project Gap-Closure Prompt",
       "bytes": 96319,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_57_REMEDIATION_AND_DELIVERY.md",
@@ -1838,7 +1838,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.57 — Remediation and Delivery Status",
       "bytes": 11652,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_58_SIMULATION_QUALIFICATION_AND_REMEDIATION.md",
@@ -1846,7 +1846,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.58 — Simulation Qualification and Remediation",
       "bytes": 8719,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_59_MAX_POWER_SIMULATION_AND_REMEDIATION.md",
@@ -1854,7 +1854,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.59 — Max-Power Simulation and Remediation Pass",
       "bytes": 7475,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_60_TRADING_UI_UX_MODERNIZATION.md",
@@ -1862,7 +1862,7 @@
       "format": "md",
       "title": "APEX v1.0.60 Trading UI/UX Modernization Report",
       "bytes": 7512,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_61_STRATEGY_STUDIO_UI_UX_MODERNIZATION.md",
@@ -1870,7 +1870,7 @@
       "format": "md",
       "title": "APEX v1.0.61 Strategy Studio UI/UX Modernization",
       "bytes": 8212,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_62_BACKTESTING_STUDIO_UI_UX_MODERNIZATION.md",
@@ -1878,7 +1878,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.62 — Backtesting Studio UI/UX Modernization",
       "bytes": 5588,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_63_WINDOWS_FUNCTIONAL_VERIFICATION_AND_BACKTESTING_RUNTIME_HARDENING.md",
@@ -1886,7 +1886,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.63 — Windows functional verification and Backtesting runtime hardening",
       "bytes": 3583,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_64_TRADING_RAIL_SLIDEOUT_REFINEMENT.md",
@@ -1894,7 +1894,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.64 — Trading rail slideout refinement",
       "bytes": 2452,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_65_TRADING_ACTIVITY_SLIDEOUT_REFINEMENT.md",
@@ -1902,7 +1902,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.65 — Trading Activity Slideout Refinement",
       "bytes": 2500,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_66_UI_POLISH_AND_BACKTESTING_SPACE_REFINEMENT.md",
@@ -1910,7 +1910,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.66 — UI Polish and Backtesting Space Refinement",
       "bytes": 3342,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_67_RUNTIME_LOAD_VERIFICATION_AND_FINAL_WINDOWS_HARDENING.md",
@@ -1918,7 +1918,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.67 — Runtime Load Verification and Final Windows Hardening",
       "bytes": 3101,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_68_CURRENT_EXECUTION_STATUS_2026-08-15.md",
@@ -1926,7 +1926,7 @@
       "format": "md",
       "title": "APEX v1.0.68 — Current Execution Status (2026-08-15)",
       "bytes": 5368,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V1_0_68_REFERENCE_UI_AND_CAPTURE_HARDENING.md",
@@ -1934,7 +1934,7 @@
       "format": "md",
       "title": "APEX Unified Terminal v1.0.68 — Reference UI and Trading Capture Hardening",
       "bytes": 3961,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_v1.0.56_MULTI_FUTURES_CONTEXT_REPORT.md",
@@ -1942,7 +1942,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Multi-Futures Context Completion Report",
       "bytes": 7459,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/APEX_V3_VERIFICATION_LOG.txt",
@@ -1950,7 +1950,7 @@
       "format": "txt",
       "title": "APEX V3 VERIFICATION LOG",
       "bytes": 461,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/DELIVERY_NOTES.md",
@@ -1958,7 +1958,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Attachment Strategy-Fusion Safe Merge Delivery",
       "bytes": 1595,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/DESKTOP_VISUAL_UNIFICATION_FINAL_REPORT.md",
@@ -1966,7 +1966,7 @@
       "format": "md",
       "title": "Desktop Visual Unification — Final Report",
       "bytes": 6581,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_all_gaps_max_power.md",
@@ -1974,7 +1974,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — All-Gaps Max-Power Pass (Batch 6)",
       "bytes": 3275,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_attachment_strategy_fusion_safe_merge.md",
@@ -1982,7 +1982,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Attachment Strategy Fusion Safe Merge",
       "bytes": 3161,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_batch1.md",
@@ -1990,7 +1990,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Gap Closure Session 1 (P0 batch) — 2026-08-10",
       "bytes": 10195,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_batch4.md",
@@ -1998,7 +1998,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Gap Closure Session 2026-08-10 — Batch 4",
       "bytes": 6905,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_batch5_integration.md",
@@ -2006,7 +2006,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Batch 5/Incoming ZIP Integration Audit",
       "bytes": 5323,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_batch9_upload_review.md",
@@ -2014,7 +2014,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Batch9 Upload Review / Integration Decision",
       "bytes": 2954,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_current_state_upload_safe_merge.md",
@@ -2022,7 +2022,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Current-State Upload Safe-Merge Review (2026-08-10)",
       "bytes": 4433,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/GAP_CLOSURE_SESSION_2026-08-10_latest_complete_upload_safe_merge.md",
@@ -2030,7 +2030,7 @@
       "format": "md",
       "title": "APEX v1.0.56 — Safe Non-Regression Merge Review for `LATEST_COMPLETE_PROJECT(1)`",
       "bytes": 3363,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/latest-complete-safe-merge-logs/latest_vs_reconciled_diff.json",
@@ -2038,7 +2038,7 @@
       "format": "json",
       "title": "latest vs reconciled diff",
       "bytes": 3635,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/MERGE_REPORT_V13.md",
@@ -2046,7 +2046,7 @@
       "format": "md",
       "title": "گزارش ادغام و اصلاح APEX UI — نسخه V13 Polished",
       "bytes": 6320,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/MERGED_FILES_V13.txt",
@@ -2054,7 +2054,7 @@
       "format": "txt",
       "title": "MERGED FILES V13",
       "bytes": 1061,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/reference-normalization-report-v3.json",
@@ -2062,7 +2062,7 @@
       "format": "json",
       "title": "reference normalization report v3",
       "bytes": 1113,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/RELEASE_NOTES.md",
@@ -2070,7 +2070,7 @@
       "format": "md",
       "title": "APEX Soft Green V6 — Cross-page unification",
       "bytes": 2207,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/SMART_AUTOPILOT_BUILD_NOTE.md",
@@ -2078,7 +2078,7 @@
       "format": "md",
       "title": "Build note",
       "bytes": 421,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reports/final/SMART_AUTOPILOT_IMPLEMENTATION_REPORT_FA.md",
@@ -2086,7 +2086,7 @@
       "format": "md",
       "title": "گزارش پیاده‌سازی APEX Smart Autopilot / Smart Auto‑Tuning",
       "bytes": 9390,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.493Z"
     },
     {
       "path": "reference/v20/alerts-1368x753.png",
@@ -2094,7 +2094,7 @@
       "format": "png",
       "title": "alerts 1368x753",
       "bytes": 837312,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.434Z"
     },
     {
       "path": "reference/v20/analytics-1368x753.png",
@@ -2102,7 +2102,7 @@
       "format": "png",
       "title": "analytics 1368x753",
       "bytes": 855780,
-      "updatedAt": "2026-08-17T04:04:59.000Z"
+      "updatedAt": "2026-08-29T08:39:40.439Z"
     },
     {
       "path": "reference/v20/help-1368x753.png",
@@ -2110,7 +2110,7 @@
       "format": "png",
       "title": "help 1368x753",
       "bytes": 808602,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.441Z"
     },
     {
       "path": "reference/v20/history-1368x753.png",
@@ -2118,7 +2118,7 @@
       "format": "png",
       "title": "history 1368x753",
       "bytes": 944776,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.449Z"
     },
     {
       "path": "reference/v20/orders-1368x753.png",
@@ -2126,7 +2126,7 @@
       "format": "png",
       "title": "orders 1368x753",
       "bytes": 804933,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.453Z"
     },
     {
       "path": "reference/v20/positions-1368x753.png",
@@ -2134,7 +2134,7 @@
       "format": "png",
       "title": "positions 1368x753",
       "bytes": 792988,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.457Z"
     },
     {
       "path": "reference/v20/scale-manifest.json",
@@ -2142,7 +2142,7 @@
       "format": "json",
       "title": "scale manifest",
       "bytes": 669,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.457Z"
     },
     {
       "path": "reference/v20/settings-1368x753.png",
@@ -2150,7 +2150,7 @@
       "format": "png",
       "title": "settings 1368x753",
       "bytes": 726361,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.457Z"
     },
     {
       "path": "reference/v20/watchlist-1368x753.png",
@@ -2158,7 +2158,7 @@
       "format": "png",
       "title": "watchlist 1368x753",
       "bytes": 834699,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.461Z"
     },
     {
       "path": "references/backtesting/apex-backtesting-lab-dashboard.png",
@@ -2166,7 +2166,7 @@
       "format": "png",
       "title": "apex backtesting lab dashboard",
       "bytes": 1170571,
-      "updatedAt": "2026-08-17T04:05:00.000Z"
+      "updatedAt": "2026-08-29T08:39:40.469Z"
     },
     {
       "path": "references/strategy-studio-reference-1448x1086.png",
@@ -2174,7 +2174,7 @@
       "format": "png",
       "title": "strategy studio reference 1448x1086",
       "bytes": 1892906,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.477Z"
     },
     {
       "path": "references/strategy-studio-reference-implementation-spec.md",
@@ -2182,7 +2182,7 @@
       "format": "md",
       "title": "APEX Strategy Studio — Pixel-Referenced Production Implementation Specification",
       "bytes": 29579,
-      "updatedAt": "2026-08-17T04:05:01.000Z"
+      "updatedAt": "2026-08-29T08:39:40.481Z"
     }
   ]
 }

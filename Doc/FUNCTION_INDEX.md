@@ -13,8 +13,8 @@ Use this index before opening large files. Search by function name, tag, or file
 
 ## Summary
 
-- Total indexed symbols: 3676
-- Generated at: 2026-08-25T06:55:36.311Z
+- Total indexed symbols: 3816
+- Generated at: 2026-08-29T08:56:04.247Z
 
 ## Tag Index
 
@@ -24,14 +24,14 @@ Use this index before opening large files. Search by function name, tag, or file
 - `decision-memory`: 155
 - `hook`: 9
 - `market-data`: 559
-- `ml`: 182
+- `ml`: 196
 - `provider`: 106
 - `scanner`: 30
-- `script`: 688
+- `script`: 828
 - `server`: 80
 - `service`: 1912
-- `test`: 151
-- `ui`: 355
+- `test`: 154
+- `ui`: 352
 
 ## Functions By File
 
@@ -748,6 +748,12 @@ Use this index before opening large files. Search by function name, tag, or file
 | `read` | arrow | 6-6 | no | no | `script` |
 | `exists` | arrow | 7-7 | no | no | `script` |
 
+### scripts/qa/verifyLiveDataTruthfulness.mjs
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `walk` | function | 30-53 | no | no | `script` |
+
 ### scripts/qa/verifyMaximalMergeSafety.mjs
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -1057,6 +1063,216 @@ Use this index before opening large files. Search by function name, tag, or file
 | `acquireAddedSymbols` | function | 485-498 | no | yes | `script` |
 | `main` | function | 500-537 | no | yes | `script` |
 
+### scripts/research/lib/deflatedSharpe.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `normalCdf` | function | 70-80 | yes | no | `script` |
+| `normalQuantile` | function | 89-122 | yes | no | `script` |
+| `returnMoments` | function | 138-168 | yes | no | `script` |
+| `probabilisticSharpe` | function | 178-190 | yes | no | `script` |
+| `expectedMaximumSharpe` | function | 199-206 | yes | no | `script` |
+| `deflatedSharpe` | function | 234-285 | yes | no | `script` |
+
+### scripts/research/lib/indicators.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `requireWindow` | function | 21-25 | no | no | `script` |
+| `sma` | function | 28-47 | yes | no | `script` |
+| `rollingStd` | function | 50-67 | yes | no | `script` |
+| `rollingMax` | function | 70-91 | yes | no | `script` |
+| `rollingMin` | function | 94-115 | yes | no | `script` |
+| `pctChange` | function | 118-130 | yes | no | `script` |
+| `trueRange` | function | 136-148 | yes | no | `script` |
+| `atr` | function | 151-153 | yes | no | `script` |
+| `trailingPercentileRank` | function | 163-193 | yes | no | `script` |
+| `closes` | function | 196-198 | yes | no | `script` |
+| `highs` | function | 200-202 | yes | no | `script` |
+| `lows` | function | 204-206 | yes | no | `script` |
+| `volumes` | function | 208-210 | yes | no | `script` |
+| `rollingZScore` | function | 217-231 | yes | no | `script` |
+
+### scripts/research/lib/liquidationSqueeze.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `isZeroEffect` | function | 150-157 | yes | no | `script` |
+| `readsOpenInterest` | function | 160-162 | yes | no | `script` |
+| `openInterestBuildupRank` | function | 179-184 | yes | no | `script` |
+| `prepareSqueezeIndicators` | function | 206-223 | yes | no | `script` |
+| `positionsFromIndicators` | function | 241-322 | yes | no | `script` |
+| `liquidationSqueezePositions` | function | 325-330 | yes | no | `script` |
+| `buildGrid` | function | 400-432 | yes | no | `script` |
+
+### scripts/research/lib/onlineAllocator.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `AllocatorConfigurationError` | class | 143-148 | yes | no | `script` |
+| `normalizeLoss` | function | 155-170 | yes | no | `script` |
+| `theoreticalRegretBound` | function | 179-198 | yes | no | `script` |
+| `etaForRound` | function | 201-216 | yes | no | `script` |
+| `OnlineAllocator` | class | 218-491 | yes | no | `script` |
+| `OnlineAllocator.weightsFor` | method | 263-340 | no | no | `script` |
+| `OnlineAllocator.observe` | method | 347-416 | no | no | `script` |
+| `OnlineAllocator.expertCumulativeLosses` | method | 419-421 | no | no | `script` |
+| `OnlineAllocator.expertAwakeRounds` | method | 423-425 | no | no | `script` |
+| `OnlineAllocator.regretReport` | method | 427-490 | no | no | `script` |
+
+### scripts/research/lib/openInterestAvailability.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `alignFieldToCandles` | function | 149-163 | yes | no | `script` |
+| `quarterKey` | function | 165-168 | no | no | `script` |
+| `coveredEverySymbol` | function | 171-182 | no | no | `script` |
+| `windowCoverage` | function | 184-214 | no | no | `script` |
+| `classify` | function | 216-247 | no | no | `script` |
+| `availabilityForAlignedSeries` | function | 269-351 | yes | no | `script` |
+| `buildOpenInterestAvailability` | function | 367-382 | yes | no | `script` |
+| `statusFor` | function | 385-393 | yes | no | `script` |
+
+### scripts/research/lib/researchDataset.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `HoldoutLeakageError` | class | 118-123 | yes | no | `ml`, `script` |
+| `symbolFileStem` | function | 125-127 | no | no | `ml`, `script` |
+| `readEnvelope` | function | 129-148 | no | no | `ml`, `script` |
+| `assertNoHoldoutLeakage` | function | 156-166 | yes | no | `ml`, `script` |
+| `withinDevelopmentWindow` | function | 168-170 | no | no | `ml`, `script` |
+| `assertStrictlyIncreasing` | function | 172-181 | no | no | `ml`, `script` |
+| `loadDevelopmentCandles` | function | 195-209 | yes | no | `ml`, `script` |
+| `loadDevelopmentFunding` | function | 212-226 | yes | no | `ml`, `script` |
+| `loadDevelopmentOpenInterest` | function | 234-248 | yes | no | `ml`, `script` |
+| `alignEventSeriesToCandles` | function | 266-287 | yes | no | `ml`, `script` |
+| `alignFundingToCandles` | function | 300-307 | yes | no | `ml`, `script` |
+| `alignOpenInterestToCandles` | function | 326-333 | yes | no | `ml`, `script` |
+| `resampleCandles` | function | 343-389 | yes | no | `ml`, `script` |
+| `flush` | arrow | 356-376 | no | no | `ml`, `script` |
+
+### scripts/research/lib/riskSizing.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `logReturnsPct` | function | 46-56 | yes | no | `script` |
+| `realizedVolPct` | function | 62-64 | yes | no | `script` |
+| `crossSectionalMedian` | function | 71-92 | yes | no | `script` |
+| `volatilityScaleSeries` | function | 105-125 | yes | no | `script` |
+| `buildSizingSeries` | function | 154-181 | yes | no | `script` |
+
+### scripts/research/lib/strategyFamilies.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `zeros` | function | 100-102 | no | no | `script` |
+| `perSymbol` | function | 105-121 | no | no | `script` |
+| `build` | method | 113-119 | no | no | `script` |
+| `grid` | function | 123-136 | no | no | `script` |
+| `positions` | method | 150-161 | no | no | `script` |
+| `positions` | method | 183-219 | no | no | `script` |
+| `positions` | method | 234-262 | no | no | `script` |
+| `positions` | method | 277-314 | no | no | `script` |
+| `positions` | method | 329-354 | no | no | `script` |
+| `positions` | method | 369-381 | no | no | `script` |
+| `positions` | method | 396-409 | no | no | `script` |
+| `crossSectional` | function | 418-473 | no | no | `script` |
+| `build` | method | 424-471 | no | no | `script` |
+| `build` | method | 528-578 | no | no | `script` |
+
+### scripts/research/lib/tradeMetrics.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `fundingIntervalBarsFor` | function | 135-138 | no | no | `script` |
+| `buildTrades` | function | 147-213 | yes | no | `script` |
+| `maxDrawdownPct` | function | 222-244 | yes | no | `script` |
+| `summarizeTrades` | function | 246-307 | yes | no | `script` |
+
+### scripts/research/lib/universe.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `loadDevelopmentUniverse` | function | 42-88 | yes | no | `script` |
+
+### scripts/research/lib/walkForward.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `WalkForwardConfigurationError` | class | 61-66 | yes | no | `script` |
+| `requirePositiveInteger` | function | 68-72 | no | no | `script` |
+| `buildWalkForwardSplits` | function | 83-123 | yes | no | `script` |
+| `assertSplitsAreCausal` | function | 132-160 | yes | no | `script` |
+| `outOfSampleBarCount` | function | 163-165 | yes | no | `script` |
+
+### scripts/research/runLiquidationSqueezeStudy.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `tradesForRange` | function | 232-262 | no | no | `script` |
+| `selectionScore` | function | 264-266 | no | no | `script` |
+| `evaluateGate` | function | 268-296 | no | no | `script` |
+| `orderedReturns` | function | 299-301 | no | no | `script` |
+| `leaveOutBestSplit` | function | 310-326 | no | no | `script` |
+| `main` | function | 433-1244 | no | no | `script` |
+| `indicatorsFor` | arrow | 466-474 | no | no | `script` |
+| `effectiveConditioning` | arrow | 526-539 | no | no | `script` |
+
+### scripts/research/runOnlineEnsembleStudy.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `sum` | function | 191-197 | no | no | `script` |
+| `maxDrawdownPctFromSeries` | function | 204-219 | no | no | `script` |
+| `profitFactorFromSeries` | function | 222-239 | no | no | `script` |
+| `selectionScore` | function | 242-244 | no | no | `script` |
+| `tradesForRange` | function | 246-276 | no | no | `script` |
+| `paramKey` | function | 278-283 | no | no | `script` |
+| `evaluateGate` | function | 387-421 | no | no | `script` |
+| `main` | function | 427-1774 | no | no | `script` |
+| `requiredSeriesStatus` | function | 484-500 | no | no | `script` |
+| `poolFor` | function | 655-657 | no | no | `script` |
+| `runAllocatorArm` | function | 661-756 | no | no | `script` |
+| `applyBar` | arrow | 685-700 | no | no | `script` |
+| `runFixedWeightArm` | function | 762-823 | no | no | `script` |
+| `zeroWeights` | function | 827-829 | no | no | `script` |
+| `armSharpe` | function | 1254-1263 | no | no | `script` |
+| `trialSharpes` | function | 1270-1279 | no | no | `script` |
+| `summariseArm` | function | 1288-1387 | no | no | `script` |
+
+### scripts/research/runOpenInterestFeedAudit.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `iso` | function | 226-228 | no | no | `script` |
+| `quantile` | function | 230-241 | no | no | `script` |
+| `worse` | function | 243-246 | no | no | `script` |
+| `isUsableRow` | function | 248-250 | no | no | `script` |
+| `runConsistencyChecks` | function | 253-454 | no | no | `script` |
+| `closeRun` | arrow | 267-279 | no | no | `script` |
+| `auditSymbol` | function | 456-736 | no | no | `script` |
+| `sharedAcross` | function | 738-743 | no | no | `script` |
+| `main` | function | 745-875 | no | no | `script` |
+| `line` | arrow | 820-834 | no | no | `script` |
+
+### scripts/research/runRiskAdjustedWalkForward.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `tradesForRange` | function | 135-167 | no | no | `script` |
+| `selectionScore` | function | 174-176 | no | no | `script` |
+| `calmar` | function | 178-180 | no | no | `script` |
+| `averageExposureScale` | function | 182-187 | no | no | `script` |
+| `rescaleToCap` | function | 196-207 | no | no | `script` |
+| `evaluateGate` | function | 209-237 | no | no | `script` |
+| `scaleInvariantCore` | function | 244-262 | no | no | `script` |
+| `buildAggregate` | function | 312-347 | no | no | `script` |
+| `formatRow` | function | 349-367 | no | no | `script` |
+| `number` | arrow | 352-353 | no | no | `script` |
+| `main` | function | 380-721 | no | no | `script` |
+| `score` | arrow | 500-557 | no | no | `script` |
+
 ### scripts/research/runStructuralProfitabilityStudy.mts
 
 | Name | Kind | Line | Export | Async | Tags |
@@ -1080,6 +1296,15 @@ Use this index before opening large files. Search by function name, tag, or file
 | `verifySeal` | function | 218-227 | no | no | `script` |
 | `markdownTable` | function | 229-231 | no | no | `script` |
 | `evaluate` | function | 233-364 | no | yes | `script` |
+
+### scripts/research/runWalkForwardBaseline.mts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `tradesForRange` | function | 111-141 | no | no | `script` |
+| `selectionScore` | function | 144-146 | no | no | `script` |
+| `evaluateGate` | function | 179-208 | no | no | `script` |
+| `main` | function | 210-440 | no | no | `script` |
 
 ### scripts/utilities/analyzeDirectionDivergence.mts
 
@@ -1121,7 +1346,7 @@ Use this index before opening large files. Search by function name, tag, or file
 
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
-| `runStep` | function | 59-82 | no | no | `script` |
+| `runStep` | function | 59-86 | no | no | `script` |
 
 ### scripts/utilities/checkDocumentationLinks.mts
 
@@ -1538,7 +1763,7 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `initialPage` | function | 119-123 | no | no |  |
-| `App` | component | 125-628 | yes | no | `component` |
+| `App` | component | 125-614 | yes | no | `component` |
 | `bootstrap` | arrow | 386-408 | no | yes |  |
 | `loadDetail` | arrow | 443-486 | no | yes |  |
 | `onHashChange` | arrow | 493-493 | no | no |  |
@@ -2103,25 +2328,22 @@ Use this index before opening large files. Search by function name, tag, or file
 | `reviewAgain` | arrow | 888-892 | no | no | `ui` |
 | `submit` | arrow | 894-919 | no | yes | `ui` |
 | `RiskOverviewPanel` | component | 1054-1083 | yes | no | `component`, `ui` |
-| `buildTradingLabCandles` | function | 1091-1124 | no | no | `ui` |
-| `buildTradingLabDepth` | function | 1126-1141 | no | no | `ui` |
-| `buildTradingLabPreview` | function | 1143-1301 | no | no | `ui` |
-| `DepthCurveChart` | component | 1330-1380 | yes | no | `component`, `ui` |
-| `yFor` | arrow | 1343-1343 | no | no | `ui` |
-| `xForBid` | arrow | 1344-1344 | no | no | `ui` |
-| `xForAsk` | arrow | 1345-1345 | no | no | `ui` |
-| `MarketDepthPanel` | component | 1382-1462 | yes | no | `component`, `market-data`, `ui` |
-| `renderRows` | arrow | 1419-1433 | no | no | `ui` |
-| `RecentTradesPanel` | component | 1464-1471 | yes | no | `component`, `ui` |
-| `SystemLinkPanel` | component | 1480-1501 | yes | no | `component`, `ml`, `ui` |
-| `SetupIntelligencePanel` | component | 1514-1561 | yes | no | `component`, `ui` |
-| `TradingActivityPanel` | component | 1573-1657 | no | no | `component`, `ui` |
-| `TradingViewCore` | component | 1659-1909 | no | no | `component`, `ui` |
-| `refreshAlerts` | arrow | 1688-1688 | no | no | `ui` |
-| `pickDepthPrice` | arrow | 1751-1753 | no | no | `ui` |
-| `renderStrategyContextPanel` | arrow | 1800-1800 | no | no | `ui` |
-| `closeInlineTool` | arrow | 1802-1802 | no | no | `ui` |
-| `TradingView` | component | 1911-1933 | yes | no | `component`, `ui` |
+| `DepthCurveChart` | component | 1113-1163 | yes | no | `component`, `ui` |
+| `yFor` | arrow | 1126-1126 | no | no | `ui` |
+| `xForBid` | arrow | 1127-1127 | no | no | `ui` |
+| `xForAsk` | arrow | 1128-1128 | no | no | `ui` |
+| `MarketDepthPanel` | component | 1165-1245 | yes | no | `component`, `market-data`, `ui` |
+| `renderRows` | arrow | 1202-1216 | no | no | `ui` |
+| `RecentTradesPanel` | component | 1247-1254 | yes | no | `component`, `ui` |
+| `SystemLinkPanel` | component | 1263-1284 | yes | no | `component`, `ml`, `ui` |
+| `SetupIntelligencePanel` | component | 1297-1344 | yes | no | `component`, `ui` |
+| `TradingActivityPanel` | component | 1356-1440 | no | no | `component`, `ui` |
+| `TradingViewCore` | component | 1442-1690 | no | no | `component`, `ui` |
+| `refreshAlerts` | arrow | 1471-1471 | no | no | `ui` |
+| `pickDepthPrice` | arrow | 1532-1534 | no | no | `ui` |
+| `renderStrategyContextPanel` | arrow | 1581-1581 | no | no | `ui` |
+| `closeInlineTool` | arrow | 1583-1583 | no | no | `ui` |
+| `TradingView` | component | 1692-1694 | yes | no | `component`, `ui` |
 
 ### src/components/workspace/AutopilotHeaderControl.tsx
 
@@ -6705,6 +6927,19 @@ Use this index before opening large files. Search by function name, tag, or file
 | Name | Kind | Line | Export | Async | Tags |
 |---|---|---:|---|---|---|
 | `candles` | function | 5-17 | no | no | `test` |
+
+### tests/research/onlineAllocator.test.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `config` | function | 20-29 | no | no | `test` |
+
+### tests/research/walkForwardHarness.test.ts
+
+| Name | Kind | Line | Export | Async | Tags |
+|---|---|---:|---|---|---|
+| `candlesFromCloses` | function | 52-61 | no | no | `test` |
+| `trade` | function | 63-81 | no | no | `test` |
 
 ### tests/riskGovernor.test.ts
 

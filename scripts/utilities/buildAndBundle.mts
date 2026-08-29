@@ -59,10 +59,14 @@ const steps: Step[] = [
 function runStep(step: Step): number {
   console.log(`\n[build] ▶ ${step.label}`);
 
+  // On Windows, shell is only required for batch files/scripts (like npx.cmd).
+  // Running process.execPath (node.exe) with shell: true can fail if its path contains spaces.
+  const useShell = isWin && step.command !== process.execPath;
+
   const result = spawnSync(step.command, step.args, {
     cwd: root,
     stdio: 'inherit',
-    shell: isWin,
+    shell: useShell,
   });
 
   if (result.error) {
