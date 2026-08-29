@@ -610,19 +610,5 @@ export default function App() {
     );
   }
 
-  const labShellConnection: ConnectionState = page === 'trading' ? {
-    status: 'demo', mode: 'demo', exchange: 'kucoin', environment: 'DEMO',
-    profile: { id: 'lab-preview-shell', name: 'APEX Lab Preview', accountType: 'DEMO' },
-    connectedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30 * 86_400_000).toISOString(),
-    portfolioState: 'available', executionState: 'unlocked', requiresOrderPreview: true,
-    requiresExplicitConfirmation: true, maxOrderNotionalUsd: 25_000, startingBalanceUsd: 125_000, liveAvailable: false,
-  } : connection;
-  const labShellMarketState: DataState = page === 'trading' ? 'live' : dataState;
-  const labShellSymbols = page === 'trading' && tickers.length === 0 ? [{
-    symbol: 'BTC-USDT', lastPrice: 115_826.26, turnover24h: 428_650_000, priceChange24hPct: 1.42,
-    volume24h: 19_540, high24h: 115_894.03, low24h: 115_503.59, fundingRate: 0.00012,
-    openInterest: 1_826_000_000, dataState: 'live' as const, timestamp: Date.now(),
-  }] : tickers;
-
-  return <><WorkspaceShell page={page} onNavigate={navigate} connection={labShellConnection} marketState={labShellMarketState} symbols={labShellSymbols} onSelectSymbol={setSelectedSymbol} autopilotPreferenceEnabled={settings.autopilotEnabled} autopilotController={autopilotController} onAutopilotEnabledChange={setAutopilotEnabled}><RouteErrorBoundary route={page} resetKey={page}><Suspense fallback={<RouteSkeleton page={page} />}>{content}</Suspense></RouteErrorBoundary></WorkspaceShell><ServiceWorkerUpdateBanner /></>;
+  return <><WorkspaceShell page={page} onNavigate={navigate} connection={connection} marketState={dataState} symbols={tickers} onSelectSymbol={setSelectedSymbol} autopilotPreferenceEnabled={settings.autopilotEnabled} autopilotController={autopilotController} onAutopilotEnabledChange={setAutopilotEnabled}><RouteErrorBoundary route={page} resetKey={page}><Suspense fallback={<RouteSkeleton page={page} />}>{content}</Suspense></RouteErrorBoundary></WorkspaceShell><ServiceWorkerUpdateBanner /></>;
 }

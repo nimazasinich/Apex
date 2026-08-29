@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-25T06:55:36.294Z",
+  "generatedAt": "2026-08-29T08:42:07.362Z",
   "process": "Apex Function Atlas",
   "fileHashes": {
     "server.ts": "4a1829fbb3a096f5",
-    "src/App.tsx": "ebf556e70f316026",
+    "src/App.tsx": "928c8e351745a5df",
     "src/components/BacktestChart.tsx": "f7917fa3ca7d1815",
     "src/components/BacktestModal.tsx": "3308cc596722523e",
     "src/components/BacktestTradesTable.tsx": "be60529f928ec9cf",
@@ -20,21 +20,7 @@
     "src/components/MarketVisuals.tsx": "001e2375c34f0b63",
     "src/components/MiniSparkline.tsx": "a2790b9f52143acd",
     "src/components/NavBar.tsx": "b37f398f2d8fb6ad",
-    "src/components/overview/OverviewAccountSummary.tsx": "aaf133ca85f62465",
-    "src/components/overview/OverviewActivityPanel.tsx": "9cedc6e5091a6e60",
-    "src/components/overview/OverviewAttentionPanel.tsx": "ab8bdbd6b682d355",
-    "src/components/overview/OverviewExecutionSnapshotPanel.tsx": "797c3d8b642bf61f",
-    "src/components/overview/OverviewKpiStrip.tsx": "ef39c1f8da057b4a",
-    "src/components/overview/OverviewMarketSummary.tsx": "56930c61ce9261dc",
-    "src/components/overview/overviewModel.ts": "b9b8a9d646e360f4",
-    "src/components/overview/OverviewProviderHealthPanel.tsx": "0a74ca0d076a2c4a",
-    "src/components/overview/OverviewSignalsPanel.tsx": "5ac531b004b101af",
-    "src/components/overview/OverviewStatusCards.tsx": "969431034faf0da2",
-    "src/components/overview/OverviewSystemHealthPanel.tsx": "3c5213a9744873e3",
     "src/components/PriceChart.tsx": "245b3420a12b1576",
-    "src/components/priceChartAutoStructure.ts": "0dfdee91f02de7f4",
-    "src/components/priceChartGeometry.ts": "3d094a069c9a9ee9",
-    "src/components/primitives.tsx": "91791668950fd4fb",
     "src/components/RiskRewardSlider.tsx": "0473cc80e7316756",
     "src/components/SentimentGaugeCard.tsx": "c858541be9259928",
     "src/components/SettingsModal.tsx": "5f391b47f2e6add2",
@@ -46,13 +32,28 @@
     "src/components/TelegramSettingsPanel.tsx": "e87b2788b0596e69",
     "src/components/TopVolumeTable.tsx": "0d67f716b0691a99",
     "src/components/TrackingObservatoryPanel.tsx": "8baebd92ccca2260",
+    "src/components/WatchlistPanel.tsx": "d9e8a6534901ad66",
+    "src/components/overview/OverviewAccountSummary.tsx": "aaf133ca85f62465",
+    "src/components/overview/OverviewActivityPanel.tsx": "9cedc6e5091a6e60",
+    "src/components/overview/OverviewAttentionPanel.tsx": "ab8bdbd6b682d355",
+    "src/components/overview/OverviewExecutionSnapshotPanel.tsx": "797c3d8b642bf61f",
+    "src/components/overview/OverviewKpiStrip.tsx": "ef39c1f8da057b4a",
+    "src/components/overview/OverviewMarketSummary.tsx": "56930c61ce9261dc",
+    "src/components/overview/OverviewProviderHealthPanel.tsx": "0a74ca0d076a2c4a",
+    "src/components/overview/OverviewSignalsPanel.tsx": "5ac531b004b101af",
+    "src/components/overview/OverviewStatusCards.tsx": "969431034faf0da2",
+    "src/components/overview/OverviewSystemHealthPanel.tsx": "3c5213a9744873e3",
+    "src/components/overview/overviewModel.ts": "b9b8a9d646e360f4",
+    "src/components/priceChartAutoStructure.ts": "0dfdee91f02de7f4",
+    "src/components/priceChartGeometry.ts": "3d094a069c9a9ee9",
+    "src/components/primitives.tsx": "91791668950fd4fb",
     "src/components/trading/ExecutionCorridorPanel.tsx": "917560896f32d38d",
     "src/components/trading/ExecutionIntelligence.tsx": "06c8845c832efd84",
     "src/components/trading/InstrumentFacts.tsx": "34c8131be1eae10d",
-    "src/components/trading/instrumentPresentation.ts": "ae2dfa55d2d9699e",
     "src/components/trading/LevelLadderPanel.tsx": "b2a6850defc14996",
-    "src/components/trading/orderActionLabels.ts": "c5c7e059013e10a3",
     "src/components/trading/TradePlanRiskReward.tsx": "6a3d6a801a411f72",
+    "src/components/trading/instrumentPresentation.ts": "ae2dfa55d2d9699e",
+    "src/components/trading/orderActionLabels.ts": "c5c7e059013e10a3",
     "src/components/ui/AccountFreshnessChip.tsx": "dc811d1ad8adb4b5",
     "src/components/ui/DirectionSelector.tsx": "be874acfb6876335",
     "src/components/ui/ProvenanceChip.tsx": "a901a7a1c77243bb",
@@ -61,8 +62,7 @@
     "src/components/ui/ServiceWorkerUpdateBanner.tsx": "58db91f6de44bbdc",
     "src/components/ui/WorkspaceFeedbackCenter.tsx": "633b99b40057deae",
     "src/components/ui/WorkspacePrimitives.tsx": "abb316ef1c6544cd",
-    "src/components/WatchlistPanel.tsx": "d9e8a6534901ad66",
-    "src/components/workspace/AccountViews.tsx": "8a6e75c1a0a8a728",
+    "src/components/workspace/AccountViews.tsx": "859ac1876e05777e",
     "src/components/workspace/AutopilotHeaderControl.tsx": "b8bb47ac8272dfe4",
     "src/components/workspace/DecisionJournalDrawer.tsx": "378d7b9fb3827998",
     "src/components/workspace/GeneralViews.tsx": "355f76b0754dea36",
@@ -121,31 +121,31 @@
     "src/pages/analytics/AnalyticsPage.tsx": "0f3e08cbf5195428",
     "src/pages/analytics/components/CorrelationMatrix.tsx": "3d70b77b3a4d5679",
     "src/pages/backtesting/BacktestAssumptionsPanel.tsx": "444d4b8a0463ea45",
-    "src/pages/backtesting/backtestCheckpointStorage.ts": "71fdd031440ecdaf",
-    "src/pages/backtesting/backtestCoverage.ts": "f64ba1329bfcd095",
     "src/pages/backtesting/BacktestCoverageCredibilityPanel.tsx": "ae29bcdc864b9f1b",
     "src/pages/backtesting/BacktestDataQualityPanel.tsx": "95e3df40418f5c74",
     "src/pages/backtesting/BacktestEquityPanel.tsx": "eaee0de17ab45ecf",
     "src/pages/backtesting/BacktestEvidenceHero.tsx": "f2b532653fc8cc6f",
     "src/pages/backtesting/BacktestEvidenceRail.tsx": "4c91aa617599db4f",
     "src/pages/backtesting/BacktestEvidenceTabs.tsx": "14f4fafc9f6d8fed",
-    "src/pages/backtesting/backtestHistory.ts": "d739a2b1583f267f",
     "src/pages/backtesting/BacktestHistoryPanel.tsx": "040dbb6107e2ad2c",
-    "src/pages/backtesting/BacktestingPage.tsx": "101c8cbdf8f18cd5",
-    "src/pages/backtesting/backtestingPresets.ts": "798fa64089144bf7",
-    "src/pages/backtesting/BacktestingTopBar.tsx": "495f1fd90c11a86b",
-    "src/pages/backtesting/backtestingTypes.ts": "fe25892e8343e1f2",
-    "src/pages/backtesting/backtestMetrics.ts": "f5794376a5d89682",
     "src/pages/backtesting/BacktestMetricStrip.tsx": "59cc85ff68432127",
     "src/pages/backtesting/BacktestNotesPanel.tsx": "9b3ccc25428a1d12",
-    "src/pages/backtesting/backtestPersistence.ts": "9a593eac209d5067",
     "src/pages/backtesting/BacktestRunBuilder.tsx": "bcc64856e720f0d0",
-    "src/pages/backtesting/backtestRunControl.ts": "9246f8f469033995",
     "src/pages/backtesting/BacktestRunHeader.tsx": "90fa57ffab4cd11c",
     "src/pages/backtesting/BacktestRuntimePanel.tsx": "b91d6ca9d6e66fee",
     "src/pages/backtesting/BacktestTradesPanel.tsx": "33a82687f6cb6d89",
+    "src/pages/backtesting/BacktestingPage.tsx": "101c8cbdf8f18cd5",
+    "src/pages/backtesting/BacktestingTopBar.tsx": "495f1fd90c11a86b",
     "src/pages/backtesting/LiquidityHunterReplayPanel.tsx": "d44f5563f40cb7a3",
     "src/pages/backtesting/MultiStrategyResearchPanel.tsx": "c4144125215d98ff",
+    "src/pages/backtesting/backtestCheckpointStorage.ts": "71fdd031440ecdaf",
+    "src/pages/backtesting/backtestCoverage.ts": "f64ba1329bfcd095",
+    "src/pages/backtesting/backtestHistory.ts": "d739a2b1583f267f",
+    "src/pages/backtesting/backtestMetrics.ts": "f5794376a5d89682",
+    "src/pages/backtesting/backtestPersistence.ts": "9a593eac209d5067",
+    "src/pages/backtesting/backtestRunControl.ts": "9246f8f469033995",
+    "src/pages/backtesting/backtestingPresets.ts": "798fa64089144bf7",
+    "src/pages/backtesting/backtestingTypes.ts": "fe25892e8343e1f2",
     "src/pages/backtesting/useBacktestDerivedEvidence.ts": "9e41cdeb3f063c62",
     "src/pages/backtesting/useBacktestHistorySync.ts": "e04cff40a58e7f8b",
     "src/pages/backtesting/useBacktestingOptimization.ts": "4c0b74cf0669d212",
@@ -158,12 +158,11 @@
     "src/pages/portfolio/PortfolioPage.tsx": "ca197a4215632033",
     "src/pages/positions/PositionsPage.tsx": "dba07c09a9eb2437",
     "src/pages/referenceUi.tsx": "d8c26d1aaec8420d",
+    "src/pages/screener/ScreenerPage.tsx": "78e5aad189df8f40",
     "src/pages/screener/screenerModel.ts": "1abe868d784d4d93",
-    "src/pages/screener/ScreenerPage.tsx": "d6655ee7ce5b7cae",
     "src/pages/screener/screenerPersistence.ts": "b759a5aebcf90184",
     "src/pages/screener/screenerTypes.ts": "1b6b57680fd6ce58",
     "src/pages/settings/SettingsPage.tsx": "e2957e5b2384c6e0",
-    "src/pages/strategies/directionPolicy.ts": "3743814d31a760b0",
     "src/pages/strategies/StrategyArtwork.tsx": "f12161926368afc3",
     "src/pages/strategies/StrategyCompareDialog.tsx": "70912a160b3ec209",
     "src/pages/strategies/StrategyDetailPage.tsx": "d3a8afb23088a01e",
@@ -171,8 +170,9 @@
     "src/pages/strategies/StrategyLibraryRail.tsx": "2ac3d544c407dfe4",
     "src/pages/strategies/StrategyModelWorkspace.tsx": "07dd856da2b9776b",
     "src/pages/strategies/StrategyPage.tsx": "b69fd9ba91fd4fbc",
-    "src/pages/strategies/strategyPresentation.ts": "d07c757d29209640",
     "src/pages/strategies/StrategyWorkflowStepper.tsx": "5bc5842dd21d979b",
+    "src/pages/strategies/directionPolicy.ts": "3743814d31a760b0",
+    "src/pages/strategies/strategyPresentation.ts": "d07c757d29209640",
     "src/pages/watchlist/WatchlistPage.tsx": "2d212f8f7c6bdf1e",
     "src/services/accountClient.ts": "cce597346b53e8c0",
     "src/services/accountTypes.ts": "76ada91fa93c7f5e",
@@ -217,6 +217,8 @@
     "src/services/liquidityHunter/dynamicFusionEngine.ts": "f95ea16107d759c0",
     "src/services/liquidityHunter/edgeCatalog.ts": "033c739505100b6b",
     "src/services/liquidityHunter/edgeRuntime.ts": "14c2ef66937155b8",
+    "src/services/liquidityHunter/edgeThresholdOptimizer.ts": "f47bfdfbb1295315",
+    "src/services/liquidityHunter/edgeThresholdRegistry.ts": "4bd9f30cb7bfc593",
     "src/services/liquidityHunter/edges/contrarianWalletEdge.ts": "b755deb07bc8f9bd",
     "src/services/liquidityHunter/edges/fundingOiEdge.ts": "dc4ad39884b06863",
     "src/services/liquidityHunter/edges/icebergAbsorptionEdge.ts": "4f7692bdec4f6367",
@@ -227,8 +229,6 @@
     "src/services/liquidityHunter/edges/sentimentVelocityEdge.ts": "233c42f7c9611f52",
     "src/services/liquidityHunter/edges/sessionLiquidityEdge.ts": "8982b603978f4adf",
     "src/services/liquidityHunter/edges/whalePositioningEdge.ts": "87581ac3b25f8c28",
-    "src/services/liquidityHunter/edgeThresholdOptimizer.ts": "f47bfdfbb1295315",
-    "src/services/liquidityHunter/edgeThresholdRegistry.ts": "4bd9f30cb7bfc593",
     "src/services/liquidityHunter/featureFlags.ts": "53f8bed2ef908598",
     "src/services/liquidityHunter/foundationRuntime.ts": "b1728bb56b2cb981",
     "src/services/liquidityHunter/fusionPolicy.ts": "1336afae5e7991c9",
@@ -261,7 +261,7 @@
     "src/services/multiStrategyResearchOrchestrator.ts": "e8b93eaacb45f9c3",
     "src/services/onlineStatistics.ts": "1daeb03bc920c477",
     "src/services/openInterestHistory.ts": "c9cefb15303970c8",
-    "src/services/operationsDiagnostics.ts": "9c063e8e78bc3de3",
+    "src/services/operationsDiagnostics.ts": "0f46347863c3e30e",
     "src/services/operationsStatus.ts": "db46e804cd10213d",
     "src/services/orderErrorMessages.ts": "f186e3db9f67a34f",
     "src/services/paperForwardEvaluator.ts": "4db4f627abf91c66",
@@ -401,14 +401,14 @@
     "src/tests/adaptiveValidationUniverseIdentity.test.ts": "d6b8bac82a1cafcd",
     "src/tests/apiMutate.test.ts": "32453345ee724dfa",
     "src/tests/apiValidation.test.ts": "6fef075db57a91c0",
-    "src/tests/autopilotControllerState.test.ts": "535a869ae27c86d9",
     "src/tests/autopilotControlWiring.test.ts": "6b324d8fc57028ab",
+    "src/tests/autopilotControllerState.test.ts": "535a869ae27c86d9",
     "src/tests/autopilotIntegration.test.ts": "aa0409a1e522890c",
     "src/tests/autopilotScheduler.test.ts": "cd265fc8cd0e03df",
     "src/tests/backtestExecutionCache.test.ts": "d2b8b9d2465c5618",
-    "src/tests/backtestingPageRegression.test.ts": "f187d182e85713ba",
     "src/tests/backtestMetricProvenance.test.ts": "adbb60a77a5efdf8",
     "src/tests/backtestRunControl.test.ts": "322f2e7cb6484174",
+    "src/tests/backtestingPageRegression.test.ts": "f187d182e85713ba",
     "src/tests/canonicalDecisionAdapter.test.ts": "05008d456d656aec",
     "src/tests/capabilityStatus.test.ts": "2263d9e36360b997",
     "src/tests/cliConfig.test.ts": "90534545365983a6",
@@ -525,6 +525,10 @@
     "src/utils/cliConfig.ts": "6b2d01ae787fe480",
     "src/utils/decisionMemoryExport.ts": "1b92f078532d3936",
     "src/utils/signalId.ts": "95fd03749e1c4710",
+    "scripts/_audit_freshmount.mts": "fc96f48586b42ec9",
+    "scripts/_audit_theme_watchlist.mts": "ee0b3c715af6b2f4",
+    "scripts/_audit_walkthrough.mts": "e9cfe9532d638cb5",
+    "scripts/_audit_watchlist2.mts": "f93e626be3cc72cb",
     "scripts/capture/buildContactSheet.mts": "74e3fc5652d1e180",
     "scripts/capture/capture-all-pages.mts": "708c91c6a4b26e44",
     "scripts/capture/capture-dashboard.mts": "1a1f610fd2f2ecf2",
@@ -557,6 +561,9 @@
     "scripts/gates/verifyFast.mjs": "9397e3e2807c1d25",
     "scripts/lib/captureServer.mts": "3e2cd0ebcec1d489",
     "scripts/lib/decisionMemoryLoader.mts": "50cfe14cb35aa525",
+    "scripts/qa/_qa_cdp_matched.mts": "1bf4a813dda045c8",
+    "scripts/qa/_qa_metric_audit.mts": "500b261eb4b40c9d",
+    "scripts/qa/_qa_range_probe.mts": "4fb6132390330a8f",
     "scripts/qa/accessibilitySmoke.spec.mts": "b8ca5b2c500db2fb",
     "scripts/qa/benchmarkBacktestingLearning.mts": "4afaf7b7d39734de",
     "scripts/qa/benchmarkCore10Fusion.mjs": "ccb153a6c5a873f3",
@@ -582,7 +589,7 @@
     "scripts/qa/runLiquidityHunterSafeCompletionRuntime.mjs": "1e39237c0dfdd785",
     "scripts/qa/runLiquidityHunterValidationAndProvidersRuntime.mjs": "45b66437c539da07",
     "scripts/qa/runMultiAgentMultiTradingRuntime.mjs": "8d130a5d3b8c2a95",
-    "scripts/qa/runOfflinePixelGate.mjs": "1a94eff79a5e512a",
+    "scripts/qa/runOfflinePixelGate.mjs": "61e7165f37ffbb5d",
     "scripts/qa/runProxyFetchOptionalDependencyRuntime.mjs": "ef4f68027a281f07",
     "scripts/qa/runStrategyOptimizationSafetyRuntime.mjs": "5889073a8895d84b",
     "scripts/qa/runSupplementalKeyRuntime.mjs": "03bbef6e5e36fb59",
@@ -592,10 +599,10 @@
     "scripts/qa/verifyAdaptiveGovernor.mjs": "feeef6dc6c153ef8",
     "scripts/qa/verifyAgentSafeMerge.mjs": "2232a795fe010d50",
     "scripts/qa/verifyAttachedFeatureParity.mjs": "7a2f8bfe8e2394d9",
+    "scripts/qa/verifyBacktestRuntime.mts": "b8bfc35aac8c81c4",
     "scripts/qa/verifyBacktestingReferenceOptimization.mjs": "39dc093903829f42",
     "scripts/qa/verifyBacktestingStudioModernization.mjs": "04706f2aa3f1dd10",
     "scripts/qa/verifyBacktestingWorkspace.mjs": "d73f6ff319ea9f01",
-    "scripts/qa/verifyBacktestRuntime.mts": "b8bfc35aac8c81c4",
     "scripts/qa/verifyConsolidationIntegration.mjs": "70aa5fd09e03b915",
     "scripts/qa/verifyCore10DynamicFusion.mjs": "a52df624ec756c59",
     "scripts/qa/verifyDesignTokens.mjs": "2811ed3e71f4f301",
@@ -603,6 +610,7 @@
     "scripts/qa/verifyLightTheme.mjs": "43d9c2038f0d732b",
     "scripts/qa/verifyLiquidityHunterBaseline.mjs": "6ffe7dde7a014d99",
     "scripts/qa/verifyLiquidityHunterFoundation.mjs": "b213d6b7d7f4a36f",
+    "scripts/qa/verifyLiveDataTruthfulness.mjs": "36254fe9703eb710",
     "scripts/qa/verifyMaximalMergeSafety.mjs": "cdf03e73b8c67b13",
     "scripts/qa/verifyMergedStageUi.mjs": "1dc98c16b0d8c8d1",
     "scripts/qa/verifyMultiAgentMultiTrading.mjs": "a3044e05410ddfec",
@@ -637,15 +645,29 @@
     "scripts/qa/verifyWorkspaceLightPolish.mjs": "74799b7fcd8c7702",
     "scripts/qa/verifyWorkspaceRuntime.mts": "2ad379b04ca9ef8f",
     "scripts/qa/workspaceGeometry.spec.mts": "0c38578a562f6856",
-    "scripts/qa/_qa_cdp_matched.mts": "1bf4a813dda045c8",
-    "scripts/qa/_qa_metric_audit.mts": "500b261eb4b40c9d",
-    "scripts/qa/_qa_range_probe.mts": "4fb6132390330a8f",
     "scripts/research/acquireProfitabilityData.mts": "7c351219079af1b4",
+    "scripts/research/lib/deflatedSharpe.ts": "18be852d9a80087f",
+    "scripts/research/lib/indicators.ts": "0309051f7a157330",
+    "scripts/research/lib/liquidationSqueeze.ts": "5e63f851ef6d221d",
+    "scripts/research/lib/onlineAllocator.ts": "62f42124af1d2a17",
+    "scripts/research/lib/openInterestAvailability.ts": "2bdafed9baf8fdd8",
+    "scripts/research/lib/researchDataset.ts": "ef35305f3f051d0c",
+    "scripts/research/lib/riskSizing.ts": "7af7b0869bd50531",
+    "scripts/research/lib/strategyFamilies.ts": "721b978b7907f04c",
+    "scripts/research/lib/tradeMetrics.ts": "87fac46605a59434",
+    "scripts/research/lib/universe.ts": "0f5ad50d1e607937",
+    "scripts/research/lib/walkForward.ts": "f6b63da942fa39be",
+    "scripts/research/runLiquidationSqueezeStudy.mts": "1f29d6e8b429d4d5",
+    "scripts/research/runOnlineEnsembleStudy.mts": "4918953de0197d62",
+    "scripts/research/runOpenInterestFeedAudit.mts": "5cad1697f197b12a",
+    "scripts/research/runRiskAdjustedWalkForward.mts": "1a6e82b3e5aed825",
     "scripts/research/runStructuralProfitabilityStudy.mts": "4105a5c19792bae5",
+    "scripts/research/runWalkForwardBaseline.mts": "b4d8085db5d6603d",
+    "scripts/utilities/_diag_body.mjs": "f28c6c65fb09b7a2",
     "scripts/utilities/analyzeDirectionDivergence.mts": "9fe70b113e4e4f5e",
     "scripts/utilities/auditOperationsPanel.mts": "dd0e6aca9058dbc8",
     "scripts/utilities/auditOverviewLayout.mts": "1373eb0fd998a44b",
-    "scripts/utilities/buildAndBundle.mts": "8d63e25bb6844c16",
+    "scripts/utilities/buildAndBundle.mts": "2a58ab4a7900e7d5",
     "scripts/utilities/checkDocumentationLinks.mts": "3a25a98ad80fd754",
     "scripts/utilities/cleanBuild.mjs": "237074ece9567b4f",
     "scripts/utilities/cleanGeneratedArtifacts.mjs": "e20e6bafde6ea56c",
@@ -677,15 +699,12 @@
     "scripts/utilities/updateVisualProjectDocumentation.mjs": "212ff2c7ce1e13ea",
     "scripts/utilities/validateLiquidityHunterMicrostructure.mts": "5efb0ea9d8ee8c15",
     "scripts/utilities/validateLiquidityHunterRecording.mts": "3441d7117b9583f8",
-    "scripts/utilities/_diag_body.mjs": "f28c6c65fb09b7a2",
-    "scripts/_audit_freshmount.mts": "fc96f48586b42ec9",
-    "scripts/_audit_theme_watchlist.mts": "ee0b3c715af6b2f4",
-    "scripts/_audit_walkthrough.mts": "e9cfe9532d638cb5",
-    "scripts/_audit_watchlist2.mts": "f93e626be3cc72cb",
     "tests/adaptiveThresholdGovernance.test.ts": "0eaa13cfd57827ff",
     "tests/adaptiveThresholdGovernanceGuardrail.test.ts": "718c78782fd30fe9",
     "tests/canonicalReplayUpgrade.test.ts": "bdf48f9ebaef9eb4",
     "tests/intelligence.test.ts": "4bb3509e495ace04",
+    "tests/research/onlineAllocator.test.ts": "2269822cc3747c72",
+    "tests/research/walkForwardHarness.test.ts": "d4b787652b19d1a7",
     "tests/riskGovernor.test.ts": "c1cd33f64e88ed2f",
     "tests/trackingDisplay.test.ts": "f6468ec7b45d0e3f",
     "tests/v3-contract-static.mjs": "755daa6dcf00e613",
@@ -6812,6 +6831,25 @@
       "docstring": ""
     },
     {
+      "name": "walk",
+      "qualname": "walk",
+      "kind": "function",
+      "file": "scripts/qa/verifyLiveDataTruthfulness.mjs",
+      "line": 30,
+      "lineEnd": 53,
+      "exported": false,
+      "async": false,
+      "params": [
+        "dir"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "function walk(dir) {",
+      "docstring": ""
+    },
+    {
       "name": "read",
       "qualname": "read",
       "kind": "arrow",
@@ -9590,6 +9628,2662 @@
       "docstring": ""
     },
     {
+      "name": "normalCdf",
+      "qualname": "normalCdf",
+      "kind": "function",
+      "file": "scripts/research/lib/deflatedSharpe.ts",
+      "line": 70,
+      "lineEnd": 80,
+      "exported": true,
+      "async": false,
+      "params": [
+        "x: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function normalCdf(x: number): number {",
+      "docstring": "Standard normal CDF via a high-accuracy erf approximation.\nAbramowitz & Stegun 7.1.26 has ~1e-7 absolute error, which is far below the precision\nanyone should read into a probability derived from a few hundred trades."
+    },
+    {
+      "name": "normalQuantile",
+      "qualname": "normalQuantile",
+      "kind": "function",
+      "file": "scripts/research/lib/deflatedSharpe.ts",
+      "line": 89,
+      "lineEnd": 122,
+      "exported": true,
+      "async": false,
+      "params": [
+        "p: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function normalQuantile(p: number): number {",
+      "docstring": "Inverse standard normal CDF (Acklam's rational approximation).\nRelative error below 1.15e-9 across the open unit interval, refined by one\nHalley step. Needed for the expected-maximum benchmark, which evaluates the quantile\nfunction at points very close to 1 when N is large."
+    },
+    {
+      "name": "returnMoments",
+      "qualname": "returnMoments",
+      "kind": "function",
+      "file": "scripts/research/lib/deflatedSharpe.ts",
+      "line": 138,
+      "lineEnd": 168,
+      "exported": true,
+      "async": false,
+      "params": [
+        "returns: readonly number[]"
+      ],
+      "returns": "ReturnMoments | null",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function returnMoments(returns: readonly number[]): ReturnMoments | null {",
+      "docstring": "Moments of a return series, or `null` when there are too few observations."
+    },
+    {
+      "name": "probabilisticSharpe",
+      "qualname": "probabilisticSharpe",
+      "kind": "function",
+      "file": "scripts/research/lib/deflatedSharpe.ts",
+      "line": 178,
+      "lineEnd": 190,
+      "exported": true,
+      "async": false,
+      "params": [
+        "moments: ReturnMoments",
+        "benchmark: number"
+      ],
+      "returns": "number | null",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function probabilisticSharpe(moments: ReturnMoments, benchmark: number): number | null {",
+      "docstring": "Probabilistic Sharpe Ratio: P(true Sharpe > `benchmark`).\nThe denominator is the asymptotic standard error of the Sharpe estimator under\nnon-normal returns. Negative skew and fat tails inflate it, which is the mechanism by\nwhich a strategy that makes steady small gains and occasional large losses is"
+    },
+    {
+      "name": "expectedMaximumSharpe",
+      "qualname": "expectedMaximumSharpe",
+      "kind": "function",
+      "file": "scripts/research/lib/deflatedSharpe.ts",
+      "line": 199,
+      "lineEnd": 206,
+      "exported": true,
+      "async": false,
+      "params": [
+        "trials: number",
+        "trialSharpeStdDev: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function expectedMaximumSharpe(trials: number, trialSharpeStdDev: number): number {",
+      "docstring": "Expected maximum Sharpe across `trials` independent draws under the null of no skill.\n`trialSharpeStdDev` is the cross-trial spread; with a single trial there is no spread\nto measure and the benchmark collapses to zero, which is the honest answer -- a search\nof size one carries no selection bias to "
+    },
+    {
+      "name": "deflatedSharpe",
+      "qualname": "deflatedSharpe",
+      "kind": "function",
+      "file": "scripts/research/lib/deflatedSharpe.ts",
+      "line": 234,
+      "lineEnd": 285,
+      "exported": true,
+      "async": false,
+      "params": [
+        "selectedReturns: readonly number[]",
+        "trialSharpes: readonly number[]"
+      ],
+      "returns": "DeflatedSharpeResult | null",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function deflatedSharpe(",
+      "docstring": "Deflate a selected configuration's Sharpe by the size and spread of the search.\n`selectedReturns` is the winner's out-of-sample per-trade return series.\n`trialSharpes` is the Sharpe of every configuration evaluated -- the whole search, not\nthe shortlist."
+    },
+    {
+      "name": "requireWindow",
+      "qualname": "requireWindow",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 21,
+      "lineEnd": 25,
+      "exported": false,
+      "async": false,
+      "params": [
+        "window: number",
+        "name = 'window'"
+      ],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function requireWindow(window: number, name = 'window'): void {",
+      "docstring": ""
+    },
+    {
+      "name": "sma",
+      "qualname": "sma",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 28,
+      "lineEnd": 47,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function sma(values: readonly MaybeNumber[], window: number): MaybeNumber[] {",
+      "docstring": "Simple moving average over the `window` values ending at `i`, inclusive."
+    },
+    {
+      "name": "rollingStd",
+      "qualname": "rollingStd",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 50,
+      "lineEnd": 67,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function rollingStd(values: readonly MaybeNumber[], window: number): MaybeNumber[] {",
+      "docstring": "Population standard deviation over the `window` values ending at `i`, inclusive."
+    },
+    {
+      "name": "rollingMax",
+      "qualname": "rollingMax",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 70,
+      "lineEnd": 91,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function rollingMax(values: readonly MaybeNumber[], window: number): MaybeNumber[] {",
+      "docstring": "Highest value over the `window` values ending at `i`, inclusive."
+    },
+    {
+      "name": "rollingMin",
+      "qualname": "rollingMin",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 94,
+      "lineEnd": 115,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function rollingMin(values: readonly MaybeNumber[], window: number): MaybeNumber[] {",
+      "docstring": "Lowest value over the `window` values ending at `i`, inclusive."
+    },
+    {
+      "name": "pctChange",
+      "qualname": "pctChange",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 118,
+      "lineEnd": 130,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function pctChange(values: readonly MaybeNumber[], window: number): MaybeNumber[] {",
+      "docstring": "Percentage change from `i - window` to `i`. Undefined before enough history."
+    },
+    {
+      "name": "trueRange",
+      "qualname": "trueRange",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 136,
+      "lineEnd": 148,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function trueRange(candles: readonly Candle[]): MaybeNumber[] {",
+      "docstring": "True range per bar. Element 0 is `undefined` because a true range needs the\nprevious close."
+    },
+    {
+      "name": "atr",
+      "qualname": "atr",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 151,
+      "lineEnd": 153,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function atr(candles: readonly Candle[], window: number): MaybeNumber[] {",
+      "docstring": "Simple (not Wilder-smoothed) average true range over `window` bars ending at `i`."
+    },
+    {
+      "name": "trailingPercentileRank",
+      "qualname": "trailingPercentileRank",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 163,
+      "lineEnd": 193,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function trailingPercentileRank(",
+      "docstring": "Fraction of the trailing `window` observations (ending at `i`, inclusive) that are\nless than or equal to the observation at `i`.\nUsed to ask \"is current volatility unusually low *for this market*\" without\nhard-coding an absolute threshold that would mean different things for BTC in 2021\nand DOGE in "
+    },
+    {
+      "name": "closes",
+      "qualname": "closes",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 196,
+      "lineEnd": 198,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function closes(candles: readonly Candle[]): number[] {",
+      "docstring": "Close prices as a plain array, for feeding the primitives above."
+    },
+    {
+      "name": "highs",
+      "qualname": "highs",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 200,
+      "lineEnd": 202,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function highs(candles: readonly Candle[]): number[] {",
+      "docstring": ""
+    },
+    {
+      "name": "lows",
+      "qualname": "lows",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 204,
+      "lineEnd": 206,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function lows(candles: readonly Candle[]): number[] {",
+      "docstring": ""
+    },
+    {
+      "name": "volumes",
+      "qualname": "volumes",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 208,
+      "lineEnd": 210,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function volumes(candles: readonly Candle[]): number[] {",
+      "docstring": ""
+    },
+    {
+      "name": "rollingZScore",
+      "qualname": "rollingZScore",
+      "kind": "function",
+      "file": "scripts/research/lib/indicators.ts",
+      "line": 217,
+      "lineEnd": 231,
+      "exported": true,
+      "async": false,
+      "params": [
+        "values: readonly MaybeNumber[]",
+        "window: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function rollingZScore(values: readonly MaybeNumber[], window: number): MaybeNumber[] {",
+      "docstring": "Z-score of `values[i]` against the mean and standard deviation of the trailing\n`window`, inclusive of `i`. Undefined when the deviation is zero, because a\ndivision there would produce an infinite signal from a flat market."
+    },
+    {
+      "name": "isZeroEffect",
+      "qualname": "isZeroEffect",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 150,
+      "lineEnd": 157,
+      "exported": true,
+      "async": false,
+      "params": [
+        "params: LiquidationSqueezeParams"
+      ],
+      "returns": "boolean",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function isZeroEffect(params: LiquidationSqueezeParams): boolean {",
+      "docstring": ""
+    },
+    {
+      "name": "readsOpenInterest",
+      "qualname": "readsOpenInterest",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 160,
+      "lineEnd": 162,
+      "exported": true,
+      "async": false,
+      "params": [
+        "params: LiquidationSqueezeParams"
+      ],
+      "returns": "boolean",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function readsOpenInterest(params: LiquidationSqueezeParams): boolean {",
+      "docstring": "True when any part of this configuration reads open interest."
+    },
+    {
+      "name": "openInterestBuildupRank",
+      "qualname": "openInterestBuildupRank",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 179,
+      "lineEnd": 184,
+      "exported": true,
+      "async": false,
+      "params": [
+        "openInterest: readonly MaybeNumber[]",
+        "lookbackBars: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function openInterestBuildupRank(",
+      "docstring": "Trailing percentile rank of open-interest buildup, aligned to the candle grid.\nBuildup is the percentage change in open interest over `lookbackBars`, then ranked\nagainst its own trailing distribution so the threshold means the same thing for BTC\nin 2022 and DOGE in 2023. Both primitives fail closed "
+    },
+    {
+      "name": "prepareSqueezeIndicators",
+      "qualname": "prepareSqueezeIndicators",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 206,
+      "lineEnd": 223,
+      "exported": true,
+      "async": false,
+      "params": [
+        "series: SymbolSeries",
+        "atrBars: number"
+      ],
+      "returns": "SqueezeIndicators",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function prepareSqueezeIndicators(",
+      "docstring": ""
+    },
+    {
+      "name": "positionsFromIndicators",
+      "qualname": "positionsFromIndicators",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 241,
+      "lineEnd": 322,
+      "exported": true,
+      "async": false,
+      "params": [
+        "indicators: SqueezeIndicators",
+        "params: LiquidationSqueezeParams"
+      ],
+      "returns": "Direction[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function positionsFromIndicators(",
+      "docstring": "Position series for one symbol, from prepared indicators.\nThe entry decision reproduces the base family bar for bar: compression is read at\n`i - 1`, the breakout level is the range through `i - 1`, and the trade is entered at\nthe close of `i`. Two gates are layered on top, both evaluated with inform"
+    },
+    {
+      "name": "liquidationSqueezePositions",
+      "qualname": "liquidationSqueezePositions",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 325,
+      "lineEnd": 330,
+      "exported": true,
+      "async": false,
+      "params": [
+        "series: SymbolSeries",
+        "params: LiquidationSqueezeParams"
+      ],
+      "returns": "Direction[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function liquidationSqueezePositions(",
+      "docstring": "Convenience wrapper: prepare indicators and build positions in one call."
+    },
+    {
+      "name": "buildGrid",
+      "qualname": "buildGrid",
+      "kind": "function",
+      "file": "scripts/research/lib/liquidationSqueeze.ts",
+      "line": 400,
+      "lineEnd": 432,
+      "exported": true,
+      "async": false,
+      "params": [
+        "thresholds: readonly ThresholdPair[]",
+        "trails: readonly TrailPair[]"
+      ],
+      "returns": "GridCell[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function buildGrid(",
+      "docstring": "Cross the base grid with a set of threshold and trail pairs."
+    },
+    {
+      "name": "AllocatorConfigurationError",
+      "qualname": "AllocatorConfigurationError",
+      "kind": "class",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 143,
+      "lineEnd": 148,
+      "exported": true,
+      "async": false,
+      "params": [],
+      "returns": "AllocatorConfigurationError",
+      "tags": [
+        "script"
+      ],
+      "signature": "export class AllocatorConfigurationError extends Error {",
+      "docstring": ""
+    },
+    {
+      "name": "normalizeLoss",
+      "qualname": "normalizeLoss",
+      "kind": "function",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 155,
+      "lineEnd": 170,
+      "exported": true,
+      "async": false,
+      "params": [
+        "returnPct: number",
+        "returnCapPct: number"
+      ],
+      "returns": "{ loss: number; clipped: boolean }",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function normalizeLoss(",
+      "docstring": "Map a return in percentage points onto the unit interval the bound requires.\nReturns the loss and whether the cap bound, so clipping frequency can be reported\ninstead of hidden."
+    },
+    {
+      "name": "theoreticalRegretBound",
+      "qualname": "theoreticalRegretBound",
+      "kind": "function",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 179,
+      "lineEnd": 198,
+      "exported": true,
+      "async": false,
+      "params": [
+        "expertCount: number",
+        "horizon: number",
+        "etaSchedule: EtaSchedule"
+      ],
+      "returns": "{ conservative: number; tight: number }",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function theoreticalRegretBound(",
+      "docstring": "The theoretical regret bounds for N experts over T rounds.\n`fixed`   -- eta = sqrt(2 ln N / T): conservative sqrt(2 T ln N), tight sqrt((T/2) ln N).\n`anytime` -- eta_t = sqrt(ln N / t): the horizon is not used to tune eta, and the standard\n             constant is 2 sqrt(T ln N); sqrt(2 T ln N) is r"
+    },
+    {
+      "name": "etaForRound",
+      "qualname": "etaForRound",
+      "kind": "function",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 201,
+      "lineEnd": 216,
+      "exported": true,
+      "async": false,
+      "params": [
+        "expertCount: number",
+        "horizon: number",
+        "etaSchedule: EtaSchedule",
+        "round: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function etaForRound(",
+      "docstring": "eta for a given 1-based round. `fixed` ignores the round; `anytime` decays as 1/sqrt(t)."
+    },
+    {
+      "name": "OnlineAllocator",
+      "qualname": "OnlineAllocator",
+      "kind": "class",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 218,
+      "lineEnd": 491,
+      "exported": true,
+      "async": false,
+      "params": [],
+      "returns": "OnlineAllocator",
+      "tags": [
+        "script"
+      ],
+      "signature": "export class OnlineAllocator {",
+      "docstring": ""
+    },
+    {
+      "name": "weightsFor",
+      "qualname": "OnlineAllocator.weightsFor",
+      "kind": "method",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 263,
+      "lineEnd": 340,
+      "exported": false,
+      "async": false,
+      "params": [
+        "awake: readonly boolean[]"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "weightsFor(awake: readonly boolean[]): number[] {",
+      "docstring": "Weights for the next round given which experts are awake. Exposed separately from\n`observe` so a caller can inspect the weights that will be applied before the round's\nreturns are known -- which is also the property that makes the procedure causal."
+    },
+    {
+      "name": "observe",
+      "qualname": "OnlineAllocator.observe",
+      "kind": "method",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 347,
+      "lineEnd": 416,
+      "exported": false,
+      "async": false,
+      "params": [
+        "returns: readonly (number | undefined)[]"
+      ],
+      "returns": "RoundOutcome",
+      "tags": [
+        "script"
+      ],
+      "signature": "observe(returns: readonly (number | undefined)[]): RoundOutcome {",
+      "docstring": "Play one round. `returns[i]` is expert i's realised return for the round in percentage\npoints, or `undefined` if that expert is asleep. Asleep experts receive no substitute\nloss and no weight update."
+    },
+    {
+      "name": "expertCumulativeLosses",
+      "qualname": "OnlineAllocator.expertCumulativeLosses",
+      "kind": "method",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 419,
+      "lineEnd": 421,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "expertCumulativeLosses(): number[] {",
+      "docstring": "Cumulative loss per expert over its own awake rounds. Copy, not the live array."
+    },
+    {
+      "name": "expertAwakeRounds",
+      "qualname": "OnlineAllocator.expertAwakeRounds",
+      "kind": "method",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 423,
+      "lineEnd": 425,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "expertAwakeRounds(): number[] {",
+      "docstring": ""
+    },
+    {
+      "name": "regretReport",
+      "qualname": "OnlineAllocator.regretReport",
+      "kind": "method",
+      "file": "scripts/research/lib/onlineAllocator.ts",
+      "line": 427,
+      "lineEnd": 490,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "RegretReport",
+      "tags": [
+        "script"
+      ],
+      "signature": "regretReport(): RegretReport {",
+      "docstring": ""
+    },
+    {
+      "name": "alignFieldToCandles",
+      "qualname": "alignFieldToCandles",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 149,
+      "lineEnd": 163,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "openInterest: readonly OpenInterestPoint[]",
+        "field: OpenInterestField"
+      ],
+      "returns": "(number | undefined)[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function alignFieldToCandles(",
+      "docstring": "Align one archive field onto a candle grid.\nA value must be finite and strictly positive to count. The `> 0` guard is not\ncosmetic: the archive encodes upstream outages as zeros (13 hours in the\ndevelopment window, identical across all ten symbols), and every field here is a\nquantity or a ratio for "
+    },
+    {
+      "name": "quarterKey",
+      "qualname": "quarterKey",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 165,
+      "lineEnd": 168,
+      "exported": false,
+      "async": false,
+      "params": [
+        "ms: number"
+      ],
+      "returns": "string",
+      "tags": [
+        "script"
+      ],
+      "signature": "function quarterKey(ms: number): string {",
+      "docstring": ""
+    },
+    {
+      "name": "coveredEverySymbol",
+      "qualname": "coveredEverySymbol",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 171,
+      "lineEnd": 182,
+      "exported": false,
+      "async": false,
+      "params": [
+        "perSymbol: readonly (number | undefined)[][]"
+      ],
+      "returns": "boolean[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function coveredEverySymbol(perSymbol: readonly (number | undefined)[][]): boolean[] {",
+      "docstring": "Bars where *every* symbol carries a value -- the constraint a pooled family faces."
+    },
+    {
+      "name": "windowCoverage",
+      "qualname": "windowCoverage",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 184,
+      "lineEnd": 214,
+      "exported": false,
+      "async": false,
+      "params": [
+        "covered: readonly boolean[]",
+        "perSymbol: readonly (number | undefined)[][]",
+        "symbols: readonly string[]",
+        "start: number",
+        "end: number"
+      ],
+      "returns": "WindowCoverage",
+      "tags": [
+        "script"
+      ],
+      "signature": "function windowCoverage(",
+      "docstring": ""
+    },
+    {
+      "name": "classify",
+      "qualname": "classify",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 216,
+      "lineEnd": 247,
+      "exported": false,
+      "async": false,
+      "params": [
+        "train: WindowCoverage",
+        "test: WindowCoverage"
+      ],
+      "returns": "{ status: ConditioningStatus; reason: string; }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function classify(train: WindowCoverage, test: WindowCoverage): {",
+      "docstring": ""
+    },
+    {
+      "name": "availabilityForAlignedSeries",
+      "qualname": "availabilityForAlignedSeries",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 269,
+      "lineEnd": 351,
+      "exported": true,
+      "async": false,
+      "params": [
+        "series: string",
+        "perSymbol: readonly (number | undefined)[][]",
+        "symbols: readonly string[]",
+        "candles: readonly Candle[]",
+        "splits: readonly WalkForwardSplit[]"
+      ],
+      "returns": "SeriesAvailability",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function availabilityForAlignedSeries(",
+      "docstring": "Coverage report for one already-aligned series, per split and per quarter.\nThis is the shared core, and it deliberately knows nothing about where the series\ncame from. A raw archive column and a derived indicator are subject to exactly the\nsame question -- is this input present in the window where a"
+    },
+    {
+      "name": "buildOpenInterestAvailability",
+      "qualname": "buildOpenInterestAvailability",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 367,
+      "lineEnd": 382,
+      "exported": true,
+      "async": false,
+      "params": [
+        "request: AvailabilityRequest"
+      ],
+      "returns": "SeriesAvailability[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function buildOpenInterestAvailability(",
+      "docstring": "Build the availability map for the raw archive fields.\nEvery field in `fields` is measured whether or not it ends up being used, because\n\"we did not use this field\" is only a defensible statement if the measurement that\nruled it out is on the record.\nNote what this does *not* establish. A raw field "
+    },
+    {
+      "name": "statusFor",
+      "qualname": "statusFor",
+      "kind": "function",
+      "file": "scripts/research/lib/openInterestAvailability.ts",
+      "line": 385,
+      "lineEnd": 393,
+      "exported": true,
+      "async": false,
+      "params": [
+        "availability: readonly SeriesAvailability[]",
+        "series: string",
+        "splitIndex: number"
+      ],
+      "returns": "ConditioningStatus",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function statusFor(",
+      "docstring": "Lookup helper so the runner never has to re-scan the map."
+    },
+    {
+      "name": "HoldoutLeakageError",
+      "qualname": "HoldoutLeakageError",
+      "kind": "class",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 118,
+      "lineEnd": 123,
+      "exported": true,
+      "async": false,
+      "params": [],
+      "returns": "HoldoutLeakageError",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export class HoldoutLeakageError extends Error {",
+      "docstring": ""
+    },
+    {
+      "name": "symbolFileStem",
+      "qualname": "symbolFileStem",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 125,
+      "lineEnd": 127,
+      "exported": false,
+      "async": false,
+      "params": [
+        "symbol: string"
+      ],
+      "returns": "string",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "function symbolFileStem(symbol: string): string {",
+      "docstring": ""
+    },
+    {
+      "name": "readEnvelope",
+      "qualname": "readEnvelope",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 129,
+      "lineEnd": 148,
+      "exported": false,
+      "async": false,
+      "params": [
+        "fileName: string"
+      ],
+      "returns": "SeriesEnvelope<Row>",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "function readEnvelope<Row>(fileName: string): SeriesEnvelope<Row> {",
+      "docstring": ""
+    },
+    {
+      "name": "assertNoHoldoutLeakage",
+      "qualname": "assertNoHoldoutLeakage",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 156,
+      "lineEnd": 166,
+      "exported": true,
+      "async": false,
+      "params": [
+        "rows: readonly { t: number }[]",
+        "label: string"
+      ],
+      "returns": "void",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function assertNoHoldoutLeakage(rows: readonly { t: number }[], label: string): void {",
+      "docstring": "Throws if any row is at or after the sealed holdout boundary.\nCalled by every loader in this module *after* filtering, so that the guard also\ncovers rows assembled or concatenated by a caller."
+    },
+    {
+      "name": "withinDevelopmentWindow",
+      "qualname": "withinDevelopmentWindow",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 168,
+      "lineEnd": 170,
+      "exported": false,
+      "async": false,
+      "params": [
+        "rows: readonly Row[]"
+      ],
+      "returns": "Row[]",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "function withinDevelopmentWindow<Row extends { t: number }>(rows: readonly Row[]): Row[] {",
+      "docstring": ""
+    },
+    {
+      "name": "assertStrictlyIncreasing",
+      "qualname": "assertStrictlyIncreasing",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 172,
+      "lineEnd": 181,
+      "exported": false,
+      "async": false,
+      "params": [
+        "rows: readonly { t: number }[]",
+        "label: string"
+      ],
+      "returns": "void",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "function assertStrictlyIncreasing(rows: readonly { t: number }[], label: string): void {",
+      "docstring": ""
+    },
+    {
+      "name": "loadDevelopmentCandles",
+      "qualname": "loadDevelopmentCandles",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 195,
+      "lineEnd": 209,
+      "exported": true,
+      "async": false,
+      "params": [
+        "symbol: string"
+      ],
+      "returns": "LoadedSeries<Candle>",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function loadDevelopmentCandles(symbol: string): LoadedSeries<Candle> {",
+      "docstring": "Hourly OHLCV candles for one symbol, restricted to the development window."
+    },
+    {
+      "name": "loadDevelopmentFunding",
+      "qualname": "loadDevelopmentFunding",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 212,
+      "lineEnd": 226,
+      "exported": true,
+      "async": false,
+      "params": [
+        "symbol: string"
+      ],
+      "returns": "LoadedSeries<FundingEvent>",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function loadDevelopmentFunding(symbol: string): LoadedSeries<FundingEvent> {",
+      "docstring": "Realized funding events for one symbol, restricted to the development window."
+    },
+    {
+      "name": "loadDevelopmentOpenInterest",
+      "qualname": "loadDevelopmentOpenInterest",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 234,
+      "lineEnd": 248,
+      "exported": true,
+      "async": false,
+      "params": [
+        "symbol: string"
+      ],
+      "returns": "LoadedSeries<OpenInterestPoint>",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function loadDevelopmentOpenInterest(symbol: string): LoadedSeries<OpenInterestPoint> {",
+      "docstring": "Open interest plus top-trader / taker-flow ratios for one symbol, restricted to\nthe development window. Note the file itself only starts 2022-01-01, so any\nfamily using this series has a genuinely shorter development span than the\ncandle-only families. That is a real coverage limit, not something to"
+    },
+    {
+      "name": "alignEventSeriesToCandles",
+      "qualname": "alignEventSeriesToCandles",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 266,
+      "lineEnd": 287,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "events: readonly Row[]",
+        "maxStalenessMs: number"
+      ],
+      "returns": "(Row | undefined)[]",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function alignEventSeriesToCandles<Row extends { t: number }>(",
+      "docstring": "Align an irregular event series onto a candle grid with strict as-of semantics.\n`out[i]` is the most recent event whose timestamp is `<= candles[i].t`, or\n`undefined` when no such event exists. Two properties matter for honesty:\n 1. **No lookahead.** An event stamped inside bar `i` (after its open) "
+    },
+    {
+      "name": "alignFundingToCandles",
+      "qualname": "alignFundingToCandles",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 300,
+      "lineEnd": 307,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "funding: readonly FundingEvent[]"
+      ],
+      "returns": "(number | undefined)[]",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function alignFundingToCandles(",
+      "docstring": "Aligned funding rates for a candle grid. `mark` is deliberately not exposed\nhere: the archive stores 0 where no mark price was published, and treating that\nas a real price would be fabrication. Only `rate` is used."
+    },
+    {
+      "name": "alignOpenInterestToCandles",
+      "qualname": "alignOpenInterestToCandles",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 326,
+      "lineEnd": 333,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "openInterest: readonly OpenInterestPoint[]"
+      ],
+      "returns": "(number | undefined)[]",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function alignOpenInterestToCandles(",
+      "docstring": "Aligned open interest (base units) for a candle grid, `undefined` on genuine holes.\nA zero is rejected, not returned. `runOpenInterestFeedAudit.mts` found 13 hours in the\ndevelopment window where the archive stores `oi: 0` on every one of the ten symbols\nsimultaneously (a ten-hour block from 2022-03"
+    },
+    {
+      "name": "resampleCandles",
+      "qualname": "resampleCandles",
+      "kind": "function",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 343,
+      "lineEnd": 389,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "hoursPerBar: number"
+      ],
+      "returns": "Candle[]",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "export function resampleCandles(candles: readonly Candle[], hoursPerBar: number): Candle[] {",
+      "docstring": "Resample an hourly candle series to a coarser bar size, in whole hours.\nOnly groups that are *complete* are emitted, so a partial trailing group is\ndropped rather than published as a short bar. Grouping is by absolute epoch\nboundary (`t % sizeMs === 0`) rather than by array position, so a missing ho"
+    },
+    {
+      "name": "flush",
+      "qualname": "flush",
+      "kind": "arrow",
+      "file": "scripts/research/lib/researchDataset.ts",
+      "line": 356,
+      "lineEnd": 376,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "ml",
+        "script"
+      ],
+      "signature": "(): void => {",
+      "docstring": ""
+    },
+    {
+      "name": "logReturnsPct",
+      "qualname": "logReturnsPct",
+      "kind": "function",
+      "file": "scripts/research/lib/riskSizing.ts",
+      "line": 46,
+      "lineEnd": 56,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function logReturnsPct(candles: readonly Candle[]): MaybeNumber[] {",
+      "docstring": "Per-bar log returns in percent. Element 0 is `undefined`: it has no predecessor."
+    },
+    {
+      "name": "realizedVolPct",
+      "qualname": "realizedVolPct",
+      "kind": "function",
+      "file": "scripts/research/lib/riskSizing.ts",
+      "line": 62,
+      "lineEnd": 64,
+      "exported": true,
+      "async": false,
+      "params": [
+        "candles: readonly Candle[]",
+        "windowBars: number"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function realizedVolPct(candles: readonly Candle[], windowBars: number): MaybeNumber[] {",
+      "docstring": "Realized volatility in percent per bar: the standard deviation of the trailing\n`windowBars` log returns ending at `i`, inclusive."
+    },
+    {
+      "name": "crossSectionalMedian",
+      "qualname": "crossSectionalMedian",
+      "kind": "function",
+      "file": "scripts/research/lib/riskSizing.ts",
+      "line": 71,
+      "lineEnd": 92,
+      "exported": true,
+      "async": false,
+      "params": [
+        "series: readonly MaybeNumber[][]"
+      ],
+      "returns": "MaybeNumber[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function crossSectionalMedian(series: readonly MaybeNumber[][]): MaybeNumber[] {",
+      "docstring": "Cross-sectional median of a set of index-aligned series. `undefined` at a bar where\nfewer than half the series have a value, because a median of one or two symbols is\nnot a description of the universe."
+    },
+    {
+      "name": "volatilityScaleSeries",
+      "qualname": "volatilityScaleSeries",
+      "kind": "function",
+      "file": "scripts/research/lib/riskSizing.ts",
+      "line": 105,
+      "lineEnd": 125,
+      "exported": true,
+      "async": false,
+      "params": [
+        "ownVolPct: readonly MaybeNumber[]",
+        "referenceVolPct: readonly MaybeNumber[] | number",
+        "bounds: ScaleBounds"
+      ],
+      "returns": "(number | undefined)[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function volatilityScaleSeries(",
+      "docstring": "`reference / own`, bounded. `undefined` wherever either input is missing, so the\ncaller cannot silently fall back to full size."
+    },
+    {
+      "name": "buildSizingSeries",
+      "qualname": "buildSizingSeries",
+      "kind": "function",
+      "file": "scripts/research/lib/riskSizing.ts",
+      "line": 154,
+      "lineEnd": 181,
+      "exported": true,
+      "async": false,
+      "params": [
+        "universe: readonly { symbol: string; candles: readonly Candle[] }[]",
+        "policy: SizingPolicy"
+      ],
+      "returns": "Map<string, (number | undefined)[] | undefined>",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function buildSizingSeries(",
+      "docstring": "Build one exposure-multiplier series per symbol for a policy.\nThe universe is passed whole because `riskParity` needs the cross-sectional median at\neach bar; `volTarget` and `none` only read their own symbol."
+    },
+    {
+      "name": "zeros",
+      "qualname": "zeros",
+      "kind": "function",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 100,
+      "lineEnd": 102,
+      "exported": false,
+      "async": false,
+      "params": [
+        "length: number"
+      ],
+      "returns": "Direction[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function zeros(length: number): Direction[] {",
+      "docstring": ""
+    },
+    {
+      "name": "perSymbol",
+      "qualname": "perSymbol",
+      "kind": "function",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 105,
+      "lineEnd": 121,
+      "exported": false,
+      "async": false,
+      "params": [
+        "spec: Omit<StrategyFamily, 'build'> & { positions(series: SymbolSeries, params: ParamValues): Direction[]; }"
+      ],
+      "returns": "StrategyFamily",
+      "tags": [
+        "script"
+      ],
+      "signature": "function perSymbol(",
+      "docstring": "Wrap a per-symbol rule as a family that equal-weights the whole universe."
+    },
+    {
+      "name": "build",
+      "qualname": "build",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 113,
+      "lineEnd": 119,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "build(universe, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "grid",
+      "qualname": "grid",
+      "kind": "function",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 123,
+      "lineEnd": 136,
+      "exported": false,
+      "async": false,
+      "params": [
+        "spec: Record<string, readonly number[]>"
+      ],
+      "returns": "ParamValues[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function grid(spec: Record<string, readonly number[]>): ParamValues[] {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 150,
+      "lineEnd": 161,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 183,
+      "lineEnd": 219,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 234,
+      "lineEnd": 262,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 277,
+      "lineEnd": 314,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 329,
+      "lineEnd": 354,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 369,
+      "lineEnd": 381,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "positions",
+      "qualname": "positions",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 396,
+      "lineEnd": 409,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "positions(series, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "crossSectional",
+      "qualname": "crossSectional",
+      "kind": "function",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 418,
+      "lineEnd": 473,
+      "exported": false,
+      "async": false,
+      "params": [
+        "meta: Omit<StrategyFamily, 'build'>",
+        "mode: RankMode"
+      ],
+      "returns": "StrategyFamily",
+      "tags": [
+        "script"
+      ],
+      "signature": "function crossSectional(",
+      "docstring": ""
+    },
+    {
+      "name": "build",
+      "qualname": "build",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 424,
+      "lineEnd": 471,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "build(universe, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "build",
+      "qualname": "build",
+      "kind": "method",
+      "file": "scripts/research/lib/strategyFamilies.ts",
+      "line": 528,
+      "lineEnd": 578,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe",
+        "params"
+      ],
+      "returns": "inferred",
+      "tags": [
+        "script"
+      ],
+      "signature": "build(universe, params) {",
+      "docstring": ""
+    },
+    {
+      "name": "fundingIntervalBarsFor",
+      "qualname": "fundingIntervalBarsFor",
+      "kind": "function",
+      "file": "scripts/research/lib/tradeMetrics.ts",
+      "line": 135,
+      "lineEnd": 138,
+      "exported": false,
+      "async": false,
+      "params": [
+        "hoursPerBar: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function fundingIntervalBarsFor(hoursPerBar: number): number {",
+      "docstring": ""
+    },
+    {
+      "name": "buildTrades",
+      "qualname": "buildTrades",
+      "kind": "function",
+      "file": "scripts/research/lib/tradeMetrics.ts",
+      "line": 147,
+      "lineEnd": 213,
+      "exported": true,
+      "async": false,
+      "params": [
+        "args: BuildTradesArgs"
+      ],
+      "returns": "Trade[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function buildTrades(args: BuildTradesArgs): Trade[] {",
+      "docstring": "Convert a position series into closed trades.\nConsecutive bars carrying the same non-zero exposure form one trade rather than\none trade per bar, so a family that simply stays long is not charged a round trip\nevery hour."
+    },
+    {
+      "name": "maxDrawdownPct",
+      "qualname": "maxDrawdownPct",
+      "kind": "function",
+      "file": "scripts/research/lib/tradeMetrics.ts",
+      "line": 222,
+      "lineEnd": 244,
+      "exported": true,
+      "async": false,
+      "params": [
+        "trades: readonly Trade[]"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function maxDrawdownPct(trades: readonly Trade[]): number {",
+      "docstring": "Peak-to-trough decline of the cumulative net-P&L curve, in percentage points.\nTrades are sorted by exit time first, because a book spanning several symbols\nrealizes them interleaved, and walking them in per-symbol order would describe a\npath the account never took."
+    },
+    {
+      "name": "summarizeTrades",
+      "qualname": "summarizeTrades",
+      "kind": "function",
+      "file": "scripts/research/lib/tradeMetrics.ts",
+      "line": 246,
+      "lineEnd": 307,
+      "exported": true,
+      "async": false,
+      "params": [
+        "trades: readonly Trade[]"
+      ],
+      "returns": "TradeSummary",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function summarizeTrades(trades: readonly Trade[]): TradeSummary {",
+      "docstring": ""
+    },
+    {
+      "name": "loadDevelopmentUniverse",
+      "qualname": "loadDevelopmentUniverse",
+      "kind": "function",
+      "file": "scripts/research/lib/universe.ts",
+      "line": 42,
+      "lineEnd": 88,
+      "exported": true,
+      "async": false,
+      "params": [],
+      "returns": "LoadedUniverse",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function loadDevelopmentUniverse(): LoadedUniverse {",
+      "docstring": ""
+    },
+    {
+      "name": "WalkForwardConfigurationError",
+      "qualname": "WalkForwardConfigurationError",
+      "kind": "class",
+      "file": "scripts/research/lib/walkForward.ts",
+      "line": 61,
+      "lineEnd": 66,
+      "exported": true,
+      "async": false,
+      "params": [],
+      "returns": "WalkForwardConfigurationError",
+      "tags": [
+        "script"
+      ],
+      "signature": "export class WalkForwardConfigurationError extends Error {",
+      "docstring": ""
+    },
+    {
+      "name": "requirePositiveInteger",
+      "qualname": "requirePositiveInteger",
+      "kind": "function",
+      "file": "scripts/research/lib/walkForward.ts",
+      "line": 68,
+      "lineEnd": 72,
+      "exported": false,
+      "async": false,
+      "params": [
+        "value: number",
+        "name: string"
+      ],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function requirePositiveInteger(value: number, name: string): void {",
+      "docstring": ""
+    },
+    {
+      "name": "buildWalkForwardSplits",
+      "qualname": "buildWalkForwardSplits",
+      "kind": "function",
+      "file": "scripts/research/lib/walkForward.ts",
+      "line": 83,
+      "lineEnd": 123,
+      "exported": true,
+      "async": false,
+      "params": [
+        "request: WalkForwardSplitRequest"
+      ],
+      "returns": "WalkForwardPlan",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function buildWalkForwardSplits(request: WalkForwardSplitRequest): WalkForwardPlan {",
+      "docstring": "Build a rolling (non-anchored) walk-forward plan.\nRolling rather than anchored/expanding is deliberate: an expanding train range\ngives later splits many times more history than earlier ones, so a family that\nonly works in one regime can look increasingly good purely because the early\nregime keeps be"
+    },
+    {
+      "name": "assertSplitsAreCausal",
+      "qualname": "assertSplitsAreCausal",
+      "kind": "function",
+      "file": "scripts/research/lib/walkForward.ts",
+      "line": 132,
+      "lineEnd": 160,
+      "exported": true,
+      "async": false,
+      "params": [
+        "splits: readonly WalkForwardSplit[]"
+      ],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function assertSplitsAreCausal(splits: readonly WalkForwardSplit[]): void {",
+      "docstring": "Verify the two properties the whole study rests on: parameters are never chosen\non the bars they are scored on, and no test bar is scored twice.\nCalled by the runner on every plan before any trade is generated, so a future\nchange to the split arithmetic cannot quietly reintroduce leakage."
+    },
+    {
+      "name": "outOfSampleBarCount",
+      "qualname": "outOfSampleBarCount",
+      "kind": "function",
+      "file": "scripts/research/lib/walkForward.ts",
+      "line": 163,
+      "lineEnd": 165,
+      "exported": true,
+      "async": false,
+      "params": [
+        "splits: readonly WalkForwardSplit[]"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "export function outOfSampleBarCount(splits: readonly WalkForwardSplit[]): number {",
+      "docstring": "Total number of distinct bars scored out-of-sample across a plan."
+    },
+    {
+      "name": "tradesForRange",
+      "qualname": "tradesForRange",
+      "kind": "function",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 232,
+      "lineEnd": 262,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe: readonly SymbolSeries[]",
+        "positions: ReadonlyMap<string, readonly Direction[]>",
+        "weight: number",
+        "armId: string",
+        "splitIndex: number",
+        "range: { start: number; end: number }",
+        "costModel: TransactionCostModel"
+      ],
+      "returns": "Trade[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function tradesForRange(",
+      "docstring": ""
+    },
+    {
+      "name": "selectionScore",
+      "qualname": "selectionScore",
+      "kind": "function",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 264,
+      "lineEnd": 266,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function selectionScore(summary: TradeSummary): number {",
+      "docstring": ""
+    },
+    {
+      "name": "evaluateGate",
+      "qualname": "evaluateGate",
+      "kind": "function",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 268,
+      "lineEnd": 296,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary",
+        "baseSummary: TradeSummary",
+        "gate: { minTrades: number; minProfitFactor: number; maxDrawdownPct: number }"
+      ],
+      "returns": "{ pass: boolean; failures: string[] }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function evaluateGate(",
+      "docstring": ""
+    },
+    {
+      "name": "orderedReturns",
+      "qualname": "orderedReturns",
+      "kind": "function",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 299,
+      "lineEnd": 301,
+      "exported": false,
+      "async": false,
+      "params": [
+        "trades: readonly Trade[]"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function orderedReturns(trades: readonly Trade[]): number[] {",
+      "docstring": "Per-trade net returns in exit order -- the observation sequence Sharpe is computed on."
+    },
+    {
+      "name": "leaveOutBestSplit",
+      "qualname": "leaveOutBestSplit",
+      "kind": "function",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 310,
+      "lineEnd": 326,
+      "exported": false,
+      "async": false,
+      "params": [
+        "perSplitNet: readonly { splitIndex: number; netReturnPct: number }[]"
+      ],
+      "returns": "{ total: number; excludingBest: number; bestSplitIndex: number | null; bestSplitNet: number }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function leaveOutBestSplit(",
+      "docstring": "Total net return excluding the single best split.\nThis project's standing check, and the one that actually caught `tsm`. It assumes\nnothing about the return distribution, which is why it is kept alongside the deflated\nSharpe rather than replaced by it."
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 433,
+      "lineEnd": 1244,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main(): void {",
+      "docstring": ""
+    },
+    {
+      "name": "indicatorsFor",
+      "qualname": "indicatorsFor",
+      "kind": "arrow",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 466,
+      "lineEnd": 474,
+      "exported": false,
+      "async": false,
+      "params": [
+        "series: SymbolSeries",
+        "atrBars: number"
+      ],
+      "returns": "SqueezeIndicators",
+      "tags": [
+        "script"
+      ],
+      "signature": "(series: SymbolSeries, atrBars: number): SqueezeIndicators => {",
+      "docstring": ""
+    },
+    {
+      "name": "effectiveConditioning",
+      "qualname": "effectiveConditioning",
+      "kind": "arrow",
+      "file": "scripts/research/runLiquidationSqueezeStudy.mts",
+      "line": 526,
+      "lineEnd": 539,
+      "exported": false,
+      "async": false,
+      "params": [
+        "splitIndex: number"
+      ],
+      "returns": "{ status: ConditioningStatus; reason: string }",
+      "tags": [
+        "script"
+      ],
+      "signature": "(",
+      "docstring": "Effective conditioning status for one split, across every `atrBars` variant.\nThe *worst* variant governs, because the in-sample search is free to choose either, so\na split is only as conditionable as the weakest input the search could land on.\nThis is reported at three-valued granularity rather than"
+    },
+    {
+      "name": "sum",
+      "qualname": "sum",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 191,
+      "lineEnd": 197,
+      "exported": false,
+      "async": false,
+      "params": [
+        "values: readonly number[]"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function sum(values: readonly number[]): number {",
+      "docstring": ""
+    },
+    {
+      "name": "maxDrawdownPctFromSeries",
+      "qualname": "maxDrawdownPctFromSeries",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 204,
+      "lineEnd": 219,
+      "exported": false,
+      "async": false,
+      "params": [
+        "perRound: readonly number[]"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function maxDrawdownPctFromSeries(perRound: readonly number[]): number {",
+      "docstring": "Max drawdown of a cumulative curve built additively from per-round returns. Percentage\npoints are additive in this harness, so this is the same convention `tradeMetrics` uses,\ndiffering only in that several trades closing on one bar are netted before the curve steps."
+    },
+    {
+      "name": "profitFactorFromSeries",
+      "qualname": "profitFactorFromSeries",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 222,
+      "lineEnd": 239,
+      "exported": false,
+      "async": false,
+      "params": [
+        "perRound: readonly number[]"
+      ],
+      "returns": "number | null",
+      "tags": [
+        "script"
+      ],
+      "signature": "function profitFactorFromSeries(perRound: readonly number[]): number | null {",
+      "docstring": "Bar-level profit factor. Not comparable to the trade-level figure in the baseline."
+    },
+    {
+      "name": "selectionScore",
+      "qualname": "selectionScore",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 242,
+      "lineEnd": 244,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function selectionScore(summary: TradeSummary): number {",
+      "docstring": "The argmax objective the published baseline used, reused verbatim so the control is real."
+    },
+    {
+      "name": "tradesForRange",
+      "qualname": "tradesForRange",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 246,
+      "lineEnd": 276,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe: readonly SymbolSeries[]",
+        "positions: ReadonlyMap<string, readonly Direction[]>",
+        "weight: number",
+        "familyId: string",
+        "splitIndex: number",
+        "range: { start: number; end: number }",
+        "costModel: TransactionCostModel"
+      ],
+      "returns": "Trade[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function tradesForRange(",
+      "docstring": ""
+    },
+    {
+      "name": "paramKey",
+      "qualname": "paramKey",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 278,
+      "lineEnd": 283,
+      "exported": false,
+      "async": false,
+      "params": [
+        "params: ParamValues"
+      ],
+      "returns": "string",
+      "tags": [
+        "script"
+      ],
+      "signature": "function paramKey(params: ParamValues): string {",
+      "docstring": ""
+    },
+    {
+      "name": "evaluateGate",
+      "qualname": "evaluateGate",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 387,
+      "lineEnd": 421,
+      "exported": false,
+      "async": false,
+      "params": [
+        "result: { underlyingTradesTouched: number; profitFactorStressedBarLevel: number | null; netReturnPctStressed: number; netReturnPctBase: number; maxDrawdownPctStressedBarLevel: number; }",
+        "gate: { minTrades: number; minProfitFactor: number; maxDrawdownPct: number }"
+      ],
+      "returns": "{ pass: boolean; failures: string[] }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function evaluateGate(",
+      "docstring": ""
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 427,
+      "lineEnd": 1774,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main(): void {",
+      "docstring": ""
+    },
+    {
+      "name": "requiredSeriesStatus",
+      "qualname": "requiredSeriesStatus",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 484,
+      "lineEnd": 500,
+      "exported": false,
+      "async": false,
+      "params": [
+        "requires: readonly ('funding' | 'openInterest')[]",
+        "splitIndex: number"
+      ],
+      "returns": "ConditioningStatus",
+      "tags": [
+        "script"
+      ],
+      "signature": "function requiredSeriesStatus(",
+      "docstring": ""
+    },
+    {
+      "name": "poolFor",
+      "qualname": "poolFor",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 655,
+      "lineEnd": 657,
+      "exported": false,
+      "async": false,
+      "params": [
+        "pool: ArmDefinition['pool']"
+      ],
+      "returns": "Expert[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function poolFor(pool: ArmDefinition['pool']): Expert[] {",
+      "docstring": ""
+    },
+    {
+      "name": "runAllocatorArm",
+      "qualname": "runAllocatorArm",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 661,
+      "lineEnd": 756,
+      "exported": false,
+      "async": false,
+      "params": [
+        "definition: ArmDefinition"
+      ],
+      "returns": "ArmRun",
+      "tags": [
+        "script"
+      ],
+      "signature": "function runAllocatorArm(definition: ArmDefinition): ArmRun {",
+      "docstring": ""
+    },
+    {
+      "name": "applyBar",
+      "qualname": "applyBar",
+      "kind": "arrow",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 685,
+      "lineEnd": 700,
+      "exported": false,
+      "async": false,
+      "params": [
+        "oosIndex: number",
+        "weights: readonly number[]"
+      ],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "(oosIndex: number, weights: readonly number[]): void => {",
+      "docstring": ""
+    },
+    {
+      "name": "runFixedWeightArm",
+      "qualname": "runFixedWeightArm",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 762,
+      "lineEnd": 823,
+      "exported": false,
+      "async": false,
+      "params": [
+        "definition: ArmDefinition",
+        "weightsBySplit: readonly (readonly number[])[]"
+      ],
+      "returns": "ArmRun",
+      "tags": [
+        "script"
+      ],
+      "signature": "function runFixedWeightArm(",
+      "docstring": "A control expressed as a fixed weight matrix over splits, so it goes through exactly the\nsame booking path as the allocator arms and no accounting difference can creep in."
+    },
+    {
+      "name": "zeroWeights",
+      "qualname": "zeroWeights",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 827,
+      "lineEnd": 829,
+      "exported": false,
+      "async": false,
+      "params": [
+        "expertCount: number"
+      ],
+      "returns": "number[][]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function zeroWeights(expertCount: number): number[][] {",
+      "docstring": ""
+    },
+    {
+      "name": "armSharpe",
+      "qualname": "armSharpe",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 1254,
+      "lineEnd": 1263,
+      "exported": false,
+      "async": false,
+      "params": [
+        "id: string",
+        "basis: 'perSplit' | 'perBar'"
+      ],
+      "returns": "number | null",
+      "tags": [
+        "script"
+      ],
+      "signature": "function armSharpe(id: string, basis: 'perSplit' | 'perBar'): number | null {",
+      "docstring": ""
+    },
+    {
+      "name": "trialSharpes",
+      "qualname": "trialSharpes",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 1270,
+      "lineEnd": 1279,
+      "exported": false,
+      "async": false,
+      "params": [
+        "basis: 'perSplit' | 'perBar'",
+        "includeSensitivity: boolean"
+      ],
+      "returns": "number[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function trialSharpes(basis: 'perSplit' | 'perBar', includeSensitivity: boolean): number[] {",
+      "docstring": ""
+    },
+    {
+      "name": "summariseArm",
+      "qualname": "summariseArm",
+      "kind": "function",
+      "file": "scripts/research/runOnlineEnsembleStudy.mts",
+      "line": 1288,
+      "lineEnd": 1387,
+      "exported": false,
+      "async": false,
+      "params": [
+        "definition: ArmDefinition",
+        "run: ArmRun"
+      ],
+      "returns": "ArmResult",
+      "tags": [
+        "script"
+      ],
+      "signature": "function summariseArm(definition: ArmDefinition, run: ArmRun): ArmResult {",
+      "docstring": ""
+    },
+    {
+      "name": "iso",
+      "qualname": "iso",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 226,
+      "lineEnd": 228,
+      "exported": false,
+      "async": false,
+      "params": [
+        "ms: number"
+      ],
+      "returns": "string",
+      "tags": [
+        "script"
+      ],
+      "signature": "function iso(ms: number): string {",
+      "docstring": ""
+    },
+    {
+      "name": "quantile",
+      "qualname": "quantile",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 230,
+      "lineEnd": 241,
+      "exported": false,
+      "async": false,
+      "params": [
+        "sorted: readonly number[]",
+        "q: number"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function quantile(sorted: readonly number[], q: number): number {",
+      "docstring": ""
+    },
+    {
+      "name": "worse",
+      "qualname": "worse",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 243,
+      "lineEnd": 246,
+      "exported": false,
+      "async": false,
+      "params": [
+        "current: Verdict",
+        "candidate: Verdict"
+      ],
+      "returns": "Verdict",
+      "tags": [
+        "script"
+      ],
+      "signature": "function worse(current: Verdict, candidate: Verdict): Verdict {",
+      "docstring": ""
+    },
+    {
+      "name": "isUsableRow",
+      "qualname": "isUsableRow",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 248,
+      "lineEnd": 250,
+      "exported": false,
+      "async": false,
+      "params": [
+        "row: OpenInterestPoint"
+      ],
+      "returns": "boolean",
+      "tags": [
+        "script"
+      ],
+      "signature": "function isUsableRow(row: OpenInterestPoint): boolean {",
+      "docstring": ""
+    },
+    {
+      "name": "runConsistencyChecks",
+      "qualname": "runConsistencyChecks",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 253,
+      "lineEnd": 454,
+      "exported": false,
+      "async": false,
+      "params": [
+        "rows: readonly OpenInterestPoint[]",
+        "candleByTime: ReadonlyMap<number, Candle>"
+      ],
+      "returns": "ConsistencyPass",
+      "tags": [
+        "script"
+      ],
+      "signature": "function runConsistencyChecks(",
+      "docstring": "Checks 4-7, over whichever row set is handed in."
+    },
+    {
+      "name": "closeRun",
+      "qualname": "closeRun",
+      "kind": "arrow",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 267,
+      "lineEnd": 279,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "(): void => {",
+      "docstring": ""
+    },
+    {
+      "name": "auditSymbol",
+      "qualname": "auditSymbol",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 456,
+      "lineEnd": 736,
+      "exported": false,
+      "async": false,
+      "params": [
+        "symbol: string"
+      ],
+      "returns": "SymbolAudit",
+      "tags": [
+        "script"
+      ],
+      "signature": "function auditSymbol(symbol: string): SymbolAudit {",
+      "docstring": ""
+    },
+    {
+      "name": "sharedAcross",
+      "qualname": "sharedAcross",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 738,
+      "lineEnd": 743,
+      "exported": false,
+      "async": false,
+      "params": [
+        "sets: readonly Set<string>[]"
+      ],
+      "returns": "string[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function sharedAcross(sets: readonly Set<string>[]): string[] {",
+      "docstring": ""
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 745,
+      "lineEnd": 875,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main(): void {",
+      "docstring": ""
+    },
+    {
+      "name": "line",
+      "qualname": "line",
+      "kind": "arrow",
+      "file": "scripts/research/runOpenInterestFeedAudit.mts",
+      "line": 820,
+      "lineEnd": 834,
+      "exported": false,
+      "async": false,
+      "params": [
+        "audit: SymbolAudit",
+        "pass: ConsistencyPass"
+      ],
+      "returns": "string",
+      "tags": [
+        "script"
+      ],
+      "signature": "(audit: SymbolAudit, pass: ConsistencyPass): string =>",
+      "docstring": ""
+    },
+    {
+      "name": "tradesForRange",
+      "qualname": "tradesForRange",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 135,
+      "lineEnd": 167,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe: readonly SymbolSeries[]",
+        "positions: ReadonlyMap<string, readonly Direction[]>",
+        "scales: ScaleMap",
+        "weight: number",
+        "familyId: string",
+        "splitIndex: number",
+        "range: { start: number; end: number }",
+        "costModel: TransactionCostModel"
+      ],
+      "returns": "Trade[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function tradesForRange(",
+      "docstring": ""
+    },
+    {
+      "name": "selectionScore",
+      "qualname": "selectionScore",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 174,
+      "lineEnd": 176,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function selectionScore(summary: TradeSummary): number {",
+      "docstring": "In-sample objective, unchanged from the baseline study so the two are comparable: net\nreturn per point of drawdown, with the denominator floored at one point so a candidate\nthat barely traded cannot win on a near-zero drawdown."
+    },
+    {
+      "name": "calmar",
+      "qualname": "calmar",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 178,
+      "lineEnd": 180,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary"
+      ],
+      "returns": "number | null",
+      "tags": [
+        "script"
+      ],
+      "signature": "function calmar(summary: TradeSummary): number | null {",
+      "docstring": ""
+    },
+    {
+      "name": "averageExposureScale",
+      "qualname": "averageExposureScale",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 182,
+      "lineEnd": 187,
+      "exported": false,
+      "async": false,
+      "params": [
+        "trades: readonly Trade[]"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function averageExposureScale(trades: readonly Trade[]): number {",
+      "docstring": ""
+    },
+    {
+      "name": "rescaleToCap",
+      "qualname": "rescaleToCap",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 196,
+      "lineEnd": 207,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary",
+        "outOfSampleYears: number"
+      ],
+      "returns": "RescaledView",
+      "tags": [
+        "script"
+      ],
+      "signature": "function rescaleToCap(summary: TradeSummary, outOfSampleYears: number): RescaledView {",
+      "docstring": ""
+    },
+    {
+      "name": "evaluateGate",
+      "qualname": "evaluateGate",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 209,
+      "lineEnd": 237,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary",
+        "baseSummary: TradeSummary",
+        "gate: { minTrades: number; minProfitFactor: number; maxDrawdownPct: number }"
+      ],
+      "returns": "{ pass: boolean; failures: string[] }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function evaluateGate(",
+      "docstring": ""
+    },
+    {
+      "name": "scaleInvariantCore",
+      "qualname": "scaleInvariantCore",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 244,
+      "lineEnd": 262,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary",
+        "baseSummary: TradeSummary"
+      ],
+      "returns": "{ pass: boolean; failures: string[] }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function scaleInvariantCore(",
+      "docstring": "The part of the mission gate that a constant rescaling cannot change. If this passes,\nthe family passes the full mission gate at *some* exposure, which is why it is reported\nseparately rather than being allowed to masquerade as a drawdown result."
+    },
+    {
+      "name": "buildAggregate",
+      "qualname": "buildAggregate",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 312,
+      "lineEnd": 347,
+      "exported": false,
+      "async": false,
+      "params": [
+        "base: readonly Trade[]",
+        "stressed: readonly Trade[]",
+        "selections: readonly SelectionRecord[]",
+        "outOfSampleYears: number"
+      ],
+      "returns": "Aggregate",
+      "tags": [
+        "script"
+      ],
+      "signature": "function buildAggregate(",
+      "docstring": ""
+    },
+    {
+      "name": "formatRow",
+      "qualname": "formatRow",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 349,
+      "lineEnd": 367,
+      "exported": false,
+      "async": false,
+      "params": [
+        "label: string",
+        "aggregate: Aggregate"
+      ],
+      "returns": "string",
+      "tags": [
+        "script"
+      ],
+      "signature": "function formatRow(label: string, aggregate: Aggregate): string {",
+      "docstring": ""
+    },
+    {
+      "name": "number",
+      "qualname": "number",
+      "kind": "arrow",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 352,
+      "lineEnd": 353,
+      "exported": false,
+      "async": false,
+      "params": [
+        "value: number | null",
+        "digits: number",
+        "width: number"
+      ],
+      "returns": "string",
+      "tags": [
+        "script"
+      ],
+      "signature": "(value: number | null, digits: number, width: number): string =>",
+      "docstring": ""
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 380,
+      "lineEnd": 721,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main(): void {",
+      "docstring": ""
+    },
+    {
+      "name": "score",
+      "qualname": "score",
+      "kind": "arrow",
+      "file": "scripts/research/runRiskAdjustedWalkForward.mts",
+      "line": 500,
+      "lineEnd": 557,
+      "exported": false,
+      "async": false,
+      "params": [
+        "target: { base: Trade[]; stressed: Trade[]; selections: SelectionRecord[] }",
+        "candidate: Candidate | null",
+        "considered: number",
+        "eligible: number"
+      ],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "(",
+      "docstring": ""
+    },
+    {
       "name": "sha256",
       "qualname": "sha256",
       "kind": "arrow",
@@ -9943,6 +12637,88 @@
         "script"
       ],
       "signature": "async function evaluate() {",
+      "docstring": ""
+    },
+    {
+      "name": "tradesForRange",
+      "qualname": "tradesForRange",
+      "kind": "function",
+      "file": "scripts/research/runWalkForwardBaseline.mts",
+      "line": 111,
+      "lineEnd": 141,
+      "exported": false,
+      "async": false,
+      "params": [
+        "universe: readonly SymbolSeries[]",
+        "positions: ReadonlyMap<string, readonly Direction[]>",
+        "weight: number",
+        "familyId: string",
+        "splitIndex: number",
+        "range: { start: number; end: number }",
+        "costModel: TransactionCostModel"
+      ],
+      "returns": "Trade[]",
+      "tags": [
+        "script"
+      ],
+      "signature": "function tradesForRange(",
+      "docstring": ""
+    },
+    {
+      "name": "selectionScore",
+      "qualname": "selectionScore",
+      "kind": "function",
+      "file": "scripts/research/runWalkForwardBaseline.mts",
+      "line": 144,
+      "lineEnd": 146,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary"
+      ],
+      "returns": "number",
+      "tags": [
+        "script"
+      ],
+      "signature": "function selectionScore(summary: TradeSummary): number {",
+      "docstring": "In-sample objective: risk-adjusted net return, with drawdown as the denominator."
+    },
+    {
+      "name": "evaluateGate",
+      "qualname": "evaluateGate",
+      "kind": "function",
+      "file": "scripts/research/runWalkForwardBaseline.mts",
+      "line": 179,
+      "lineEnd": 208,
+      "exported": false,
+      "async": false,
+      "params": [
+        "summary: TradeSummary",
+        "baseSummary: TradeSummary",
+        "gate: { minTrades: number; minProfitFactor: number; maxDrawdownPct: number }"
+      ],
+      "returns": "{ pass: boolean; failures: string[] }",
+      "tags": [
+        "script"
+      ],
+      "signature": "function evaluateGate(",
+      "docstring": ""
+    },
+    {
+      "name": "main",
+      "qualname": "main",
+      "kind": "function",
+      "file": "scripts/research/runWalkForwardBaseline.mts",
+      "line": 210,
+      "lineEnd": 440,
+      "exported": false,
+      "async": false,
+      "params": [],
+      "returns": "void",
+      "tags": [
+        "script"
+      ],
+      "signature": "function main(): void {",
       "docstring": ""
     },
     {
@@ -10345,7 +13121,7 @@
       "kind": "function",
       "file": "scripts/utilities/buildAndBundle.mts",
       "line": 59,
-      "lineEnd": 82,
+      "lineEnd": 86,
       "exported": false,
       "async": false,
       "params": [
@@ -15517,7 +18293,7 @@
       "kind": "component",
       "file": "src/App.tsx",
       "line": 125,
-      "lineEnd": 628,
+      "lineEnd": 614,
       "exported": true,
       "async": false,
       "params": [],
@@ -20776,73 +23552,12 @@
       "docstring": ""
     },
     {
-      "name": "buildTradingLabCandles",
-      "qualname": "buildTradingLabCandles",
-      "kind": "function",
-      "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1091,
-      "lineEnd": 1124,
-      "exported": false,
-      "async": false,
-      "params": [
-        "startPrice: number",
-        "count = 84",
-        "intervalMs = 15 * 60 * 1000"
-      ],
-      "returns": "Candle[]",
-      "tags": [
-        "ui"
-      ],
-      "signature": "function buildTradingLabCandles(startPrice: number, count = 84, intervalMs = 15 * 60 * 1000): Candle[] {",
-      "docstring": ""
-    },
-    {
-      "name": "buildTradingLabDepth",
-      "qualname": "buildTradingLabDepth",
-      "kind": "function",
-      "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1126,
-      "lineEnd": 1141,
-      "exported": false,
-      "async": false,
-      "params": [
-        "lastPrice: number",
-        "side: 'bid' | 'ask'",
-        "count = 12"
-      ],
-      "returns": "inferred",
-      "tags": [
-        "ui"
-      ],
-      "signature": "function buildTradingLabDepth(lastPrice: number, side: 'bid' | 'ask', count = 12) {",
-      "docstring": ""
-    },
-    {
-      "name": "buildTradingLabPreview",
-      "qualname": "buildTradingLabPreview",
-      "kind": "function",
-      "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1143,
-      "lineEnd": 1301,
-      "exported": false,
-      "async": false,
-      "params": [
-        "settings: TerminalSettings"
-      ],
-      "returns": "inferred",
-      "tags": [
-        "ui"
-      ],
-      "signature": "function buildTradingLabPreview(settings: TerminalSettings) {",
-      "docstring": ""
-    },
-    {
       "name": "DepthCurveChart",
       "qualname": "DepthCurveChart",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1330,
-      "lineEnd": 1380,
+      "line": 1113,
+      "lineEnd": 1163,
       "exported": true,
       "async": false,
       "params": [
@@ -20861,8 +23576,8 @@
       "qualname": "yFor",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1343,
-      "lineEnd": 1343,
+      "line": 1126,
+      "lineEnd": 1126,
       "exported": false,
       "async": false,
       "params": [
@@ -20880,8 +23595,8 @@
       "qualname": "xForBid",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1344,
-      "lineEnd": 1344,
+      "line": 1127,
+      "lineEnd": 1127,
       "exported": false,
       "async": false,
       "params": [
@@ -20899,8 +23614,8 @@
       "qualname": "xForAsk",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1345,
-      "lineEnd": 1345,
+      "line": 1128,
+      "lineEnd": 1128,
       "exported": false,
       "async": false,
       "params": [
@@ -20918,8 +23633,8 @@
       "qualname": "MarketDepthPanel",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1382,
-      "lineEnd": 1462,
+      "line": 1165,
+      "lineEnd": 1245,
       "exported": true,
       "async": false,
       "params": [
@@ -20939,8 +23654,8 @@
       "qualname": "renderRows",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1419,
-      "lineEnd": 1433,
+      "line": 1202,
+      "lineEnd": 1216,
       "exported": false,
       "async": false,
       "params": [
@@ -20959,8 +23674,8 @@
       "qualname": "RecentTradesPanel",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1464,
-      "lineEnd": 1471,
+      "line": 1247,
+      "lineEnd": 1254,
       "exported": true,
       "async": false,
       "params": [
@@ -20979,8 +23694,8 @@
       "qualname": "SystemLinkPanel",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1480,
-      "lineEnd": 1501,
+      "line": 1263,
+      "lineEnd": 1284,
       "exported": true,
       "async": false,
       "params": [
@@ -21000,8 +23715,8 @@
       "qualname": "SetupIntelligencePanel",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1514,
-      "lineEnd": 1561,
+      "line": 1297,
+      "lineEnd": 1344,
       "exported": true,
       "async": false,
       "params": [
@@ -21020,8 +23735,8 @@
       "qualname": "TradingActivityPanel",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1573,
-      "lineEnd": 1657,
+      "line": 1356,
+      "lineEnd": 1440,
       "exported": false,
       "async": false,
       "params": [
@@ -21040,8 +23755,8 @@
       "qualname": "TradingViewCore",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1659,
-      "lineEnd": 1909,
+      "line": 1442,
+      "lineEnd": 1690,
       "exported": false,
       "async": false,
       "params": [
@@ -21060,8 +23775,8 @@
       "qualname": "refreshAlerts",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1688,
-      "lineEnd": 1688,
+      "line": 1471,
+      "lineEnd": 1471,
       "exported": false,
       "async": false,
       "params": [],
@@ -21077,8 +23792,8 @@
       "qualname": "pickDepthPrice",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1751,
-      "lineEnd": 1753,
+      "line": 1532,
+      "lineEnd": 1534,
       "exported": false,
       "async": false,
       "params": [
@@ -21096,8 +23811,8 @@
       "qualname": "renderStrategyContextPanel",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1800,
-      "lineEnd": 1800,
+      "line": 1581,
+      "lineEnd": 1581,
       "exported": false,
       "async": false,
       "params": [],
@@ -21113,8 +23828,8 @@
       "qualname": "closeInlineTool",
       "kind": "arrow",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1802,
-      "lineEnd": 1802,
+      "line": 1583,
+      "lineEnd": 1583,
       "exported": false,
       "async": false,
       "params": [],
@@ -21130,8 +23845,8 @@
       "qualname": "TradingView",
       "kind": "component",
       "file": "src/components/workspace/AccountViews.tsx",
-      "line": 1911,
-      "lineEnd": 1933,
+      "line": 1692,
+      "lineEnd": 1694,
       "exported": true,
       "async": false,
       "params": [
@@ -28627,7 +31342,7 @@
       "returns": "inferred",
       "tags": [],
       "signature": "(set: ScreenerColumnSet) => set === 'momentum' || set === 'quality'",
-      "docstring": "Which optional badges the row's state cell carries, per lens.\rThese two predicates are the single source consumed by BOTH the column header\rand the row body. The header reserves one `--screener-col-badge` slot per\rbadge, so if a lens ever gains or loses a badge the header cannot silently\rkeep reserv"
+      "docstring": "Which optional badges the row's state cell carries, per lens.\nThese two predicates are the single source consumed by BOTH the column header\nand the row body. The header reserves one `--screener-col-badge` slot per\nbadge, so if a lens ever gains or loses a badge the header cannot silently\nkeep reserv"
     },
     {
       "name": "showFeedBadge",
@@ -28769,7 +31484,7 @@
         "component"
       ],
       "signature": "function EvidenceEqualizer({ row }: { row: ScreenerRow }) {",
-      "docstring": "The five published score factors as one small column chart.\rThis is the page's signature detail: it makes the shape of the evidence legible\rat a glance without repeating five numbers on every card. An unavailable factor\ris drawn as a full-height hatched column, never as a short one, because a bar\rsc"
+      "docstring": "The five published score factors as one small column chart.\nThis is the page's signature detail: it makes the shape of the evidence legible\nat a glance without repeating five numbers on every card. An unavailable factor\nis drawn as a full-height hatched column, never as a short one, because a bar\nsc"
     },
     {
       "name": "relativeAge",
@@ -28823,7 +31538,7 @@
       "returns": "Array<{ tier: ReadinessTier; from: number }>",
       "tags": [],
       "signature": "function tierBands(guardPass: boolean): Array<{ tier: ReadinessTier; from: number }> {",
-      "docstring": "The score cut points `deriveReadinessTier` actually compares against\r(`src/lib/scoring.ts:246`), expressed as a band axis for the gauge.\rThis is not a re-derivation of the tier — the tier stays the scanner's, read\rfrom `row.readinessTier`. These are the published thresholds that decided it,\rwhich is"
+      "docstring": "The score cut points `deriveReadinessTier` actually compares against\n(`src/lib/scoring.ts:246`), expressed as a band axis for the gauge.\nThis is not a re-derivation of the tier — the tier stays the scanner's, read\nfrom `row.readinessTier`. These are the published thresholds that decided it,\nwhich is"
     },
     {
       "name": "arcPoint",
@@ -28878,7 +31593,7 @@
         "component"
       ],
       "signature": "function ScoreArc({ score, tier, guardPass, coveragePct }: { score: number; tier: ReadinessTier; guardPass: boolean; coveragePct: number | null }) {",
-      "docstring": "The panel's score gauge: one arc, banded by the real tier thresholds.\rThis replaces a stack of two pictures of the same fact — a big numeral over a\rsegmented bar, with a second labelled scale under it repeating the same cut\rpoints a third time. One representation now carries all of it: the arc's own"
+      "docstring": "The panel's score gauge: one arc, banded by the real tier thresholds.\nThis replaces a stack of two pictures of the same fact — a big numeral over a\nsegmented bar, with a second labelled scale under it repeating the same cut\npoints a third time. One representation now carries all of it: the arc's own"
     },
     {
       "name": "ScreenerPage",
@@ -29165,7 +31880,7 @@
       "returns": "inferred",
       "tags": [],
       "signature": "(row: ScreenerRow, slot: ScreenerMetricSlot) => {",
-      "docstring": "One measure on a row.\rThe label is no longer written here — it comes from `METRIC_SLOT_LABELS`,\rwhich the column header reads too, so the two can never disagree. The label\rstays in the DOM on every row (it is the cell's accessible name and the only\rlabel present once the header is hidden at narrow w"
+      "docstring": "One measure on a row.\nThe label is no longer written here — it comes from `METRIC_SLOT_LABELS`,\nwhich the column header reads too, so the two can never disagree. The label\nstays in the DOM on every row (it is the cell's accessible name and the only\nlabel present once the header is hidden at narrow w"
     },
     {
       "name": "cell",
@@ -71421,6 +74136,65 @@
         "test"
       ],
       "signature": "function candles(count = 140) {",
+      "docstring": ""
+    },
+    {
+      "name": "config",
+      "qualname": "config",
+      "kind": "function",
+      "file": "tests/research/onlineAllocator.test.ts",
+      "line": 20,
+      "lineEnd": 29,
+      "exported": false,
+      "async": false,
+      "params": [
+        "overrides: Partial<AllocatorConfig> = {}"
+      ],
+      "returns": "AllocatorConfig",
+      "tags": [
+        "test"
+      ],
+      "signature": "function config(overrides: Partial<AllocatorConfig> = {}): AllocatorConfig {",
+      "docstring": ""
+    },
+    {
+      "name": "candlesFromCloses",
+      "qualname": "candlesFromCloses",
+      "kind": "function",
+      "file": "tests/research/walkForwardHarness.test.ts",
+      "line": 52,
+      "lineEnd": 61,
+      "exported": false,
+      "async": false,
+      "params": [
+        "closes: readonly number[]",
+        "startMs = 0",
+        "stepMs = HOUR"
+      ],
+      "returns": "Candle[]",
+      "tags": [
+        "test"
+      ],
+      "signature": "function candlesFromCloses(closes: readonly number[], startMs = 0, stepMs = HOUR): Candle[] {",
+      "docstring": ""
+    },
+    {
+      "name": "trade",
+      "qualname": "trade",
+      "kind": "function",
+      "file": "tests/research/walkForwardHarness.test.ts",
+      "line": 63,
+      "lineEnd": 81,
+      "exported": false,
+      "async": false,
+      "params": [
+        "spec: Partial<Trade> & Pick<Trade, 'exitTime' | 'netPnlPct'>"
+      ],
+      "returns": "Trade",
+      "tags": [
+        "test"
+      ],
+      "signature": "function trade(spec: Partial<Trade> & Pick<Trade, 'exitTime' | 'netPnlPct'>): Trade {",
       "docstring": ""
     },
     {
