@@ -14,7 +14,7 @@ Use this index before opening large files. Search by function name, tag, or file
 ## Summary
 
 - Total indexed symbols: 3816
-- Generated at: 2026-08-29T08:42:07.379Z
+- Generated at: 2026-08-29T08:56:04.247Z
 
 ## Tag Index
 

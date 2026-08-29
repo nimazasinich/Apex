@@ -95,9 +95,9 @@ function buildOverviewExecutionView(
   insights: WorkspaceInsights | null,
 ) {
   return buildExecutionSnapshot(
-    diagnostics?.health.data ?? null,
+    diagnostics?.health?.data ?? null,
     reconciliation,
-    diagnostics?.operations.data?.providers.items ?? [],
+    diagnostics?.operations?.data?.providers?.items ?? [],
     averageOrderFillPct(insights),
   );
 }
@@ -106,7 +106,7 @@ export function OverviewView(props: OverviewProps) {
   const candidates = [...props.longCandidates, ...props.shortCandidates];
   const { snapshot: diagnostics, loading: diagnosticsLoading } = useOverviewDiagnostics(true);
   const executionView = buildOverviewExecutionView(diagnostics, props.reconciliation, props.insights);
-  const providers = diagnostics?.operations.data?.providers.items ?? [];
+  const providers = diagnostics?.operations?.data?.providers?.items ?? [];
 
   return (
     <div className="apex-overview-v2" data-testid="overview-workspace">

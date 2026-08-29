@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-29T08:42:07.362Z",
+  "generatedAt": "2026-08-29T08:56:04.218Z",
   "process": "Apex Function Atlas",
   "fileHashes": {
     "server.ts": "4a1829fbb3a096f5",
@@ -65,7 +65,7 @@
     "src/components/workspace/AccountViews.tsx": "859ac1876e05777e",
     "src/components/workspace/AutopilotHeaderControl.tsx": "b8bb47ac8272dfe4",
     "src/components/workspace/DecisionJournalDrawer.tsx": "378d7b9fb3827998",
-    "src/components/workspace/GeneralViews.tsx": "355f76b0754dea36",
+    "src/components/workspace/GeneralViews.tsx": "d3c4d8361fa3fea3",
     "src/components/workspace/MarketsPage.tsx": "203039e982cb1bb8",
     "src/components/workspace/SystemHealthDrawer.tsx": "e5f6796e0693f38b",
     "src/components/workspace/ToolboxDrawers.tsx": "4dd26f4ddb2f763f",
