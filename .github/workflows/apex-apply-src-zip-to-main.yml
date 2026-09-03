@@ -30,14 +30,47 @@ jobs:
           test -f /tmp/apex-src-upload/src/App.tsx
           echo "archive_src_files=$(find /tmp/apex-src-upload/src -type f | wc -l)"
 
-      - name: Replace repository src with uploaded H4 src snapshot
+      - name: Remove push-protected secret literals from test source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('/tmp/apex-src-upload/src/tests/newsDataIoRequest.test.ts')
+          text = path.read_text(encoding='utf-8')
+
+          text, hf_count = re.subn(
+              r"^\s*expect\(clientSettings\)\.not\.toContain\('hf_[A-Za-z0-9]+'\);\s*$",
+              "    expect(clientSettings).not.toMatch(/\\bhf_[A-Za-z0-9]{20,}\\b/);",
+              text,
+              count=1,
+              flags=re.MULTILINE,
+          )
+          text, uuid_count = re.subn(
+              r"^\s*expect\(clientSettings\)\.not\.toContain\('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'\);\s*$",
+              "    expect(clientSettings).not.toMatch(/\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b/i);",
+              text,
+              count=1,
+              flags=re.MULTILINE,
+          )
+
+          if hf_count != 1 or uuid_count != 1:
+              raise SystemExit(f'expected one HF literal and one UUID literal; got hf={hf_count}, uuid={uuid_count}')
+
+          path.write_text(text, encoding='utf-8')
+          print('sanitized_push_protected_test_literals=2')
+          PY
+
+      - name: Replace repository src with sanitized H4 src snapshot
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p src
           rsync -a --delete /tmp/apex-src-upload/src/ src/
 
-      - name: Verify exact src snapshot
+      - name: Verify final src snapshot
         shell: bash
         run: |
           set -euo pipefail
@@ -53,8 +86,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A src
           if git diff --cached --quiet; then
-            echo "src already matches uploaded H4 snapshot; nothing to commit"
+            echo "src already matches sanitized H4 snapshot; nothing to commit"
             exit 0
           fi
-          git commit -m "feat(apex): apply exact H4 src snapshot"
+          git commit -m "feat(apex): apply H4 src snapshot with secrets sanitized"
           git push origin HEAD:main
