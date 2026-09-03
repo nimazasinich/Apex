@@ -7,6 +7,7 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     build: {
+      assetsInlineLimit: 0,
       cssCodeSplit: true,
       chunkSizeWarningLimit: 550,
       rollupOptions: {
@@ -45,7 +46,7 @@ export default defineConfig(() => {
     },
     test: {
       environment: 'node',
-      include: ['src/tests/**/*.test.ts', 'tests/**/*.test.ts'],
+      include: ['src/tests/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}'],
       setupFiles: ['dotenv/config'],
     },
   };

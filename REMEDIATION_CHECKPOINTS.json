@@ -1,0 +1,1018 @@
+{
+  "schemaVersion": 1,
+  "project": "apex-unified-terminal",
+  "sourceArchive": {
+    "name": "APEX-v2_0_17-ACADEMY-INTELLIGENCE-APPLIED.zip",
+    "sha256": "36e22cb8cbd584264da29bd4ae029a6847898b5e7693dd0d62ff1a6b6ce08ce7",
+    "buildId": "apex-2.0.1-f74c0bbe625c",
+    "git": "NOT_AVAILABLE_SOURCE_ARCHIVE"
+  },
+  "checkpoints": [
+    {
+      "id": "CP18",
+      "title": "Gap re-audit, release identity, and App Index",
+      "status": "COMPLETED",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingSourceTreeHash": "f74c0bbe625cbe4e8469281adca8d40cacfb9232099adbb04a8a71e3042b65d0",
+      "resultingSourceTreeHash": "63f02e7c0bb2c8bcab669299222a040560eb39cbe44ea67c214f1c97b65d301b",
+      "resultingBuildId": "apex-2.0.1-63f02e7c0bb2",
+      "completedAt": "2026-09-01T01:11:33Z",
+      "filesModified": [
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "scripts/utilities/generateBuildIdentity.mjs",
+        "scripts/qa/verifyCp16ReleaseIdentity.mjs",
+        "package.json",
+        "public/build-info.json",
+        "APP_INDEX/*"
+      ],
+      "gates": [
+        {
+          "command": "npm run index:app",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run qa:app-index",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "freshness; resolver 14/14; lineage 6/6; contract 41/41"
+        },
+        {
+          "command": "npm run lint",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run build",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run check:version",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run check:build-identity",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run release:gate:source",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "node scripts/qa/verifyCp16ReleaseIdentity.mjs",
+          "status": "PASS",
+          "exitCode": 0
+        }
+      ],
+      "browserVerification": "NOT_IN_SCOPE_FOR_THIS_CHECKPOINT",
+      "knownLimitations": [
+        "Git metadata is absent from the supplied source archive.",
+        "Clean-room npm ci and canonical browser verification are reserved for CP21.",
+        "The first App Index attempt failed without dependencies; the final run used an exact-lockfile-matched dependency tree and the temporary symlink was removed before packaging."
+      ],
+      "zip": "APEX-v2.0.1-CP18-IDENTITY-APP-INDEX.zip",
+      "zipSha256": "20fd074cd5a965e204350b84448f6bb313fc391d334e2a44f6624c6edca9510a"
+    },
+    {
+      "id": "CP19",
+      "title": "Truthfulness, persistence, provider-state, holdout, and Tabdeal wiring",
+      "status": "COMPLETED",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingSourceTreeHash": "63f02e7c0bb2c8bcab669299222a040560eb39cbe44ea67c214f1c97b65d301b",
+      "resultingSourceTreeHash": "3e5b5ebf958af2c5346e5d3ad3ac11e104b3bffebfef62fe631a0e37cba9b831",
+      "resultingBuildId": "apex-2.0.1-3e5b5ebf958a",
+      "completedAt": "2026-09-01T01:32:51Z",
+      "filesModified": [
+        "src/lib/capabilityStatus.ts",
+        "src/lib/watchlistFavorites.ts",
+        "src/lib/tickerUniverse.ts",
+        "src/App.tsx",
+        "src/types.ts",
+        "src/services/marketDataService.ts",
+        "src/services/decisionMemory.ts",
+        "src/services/systemHealthTelemetry.ts",
+        "src/services/hfSpaceContracts.ts",
+        "src/services/telegram.ts",
+        "src/components/workspace/ToolboxDrawers.tsx",
+        "src/components/workspace/TradingToolbox.tsx",
+        "src/components/workspace/MarketsPage.tsx",
+        "src/components/workspace/AccountViews.tsx",
+        "src/components/account/TabdealAccountSurface.tsx",
+        "src/components/overview/OverviewProviderHealthPanel.tsx",
+        "src/components/overview/OverviewWorkspace.css",
+        "src/components/workspace/GeneralViews.tsx",
+        "src/components/TelegramSettingsPanel.tsx",
+        "src/pages/watchlist/WatchlistPage.tsx",
+        "src/pages/screener/ScreenerPage.tsx",
+        "src/pages/help/HelpPage.tsx",
+        "src/pages/strategies/StrategyPage.tsx",
+        "src/pages/strategies/StrategyModelWorkspace.tsx",
+        "src/tests/remediationTruthfulness.test.tsx",
+        "src/tests/overviewProviderPresentation.test.ts",
+        "src/tests/tickerUniverse.test.ts",
+        "src/tests/marketDataService.hfSpace.test.ts",
+        "src/tests/decisionMemoryPersistenceState.test.ts",
+        "scripts/qa/verifyCp11PersistenceBacktestUi.mjs",
+        "Doc/REMEDIATION_GAPS_1_6_AUDIT.md",
+        "APP_INDEX/*",
+        "Doc/FUNCTION_INDEX.*",
+        "public/build-info.json",
+        "dist/*"
+      ],
+      "gates": [
+        {
+          "command": "npm run lint",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npx vitest run <CP19 targeted suite>",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "30/30"
+        },
+        {
+          "command": "npm run qa:dataflow-hardening",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "16/16"
+        },
+        {
+          "command": "npm run qa:strategy-optimization",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "27/27"
+        },
+        {
+          "command": "node scripts/qa/verifyCp11PersistenceBacktestUi.mjs",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "node scripts/qa/verifyCp06SealedHoldout.mjs",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run build",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm test",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 files; 946 passed; 1 explicitly skipped"
+        },
+        {
+          "command": "npm run index:app && npm run index:app:check",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "exact final root hash stored in generated APP_INDEX metadata"
+        },
+        {
+          "command": "npm run check:build-identity",
+          "status": "PASS",
+          "exitCode": 0
+        }
+      ],
+      "browserVerification": "STATIC_REACT_RENDER_VERIFIED; CANONICAL_1368x753_DEFERRED_TO_CP21",
+      "knownLimitations": [
+        "Live upstream integration probes are CP20 scope.",
+        "Canonical 1368x753 browser/pixel review and clean-room installation are CP21 scope.",
+        "The first post-build App Index check failed on generated-file drift; the index was regenerated after build and the final freshness check passed."
+      ],
+      "zip": "APEX-v2.0.1-CP19-TRUTHFULNESS-DATA-WIRING.zip",
+      "zipSha256": "dcb6673d2f4c525f4aa58e7f2e350dfcdc4e17fd6d038126bfb45335546ea0d6"
+    },
+    {
+      "id": "CP20",
+      "title": "Production-grade Settings integrations",
+      "status": "COMPLETED",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingSourceTreeHash": "3e5b5ebf958af2c5346e5d3ad3ac11e104b3bffebfef62fe631a0e37cba9b831",
+      "resultingSourceTreeHash": "6aec7025e716b3b4ed82bddcc5dd8d491579f5c3620cb5e7dbbc07a259fa73a8",
+      "resultingBuildId": "apex-2.0.1-6aec7025e716",
+      "completedAt": "2026-09-01T06:27:00Z",
+      "filesModified": [
+        "server.ts",
+        "src/services/integrationHealthHistory.ts",
+        "src/services/proxyFetch.ts",
+        "src/services/proxySettings.ts",
+        "src/services/supplementalSettings.ts",
+        "src/services/telegram.ts",
+        "src/services/telegramConfigPersistence.ts",
+        "src/components/ProxySettingsPanel.tsx",
+        "src/components/ProxySettingsPanel.css",
+        "src/components/IntelligenceSourcesSettingsPanel.tsx",
+        "src/components/TelegramSettingsPanel.tsx",
+        "src/pages/settings/SettingsPage.css",
+        "src/tests/settingsIntegrationHealth.test.tsx",
+        "scripts/qa/runProxyFetchOptionalDependencyRuntime.mjs",
+        "scripts/qa/verifyProxySettingsRuntime.mts",
+        "scripts/qa/verifyWorkspaceRuntime.mts",
+        "scripts/qa/verifyCore10DynamicFusion.mjs",
+        "scripts/utilities/generateAppIndex.mjs",
+        "openapi/apex-api.v1.yaml",
+        "Doc/repository/API_ROUTE_INDEX_2026-08-10.json",
+        "Doc/repository/API_ROUTE_INDEX_2026-08-10.md",
+        "Doc/REMEDIATION_GAPS_1_6_AUDIT.md",
+        "APP_INDEX/*",
+        "Doc/FUNCTION_INDEX.*",
+        "public/build-info.json",
+        "dist/*"
+      ],
+      "gates": [
+        {
+          "command": "npm run lint",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npx vitest run <CP20 targeted suite>",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "7/7 files; 19/19 tests"
+        },
+        {
+          "command": "npm run qa:dataflow-hardening",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "16/16"
+        },
+        {
+          "command": "npm run qa:proxy-fetch-optional-deps",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "3/3"
+        },
+        {
+          "command": "node --import tsx scripts/qa/verifyProxySettingsRuntime.mts",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "mutation guard; manual/off/auto restart persistence; invalid draft rollback"
+        },
+        {
+          "command": "node scripts/qa/verifyCp11PersistenceBacktestUi.mjs",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "node --import tsx scripts/utilities/generateApiRouteIndex.mts --check",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 runtime operations documented"
+        },
+        {
+          "command": "npm test",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 files; 946 passed; 1 explicitly skipped"
+        },
+        {
+          "command": "npm run build",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run index:app && npm run qa:app-index",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "4511 symbols/820 files; freshness; resolver 14/14; lineage 6/6; contract 41/41"
+        },
+        {
+          "command": "npm run check:build-identity",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run check:version",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run release:gate:source",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "CP21 extracted-artifact App Index/SQLite validation",
+          "status": "REMEDIATED",
+          "exitCode": 0,
+          "detail": ".qa-tmp excluded from indexing; SQLite checkpointed, vacuumed, and integrity checked before corrected packaging"
+        },
+        {
+          "command": "POST /api/supplemental/proxy/test on loopback",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "route completed; upstream result DISCONNECTED 0/4 because provider DNS/transport was blocked"
+        },
+        {
+          "command": "GET /api/telegram/status on loopback",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "unconfigured/off; no fabricated test history"
+        }
+      ],
+      "browserVerification": "BLOCKED_ENVIRONMENT: executable 1368x753 flow added; local Chromium unavailable after timed-out download and cloud browser rejected localhost with ERR_BLOCKED_BY_CLIENT; no PASS claimed",
+      "knownLimitations": [
+        "Real upstream connectivity was blocked in this execution environment and was honestly reported DISCONNECTED.",
+        "Canonical browser execution and dependency-clean installation remain CP21 requirements."
+      ],
+      "zip": "APEX-v2.0.1-CP20-SETTINGS-INTEGRATIONS.zip",
+      "zipSha256": "EXTERNAL_SIDECAR_AND_NEXT_LEDGER_REVISION"
+    },
+    {
+      "id": "CP21",
+      "title": "Canonical browser and clean-room final candidate",
+      "status": "BLOCKED_ENVIRONMENT",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingSourceTreeHash": "6aec7025e716b3b4ed82bddcc5dd8d491579f5c3620cb5e7dbbc07a259fa73a8",
+      "resultingSourceTreeHash": "ee6332c1bcafd48d79de1cb2649922d2c6b9895b164d992dfbf248606225fc7a",
+      "resultingBuildId": "apex-2.0.1-ee6332c1bcaf",
+      "completedAt": "2026-09-01T18:03:36Z",
+      "filesModified": [
+        "scripts/utilities/generateAppIndex.mjs",
+        "scripts/gates/checkRootContract.mjs",
+        "scripts/qa/verifyAdaptiveGovernor.mjs",
+        "package.json",
+        "Doc/repository/ROOT_CONTRACT.md",
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "APP_INDEX/*",
+        "Doc/FUNCTION_INDEX.*",
+        "public/build-info.json",
+        "dist/*"
+      ],
+      "gates": [
+        {
+          "command": "sha256sum corrected CP20 ZIP",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "dcb6673d2f4c525f4aa58e7f2e350dfcdc4e17fd6d038126bfb45335546ea0d6"
+        },
+        {
+          "command": "clean-room extraction + SQLite integrity",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "archive DB bytes match 60acab59423a5d28113904274de97944e92b08a14a78b30076e98c62e2c3fc0c; integrity_check=ok"
+        },
+        {
+          "command": "npm ci",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "432 packages installed in clean room"
+        },
+        {
+          "command": "npm run lint",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm test",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 files; 946 passed; 1 explicitly skipped"
+        },
+        {
+          "command": "npm run qa:suite:runtime-core",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "8/8 leaf checks"
+        },
+        {
+          "command": "npm run qa:suite:runtime-simulation",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "3/3 leaf checks; 2946/2946 simulation assertions"
+        },
+        {
+          "command": "npm run qa:suite:source-core",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "34/34 leaf checks after final App Index regeneration"
+        },
+        {
+          "command": "npm run qa:suite:runtime-safety",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": null,
+          "detail": "non-network safety leaves passed; external network approval cancelled during the two-cycle Autopilot lifecycle"
+        },
+        {
+          "command": "npm run check:api-contract",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 runtime operations documented"
+        },
+        {
+          "command": "npm run qa:app-index",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "resolver 14/14; lineage 6/6; contract 41/41"
+        },
+        {
+          "command": "npm run build",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run test:browser",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 0,
+          "detail": "honest SKIP: environment_missing_playwright_browser"
+        },
+        {
+          "command": "npm run qa:ui-1368",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 0,
+          "detail": "honest SKIP: environment_missing_playwright_browser"
+        },
+        {
+          "command": "node node_modules/playwright/cli.js install chromium",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "five official download attempts timed out after 30000ms each"
+        }
+      ],
+      "browserVerification": "BLOCKED_ENVIRONMENT: canonical 1368x753 scripts reached browser launch, but Chromium is unavailable and official downloads timed out; no PASS or screenshot claimed",
+      "knownLimitations": [
+        "Canonical browser verification is not proven in this environment.",
+        "The live-data Autopilot two-cycle runtime was interrupted by the environment network approval boundary.",
+        "This is a non-final evidence checkpoint; FINAL packaging remains prohibited until both blockers clear."
+      ],
+      "zip": "APEX-v2.0.1-CP21-BLOCKED-BROWSER-EVIDENCE.zip",
+      "zipSha256": "EXTERNAL_SIDECAR"
+    },
+    {
+      "id": "CP22",
+      "title": "Phase 1 baseline recovery in current execution environment",
+      "status": "BLOCKED_ENVIRONMENT",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingArtifact": "APEX-v2.0.1-CP21-LITE-SOURCE-TRANSFER.zip",
+      "startingArtifactSha256": "98d754621c8d253994be82b284fd39e38ea9fd47a0b9196aa17b35feb50730a6",
+      "resultingBuildId": "apex-2.0.1-ee6332c1bcaf",
+      "completedAt": "2026-09-01T18:52:57Z",
+      "filesModified": [
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json"
+      ],
+      "gates": [
+        {
+          "command": "sha256sum authoritative CP21 Lite and evidence ZIPs",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "both exact expected SHA-256 values"
+        },
+        {
+          "command": "unzip -t authoritative CP21 Lite and evidence ZIPs",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "clean extraction required/forbidden content inspection",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm ci",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": null,
+          "detail": "registry DNS unavailable; execution timeout with no install progress"
+        },
+        {
+          "command": "npm ci --offline --cache /root/.npm",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "ENOTCACHED; exact locked tarballs unavailable locally"
+        },
+        {
+          "command": "curl https://registry.npmjs.org/",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 6,
+          "detail": "Could not resolve host"
+        },
+        {
+          "command": "curl --resolve registry.npmjs.org:443:104.16.0.34 ...",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 7,
+          "detail": "outbound connection unavailable"
+        },
+        {
+          "command": "lint/test/build/version/build-identity/source-gate",
+          "status": "NOT_RUN_BLOCKED_DEPENDENCY",
+          "exitCode": null
+        }
+      ],
+      "browserVerification": "NOT_IN_SCOPE_PHASE_1",
+      "knownLimitations": [
+        "Exact npm lockfile dependencies cannot be retrieved in this execution environment.",
+        "FINAL packaging prohibited until clean-install dependent gates run."
+      ],
+      "zip": "APEX-v2.0.1-CP22-BLOCKED-NPM-EGRESS.zip",
+      "zipSha256": "EXTERNAL_SIDECAR"
+    },
+    {
+      "id": "CP23",
+      "title": "Phase 2 browser environment recovery",
+      "status": "COMPLETED",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingCheckpoint": "APEX-v2.0.1-CP22-BLOCKED-NPM-EGRESS.zip",
+      "resultingBuildId": "apex-2.0.1-ee6332c1bcaf",
+      "completedAt": "2026-09-01T18:53:39Z",
+      "filesModified": [
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "_qa/current/phase2/chromium-capability-1368x753.png"
+      ],
+      "gates": [
+        {
+          "command": "command -v chromium && chromium --version",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "/usr/bin/chromium; Chromium 144.0.7559.96"
+        },
+        {
+          "command": "python Playwright launch /usr/bin/chromium with viewport 1368x753",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "Python Playwright 1.57.0; screenshot dimensions 1368x753"
+        }
+      ],
+      "browserVerification": "BROWSER_ENVIRONMENT_READY; canonical application flow still Phase 3",
+      "knownLimitations": [
+        "Repository Node Playwright scripts cannot run unchanged until exact npm dependencies are available."
+      ],
+      "zip": "APEX-v2.0.1-CP23-BROWSER-ENVIRONMENT-READY.zip",
+      "zipSha256": "EXTERNAL_SIDECAR"
+    },
+    {
+      "id": "CP24",
+      "title": "Phase 3 canonical UI verification",
+      "status": "BLOCKED_ENVIRONMENT",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingCheckpoint": "APEX-v2.0.1-CP23-BROWSER-ENVIRONMENT-READY.zip",
+      "resultingBuildId": "apex-2.0.1-ee6332c1bcaf",
+      "completedAt": "2026-09-01T18:58:59Z",
+      "filesModified": [
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "_qa/current/phase3/PHASE3_BLOCKER_EVIDENCE.md",
+        "_qa/current/phase3/*",
+        "_qa/current/phase3-partial/*"
+      ],
+      "gates": [
+        {
+          "command": "node <CP21-evidence>/dist/server.cjs",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "MODULE_NOT_FOUND dotenv/config; external runtime dependency unavailable"
+        },
+        {
+          "command": "curl http://127.0.0.1:4175/",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "host loopback reachable"
+        },
+        {
+          "command": "Python Playwright goto http://127.0.0.1:4175/ at 1368x753",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "net::ERR_BLOCKED_BY_ADMINISTRATOR"
+        },
+        {
+          "command": "Python Playwright goto file:///.../dist/index.html at 1368x753",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "net::ERR_BLOCKED_BY_ADMINISTRATOR"
+        },
+        {
+          "command": "diagnostic production-asset set_content rendering",
+          "status": "INSPECTED_NOT_CANONICAL",
+          "exitCode": 0,
+          "detail": "blank 1368x753 image; localStorage access page error; rejected as PASS evidence"
+        },
+        {
+          "command": "npm run test:browser",
+          "status": "NOT_RUN_BLOCKED_DEPENDENCY",
+          "exitCode": null
+        },
+        {
+          "command": "npm run qa:ui-1368",
+          "status": "NOT_RUN_BLOCKED_DEPENDENCY",
+          "exitCode": null
+        }
+      ],
+      "browserVerification": "BLOCKED_ENVIRONMENT: browser executable launches, but canonical app runtime is unavailable and Chromium navigation is administratively blocked; no canonical UI PASS claimed",
+      "knownLimitations": [
+        "Exact npm runtime dependencies unavailable due blocked egress.",
+        "Chromium policy blocks localhost and file navigation with ERR_BLOCKED_BY_ADMINISTRATOR.",
+        "Canonical Overview and Settings screenshots, console cleanliness, and real interaction assertions remain unproven."
+      ],
+      "zip": "APEX-v2.0.1-CP24-BLOCKED-CANONICAL-BROWSER-RUNTIME.zip",
+      "zipSha256": "EXTERNAL_SIDECAR"
+    },
+    {
+      "id": "CP25",
+      "title": "Phase 4 runtime safety",
+      "status": "BLOCKED_ENVIRONMENT",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingCheckpoint": "APEX-v2.0.1-CP24-BLOCKED-CANONICAL-BROWSER-RUNTIME.zip",
+      "resultingBuildId": "apex-2.0.1-ee6332c1bcaf",
+      "completedAt": "2026-09-01T19:01:16Z",
+      "filesModified": [
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "_qa/current/phase4/*",
+        "QA/proxy-fetch-optional-dependency-v2.0.1.json"
+      ],
+      "gates": [
+        {
+          "command": "npm run qa:suite:runtime-safety",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "4 leaf checks independently proven; mandatory Autopilot lifecycle blocked at missing tsx"
+        },
+        {
+          "command": "npm run qa:unified-safety-runtime",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "11/11"
+        },
+        {
+          "command": "npm run qa:autopilot-lifecycle-environment",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run qa:autopilot-lifecycle-runtime",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "qa_dependency_missing:tsx before authentic server boot"
+        },
+        {
+          "command": "npm run qa:supplemental-key-runtime",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "3/3; networkIoPerformed=false"
+        },
+        {
+          "command": "npm run qa:proxy-fetch-optional-deps",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "3/3 after creating generated QA output directory; unmodified test; local-loopback-only"
+        },
+        {
+          "command": "curl https://api-futures.kucoin.com/api/v1/timestamp",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 6,
+          "detail": "Could not resolve host; HTTP 000"
+        },
+        {
+          "command": "curl https://fapi.binance.com/fapi/v1/time",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 6,
+          "detail": "Could not resolve host; HTTP 000"
+        }
+      ],
+      "browserVerification": "NOT_IN_SCOPE_PHASE_4",
+      "knownLimitations": [
+        "Mandatory two-cycle Autopilot lifecycle runtime is not proven.",
+        "Primary KuCoin Futures and Binance Futures DNS/egress is unavailable in this environment.",
+        "Exact npm dependency tsx cannot be retrieved because registry egress is blocked."
+      ],
+      "zip": "APEX-v2.0.1-CP25-BLOCKED-RUNTIME-SAFETY-EGRESS.zip",
+      "zipSha256": "EXTERNAL_SIDECAR"
+    },
+    {
+      "id": "CP26",
+      "title": "Dependency recovery, two-cycle runtime evidence, and Lite root-contract repair",
+      "status": "BLOCKED_ENVIRONMENT",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingCheckpoint": "APEX-v2.0.1-CP25-BLOCKED-RUNTIME-SAFETY-EGRESS.zip",
+      "startingCheckpointSha256": "bd058da133a8b736557d4b3f73f5b95fda668e891a842ca3b17e9ae14f2d1ab2",
+      "startingBuildId": "apex-2.0.1-ee6332c1bcaf",
+      "resultingBuildId": "apex-2.0.1-8910c3c6be00",
+      "resultingSourceTreeHash": "8910c3c6be00fb958387d8fcca7ae845120dcc04c144ab47d72e7945ffe557fa",
+      "completedAt": "2026-09-01T21:08:17Z",
+      "filesModified": [
+        "scripts/gates/checkRootContract.mjs",
+        "scripts/utilities/generateAppIndex.mjs",
+        "scripts/qa/verifyAppIndex.mjs",
+        "Doc/repository/ROOT_CONTRACT.md",
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "AUDIT_FIX_REPORT.md",
+        "QA/cp26-current-environment-verification-v2.0.1.json"
+      ],
+      "gates": [
+        {
+          "command": "sha256sum and unzip -t CP25",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "exact bd058da133a8b736557d4b3f73f5b95fda668e891a842ca3b17e9ae14f2d1ab2; ZIP integrity clean"
+        },
+        {
+          "command": "exact-lockfile dependency snapshot verification",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "identical package-lock SHA-256 7f0ce2bfe37817b669d5840b310dc782c9a9f7f2a0ea496af3509da2717ec9d2; npm ls clean; not a fresh npm ci"
+        },
+        {
+          "command": "npm run lint",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "npm test",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 files; 946 passed; 1 explicit skip"
+        },
+        {
+          "command": "npm run qa:suite:runtime-core",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "8/8 leaf checks"
+        },
+        {
+          "command": "npm run qa:suite:runtime-simulation",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "3/3 leaf checks; 2946/2946 assertions"
+        },
+        {
+          "command": "npm run qa:autopilot-lifecycle-runtime",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": null,
+          "detail": "authentic SERVER_SCHEDULER cycles 0 and 1 completed; host cancelled later provider request before manual validation, STOP-to-OFF, and final harness exit"
+        },
+        {
+          "command": "remaining runtime-safety leaves",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "unified safety 11/11; environment classifier; supplemental runtime 3/3; proxy optional dependencies 3/3"
+        },
+        {
+          "command": "npm run qa:suite:source-core",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": null,
+          "detail": "host cancelled loopback network approval at qa:liquidity-hunter-gap-closure; other leaf commands reached exit 0 collectively or independently"
+        },
+        {
+          "command": "npm run check:root-contract",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "41 current root entries classified; unknown-entry rejection preserved"
+        },
+        {
+          "command": "npm run build",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "build ID apex-2.0.1-8910c3c6be00"
+        },
+        {
+          "command": "npm run check:api-contract",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154/154 runtime operations documented"
+        },
+        {
+          "command": "npm run index:app && npm run qa:app-index",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "1536 files; 4511 symbols; resolver 14/14; lineage 6/6; contract 42/42; runtime/private working roots excluded"
+        },
+        {
+          "command": "npm run check:version && npm run check:build-identity && npm run release:gate:source",
+          "status": "PASS",
+          "exitCode": 0
+        },
+        {
+          "command": "SQLite checkpoint, journal_mode=DELETE, VACUUM, integrity_check",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "integrity_check=ok; no WAL/SHM retained"
+        }
+      ],
+      "browserVerification": "BLOCKED_ENVIRONMENT: no Chromium or Chrome executable present; no canonical 1368x753 application screenshot or browser PASS claimed",
+      "knownLimitations": [
+        "Fresh npm ci remains blocked by registry egress; exact-lockfile host dependencies are not substituted for clean-install evidence.",
+        "Provider egress and some spawned loopback-server operations are cancelled by host policy.",
+        "Manual Autopilot validation, STOP-to-OFF, complete runtime-safety exit code, and canonical browser flow remain unproven."
+      ],
+      "zip": "APEX-v2.0.1-CP26-BLOCKED-BROWSER-RUNTIME-POLICY.zip",
+      "zipSha256": "EXTERNAL_SIDECAR"
+    },
+    {
+      "id": "CP27",
+      "title": "CP26 + CP22 Settings/Browser/Test/Font merge",
+      "status": "MERGED_SOURCE_COMPLETE_REVERIFY_REQUIRED",
+      "startingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "resultingCommit": "NOT_AVAILABLE_SOURCE_ARCHIVE",
+      "startingCheckpoint": "APEX-v2.0.1-CP26-BLOCKED-BROWSER-RUNTIME-POLICY.zip",
+      "startingBuildId": "apex-2.0.1-8910c3c6be00",
+      "expectedResultingBuildId": "apex-2.0.1-5339440a899f",
+      "expectedResultingSourceTreeHash": "5339440a899ff7f0907c1eb2424aa56ca4bd0249ea56057ab291cf3d9e23e215",
+      "completedAt": "2026-09-01T23:51:18Z",
+      "filesModified": [
+        "src/pages/settings/SettingsPage.tsx",
+        "src/pages/settings/SettingsPage.css",
+        "src/components/IntelligenceSourcesSettingsPanel.tsx",
+        "vite.config.ts",
+        "scripts/qa/verifyWorkspaceRuntime.mts",
+        "scripts/capture/captureWorkspaceScreens.mts",
+        "Doc/CP27_MERGE_MANIFEST.md",
+        "REMEDIATION_CHECKPOINTS.md",
+        "REMEDIATION_CHECKPOINTS.json",
+        "QA/cp27-merge-evidence/*"
+      ],
+      "gates": [
+        {
+          "command": "static CP27 merge assertions",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "16/16: dedicated Smart Proxy; Proxy removed from IntelligenceSources; five 8-column nav rules; Phase 3.6 block; TSX include; assetsInlineLimit=0; 8-tab capture; scoped/separate browser evidence; hard safety literals preserved"
+        },
+        {
+          "command": "Windows locked dependency restore (operator evidence)",
+          "status": "PASS_OPERATOR_EVIDENCE",
+          "exitCode": 0,
+          "detail": "429 packages; package-lock SHA-256 unchanged at 7F0CE2BFE37817B669D5840B310DC782C9A9F7F2A0EA496AF3509DA2717EC9D2; Windows esbuild/Rollup native loaders passed"
+        },
+        {
+          "command": "Windows targeted TSX suites (operator/agent evidence)",
+          "status": "PASS_OPERATOR_EVIDENCE",
+          "exitCode": 0,
+          "detail": "2/2 files; 10/10 tests"
+        },
+        {
+          "command": "Windows full npm test (operator evidence)",
+          "status": "FAIL_KNOWN_LOAD_TIMEOUT",
+          "exitCode": 1,
+          "detail": "156 files: 155 passed, 1 failed; 957 tests: 955 passed, 1 skipped, 1 failed; only dataflowHardening archive test timed out at 30000ms"
+        },
+        {
+          "command": "Work Agent pre-final-gap npm run build",
+          "status": "PASS_HISTORICAL_OPERATOR_EVIDENCE",
+          "exitCode": 0,
+          "detail": "0 inline data:font URLs; 92 emitted font files; historical build apex-2.0.1-b616f97edc8e, before final CP27 CSS/header/browser-QA corrections"
+        },
+        {
+          "command": "current-session npm run lint",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 2,
+          "detail": "available partial dependency tree lacked vite/client.d.ts"
+        },
+        {
+          "command": "current-session npm ci --offline",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "locked wcwidth@1.0.1 tarball not cached"
+        },
+        {
+          "command": "current-session npm ci online",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": null,
+          "detail": "registry requests repeatedly EAI_AGAIN; host command timed out"
+        },
+        {
+          "command": "npm run check:root-contract",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "38 current root entries explicitly classified after removing the accidental root-level merge-manifest copy; canonical merge manifest remains under Doc without weakening root policy"
+        },
+        {
+          "command": "npm run check:version",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "version 2.0.1 identity checks passed"
+        },
+        {
+          "command": "npm run release:gate:source",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "source-only secret scan/archive/template checks passed"
+        },
+        {
+          "command": "canonical API route generator --check (global-TypeScript execution fallback)",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "154 runtime routes, 154 documented, no unknown OpenAPI operations"
+        },
+        {
+          "command": "Function Index regeneration via canonical generator transpiled with global TypeScript",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "4511 symbols across 820 files; signatures/lines refreshed"
+        },
+        {
+          "command": "App Index generate/check + resolver + lineage + contract",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "1537 files; 4511 symbols; resolver 14/14; lineage 6/6; contract 42/42"
+        },
+        {
+          "command": "App Index SQLite checkpoint/journal DELETE/VACUUM/integrity",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "journal_mode=delete; integrity_check=ok; no WAL/SHM"
+        },
+        {
+          "command": "npm run qa:unified-safety-runtime",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "11/11"
+        },
+        {
+          "command": "npm run qa:smart-autopilot",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "21/21 source QA"
+        },
+        {
+          "command": "npm run qa:suite:runtime-simulation",
+          "status": "PASS",
+          "exitCode": 0,
+          "detail": "3/3 leaf checks; comprehensive synthetic simulation 2946/2946 assertions"
+        },
+        {
+          "command": "npm run qa:suite:source-core",
+          "status": "INCOMPLETE_HOST_TIMEOUT",
+          "exitCode": null,
+          "detail": "host 300s limit interrupted suite at qa:liquidity-hunter-gap-closure after preceding displayed leaf checks passed"
+        },
+        {
+          "command": "npm run qa:liquidity-hunter-gap-closure",
+          "status": "BLOCKED_ENVIRONMENT",
+          "exitCode": 1,
+          "detail": "server_start_timeout because local tsx dependency is unavailable"
+        },
+        {
+          "command": "npm run check:build-identity",
+          "status": "EXPECTED_FAIL_CLOSED",
+          "exitCode": 1,
+          "detail": "stale buildId/sourceHash/sourceTreeHash; no CP27 build was fabricated"
+        }
+      ],
+      "browserVerification": "REVERIFY_REQUIRED: Work Agent did not run qa:ui-1368; final CP27 source contains additional layout/header/QA patches after the historical build.",
+      "knownLimitations": [
+        "Fresh CP27 build cannot be produced in this environment because exact npm dependency restore is blocked by registry egress.",
+        "Historical CP26 and Work Agent dist/build identities are stale for the final merged CP27 source and are not valid CP27 runtime artifacts.",
+        "Canonical browser QA has not been run against the exact post-merge CP27 source.",
+        "Windows full Vitest evidence has one known dataflowHardening 30-second load timeout; no full-suite PASS is claimed for the exact CP27 source.",
+        "Mandatory complete runtime-safety/two-cycle lifecycle exit remains unproven for the exact post-merge CP27 source."
+      ],
+      "zip": "APEX-v2.0.1-CP27-FINAL-MERGED-SOURCE-WINDOWS-EVIDENCE.zip",
+      "zipSha256": "EXTERNAL_SIDECAR",
+      "uiEnhancement": {
+        "status": "SOURCE_COMPLETE_REVERIFY_REQUIRED",
+        "completedAt": "2026-09-02T00:16:10Z",
+        "filesModified": [
+          "src/pages/settings/SettingsPage.tsx",
+          "src/pages/settings/SettingsPage.css",
+          "Doc/CP27_MERGE_MANIFEST.md",
+          "REMEDIATION_CHECKPOINTS.md",
+          "REMEDIATION_CHECKPOINTS.json"
+        ],
+        "staticVerification": {
+          "settingsPageTsxSyntax": "PASS",
+          "settingsPageCssPostCssParse": "PASS",
+          "settingsNavRepeat7Occurrences": 0,
+          "settingsNavRepeat8Occurrences": 5
+        },
+        "externalRuntimeEvidence": {
+          "artifact": "APEX-CP27-EXTERNAL-RUNTIME-EVIDENCE-apex-data.zip",
+          "sha256": "405399cb0962324ac26689d16ee8a49d2f48315847566b3a9dc943cbf7c47a39",
+          "packaging": "EXTERNAL_ONLY_RUNTIME_PRIVATE_STATE",
+          "strategyOptimization": {
+            "version": 1,
+            "profiles": 0,
+            "reports": 2,
+            "backupReports": 1,
+            "authorityStage": "RESEARCH",
+            "finalHoldoutStatus": "SEALED_NOT_OPENED_DURING_OPTIMIZATION",
+            "promotionEligible": false,
+            "automaticallyPromoted": false
+          }
+        },
+        "releaseClaim": "REVERIFY_REQUIRED_AFTER_SOURCE_CHANGE",
+        "artifact": "APEX-v2.0.1-CP27-UX-ENHANCED-MERGED-SOURCE-WINDOWS-EVIDENCE.zip",
+        "artifactSha256": "EXTERNAL_SIDECAR"
+      }
+    }
+  ]
+}

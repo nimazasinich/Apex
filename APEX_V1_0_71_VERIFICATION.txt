@@ -1,0 +1,11 @@
+APEX v1.0.71 Intelligence Ecosystem Upgrade — Verification
+
+lint: exit 0
+unit: 136/136 files passed; 830 passed; 1 skipped
+build: exit 0
+build identity: exit 0
+unified safety: 11/11 PASS
+release gate: exit 0
+sealed 2024-2025 holdout: NOT TOUCHED
+live execution safety posture: PRESERVED
+canonical decision adapter: canonical_v4_regime_ensemble

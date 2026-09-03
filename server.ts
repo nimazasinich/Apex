@@ -1,3 +1,5 @@
+import { loadProxySettings, saveProxySettings, getRuntimeProxyConfig } from './src/services/proxySettingsStore';
+import { normalizeProxyConfig } from './src/services/proxyConfig';
 import "dotenv/config";
 import express from "express";
 import { createServer as createHttpServer } from "node:http";
@@ -34,7 +36,10 @@ import {
   smartFetchJson,
   pruneProxyState,
   getProxyPoolInfo,
+  probeProxyConfiguration,
 } from './src/services/proxyFetch';
+import { IntegrationHealthHistory } from './src/services/integrationHealthHistory';
+import { persistTelegramConfigUpdate } from './src/services/telegramConfigPersistence';
 import {
   routeBinanceSentiment,
   pruneProviderRouterState,
@@ -83,11 +88,17 @@ import {
   createCompletedDefaultExternalSources,
 } from './src/config/completedApiDefaults';
 import {
+  loadBundledPrivateApiSeed,
+  primarySeedKeys,
+  reserveSeedKeys,
+} from './src/services/privateApiSeed';
+import {
   probeAllSupplementalKeys,
   probeSupplementalKey,
   type SupplementalProbeKey,
   type SupplementalProbeResult,
 } from './src/services/supplementalKeyProbe';
+import { getCanonicalDatasourceGateway } from './src/services/datasource/canonicalDatasourceGateway';
 import {
   DEFAULT_NEWSAPI_QUERY,
   normalizeNewsApiQuery,
@@ -97,6 +108,7 @@ import { fetchIntelligenceFeedSnapshot } from './src/services/intelligenceFeedPr
 import { iconProxy } from './src/services/iconProxy';
 import { readLocalIcon } from './src/services/localIconAssets';
 import { fetchHfSpaceIntelStatus, fetchHfSpaceNews, fetchHfSpaceFearGreed, fetchHfSpaceWhales } from './src/services/hfSpaceIntel';
+import { HF_SPACE_2_ORIGIN, HF_SPACE_4_ORIGIN } from './src/services/hfSpaceIntel';
 import {
   analyzeSpace2Sentiment,
   getSpace2DefiProtocols,
@@ -140,6 +152,7 @@ import {
   toPublicDemoPreview,
 } from './src/services/demoAccount';
 import { buildWorkspaceInsights } from './src/services/workspaceInsights';
+import { TABDEAL_SESSION_COOKIE, TabdealSessionManager } from './src/services/exchanges/tabdeal/tabdealSessionManager';
 import { evaluateRiskGovernor, loadRiskGovernorPolicy } from './src/services/riskGovernor';
 import { evaluateMlGovernance } from './src/services/mlGovernance';
 import { parseShadowMlModelFile } from './src/services/shadowMlModel';
@@ -229,6 +242,7 @@ const computeRateLimiter = new MutationRateLimiter(
   Number.isFinite(COMPUTE_RATE_WINDOW_MS) && COMPUTE_RATE_WINDOW_MS > 0 ? COMPUTE_RATE_WINDOW_MS : 60_000
 );
 const exchangeSessionManager = new ExchangeSessionManager();
+const tabdealSessionManager = new TabdealSessionManager();
 const DEMO_SESSION_COOKIE = 'apex_demo_session';
 const ACCOUNT_MODE_COOKIE = 'apex_account_mode';
 const demoAccountManager = new DemoAccountManager({
@@ -539,6 +553,8 @@ const apexNextMarketRoutes = registerApexNextMarketRoutes(app, {
   // live decision memory.
   researchOutcomeLogProvider: () => (researchOutcomeMemory ? researchOutcomeMemory.exportAll() : []),
   scannerConfigProvider: () => adaptiveThresholdGovernance.getActiveConfig(),
+  // Outcome calibration reads LIVE decision memory only. Simulated/research rows remain isolated.
+  decisionOutcomeLogProvider: () => (decisionMemoryMirror ? decisionMemoryMirror.exportAll().filter((row) => !isResearchOutcomeLog(row)) : []),
 });
 
 app.get('/api/security/bootstrap', (req, res) => {
@@ -565,6 +581,10 @@ app.get('/api/security/bootstrap', (req, res) => {
 
 function exchangeSessionId(req: express.Request): string | null {
   return parseCookie(req.headers.cookie, EXCHANGE_SESSION_COOKIE);
+}
+
+function tabdealSessionId(req: express.Request): string | null {
+  return parseCookie(req.headers.cookie, TABDEAL_SESSION_COOKIE);
 }
 
 function exchangeSessionCookie(req: express.Request, sessionId: string, maxAgeMs: number) {
@@ -653,6 +673,53 @@ function accountRouteError(res: express.Response, error: unknown, fallback = 'ex
   }
   return res.status(502).json({ ok: false, error: fallback, message: raw.slice(0, 240) });
 }
+
+
+/**
+ * Secondary Tabdeal FAPI connection. This surface is authenticated READ_ONLY
+ * only. It cannot select an execution venue, arm trading, or reach a submit
+ * endpoint. Credentials live only inside the short-lived server session.
+ */
+app.post('/api/exchanges/tabdeal/connect', async (req, res) => {
+  try {
+    const previousId = tabdealSessionId(req);
+    const { session, snapshot } = await tabdealSessionManager.connect(req.body || {});
+    if (previousId && previousId !== session.id) tabdealSessionManager.disconnect(previousId);
+    res.setHeader('Set-Cookie', scopedCookie(req, TABDEAL_SESSION_COOKIE, session.id, session.expiresAt - Date.now()));
+    return res.json({ ok: true, connection: tabdealSessionManager.publicState(session), snapshot });
+  } catch (error) {
+    const raw = error instanceof Error ? error.message : 'tabdeal_connection_failed';
+    const status = raw === 'invalid_tabdeal_api_key' || raw === 'invalid_tabdeal_api_secret' ? 422 : /api|signature|permission|access/i.test(raw) ? 401 : 502;
+    return res.status(status).json({ ok: false, error: raw.slice(0, 240) });
+  }
+});
+
+app.get('/api/exchanges/tabdeal/connection', async (req, res) => {
+  const session = tabdealSessionManager.get(tabdealSessionId(req));
+  if (session) await tabdealSessionManager.refresh(session);
+  return res.json({ ok: true, connection: tabdealSessionManager.publicState(session) });
+});
+
+app.get('/api/exchanges/tabdeal/snapshot', async (req, res) => {
+  const session = tabdealSessionManager.get(tabdealSessionId(req));
+  if (!session) return res.status(401).json({ ok: false, error: 'tabdeal_not_connected' });
+  try {
+    const symbol = typeof req.query.symbol === 'string' && req.query.symbol.trim() ? req.query.symbol.trim().toUpperCase() : undefined;
+    const snapshot = await session.positions.getAccountSnapshot(symbol);
+    session.lastAccountReadOk = true;
+    return res.json({ ok: true, connection: tabdealSessionManager.publicState(session), snapshot });
+  } catch (error) {
+    session.lastAccountReadOk = false;
+    return res.status(502).json({ ok: false, error: error instanceof Error ? error.message.slice(0, 240) : 'tabdeal_snapshot_failed' });
+  }
+});
+
+app.delete('/api/exchanges/tabdeal/connection', (req, res) => {
+  tabdealSessionManager.disconnect(tabdealSessionId(req));
+  return res
+    .setHeader('Set-Cookie', scopedCookie(req, TABDEAL_SESSION_COOKIE, '', 1))
+    .json({ ok: true, connection: tabdealSessionManager.publicState(null) });
+});
 
 /**
  * Browser-supplied exchange credentials are verified once, retained only in
@@ -1976,52 +2043,40 @@ const BACKTEST_REQUEST_TIMEOUT_MS = Number(process.env.BACKTEST_DATASOURCE_TIMEO
 const BACKTEST_SPACE_PROFILES = [
   {
     id: 'datasourceforcryptocurrency-4',
-    label: 'Short Hunter Datasource Gateway',
-    role: 'short-hunter gateway',
+    label: 'Short Hunter & Multi-Source Datasource Gateway',
+    role: 'canonical OHLCV & short-hunter gateway',
     sourcePage: 'https://huggingface.co/spaces/Really-amin/Datasourceforcryptocurrency-4',
     runtimeOrigin: 'https://really-amin-datasourceforcryptocurrency-4.hf.space',
-    defaultEndpoint: '/api/candles',
+    defaultEndpoint: '/api/history',
     defaultEndpoints: [
-      '/api/candles',
-      '/api/ohlcv/{symbol}',
+      '/api/history',
       '/api/ohlcv',
-      '/api/data',
-      '/candles',
-      '/ohlcv',
-      '/data',
-      '/historical',
-      '/api/historical',
+      '/api/klines',
     ],
     dataSets: [
-      'short-hunter candle gateway',
-      'normalized OHLCV attempts',
-      'gateway/raw datasource probes',
-      'symbol/interval/limit query support',
+      'canonical historical OHLCV series',
+      'short-hunter real-time snapshot gateway',
+      'funding rates & open interest streams',
+      'news and EVM whale transfer feeds',
     ],
   },
   {
     id: 'datasourceforcryptocurrency-2',
-    label: 'Cryptocurrency Data Source & Intelligence Hub',
-    role: 'broad market-data + intelligence hub',
+    label: 'Cryptocurrency Data Source & Historical Archive',
+    role: 'historical + archive intelligence hub',
     sourcePage: 'https://huggingface.co/spaces/Really-amin/Datasourceforcryptocurrency-2',
     runtimeOrigin: 'https://really-amin-datasourceforcryptocurrency-2.hf.space',
-    defaultEndpoint: '/api/ohlcv/{symbol}',
+    defaultEndpoint: '/api/ohlcv',
     defaultEndpoints: [
-      '/api/ohlcv/{symbol}',
-      '/api/coins/{coinId}/history?days=90&interval=hourly',
-      '/api/coins/{coinId}/chart?timeframe=30d',
-      '/api/coins/{coinId}/history',
-      '/api/trading/volume',
-      '/api/indicators/{baseSymbol}',
+      '/api/ohlcv',
+      '/api/history',
+      '/api/crypto/history/{symbol}',
     ],
     dataSets: [
-      'coin search/details/top/trending/market categories',
-      'historical price/volume/market-cap series',
-      'chart price series for UI/backtest normalization',
-      'legacy OHLCV endpoint',
-      'technical indicators and correlations',
-      'news, events, social sentiment and AI sentiment',
-      'remote strategy backtest API metadata',
+      'canonical multi-timeframe OHLCV',
+      'Alternative.me Fear & Greed index',
+      'historical funding rate coverage',
+      'DeFi protocols and yield analytics',
     ],
   },
 ] as const;
@@ -2132,17 +2187,12 @@ function buildBacktestUrl(profile: BacktestSpaceProfile, endpointTemplate: strin
   const url = new URL(endpointPath, profile.runtimeOrigin);
   assertBacktestUrlAllowed(url);
   if (!url.searchParams.has('symbol')) url.searchParams.set('symbol', ctx.symbol);
-  if (!url.searchParams.has('ticker')) url.searchParams.set('ticker', ctx.symbol);
-  if (!url.searchParams.has('base')) url.searchParams.set('base', ctx.baseSymbol);
-  if (!url.searchParams.has('coin')) url.searchParams.set('coin', ctx.baseSymbol);
-  if (!url.searchParams.has('coin_id')) url.searchParams.set('coin_id', ctx.coinId);
-  if (!url.searchParams.has('interval')) url.searchParams.set('interval', interval);
-  if (!url.searchParams.has('timeframe')) url.searchParams.set('timeframe', interval);
-  if (!url.searchParams.has('limit')) url.searchParams.set('limit', String(limit));
-  if (url.pathname.includes('/history')) {
-    if (!url.searchParams.has('days')) url.searchParams.set('days', String(intervalToHistoryDays(interval, limit)));
-    if (!url.searchParams.has('interval')) url.searchParams.set('interval', interval === '1d' ? 'daily' : 'hourly');
+  if (profile.id === 'datasourceforcryptocurrency-4') {
+    if (!url.searchParams.has('interval')) url.searchParams.set('interval', interval);
+  } else {
+    if (!url.searchParams.has('timeframe')) url.searchParams.set('timeframe', interval);
   }
+  if (!url.searchParams.has('limit')) url.searchParams.set('limit', String(limit));
   return url.toString();
 }
 
@@ -2845,36 +2895,68 @@ type SupplementalKeyName =
   | 'bscScanKey';
 
 type SupplementalKeyStore = Record<SupplementalKeyName, string>;
+type SupplementalReserveKeyStore = Record<SupplementalKeyName, string[]>;
 
 type SupplementalConfigFile = SupplementalKeyStore & {
+  reserveKeys?: Partial<SupplementalReserveKeyStore>;
+  defaultPackSource?: string;
   newsApiQuery?: NewsApiQueryOptions;
   /** Last successful/failed live probes — restores green "live" pills after restart. */
   lastProbe?: Partial<Record<SupplementalProbeKey, SupplementalProbeResult>>;
 };
 
-/** Completed Doc/api-config defaults; env and .supplemental.config.json still win. */
+// The private seed is loaded server-side only. Its credentials are never
+// imported by browser code and status APIs expose only configured/count flags.
+const bundledPrivateApiSeed = loadBundledPrivateApiSeed();
+if (!bundledPrivateApiSeed.source) {
+  console.warn(
+    '\x1b[33m[APEX WARNING] No private API seed found (.apex-private-seed/api-provider-seed.json) — all supplemental providers will show Not configured.\x1b[0m',
+  );
+} else {
+  console.log(`[APEX Seed] Loaded private API seed from source: ${bundledPrivateApiSeed.source}`);
+}
+const bundledPrimaryKeys = primarySeedKeys(bundledPrivateApiSeed);
+const bundledReserveKeys = reserveSeedKeys(bundledPrivateApiSeed);
+
+/** Private attached API pack → env → saved private runtime config precedence. */
 const DEFAULT_SUPPLEMENTAL_KEYS: SupplementalKeyStore = {
-  newsApiKey: COMPLETED_SUPPLEMENTAL_DEFAULTS.newsApiKey,
-  coinMarketCapKey: COMPLETED_SUPPLEMENTAL_DEFAULTS.coinMarketCapKey,
-  huggingFaceToken: COMPLETED_SUPPLEMENTAL_DEFAULTS.huggingFaceToken,
-  etherscanKey: COMPLETED_SUPPLEMENTAL_DEFAULTS.etherscanKey,
-  tronScanKey: COMPLETED_SUPPLEMENTAL_DEFAULTS.tronScanKey,
-  bscScanKey: COMPLETED_SUPPLEMENTAL_DEFAULTS.bscScanKey,
+  newsApiKey: bundledPrimaryKeys.newsApiKey || COMPLETED_SUPPLEMENTAL_DEFAULTS.newsApiKey,
+  coinMarketCapKey: bundledPrimaryKeys.coinMarketCapKey || COMPLETED_SUPPLEMENTAL_DEFAULTS.coinMarketCapKey,
+  huggingFaceToken: bundledPrimaryKeys.huggingFaceToken || COMPLETED_SUPPLEMENTAL_DEFAULTS.huggingFaceToken,
+  etherscanKey: bundledPrimaryKeys.etherscanKey || COMPLETED_SUPPLEMENTAL_DEFAULTS.etherscanKey,
+  tronScanKey: bundledPrimaryKeys.tronScanKey || COMPLETED_SUPPLEMENTAL_DEFAULTS.tronScanKey,
+  bscScanKey: bundledPrimaryKeys.bscScanKey || COMPLETED_SUPPLEMENTAL_DEFAULTS.bscScanKey,
+};
+
+const DEFAULT_SUPPLEMENTAL_RESERVE_KEYS: SupplementalReserveKeyStore = {
+  newsApiKey: bundledReserveKeys.newsApiKey,
+  coinMarketCapKey: bundledReserveKeys.coinMarketCapKey,
+  huggingFaceToken: bundledReserveKeys.huggingFaceToken,
+  etherscanKey: bundledReserveKeys.etherscanKey,
+  tronScanKey: bundledReserveKeys.tronScanKey,
+  bscScanKey: bundledReserveKeys.bscScanKey,
 };
 
 function readSavedSupplementalConfig(): {
   keys: Partial<SupplementalKeyStore>;
+  reserveKeys: Partial<SupplementalReserveKeyStore>;
   newsApiQuery: NewsApiQueryOptions;
   lastProbe: Partial<Record<SupplementalProbeKey, SupplementalProbeResult>>;
 } {
   try {
     if (!existsSync(SUPPLEMENTAL_CONFIG_PATH)) {
-      return { keys: {}, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {} };
+      return { keys: {}, reserveKeys: {}, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {} };
     }
     const raw = JSON.parse(readFileSync(SUPPLEMENTAL_CONFIG_PATH, "utf8"));
     const out: Partial<SupplementalKeyStore> = {};
     for (const key of Object.keys(DEFAULT_SUPPLEMENTAL_KEYS) as SupplementalKeyName[]) {
       if (typeof raw?.[key] === "string" && raw[key].trim()) out[key] = raw[key].trim();
+    }
+    const reserveKeys: Partial<SupplementalReserveKeyStore> = {};
+    for (const key of Object.keys(DEFAULT_SUPPLEMENTAL_KEYS) as SupplementalKeyName[]) {
+      const values = raw?.reserveKeys?.[key];
+      if (!Array.isArray(values)) continue;
+      reserveKeys[key] = [...new Set(values.map((value: unknown) => String(value || '').trim()).filter(Boolean))];
     }
     const lastProbe: Partial<Record<SupplementalProbeKey, SupplementalProbeResult>> = {};
     const savedProbe = raw?.lastProbe;
@@ -2888,28 +2970,36 @@ function readSavedSupplementalConfig(): {
     }
     return {
       keys: out,
+      reserveKeys,
       newsApiQuery: normalizeNewsApiQuery(raw?.newsApiQuery),
       lastProbe,
     };
   } catch {
-    return { keys: {}, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {} };
+    return { keys: {}, reserveKeys: {}, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {} };
   }
 }
 
 const savedSupplementalConfig = readSavedSupplementalConfig();
 const savedSupplementalKeys = savedSupplementalConfig.keys;
+const savedSupplementalReserveKeys = savedSupplementalConfig.reserveKeys;
 const hadSavedSupplementalConfig = Object.keys(savedSupplementalKeys).length > 0
+  || Object.values(savedSupplementalReserveKeys).some((rows) => Array.isArray(rows) && rows.length > 0)
   || Boolean(savedSupplementalConfig.newsApiQuery);
 
 let supplementalKeys: SupplementalKeyStore = {
   newsApiKey: process.env.NEWSAPI_KEY || DEFAULT_SUPPLEMENTAL_KEYS.newsApiKey,
-  coinMarketCapKey: DEFAULT_SUPPLEMENTAL_KEYS.coinMarketCapKey,
-  huggingFaceToken: process.env.HUGGING_FACE_TOKEN || DEFAULT_SUPPLEMENTAL_KEYS.huggingFaceToken,
+  coinMarketCapKey: process.env.COINMARKETCAP_KEY || process.env.CMC_API_KEY || DEFAULT_SUPPLEMENTAL_KEYS.coinMarketCapKey,
+  huggingFaceToken: process.env.HUGGING_FACE_TOKEN || process.env.HF_TOKEN || DEFAULT_SUPPLEMENTAL_KEYS.huggingFaceToken,
   etherscanKey: process.env.ETHERSCAN_KEY || DEFAULT_SUPPLEMENTAL_KEYS.etherscanKey,
   tronScanKey: process.env.TRONSCAN_KEY || DEFAULT_SUPPLEMENTAL_KEYS.tronScanKey,
   bscScanKey: process.env.BSCSCAN_KEY || DEFAULT_SUPPLEMENTAL_KEYS.bscScanKey,
   ...savedSupplementalKeys,
 };
+
+let supplementalReserveKeys: SupplementalReserveKeyStore = {
+  ...DEFAULT_SUPPLEMENTAL_RESERVE_KEYS,
+  ...Object.fromEntries(Object.entries(savedSupplementalReserveKeys).map(([key, rows]) => [key, Array.isArray(rows) ? rows : []])),
+} as SupplementalReserveKeyStore;
 
 let supplementalNewsApiQuery: NewsApiQueryOptions = savedSupplementalConfig.newsApiQuery;
 
@@ -2941,6 +3031,8 @@ function persistSupplementalKeys(): void {
   try {
     const payload: SupplementalConfigFile = {
       ...supplementalKeys,
+      reserveKeys: supplementalReserveKeys,
+      defaultPackSource: bundledPrivateApiSeed.source,
       newsApiQuery: supplementalNewsApiQuery,
       lastProbe: Object.keys(supplementalProbeCache).length > 0 ? { ...supplementalProbeCache } : undefined,
     };
@@ -2955,7 +3047,18 @@ function restoreSupplementalProbeCache(
     const entry = saved[key];
     if (!entry || entry.key !== key) continue;
     supplementalProbeCache[key] = entry;
-    if (entry.ok) supplementalVerified[key] = true;
+    if (entry.ok) {
+      supplementalVerified[key] = true;
+      const trackerName =
+        key === 'newsApiKey' ? 'NewsAPI'
+        : key === 'coinMarketCapKey' ? 'CoinMarketCap'
+        : key === 'huggingFaceToken' ? 'HuggingFace'
+        : key === 'etherscanKey' ? 'Etherscan'
+        : key === 'tronScanKey' ? 'TronScan'
+        : key === 'bscScanKey' ? 'BscScan'
+        : null;
+      if (trackerName) healthTracker.recordSuccess(trackerName, entry.latencyMs);
+    }
   }
 }
 
@@ -2969,27 +3072,32 @@ restoreSupplementalProbeCache(savedSupplementalConfig.lastProbe);
 function rebuildSupplementalOrchestrator(): void {
   initializeSupplementalOrchestrator({
     newsApiKey: supplementalKeys.newsApiKey,
+    newsApiKeys: [supplementalKeys.newsApiKey, ...supplementalReserveKeys.newsApiKey],
     newsApiQuery: supplementalNewsApiQuery,
     coinMarketCapKey: supplementalKeys.coinMarketCapKey,
+    coinMarketCapKeys: [supplementalKeys.coinMarketCapKey, ...supplementalReserveKeys.coinMarketCapKey],
     huggingFaceToken: supplementalKeys.huggingFaceToken,
+    huggingFaceTokens: [supplementalKeys.huggingFaceToken, ...supplementalReserveKeys.huggingFaceToken],
     etherscanKey: supplementalKeys.etherscanKey,
+    etherscanKeys: [supplementalKeys.etherscanKey, ...supplementalReserveKeys.etherscanKey],
     tronScanKey: supplementalKeys.tronScanKey,
+    tronScanKeys: [supplementalKeys.tronScanKey, ...supplementalReserveKeys.tronScanKey],
     bscScanKey: supplementalKeys.bscScanKey,
+    bscScanKeys: [supplementalKeys.bscScanKey, ...supplementalReserveKeys.bscScanKey],
     timeout: supplementalTimeout,
   });
 
-  if (supplementalKeys.newsApiKey) healthTracker.markConfigured('NewsAPI');
-  if (supplementalKeys.coinMarketCapKey) healthTracker.markConfigured('CoinMarketCap');
-  if (supplementalKeys.huggingFaceToken) healthTracker.markConfigured('HuggingFace');
-  if (supplementalKeys.etherscanKey) healthTracker.markConfigured('Etherscan');
-  if (supplementalKeys.tronScanKey) healthTracker.markConfigured('TronScan');
-  // BSC uses the dedicated key when present and otherwise deliberately falls
-  // back to ETHERSCAN_KEY through the Etherscan V2 chainid=56 contract. Keep
-  // health/configuration semantics aligned with that effective runtime path.
-  if (supplementalKeys.bscScanKey || supplementalKeys.etherscanKey) healthTracker.markConfigured('BscScan');
-  // The two owner-managed Spaces are keyless and form APEX's approved
-  // intelligence fallback tier. Their live reachability is reported by the
-  // dedicated HF status endpoints rather than synthesized as provider health.
+  healthTracker.setConfigured('NewsAPI', Boolean(supplementalKeys.newsApiKey));
+  healthTracker.setConfigured('CoinMarketCap', Boolean(supplementalKeys.coinMarketCapKey));
+  healthTracker.setConfigured('HuggingFace', Boolean(supplementalKeys.huggingFaceToken));
+  healthTracker.setConfigured('Etherscan', Boolean(supplementalKeys.etherscanKey));
+  healthTracker.setConfigured('TronScan', Boolean(supplementalKeys.tronScanKey));
+  healthTracker.setConfigured('BscScan', Boolean(supplementalKeys.bscScanKey || supplementalKeys.etherscanKey));
+  healthTracker.setConfigured('Binance', true);
+  healthTracker.setConfigured('KuCoin', true);
+  healthTracker.setConfigured('HF Space 4', true);
+  healthTracker.setConfigured('HF Space 2', true);
+  healthTracker.setConfigured('Alternative.me', true);
 }
 
 function supplementalConfigStatus() {
@@ -3012,19 +3120,140 @@ function clearSupplementalVerification(keys?: SupplementalProbeKey[]) {
 }
 
 rebuildSupplementalOrchestrator();
+loadProxySettings();
+const proxyProbeHistory = new IntegrationHealthHistory(12);
+const supplementalProbeHistory = new IntegrationHealthHistory(18);
+
+export async function runProviderHealthSweep(): Promise<void> {
+  try {
+    const kcStart = Date.now();
+    const kcPromise = smartFetchJson(`${KUCOIN_FUTURES_BASE}/api/v1/timestamp`, { timeoutMs: 6000, logKey: 'health:kc_time' })
+      .then((res) => ({ res, latencyMs: Math.max(1, Date.now() - kcStart) }));
+
+    const bnStart = Date.now();
+    const bnPromise = smartFetchJson(`${BINANCE_FUTURES_BASE}/fapi/v1/time`, { timeoutMs: 6000, logKey: 'health:bn_time' })
+      .then((res) => ({ res, latencyMs: Math.max(1, Date.now() - bnStart) }));
+
+    const gwStart = Date.now();
+    const gatewayPromise = getCanonicalDatasourceGateway().probeHealth()
+      .then((res) => ({ res, latencyMs: Math.max(1, Date.now() - gwStart) }))
+      .catch(() => ({ res: null, latencyMs: Math.max(1, Date.now() - gwStart) }));
+
+    const fgStart = Date.now();
+    const fgPromise = getCanonicalDatasourceGateway().getFearGreed(1)
+      .then((res) => ({ res, latencyMs: Math.max(1, Date.now() - fgStart) }))
+      .catch(() => ({ res: null, latencyMs: Math.max(1, Date.now() - fgStart) }));
+
+    const [kcTime, bnTime, gatewayProbe, fgProbe] = await Promise.allSettled([
+      kcPromise,
+      bnPromise,
+      gatewayPromise,
+      fgPromise,
+    ]);
+
+    if (kcTime.status === 'fulfilled' && kcTime.value.res.ok) {
+      healthTracker.recordSuccess('KuCoin', kcTime.value.latencyMs);
+    } else {
+      const lat = kcTime.status === 'fulfilled' ? kcTime.value.latencyMs : undefined;
+      healthTracker.recordFailure('KuCoin', 'Probe failed', false, lat);
+    }
+
+    if (bnTime.status === 'fulfilled' && bnTime.value.res.ok) {
+      healthTracker.recordSuccess('Binance', bnTime.value.latencyMs);
+    } else {
+      const lat = bnTime.status === 'fulfilled' ? bnTime.value.latencyMs : undefined;
+      healthTracker.recordFailure('Binance', 'Probe failed', false, lat);
+    }
+
+    if (gatewayProbe.status === 'fulfilled' && gatewayProbe.value?.res?.space4?.ok) {
+      healthTracker.recordSuccess('HF Space 4', gatewayProbe.value.latencyMs);
+    } else {
+      const lat = gatewayProbe.status === 'fulfilled' ? gatewayProbe.value.latencyMs : undefined;
+      healthTracker.recordFailure('HF Space 4', 'Probe failed', false, lat);
+    }
+
+    if (gatewayProbe.status === 'fulfilled' && gatewayProbe.value?.res?.space2?.ok) {
+      healthTracker.recordSuccess('HF Space 2', gatewayProbe.value.latencyMs);
+    } else {
+      const lat = gatewayProbe.status === 'fulfilled' ? gatewayProbe.value.latencyMs : undefined;
+      healthTracker.recordFailure('HF Space 2', 'Probe failed', false, lat);
+    }
+
+    if (fgProbe.status === 'fulfilled' && fgProbe.value?.res?.success && fgProbe.value.res.data.length > 0) {
+      healthTracker.recordSuccess('Alternative.me', fgProbe.value.latencyMs);
+    } else {
+      const lat = fgProbe.status === 'fulfilled' ? fgProbe.value.latencyMs : undefined;
+      healthTracker.recordFailure('Alternative.me', 'Probe failed', false, lat);
+    }
+  } catch {
+    // Non-blocking telemetry
+  }
+}
+
+// Initial bootstrap probe sweep
+void runProviderHealthSweep();
 
 app.get('/api/supplemental/config/status', (_req, res) => {
+  const keyCounts = Object.fromEntries((Object.keys(DEFAULT_SUPPLEMENTAL_KEYS) as SupplementalKeyName[]).map((key) => [
+    key,
+    (supplementalKeys[key] ? 1 : 0) + supplementalReserveKeys[key].filter(Boolean).length,
+  ]));
   res.json({
     ok: true,
     configured: supplementalConfigStatus(),
     verified: supplementalVerifiedStatus(),
+    keyCounts,
+    proxy: getRuntimeProxyConfig(),
+    proxyHealth: getProxyPoolInfo(),
+    proxyProbeHistory: proxyProbeHistory.list(),
+    defaultPackLoaded: Boolean(bundledPrivateApiSeed.source),
+    defaultPackSource: bundledPrivateApiSeed.source || null,
     newsApiQuery: supplementalNewsApiQuery,
     lastProbe: supplementalProbeCache,
+    probeHistory: supplementalProbeHistory.list(),
   });
+});
+
+app.post('/api/supplemental/proxy/test', async (req, res) => {
+  const checkedAt = Date.now();
+  try {
+    const probe = await probeProxyConfiguration(req.body?.proxy, [
+      { provider: 'Binance Futures', url: `${BINANCE_FUTURES_BASE}/fapi/v1/time` },
+      { provider: 'KuCoin Futures', url: `${KUCOIN_FUTURES_BASE}/api/v1/timestamp` },
+      { provider: 'HF Space 2', url: `${HF_SPACE_2_ORIGIN.replace(/\/$/, '')}/api/new-sources/status` },
+      { provider: 'HF Space 4', url: `${HF_SPACE_4_ORIGIN.replace(/\/$/, '')}/api/health` },
+    ], 10_000);
+    const passed = probe.results.filter((row) => row.ok).length;
+    const state = passed === probe.results.length ? 'CONNECTED' : passed > 0 ? 'DEGRADED' : 'DISCONNECTED';
+    const routes = new Set(probe.results.filter((row) => row.ok).map((row) => row.route));
+    const route = routes.size > 1 ? 'mixed' : routes.values().next().value || 'none';
+    const latencyMs = probe.results.length
+      ? Math.round(probe.results.reduce((sum, row) => sum + row.latencyMs, 0) / probe.results.length)
+      : null;
+    // Draft testing an unsaved proxy configuration must not overwrite active-policy health.
+    const draftSummary = `${passed}/${probe.results.length} fixed provider probes succeeded in ${probe.config.mode} mode`;
+    return res.json({
+      ok: passed > 0,
+      state,
+      ...probe,
+      draftResult: { checkedAt: probe.checkedAt, state, latencyMs, route, summary: draftSummary },
+      history: proxyProbeHistory.list(),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'invalid_proxy_configuration';
+    return res.status(400).json({ ok: false, state: 'MISCONFIGURED', error: message, checkedAt, results: [], history: proxyProbeHistory.list() });
+  }
 });
 
 app.post('/api/supplemental/config', (req, res) => {
   const body = req.body ?? {};
+  if (body.proxy !== undefined) {
+    try { normalizeProxyConfig(body.proxy); } catch (error) { return res.status(400).json({ ok: false, error: (error as Error).message }); }
+    try { saveProxySettings(body.proxy); } catch { return res.status(503).json({ ok: false, error: 'Proxy settings could not be saved. Previous mode remains active.' }); }
+    // Clearing stale draft/prior diagnostics so new configuration starts with honest state
+    proxyProbeHistory.clear();
+    if (Object.keys(body).length === 1) return res.json({ ok: true, proxy: getRuntimeProxyConfig(), configured: supplementalConfigStatus(), verified: supplementalVerifiedStatus() });
+  }
   const touched: SupplementalProbeKey[] = [];
   for (const key of Object.keys(DEFAULT_SUPPLEMENTAL_KEYS) as SupplementalKeyName[]) {
     if (typeof body[key] === 'string' && body[key].trim()) {
@@ -3050,6 +3279,7 @@ app.post('/api/supplemental/config', (req, res) => {
 /** Restore Intelligence API keys to the completed Doc defaults (overwrites current store). */
 app.post('/api/supplemental/config/defaults', (_req, res) => {
   supplementalKeys = { ...DEFAULT_SUPPLEMENTAL_KEYS };
+  supplementalReserveKeys = Object.fromEntries(Object.entries(DEFAULT_SUPPLEMENTAL_RESERVE_KEYS).map(([key, rows]) => [key, [...rows]])) as SupplementalReserveKeyStore;
   supplementalNewsApiQuery = { ...DEFAULT_NEWSAPI_QUERY };
   clearSupplementalVerification();
   persistSupplementalKeys();
@@ -3062,34 +3292,76 @@ app.post('/api/supplemental/config/defaults', (_req, res) => {
   });
 });
 
-/** Probe one or all stored keys against the live upstream APIs. */
+async function probeSupplementalKeyFamily(key: SupplementalProbeKey): Promise<SupplementalProbeResult> {
+  const candidates = [...new Set([supplementalKeys[key], ...(supplementalReserveKeys[key] || [])].map((value) => String(value || '').trim()).filter(Boolean))];
+  if (!candidates.length) {
+    return { key, ok: false, latencyMs: 0, status: 'EMPTY', detail: 'no key stored' };
+  }
+
+  let totalLatencyMs = 0;
+  let lastResult: SupplementalProbeResult = { key, ok: false, latencyMs: 0, status: 'UNVERIFIED' };
+  for (let index = 0; index < candidates.length; index += 1) {
+    const result = await probeSupplementalKey(key, candidates[index], {
+      newsApiQuery: key === 'newsApiKey' ? supplementalNewsApiQuery : undefined,
+    });
+    totalLatencyMs += Math.max(0, Number(result.latencyMs) || 0);
+    lastResult = result;
+    if (result.ok) {
+      return {
+        ...result,
+        latencyMs: totalLatencyMs,
+        detail: `${result.detail ? `${result.detail} · ` : ''}${index === 0 ? 'primary credential verified' : `reserve credential ${index} verified`} · ${candidates.length} key${candidates.length === 1 ? '' : 's'} in family`,
+      };
+    }
+  }
+
+  return {
+    ...lastResult,
+    latencyMs: totalLatencyMs,
+    detail: `${lastResult.detail ? `${lastResult.detail} · ` : ''}all ${candidates.length} stored credential${candidates.length === 1 ? '' : 's'} failed live verification`,
+  };
+}
+
+/** Probe one or all stored key families using the same bounded primary→reserve order as Smart routing. */
 app.post('/api/supplemental/config/probe', async (req, res) => {
   const requested = typeof req.body?.key === 'string' ? String(req.body.key).trim() : '';
   const keys = (Object.keys(DEFAULT_SUPPLEMENTAL_KEYS) as SupplementalProbeKey[]);
   const targetKeys = requested
     ? keys.filter((k) => k === requested)
-    : keys.filter((k) => supplementalKeys[k].length > 0);
+    : keys.filter((k) => Boolean(supplementalKeys[k]) || (supplementalReserveKeys[k]?.length || 0) > 0);
 
   if (requested && targetKeys.length === 0) {
     return res.status(400).json({ ok: false, error: 'unknown_key' });
   }
 
+  const probeRows = await Promise.all(targetKeys.map(async (key) => [key, await probeSupplementalKeyFamily(key)] as const));
   const results: Partial<Record<SupplementalProbeKey, SupplementalProbeResult>> = {};
-  for (const key of targetKeys) {
-    const secret = supplementalKeys[key];
-    if (!secret) {
-      results[key] = { key, ok: false, latencyMs: 0, status: 'EMPTY', detail: 'no key stored' };
-      supplementalVerified[key] = false;
-      supplementalProbeCache[key] = results[key];
-      continue;
-    }
-    const result = await probeSupplementalKey(key, secret, {
-      newsApiQuery: key === 'newsApiKey' ? supplementalNewsApiQuery : undefined,
-    });
+  for (const [key, result] of probeRows) {
     results[key] = result;
     supplementalVerified[key] = result.ok;
     supplementalProbeCache[key] = result;
+    const trackerName =
+      key === 'newsApiKey' ? 'NewsAPI'
+      : key === 'coinMarketCapKey' ? 'CoinMarketCap'
+      : key === 'huggingFaceToken' ? 'HuggingFace'
+      : key === 'etherscanKey' ? 'Etherscan'
+      : key === 'tronScanKey' ? 'TronScan'
+      : key === 'bscScanKey' ? 'BscScan'
+      : null;
+    if (trackerName) {
+      if (result.ok) healthTracker.recordSuccess(trackerName, result.latencyMs);
+      else healthTracker.recordFailure(trackerName, result.detail || result.status, false, result.latencyMs);
+    }
   }
+
+  const passed = probeRows.filter(([, result]) => result.ok).length;
+  supplementalProbeHistory.record({
+    checkedAt: Date.now(),
+    state: passed === probeRows.length && probeRows.length > 0 ? 'CONNECTED' : passed > 0 ? 'DEGRADED' : targetKeys.length ? 'DISCONNECTED' : 'MISCONFIGURED',
+    latencyMs: probeRows.length ? Math.round(probeRows.reduce((sum, [, result]) => sum + result.latencyMs, 0) / probeRows.length) : 0,
+    route: 'mixed',
+    summary: `${passed}/${probeRows.length} stored credential families passed live verification`,
+  });
 
   persistSupplementalKeys();
 
@@ -3098,6 +3370,7 @@ app.post('/api/supplemental/config/probe', async (req, res) => {
     results,
     configured: supplementalConfigStatus(),
     verified: supplementalVerifiedStatus(),
+    history: supplementalProbeHistory.list(),
   });
 });
 
@@ -3106,8 +3379,11 @@ app.get('/api/intelligence/feeds', async (_req, res) => {
   try {
     const snapshot = await fetchIntelligenceFeedSnapshot({
       etherscanKey: supplementalKeys.etherscanKey,
+      etherscanKeys: [supplementalKeys.etherscanKey, ...supplementalReserveKeys.etherscanKey],
       coinMarketCapKey: supplementalKeys.coinMarketCapKey,
+      coinMarketCapKeys: [supplementalKeys.coinMarketCapKey, ...supplementalReserveKeys.coinMarketCapKey],
       newsApiKey: supplementalKeys.newsApiKey,
+      newsApiKeys: [supplementalKeys.newsApiKey, ...supplementalReserveKeys.newsApiKey],
       newsApiQuery: supplementalNewsApiQuery,
     });
     res.json({ ok: true, ...snapshot });
@@ -3199,13 +3475,41 @@ function persistExternalApiSources(): void {
   } catch { /* runtime values still apply */ }
 }
 
+function attachedPrivateExternalSourceDefaults(): ExternalApiSourceConfig[] {
+  const cryptoCompareKey = bundledPrivateApiSeed.additionalSecrets?.cryptoCompareKeys?.[0] || '';
+  const rows: ExternalApiSourceConfig[] = [];
+  if (cryptoCompareKey) {
+    rows.push({
+      id: 'default-cryptocompare-market',
+      enabled: false,
+      category: 'exchange',
+      name: 'CryptoCompare · keyed market reference',
+      baseUrl: 'https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH&tsyms=USD',
+      method: 'GET',
+      authType: 'apiKeyQuery',
+      authKeyName: 'api_key',
+      secret: cryptoCompareKey,
+      parserHint: 'market-reference',
+      notes: 'Attached private API pack · diagnostics/reference only; not futures execution evidence',
+    });
+  }
+  return rows;
+}
+
+function allDefaultExternalSources(): ExternalApiSourceConfig[] {
+  return [
+    ...createCompletedDefaultExternalSources().map((src) => src as ExternalApiSourceConfig),
+    ...attachedPrivateExternalSourceDefaults(),
+  ];
+}
+
 function seedCompletedDefaultExternalSources(): void {
-  const defaults = createCompletedDefaultExternalSources();
+  const defaults = allDefaultExternalSources();
   const byId = new Map(externalApiSources.map((src) => [src.id, src]));
   let changed = false;
   for (const src of defaults) {
     if (!byId.has(src.id)) {
-      externalApiSources.push(src as ExternalApiSourceConfig);
+      externalApiSources.push(src);
       changed = true;
     }
   }
@@ -3216,10 +3520,10 @@ seedCompletedDefaultExternalSources();
 
 /** Merge / restore canonical keyless public/HF custom API profiles. */
 app.post('/api/external-sources/config/defaults', (_req, res) => {
-  const defaults = createCompletedDefaultExternalSources();
+  const defaults = allDefaultExternalSources();
   const byId = new Map(externalApiSources.map((src) => [src.id, src]));
   for (const src of defaults) {
-    byId.set(src.id, src as ExternalApiSourceConfig);
+    byId.set(src.id, src);
   }
   externalApiSources = Array.from(byId.values());
   persistExternalApiSources();
@@ -3545,6 +3849,27 @@ app.get("/api/health", async (_req, res) => {
     binance: binanceStatus,
   };
 
+  if (kucoinStatus === 'READY') healthTracker.recordSuccess('KuCoin');
+  else healthTracker.recordFailure('KuCoin', 'KuCoin probe failed');
+
+  if (binanceStatus === 'READY') healthTracker.recordSuccess('Binance');
+  else healthTracker.recordFailure('Binance', 'Binance probe failed');
+
+  const gateway = getCanonicalDatasourceGateway();
+  const [hfHealth, fearGreed] = await Promise.all([
+    gateway.probeHealth().catch(() => null),
+    gateway.getFearGreed(1).catch(() => null),
+  ]);
+
+  if (hfHealth?.space4.ok) healthTracker.recordSuccess('HF Space 4');
+  else if (hfHealth) healthTracker.recordFailure('HF Space 4', `HTTP ${hfHealth.space4.status}`);
+
+  if (hfHealth?.space2.ok) healthTracker.recordSuccess('HF Space 2');
+  else if (hfHealth) healthTracker.recordFailure('HF Space 2', `HTTP ${hfHealth.space2.status}`);
+
+  if (fearGreed?.success && fearGreed.data.length > 0) healthTracker.recordSuccess('Alternative.me');
+  else healthTracker.recordFailure('Alternative.me', 'Fear & Greed unavailable');
+
   // Strip large data payloads from health response (exchange info is huge)
   const slim = (r: any) =>
     r.ok
@@ -3566,6 +3891,9 @@ app.get("/api/health", async (_req, res) => {
       mode:          proxyInfo.mode,
       poolSize:      proxyInfo.poolSize,
       healthyProxies: proxyInfo.healthy,
+      smartDns:      proxyInfo.smartDns,
+      smartProxyDiscovery: proxyInfo.smartProxyDiscovery,
+      discoveryRoutes: proxyInfo.discoveryRoutes,
     },
     supplemental: supplementalStatus.toLowerCase(),
     health: {
@@ -3591,6 +3919,9 @@ app.get("/api/health", async (_req, res) => {
         status: proxyPoolStatus,
         poolSize: proxyInfo.poolSize,
         healthyProxies: proxyInfo.healthy,
+        smartDns: proxyInfo.smartDns,
+        smartProxyDiscovery: proxyInfo.smartProxyDiscovery,
+        discoveryRoutes: proxyInfo.discoveryRoutes,
       },
     },
     feedback: { samplesStored: feedbackStore.length },
@@ -3637,22 +3968,20 @@ let TELEGRAM_ENABLED = (process.env.TELEGRAM_ENABLED || "false").trim().toLowerC
   } catch { /* corrupt/unreadable config is non-fatal — fall back to env */ }
 })();
 
-function persistTelegramConfig(): void {
-  try {
-    writePrivateJsonFileSync(TELEGRAM_CONFIG_PATH, {
-      botToken: TELEGRAM_BOT_TOKEN,
-      chatId: TELEGRAM_CHAT_ID,
-      enabled: TELEGRAM_ENABLED,
-    });
-  } catch { /* disk unavailable — runtime value still applies for this session */ }
+function persistTelegramConfig(value: { botToken: string; chatId: string; enabled: boolean }): void {
+  writePrivateJsonFileSync(TELEGRAM_CONFIG_PATH, value);
 }
 
 function telegramConfigured(): boolean {
   return TELEGRAM_BOT_TOKEN.length > 0 && TELEGRAM_CHAT_ID.length > 0;
 }
 
-async function sendTelegramMessage(text: string): Promise<{ ok: boolean; error?: string }> {
-  if (!telegramConfigured()) return { ok: false, error: "not_configured" };
+const telegramProbeHistory = new IntegrationHealthHistory(12);
+let telegramLastTest: { ok: boolean; checkedAt: number; latencyMs: number; route: 'direct' | 'proxy' | 'none'; error: string | null } | null = null;
+
+async function sendTelegramMessage(text: string): Promise<{ ok: boolean; error?: string; latencyMs?: number; route?: 'direct' | 'proxy' | 'none' }> {
+  if (!telegramConfigured()) return { ok: false, error: "not_configured", latencyMs: 0, route: 'none' };
+  const startedAt = Date.now();
   try {
     // Telegram Bot API — not an exchange route, but it still uses the same
     // proxy-aware server fetch path so DNS/proxy-restricted networks can send
@@ -3671,13 +4000,15 @@ async function sendTelegramMessage(text: string): Promise<{ ok: boolean; error?:
       return {
         ok: false,
         error: result.status ? `telegram_http_${result.status}` : "telegram_unreachable_proxy_or_dns",
+        latencyMs: Date.now() - startedAt,
+        route: result.route === 'direct' ? 'direct' : 'proxy',
       };
     }
     const json: any = result.json;
-    if (json && json.ok === false) return { ok: false, error: "telegram_api_error" };
-    return { ok: true };
+    if (json && json.ok === false) return { ok: false, error: "telegram_api_error", latencyMs: Date.now() - startedAt, route: result.route === 'direct' ? 'direct' : 'proxy' };
+    return { ok: true, latencyMs: Date.now() - startedAt, route: result.route === 'direct' ? 'direct' : 'proxy' };
   } catch (err: any) {
-    return { ok: false, error: err?.message || "telegram_unreachable" };
+    return { ok: false, error: err?.message || "telegram_unreachable", latencyMs: Date.now() - startedAt, route: 'none' };
   }
 }
 
@@ -3688,6 +4019,8 @@ app.get("/api/telegram/status", (_req, res) => {
     enabled: TELEGRAM_ENABLED && telegramConfigured(),
     chatConfigured: TELEGRAM_CHAT_ID.length > 0,
     tokenConfigured: TELEGRAM_BOT_TOKEN.length > 0,
+    lastTest: telegramLastTest,
+    history: telegramProbeHistory.list(),
   });
 });
 
@@ -3696,17 +4029,18 @@ app.get("/api/telegram/status", (_req, res) => {
 // botToken or chatId leaves the existing stored value untouched, so the user
 // can update one field without re-pasting the token.
 app.post("/api/telegram/config", (req, res) => {
-  const body = req.body ?? {};
-  if (typeof body.botToken === "string" && body.botToken.trim()) {
-    TELEGRAM_BOT_TOKEN = body.botToken.trim();
+  let next;
+  try {
+    next = persistTelegramConfigUpdate(
+      { botToken: TELEGRAM_BOT_TOKEN, chatId: TELEGRAM_CHAT_ID, enabled: TELEGRAM_ENABLED },
+      req.body,
+      persistTelegramConfig,
+    );
   }
-  if (typeof body.chatId === "string" && body.chatId.trim()) {
-    TELEGRAM_CHAT_ID = body.chatId.trim();
-  }
-  if (typeof body.enabled === "boolean") {
-    TELEGRAM_ENABLED = body.enabled;
-  }
-  persistTelegramConfig();
+  catch { return res.status(503).json({ ok: false, error: 'telegram_config_persist_failed', configured: telegramConfigured(), enabled: TELEGRAM_ENABLED && telegramConfigured(), chatConfigured: TELEGRAM_CHAT_ID.length > 0, tokenConfigured: TELEGRAM_BOT_TOKEN.length > 0 }); }
+  TELEGRAM_BOT_TOKEN = next.botToken;
+  TELEGRAM_CHAT_ID = next.chatId;
+  TELEGRAM_ENABLED = next.enabled;
   res.json({
     ok: true,
     configured: telegramConfigured(),
@@ -3801,10 +4135,22 @@ app.post('/api/research/market-making/funding-aware/simulate', (req, res) => {
 
 app.post("/api/telegram/test", async (_req, res) => {
   if (!telegramConfigured()) {
+    const checkedAt = Date.now();
+    telegramLastTest = { ok: false, checkedAt, latencyMs: 0, route: 'none', error: 'not_configured' };
+    telegramProbeHistory.record({ checkedAt, state: 'MISCONFIGURED', latencyMs: 0, route: 'none', summary: 'Telegram bot token or chat id is not configured' });
     return res.status(200).json({ ok: false, error: "not_configured" });
   }
   const result = await sendTelegramMessage("✅ APEX Trading Engine — Telegram test message. Notifications are wired correctly.");
-  res.status(200).json(result);
+  const checkedAt = Date.now();
+  telegramLastTest = { ok: result.ok, checkedAt, latencyMs: result.latencyMs ?? 0, route: result.route ?? 'none', error: result.error ?? null };
+  telegramProbeHistory.record({
+    checkedAt,
+    state: result.ok ? 'CONNECTED' : 'DISCONNECTED',
+    latencyMs: result.latencyMs ?? 0,
+    route: result.route ?? 'none',
+    summary: result.ok ? 'Telegram Bot API test message delivered' : `Telegram test failed: ${result.error || 'unknown_error'}`,
+  });
+  res.status(200).json({ ...result, checkedAt, history: telegramProbeHistory.list() });
 });
 
 app.post("/api/telegram/send", async (req, res) => {
@@ -3835,8 +4181,11 @@ async function initializeDecisionMemoryDatasetDurability(): Promise<void> {
 
 function initializeOpenInterestHistorySampler(): void {
   const intervalMs = Math.max(60_000, Math.min(60 * 60_000, Number(process.env.APEX_OI_SAMPLE_INTERVAL_MS || 5 * 60_000)));
+  let lastWarningAt = 0;
   openInterestSampler = new OpenInterestSampler({
     intervalMs,
+    initialDelayMs: Math.max(5_000, Math.min(5 * 60_000, Number(process.env.APEX_OI_INITIAL_DELAY_MS || 45_000))),
+    maxBackoffMs: 30 * 60_000,
     store: openInterestHistoryStore,
     sample: async () => {
       const snapshot = await getTickers(20);
@@ -3854,7 +4203,10 @@ function initializeOpenInterestHistorySampler(): void {
         }));
     },
     onError: (error) => {
-      console.warn(JSON.stringify({ level: 'warn', event: 'open_interest_sampler_failed', message: error instanceof Error ? error.message : 'unknown_error' }));
+      const now = Date.now();
+      if (now - lastWarningAt < 5 * 60_000) return;
+      lastWarningAt = now;
+      console.warn(JSON.stringify({ level: 'warn', event: 'open_interest_sampler_retry_scheduled', message: error instanceof Error ? error.message : 'unknown_error' }));
     },
   });
   openInterestSampler.start();
@@ -3878,6 +4230,13 @@ async function reconcilePersistedTestnetOrders(): Promise<void> {
 
 function logProxyStartup(): void {
   const proxy = getProxyPoolInfo();
+  if (proxy.smartProxyDiscovery) {
+    console.log(
+      `[Proxy] mode=${proxy.mode} smartDns=${proxy.smartDns} lazyRoutes=${proxy.discoveryRoutes} `
+      + `(direct first; loopback proxy discovery activates only after a retryable direct failure)`,
+    );
+    return;
+  }
   if (proxy.poolSize === 0) {
     console.warn(
       '[Proxy] No PROXY_POOL_URLS — Binance and supplemental providers use direct-only Node fetch. '
@@ -3886,7 +4245,7 @@ function logProxyStartup(): void {
     return;
   }
   console.log(
-    `[Proxy] mode=${proxy.mode} routes=${proxy.poolSize} healthy=${proxy.healthy} `
+    `[Proxy] mode=${proxy.mode} smartDns=${proxy.smartDns} routes=${proxy.poolSize} healthy=${proxy.healthy} `
     + `maxConcurrency=${proxy.maxConcurrency} `
     + `(SOCKS5/HTTP pool — supplemental providers use adaptive direct/proxy routing)`,
   );
@@ -3991,10 +4350,11 @@ const maintenanceTimer = setInterval(() => {
     pruneHfSpacesClientState();
     mutationRateLimiter.prune();
     computeRateLimiter.prune();
+    void runProviderHealthSweep();
   } catch (err) {
     console.warn("[Proxy Server] prune cycle failed", err);
   }
-}, 5 * 60_000);
+}, 30_000);
 maintenanceTimer.unref?.();
 
 async function closeHttpServer(deadlineMs: number): Promise<void> {
@@ -4019,7 +4379,7 @@ async function closeHttpServer(deadlineMs: number): Promise<void> {
   });
 }
 
-async function gracefulShutdown(signal: 'SIGINT' | 'SIGTERM'): Promise<void> {
+async function gracefulShutdown(signal: 'SIGINT' | 'SIGTERM' | 'uncaught_exception' | 'unhandled_rejection'): Promise<void> {
   if (shutdownStarted) return;
   shutdownStarted = true;
   acceptingRequests = false;
@@ -4054,6 +4414,36 @@ async function gracefulShutdown(signal: 'SIGINT' | 'SIGTERM'): Promise<void> {
 
 process.once('SIGINT', () => { void gracefulShutdown('SIGINT'); });
 process.once('SIGTERM', () => { void gracefulShutdown('SIGTERM'); });
+
+// Process-level safety net: an uncaught exception or unhandled rejection anywhere
+// in the request pipeline (routes, providers, the liquidity-hunter workers) must
+// never crash the process silently or leave it in an unknown state. Log with full
+// context, then fail closed via the same graceful-shutdown path already used for
+// SIGINT/SIGTERM so in-flight connections are drained instead of hard-killed.
+let terminatingOnFatalError = false;
+function handleFatalProcessError(kind: 'uncaught_exception' | 'unhandled_rejection', error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (message.includes('EBUSY') && (message.includes('watch') || message.includes('locked'))) {
+    console.warn(JSON.stringify({
+      level: 'warn',
+      event: 'transient_fs_watch_error',
+      message,
+    }));
+    return;
+  }
+  console.error(JSON.stringify({
+    level: 'error',
+    event: kind,
+    message,
+    stack: error instanceof Error ? error.stack : undefined,
+  }));
+  if (terminatingOnFatalError) return;
+  terminatingOnFatalError = true;
+  acceptingRequests = false;
+  void gracefulShutdown(kind);
+}
+process.on('uncaughtException', (error) => handleFatalProcessError('uncaught_exception', error));
+process.on('unhandledRejection', (reason) => handleFatalProcessError('unhandled_rejection', reason));
 
 startServer().catch((error) => {
   acceptingRequests = false;

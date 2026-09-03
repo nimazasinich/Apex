@@ -4,9 +4,11 @@
   "files": [
     "src/types.ts",
     "src/lib/dataProvenance.ts",
+    "src/components/ui/WorkspacePrimitives.tsx",
     "src/components/ui/ProvenanceChip.tsx",
-    "src/components/SentimentGaugeCard.tsx",
-    "src/components/CorrelationMatrixCard.tsx",
+    "src/components/workspace/MarketsPage.tsx",
+    "src/pages/analytics/AnalyticsCommandPage.tsx",
+    "src/pages/analytics/components/CorrelationMatrix.tsx",
     "src/tests/dataProvenance.test.ts"
   ]
 }

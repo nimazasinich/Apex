@@ -1,0 +1,175 @@
+--- src/services/proxyConfig.ts.hf2.bak	2026-09-02 06:38:04.920398140 +0000
++++ src/services/proxyConfig.ts	2026-09-02 06:38:05.630290379 +0000
+@@ -18,8 +18,13 @@
+ export function normalizeSocksProxyUrl(raw: string): string {
+   const trimmed = raw.trim();
+   if (!trimmed) return '';
+-  if (/^socks5h?:\/\//i.test(trimmed)) return trimmed;
+-  if (/^[\w.-]+:\d+$/.test(trimmed)) return `socks5://${trimmed}`;
++  // Use remote DNS for SOCKS5 by default. A locally-resolved socks5:// route
++  // fails exactly like direct access when the host resolver cannot resolve (or
++  // intentionally blocks) an exchange domain. socks5h:// sends the hostname to
++  // the proxy and keeps TLS/SNI on the original host.
++  if (/^socks5h:\/\//i.test(trimmed)) return trimmed;
++  if (/^socks5:\/\//i.test(trimmed)) return trimmed.replace(/^socks5:/i, 'socks5h:');
++  if (/^[\w.-]+:\d+$/.test(trimmed)) return `socks5h://${trimmed}`;
+   return trimmed;
+ }
+ 
+--- src/services/proxyFetch.ts.hf2.bak	2026-09-02 06:38:04.922346817 +0000
++++ src/services/proxyFetch.ts	2026-09-02 06:38:05.630868601 +0000
+@@ -121,7 +121,7 @@
+     const autoScheme = (process.env.APEX_AUTO_LOCAL_PROXY_SCHEME || 'both').trim().toLowerCase();
+     if (/^\d+$/.test(autoPort)) {
+       if (autoScheme === 'socks5' || autoScheme === 'both') {
+-        candidates.push(`socks5://127.0.0.1:${autoPort}`);
++        candidates.push(`socks5h://127.0.0.1:${autoPort}`);
+       }
+       if (autoScheme === 'http' || autoScheme === 'both') {
+         candidates.push(`http://127.0.0.1:${autoPort}`);
+@@ -150,7 +150,7 @@
+   const scheme = (process.env.APEX_SMART_PROXY_SCHEME || process.env.APEX_AUTO_LOCAL_PROXY_SCHEME || 'both').trim().toLowerCase();
+   const routes: string[] = [];
+   if (scheme === 'http' || scheme === 'both') routes.push(`http://127.0.0.1:${port}`);
+-  if (scheme === 'socks5' || scheme === 'both') routes.push(`socks5://127.0.0.1:${port}`);
++  if (scheme === 'socks5' || scheme === 'both') routes.push(`socks5h://127.0.0.1:${port}`);
+   return routes;
+ }
+ 
+@@ -491,12 +491,21 @@
+ 
+ function describeFetchError(err: any): string {
+   const parts = [err?.message || 'transport_error'];
+-  const cause = err?.cause;
+-  if (cause?.code) parts.push(cause.code);
+-  if (cause?.errno && cause.errno !== cause.code) parts.push(String(cause.errno));
+-  if (cause?.syscall) parts.push(cause.syscall);
+-  if (cause?.hostname) parts.push(cause.hostname);
+-  return parts.join(' ');
++  const append = (value: any) => {
++    if (!value) return;
++    if (value.code) parts.push(String(value.code));
++    if (value.errno && value.errno !== value.code) parts.push(String(value.errno));
++    if (value.syscall) parts.push(String(value.syscall));
++    if (value.hostname) parts.push(String(value.hostname));
++    if (value.address) parts.push(String(value.address));
++  };
++  // Node HTTP agents (including socks-proxy-agent) often put the useful code on
++  // the top-level error, while undici usually nests it under cause. Preserve both
++  // so diagnostics can distinguish DNS, refused tunnel, TLS, and timeout faults.
++  append(err);
++  append(err?.cause);
++  append(err?.cause?.cause);
++  return [...new Set(parts.filter(Boolean))].join(' ');
+ }
+ 
+ // ── Warning throttle ─────────────────────────────────────────────────────────
+--- src/services/marketDataService.ts.hf2.bak	2026-09-02 06:38:04.924265636 +0000
++++ src/services/marketDataService.ts	2026-09-02 06:38:05.631202655 +0000
+@@ -59,6 +59,11 @@
+ // but use realistic defaults for proxied market-data traffic.
+ const MARKET_BULK_TIMEOUT_MS = Math.max(4_000, Number(process.env.MARKET_BULK_TIMEOUT_MS || 8_000));
+ const MARKET_CANDLE_TIMEOUT_MS = Math.max(5_500, Number(process.env.MARKET_CANDLE_TIMEOUT_MS || 9_000));
++// Ticker bootstrap must not wait on a fan-out of per-symbol open-interest calls.
++// OI enrichment is opportunistic for the market table; decision paths fetch
++// their own evidence and fail closed when OI is unavailable.
++const BINANCE_TICKER_OI_ENRICH_LIMIT = Math.max(0, Math.min(24, Number(process.env.BINANCE_TICKER_OI_ENRICH_LIMIT || 12)));
++const BINANCE_TICKER_OI_ENRICH_BUDGET_MS = Math.max(500, Math.min(6_000, Number(process.env.BINANCE_TICKER_OI_ENRICH_BUDGET_MS || 2_200)));
+ 
+ export type MarketDataSource = 'binance' | 'kucoin' | 'hf_space_2' | 'hf_space_4';
+ 
+@@ -610,22 +615,35 @@
+     .sort((a: any, b: any) => b.quoteVolume - a.quoteVolume)
+     .slice(0, limit);
+ 
+-  // Keep the wide market universe fast: open interest is fetched for the
+-  // highest-liquidity contracts only, while price/volume/funding remain live
+-  // for every returned market. This avoids firing 80-120 parallel OI requests.
+-  const oiFetchLimit = Math.min(16, usdtRows.length);
+-  const oiResults = await mapWithConcurrency(
+-    usdtRows.map((row: any, index: number) => ({ row, index })),
+-    3,
+-    async ({ row, index }) => index < oiFetchLimit
+-      ? binanceOpenInterest(row.binSymbol, 'background').catch(() => null)
+-      : null,
++  // Keep the wide market universe fast: open interest enrichment is bounded by
++  // one short aggregate budget. Completed rows are kept; unfinished rows stay
++  // explicitly unavailable (NaN) instead of blocking the Overview bootstrap or
++  // being fabricated as zero. The underlying bounded requests may finish and
++  // warm the normal provider cache after this snapshot returns.
++  const oiFetchLimit = Math.min(BINANCE_TICKER_OI_ENRICH_LIMIT, usdtRows.length);
++  const oiResults: any[] = new Array(usdtRows.length).fill(null);
++  const oiWork = mapWithConcurrency(
++    usdtRows.slice(0, oiFetchLimit).map((row: any, index: number) => ({ row, index })),
++    4,
++    async ({ row, index }) => {
++      const value = await binanceOpenInterest(row.binSymbol, 'background').catch(() => null);
++      oiResults[index] = value;
++      return value;
++    },
+   );
++  if (oiFetchLimit > 0) {
++    await Promise.race([
++      oiWork,
++      new Promise<void>((resolve) => setTimeout(resolve, BINANCE_TICKER_OI_ENRICH_BUDGET_MS)),
++    ]);
++    void oiWork.catch(() => undefined);
++  }
+ 
+   const providerReadAt = Date.now();
+   const tickers: SymbolTicker[] = usdtRows.map((row: any, i: number) => {
+     const oiResult: any = oiResults[i];
+-    const oiBase = oiResult && oiResult.ok ? parseFloat(String(oiResult.data?.openInterest ?? '0')) : 0;
++    const oiBase = oiResult && oiResult.ok ? parseFloat(String(oiResult.data?.openInterest ?? '')) : Number.NaN;
++    const fundingRate = fundingMap.has(row.binSymbol) ? fundingMap.get(row.binSymbol)! : Number.NaN;
+     return {
+       symbol: row.canonicalSymbol,
+       lastPrice: row.lastPrice,
+@@ -634,8 +652,8 @@
+       volume24h: row.volume,
+       high24h: row.high || row.lastPrice,
+       low24h: row.low || row.lastPrice,
+-      fundingRate: fundingMap.get(row.binSymbol) ?? 0,
+-      openInterest: (Number.isFinite(oiBase) ? oiBase : 0) * row.lastPrice,
++      fundingRate,
++      openInterest: Number.isFinite(oiBase) && oiBase > 0 ? oiBase * row.lastPrice : Number.NaN,
+       dataState: (bulkStale || row.sourceObservedAt === null ? 'degraded' : 'live') as DataState,
+       timestamp: row.sourceObservedAt ?? 0,
+       observationMetadata: tickerObservationMetadata({
+--- src/services/apexNextMarketRoutes.ts.hf2.bak	2026-09-02 06:38:04.926130320 +0000
++++ src/services/apexNextMarketRoutes.ts	2026-09-02 06:38:05.631800472 +0000
+@@ -1494,7 +1494,11 @@
+ 
+     // Keep market cards/read-only pages useful during a Futures transport outage,
+     // but never let spot/reference data qualify a trading decision.
+-    const reference = await referencePromise;
++    // Do not let three sequential public-reference providers push this route
++    // beyond the browser's 22s bootstrap timeout. If reference data has not
++    // arrived inside this second bounded window, return an honest unavailable
++    // payload; the already-started promise can still populate transport caches.
++    const reference = await settleWithin(referencePromise, 7_000);
+     const sorted = [...(reference?.tickers || [])].sort((a, b) => b.turnover24h - a.turnover24h).slice(0, limit);
+     res.json({
+       symbols: sorted,
+--- server.ts.hf2.bak	2026-09-02 06:38:04.927977814 +0000
++++ server.ts	2026-09-02 06:38:05.632503348 +0000
+@@ -3148,7 +3148,7 @@
+   const checkedAt = Date.now();
+   try {
+     const probe = await probeProxyConfiguration(req.body?.proxy, [
+-      { provider: 'Binance Futures', url: `${BINANCE_FUTURES_BASE}/fapi/v1/ping` },
++      { provider: 'Binance Futures', url: `${BINANCE_FUTURES_BASE}/fapi/v1/time` },
+       { provider: 'KuCoin Futures', url: `${KUCOIN_FUTURES_BASE}/api/v1/timestamp` },
+       { provider: 'HF Space 2', url: `${HF_SPACE_2_ORIGIN.replace(/\/$/, '')}/api/new-sources/status` },
+       { provider: 'HF Space 4', url: `${HF_SPACE_4_ORIGIN.replace(/\/$/, '')}/api/health` },
+--- src/components/ProxySettingsPanel.tsx.hf2.bak	2026-09-02 06:38:04.929767701 +0000
++++ src/components/ProxySettingsPanel.tsx	2026-09-02 06:38:05.632688228 +0000
+@@ -301,7 +301,7 @@
+         <div className="head"><strong>Provider</strong><span>State</span><span>Route used</span><span>Latency</span></div>
+         {testResult.results.map((row) => <div className="row" key={row.provider} title={row.error || row.routeLabel}>
+           <strong>{row.provider}</strong>
+-          <span className={row.ok ? 'positive' : 'negative'}>{row.ok ? <CheckCircle2 size={13} /> : <XCircle size={13} />}{row.ok ? 'Connected' : row.status ? `HTTP ${row.status}` : 'Failed'}</span>
++          <span className={row.ok ? 'positive' : 'negative'}>{row.ok ? <CheckCircle2 size={13} /> : <XCircle size={13} />}{row.ok ? 'Connected' : row.status ? `HTTP ${row.status}` : row.error || 'Failed'}</span>
+           <span>{row.route === 'direct' ? 'Direct' : row.route === 'proxy' ? `Proxy · ${row.routeLabel}` : 'None'}</span>
+           <span>{row.latencyMs} ms</span>
+         </div>)}
