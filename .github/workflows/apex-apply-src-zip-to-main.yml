@@ -1,0 +1,60 @@
+name: APEX Apply src.zip to Main
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apex-apply-src-zip-to-main.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-src:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate and extract src.zip
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src.zip
+          rm -rf /tmp/apex-src-upload
+          mkdir -p /tmp/apex-src-upload
+          unzip -q src.zip -d /tmp/apex-src-upload
+          test -d /tmp/apex-src-upload/src
+          test -f /tmp/apex-src-upload/src/App.tsx
+          echo "archive_src_files=$(find /tmp/apex-src-upload/src -type f | wc -l)"
+
+      - name: Replace repository src with uploaded H4 src snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src
+          rsync -a --delete /tmp/apex-src-upload/src/ src/
+
+      - name: Verify exact src snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          diff -qr /tmp/apex-src-upload/src src
+          echo "final_src_files=$(find src -type f | wc -l)"
+          git status --short -- src
+
+      - name: Commit updated src to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A src
+          if git diff --cached --quiet; then
+            echo "src already matches uploaded H4 snapshot; nothing to commit"
+            exit 0
+          fi
+          git commit -m "feat(apex): apply exact H4 src snapshot"
+          git push origin HEAD:main
