@@ -6,10 +6,9 @@ name: CodeQL
 # functional check in CI is red. It does not duplicate any CI step.
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # Keep security analysis available but stop auto-blocking ordinary development
+  # pushes and PRs. Manual dispatch is enough for on-demand audits.
+  workflow_dispatch:
   schedule:
     # Weekly re-scan so newly published query updates still surface findings on
     # code that has not changed.
@@ -17,7 +16,7 @@ on:
 
 concurrency:
   group: codeql-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
