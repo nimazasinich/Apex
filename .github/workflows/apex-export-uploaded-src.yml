@@ -1,0 +1,33 @@
+name: APEX Export Uploaded src.zip
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apex-export-uploaded-src.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Verify uploaded archive exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src.zip
+          ls -lh src.zip
+          sha256sum src.zip | tee src.zip.sha256
+      - name: Upload archive for exact inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-user-uploaded-src-zip
+          path: |
+            src.zip
+            src.zip.sha256
+          compression-level: 0
+          retention-days: 1
