@@ -3912,14 +3912,15 @@
    This intentionally supersedes the older icon-tile experiment above. */
 :root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-settings-page .apex-v3-settings-nav {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 2px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
   min-height: 0 !important;
-  padding: 8px !important;
-  overflow: auto !important;
+  padding: 6px 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
   border: 1px solid var(--apex-border) !important;
-  border-radius: 12px !important;
+  border-radius: 10px !important;
   background: var(--apex-surface) !important;
   box-shadow: none !important;
 }
@@ -3929,22 +3930,20 @@
 }
 
 :root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-settings-page .apex-v3-settings-nav button {
-  display: grid !important;
-  grid-template-columns: 32px minmax(0, 1fr) !important;
-  grid-template-rows: auto !important;
+  display: inline-flex !important;
+  flex-shrink: 0 !important;
   align-items: center !important;
-  justify-items: stretch !important;
-  place-items: initial !important;
-  align-content: normal !important;
-  gap: 10px !important;
-  min-height: 58px !important;
-  padding: 9px 10px !important;
+  gap: 8px !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 6px 14px !important;
   overflow: visible !important;
   border: 1px solid transparent !important;
-  border-radius: 9px !important;
+  border-radius: 8px !important;
   background: transparent !important;
   color: #61728a !important;
-  text-align: left !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
   transform: none !important;
   box-shadow: none !important;
 }
@@ -3954,39 +3953,19 @@
 }
 
 :root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-settings-page .apex-v3-settings-nav-copy {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
+  display: inline-flex !important;
+  align-items: center !important;
 }
 
 :root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-settings-page .apex-v3-settings-nav-copy strong {
-  display: block !important;
-  max-width: none !important;
-  overflow: visible !important;
+  display: inline !important;
   color: var(--apex-ink-900) !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
   font-weight: 650 !important;
-  line-height: 1.2 !important;
-  letter-spacing: 0 !important;
-  text-align: left !important;
-  text-overflow: clip !important;
-  white-space: normal !important;
 }
 
 :root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-settings-page .apex-v3-settings-nav-copy small {
-  display: block !important;
-  width: 100% !important;
-  margin-top: 4px !important;
-  overflow: hidden !important;
-  color: var(--apex-muted-600) !important;
-  font-size: 10px !important;
-  line-height: 1.2 !important;
-  text-align: left !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+  display: none !important;
 }
 
 :root[data-apex-theme-resolved="light"] .apex-shell .apex-v3-settings-page .apex-v3-settings-nav-icon {
@@ -4315,4 +4294,18 @@
 :root .apex-shell .apex-v3-watchlist-page .apex-v3-table td.number {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+
+/* Operator-requested no-scrollbar Markets contract. Pagination owns overflow; rows stay fully visible. */
+@media (min-width: 1180px) and (min-height: 680px) {
+  :root[data-apex-theme-resolved="light"] .apex-content:has(.apex-mkt2) .apex-mkt2-table-scroll,
+  :root[data-apex-theme-resolved="light"] .apex-content:has(.apex-mkt2) .apex-mkt2-sidebar {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+  }
+  :root[data-apex-theme-resolved="light"] .apex-content:has(.apex-mkt2) .apex-mkt2-table-scroll::-webkit-scrollbar,
+  :root[data-apex-theme-resolved="light"] .apex-content:has(.apex-mkt2) .apex-mkt2-sidebar::-webkit-scrollbar { display: none !important; }
+  :root[data-apex-theme-resolved="light"] .apex-mkt2-table th,
+  :root[data-apex-theme-resolved="light"] .apex-mkt2-table td { padding-top: 5px !important; padding-bottom: 5px !important; }
 }

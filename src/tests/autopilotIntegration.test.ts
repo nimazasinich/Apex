@@ -5,27 +5,29 @@ import { describe, expect, it } from 'vitest';
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
 
 describe('Smart Autopilot integration', () => {
-  it('persists one global opt-in setting and exposes the same mini control on Backtesting and Strategies', () => {
+  it('defaults to one global opt-in research mode and removes page-level toggles', () => {
     expect(read('src/types.ts')).toContain('autopilotEnabled: boolean');
     expect(read('src/lib/storage.ts')).toContain('autopilotEnabled: false');
-    expect(read('src/pages/settings/SettingsPage.tsx')).toContain('Smart Autopilot — rotate strategy/timeframe contexts every 5 minutes');
-    expect(read('src/pages/backtesting/BacktestRunBuilder.tsx')).toContain('SmartAutopilotMiniToggle');
-    expect(read('src/pages/strategies/StrategyEvidenceRail.tsx')).toContain('SmartAutopilotMiniToggle');
-    expect(read('src/pages/strategies/StrategyPage.tsx')).toContain('onAutopilotEnabledChange');
+    expect(read('src/pages/settings/SettingsPage.tsx')).toContain('One global Autopilot control');
+    expect(read('src/pages/backtesting/BacktestRunBuilder.tsx')).not.toContain('SmartAutopilotMiniToggle');
+    expect(read('src/pages/strategies/StrategyEvidenceRail.tsx')).not.toContain('SmartAutopilotMiniToggle');
+    expect(read('src/pages/strategies/StrategyPage.tsx')).not.toContain('onAutopilotEnabledChange');
     const app = read('src/App.tsx');
     expect(app).toContain('setAutopilotEnabled');
     expect(app).toContain('saveSettings(next)');
-    expect(app.match(/onAutopilotEnabledChange=\{setAutopilotEnabled\}/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(app.match(/onAutopilotEnabledChange=\{setAutopilotEnabled\}/g)?.length).toBe(1);
   });
 
-  it('runs bounded five-minute Smart Autopilot cycles instead of a single-context loop', () => {
+  it('runs one bounded server-owned lifecycle with the first cycle scheduled on the configured interval', () => {
+    const routes = read('src/services/apexNextMarketRoutes.ts');
+    expect(routes).toContain('APEX_AUTOPILOT_SCHEDULER');
+    expect(routes).toContain('schedulerTimer = setInterval');
+    expect(routes).not.toContain('queueMicrotask(() => { void runScheduledAutopilotCycle(); }');
+    expect(routes).toContain("parseSmartAutopilotControls(req.body, 'CLIENT_REQUEST')");
+    expect(routes).toContain("'SERVER_SCHEDULER'");
     const backtesting = read('src/pages/backtesting/useBacktestingOptimization.ts');
-    expect(backtesting).toContain("apiMutate('/api/strategies/autopilot/cycle'");
-    expect(backtesting).toContain('maxContexts: 6');
-    expect(backtesting).toContain('symbols: marketOptions.slice(0, 4)');
-    expect(backtesting).toContain('window.setInterval(() => void runAutopilotOptimization(), 5 * 60_000)');
-    expect(backtesting).toContain('autopilotInFlightRef.current');
-    expect(backtesting).toContain('SMART_AUTOPILOT_CYCLE_KEY');
+    expect(backtesting).not.toContain('/api/strategies/autopilot/cycle');
+    expect(backtesting).not.toContain('SMART_AUTOPILOT_CYCLE_KEY');
   });
 
   it('uses multi-agent promotion gates and the existing multi-strategy paper council', () => {
@@ -33,7 +35,7 @@ describe('Smart Autopilot integration', () => {
     expect(routes).toContain("app.post('/api/strategies/autopilot/cycle'");
     expect(routes).toContain('buildSmartAutopilotPlan');
     expect(routes).toContain('runSmartAutopilotOptimizationCouncil(report)');
-    expect(routes).toContain('if (council.approvedForPromotion)');
+    expect(routes).toContain('if (council.approvedForFinalValidation)');
     expect(routes).toContain("strategyOptimizationStore.promote(report, 'AUTOMATIC_PROMOTION')");
     expect(routes).toContain('runMultiStrategyResearch');
     expect(routes).toContain('runMultiAgentResearchCouncil(research');

@@ -29,7 +29,7 @@ const result = {
 describe('active Backtesting route regression', () => {
   it('shows an explicit cancel action while the server request is owned by the page', () => {
     const html = renderToStaticMarkup(React.createElement(BacktestRunBuilder, {
-      studioMode: 'smart', onStudioModeChange: () => undefined,
+      studioMode: 'smart',
       smartCheckpoint: null, smartRunning: false, smartStopping: false, smartResumable: false,
       smartPhaseLabel: 'Idle', onSmartStart: () => undefined, onSmartStop: () => undefined, onSmartResume: () => undefined,
       strategies: [strategy], strategy, strategyId: strategy.id, onStrategyChange: () => undefined,

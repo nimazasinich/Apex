@@ -10,6 +10,7 @@ import './styles/interaction-polish.css';
 import './styles/light-theme-hardening.css';
 import './styles/light-theme-workspace-refinement.css';
 import './components/trading/TradingWorkspace.css';
+import './styles/page-recovery.css';
 import { initializeTheme } from './lib/theme';
 
 initializeTheme();

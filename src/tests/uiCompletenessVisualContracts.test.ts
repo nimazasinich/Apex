@@ -83,7 +83,7 @@ describe('UI completeness visual-regression contracts', () => {
   it('reuses the shared dialog focus trap across active workspace modals', () => {
     const files = [
       'src/components/workspace/AccountViews.tsx',
-      'src/pages/analytics/AnalyticsPage.tsx',
+      'src/pages/analytics/AnalyticsCommandPage.tsx',
       'src/pages/help/HelpPage.tsx',
       'src/pages/strategies/StrategyCompareDialog.tsx',
       'src/pages/strategies/StrategyDetailPage.tsx',

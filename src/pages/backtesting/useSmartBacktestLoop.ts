@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { BacktestResult } from '../../types';
+import type { SmartOptimizationOutcome } from './useBacktestingOptimization';
 import type { BacktestStudioMode, SmartBacktestCheckpoint, SmartBacktestPhase } from './backtestingTypes';
 import {
   SMART_MAX_ITERATIONS,
@@ -17,7 +18,7 @@ interface UseSmartBacktestLoopOptions {
   activeConfigKey: string;
   activeConfigKeyRef: React.MutableRefObject<string>;
   runBacktest: (source?: 'manual' | 'smart') => Promise<BacktestResult | null>;
-  runSmartOptimization: () => Promise<void>;
+  runSmartOptimization: (autoAdvance?: boolean) => Promise<SmartOptimizationOutcome | null>;
   cancelBacktest: (reason?: string) => void;
   setStudioMode: (mode: BacktestStudioMode) => void;
 }
@@ -102,6 +103,9 @@ export function useSmartBacktestLoop({
     let bestScore = resume && smartCheckpoint ? smartCheckpoint.bestScore : null;
     let bestRunId = resume && smartCheckpoint ? smartCheckpoint.bestRunId : null;
     let bestNetReturnPct = resume && smartCheckpoint ? smartCheckpoint.bestNetReturnPct : null;
+    const experimentFingerprints = new Set(resume && smartCheckpoint?.experimentFingerprints
+      ? smartCheckpoint.experimentFingerprints
+      : []);
 
     updateSmartCheckpoint({
       id: sessionId,
@@ -163,6 +167,16 @@ export function useSmartBacktestLoop({
         const latestScore = scoreSmartBacktest(latest);
         const improved = bestScore == null || latestScore > bestScore;
         const runId = latest.audit?.runId ?? `${latest.symbol}-${latest.direction}-${latest.interval}-${latest.audit?.generatedAt ?? Date.now()}`;
+        const experimentFingerprint = latest.audit?.configFingerprint ?? runId;
+        if (experimentFingerprints.has(experimentFingerprint)) {
+          finishSmartRun(
+            'completed',
+            'Stopped before repeating an identical backtest configuration and dataset.',
+            'Change the research subject or run a new optimization campaign; duplicate work was not submitted.',
+          );
+          break;
+        }
+        experimentFingerprints.add(experimentFingerprint);
         if (improved) {
           bestScore = latestScore;
           bestRunId = runId;
@@ -189,6 +203,7 @@ export function useSmartBacktestLoop({
           latestNetReturnPct: latest.totalPnlPct,
           bestNetReturnPct: bestNetReturnPct ?? latest.totalPnlPct,
           latestTradeCount: latest.timeline.length,
+          experimentFingerprints: [...experimentFingerprints].slice(-100),
           stopReason: null,
           lastChange: improved ? 'Latest result became the saved best checkpoint.' : 'Latest result was kept as latest only; the previous best checkpoint remains protected.',
           nextAction: 'Run Smart Optimization to search for a robust candidate before the next iteration.',
@@ -211,16 +226,26 @@ export function useSmartBacktestLoop({
           status: 'improving',
           nextAction: 'Running safe robust optimization. Promotion still requires its existing evidence gates.',
         });
-        await runSmartOptimization();
+        const optimization = await runSmartOptimization(true);
         if (smartStopRequestedRef.current) {
           finishSmartRun('stopped', 'Stopped safely after the latest completed iteration and checkpoint.', 'Resume continues from this checkpoint.');
           break;
         }
 
+        if (!optimization?.advanced) {
+          finishSmartRun(
+            optimization ? 'completed' : 'failed',
+            optimization?.message || 'Optimization did not return a usable candidate.',
+            'Review the evidence and adjust the research definition. Smart Mode will not repeat the same configuration.',
+          );
+          break;
+        }
+
         updateSmartCheckpoint({
           status: 'checkpointed',
-          lastChange: 'Smart Mode saved a checkpoint and prepared the next safe iteration.',
-          nextAction: 'Continuing automatically unless Stop is pressed or a safety stop condition is reached.',
+          lastOptimizationAdvanced: true,
+          lastChange: `Smart Mode activated a distinct, gate-approved research profile: ${optimization.message}`,
+          nextAction: 'Run the next canonical replay against the newly activated research revision.',
         });
         await new Promise((resolve) => globalThis.setTimeout(resolve, SMART_ITERATION_PAUSE_MS));
       }

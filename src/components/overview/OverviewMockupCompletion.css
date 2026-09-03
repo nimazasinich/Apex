@@ -1,0 +1,266 @@
+/* APEX Overview — Seamless Unified White Canvas with Ultra-Thin Borders & Non-Bold Typography */
+
+.apex-overview-v2 {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 12px 8px;
+  background-color: #ffffff !important;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-rows: 64px minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
+  gap: 8px !important;
+}
+
+/* Seamless Panels with Ultra-Thin Borders */
+.apex-overview-v2 .apex-panel {
+  background: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Headers — Non-Bold, Elegant */
+.apex-overview-section-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 16px !important;
+  margin-bottom: 2px !important;
+}
+
+.section-head-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.apex-overview-section-num {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 15px !important;
+  height: 15px !important;
+  border-radius: 4px !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 8.5px !important;
+  font-weight: 600 !important;
+}
+
+.apex-overview-section-head h2 {
+  margin: 0 !important;
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+/* Status Cards Strip */
+.ov-status-strip {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 7px !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.ov-status-card {
+  background: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 8px !important;
+  padding: 6px 9px 5px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  overflow: hidden !important;
+}
+
+.ov-status-card.status-autopilot {
+  border-color: #e0f2fe !important;
+}
+
+.ov-status-card.status-trading,
+.ov-status-card.status-risk,
+.ov-status-card.status-execution,
+.ov-status-card.status-freshness {
+  border-color: #dcfce7 !important;
+}
+
+.ov-status-card.status-providers {
+  border-color: #f3e8ff !important;
+}
+
+.ov-status-card .card-top-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+
+.ov-status-card .status-card-icon {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ov-status-card .status-card-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.ov-status-card .status-card-lbl {
+  font-size: 7.5px !important;
+  font-weight: 500 !important;
+  color: #64748b !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.1 !important;
+}
+
+.ov-status-card .status-card-val {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif !important;
+}
+
+.ov-status-card .dark-navy {
+  color: #1e293b !important;
+}
+
+.ov-status-card .text-green {
+  color: #059669 !important;
+}
+
+.ov-status-card .card-bottom-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 8px !important;
+  color: #64748b !important;
+  font-weight: 450 !important;
+}
+
+.ov-status-card .mini-bars-container {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 1.5px !important;
+  height: 9px !important;
+}
+
+.ov-status-card .mini-bars-container span {
+  width: 2px !important;
+  border-radius: 1px !important;
+}
+
+/* Upper & Lower Grids */
+.apex-overview-upper-grid {
+  display: grid !important;
+  grid-template-columns: 31fr 43fr 26fr !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.apex-overview-upper-right {
+  display: grid !important;
+  grid-template-rows: minmax(0, 1.05fr) minmax(0, 0.95fr) !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.apex-overview-lower-grid {
+  display: grid !important;
+  grid-template-columns: minmax(180px, 0.78fr) minmax(300px, 1.38fr) minmax(235px, 1.02fr) minmax(285px, 1.28fr) !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Micro Elements — Delicate, Non-Bold */
+.market-mini-card {
+  border: 1px solid #f1f5f9 !important;
+  background: #ffffff !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.015) !important;
+}
+
+.market-mini-card.active {
+  border-color: #3b82f6 !important;
+  background: #f8fafc !important;
+}
+
+.exec-gauge-card,
+.priority-item {
+  border: 1px solid #f1f5f9 !important;
+  background: #ffffff !important;
+  border-radius: 6px !important;
+}
+
+/* Clean Tables Without Scrollbars */
+.overview-activity-table-container,
+.apex-overview-provider-table-container {
+  overflow: hidden !important;
+}
+
+.overview-activity-table,
+.apex-overview-provider-table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.overview-activity-table th,
+.apex-overview-provider-table th {
+  font-weight: 500 !important;
+  color: #64748b !important;
+}
+
+.overview-activity-table td,
+.apex-overview-provider-table td {
+  font-weight: 450 !important;
+  color: #1e293b !important;
+}
+
+/* Numerics Typography */
+.tabular-num {
+  font-family: 'JetBrains Mono', -apple-system, monospace !important;
+  font-variant-numeric: tabular-nums !important;
+  font-weight: 500 !important;
+}

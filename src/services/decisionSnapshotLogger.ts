@@ -1,6 +1,6 @@
 /**
  * Converts canonical decision snapshots into SignalDecisionLog rows for audit and parity analysis.
- * Baseline remains authoritative; shadow results are stored in marketSnapshotSummary.
+ * Logs the canonical authority decision while retaining baseline-vs-advanced comparison evidence.
  */
 import type {
   SignalDecisionLog,
@@ -24,8 +24,7 @@ export interface ShadowComparisonSummary {
 export function summarizeShadowComparison(snapshot: DecisionSnapshot): ShadowComparisonSummary {
   const baselineAccepted =
     snapshot.baseline.guardPass &&
-    snapshot.baseline.readinessTier !== 'BLOCKED' &&
-    snapshot.direction !== 'NO_TRADE';
+    snapshot.baseline.readinessTier !== 'BLOCKED';
   const shadowAccepted = snapshot.shadow?.status === 'ACCEPTED';
   const agreement = baselineAccepted === shadowAccepted;
   let divergenceReason: string | null = null;
@@ -46,21 +45,17 @@ export function summarizeShadowComparison(snapshot: DecisionSnapshot): ShadowCom
   };
 }
 
-function baselineDecisionStatus(snapshot: DecisionSnapshot): SignalDecisionStatus {
-  const accepted =
-    snapshot.baseline.guardPass &&
-    snapshot.baseline.readinessTier !== 'BLOCKED';
-  return accepted ? 'ACCEPTED' : 'REJECTED';
+function canonicalDecisionStatus(snapshot: DecisionSnapshot): SignalDecisionStatus {
+  return snapshot.direction === 'NO_TRADE' ? 'REJECTED' : 'ACCEPTED';
 }
 
-function baselineReasonCode(snapshot: DecisionSnapshot, direction: TradeDirection): SignalDecisionReasonCode {
-  if (snapshot.baseline.readinessTier === 'BLOCKED') return 'DATA_NOT_READY';
-  if (!snapshot.baseline.guardPass) {
-    if (snapshot.baseline.guardReasons.some((r) => r.includes('timeframe'))) return 'GATES_FAILED';
+function canonicalReasonCode(snapshot: DecisionSnapshot): SignalDecisionReasonCode {
+  if (!snapshot.decisionReasonCode || snapshot.decisionReasonCode === 'BASELINE_GUARD_BLOCKED') {
+    if (snapshot.baseline.readinessTier === 'BLOCKED') return 'DATA_NOT_READY';
     if (snapshot.baseline.guardReasons.some((r) => r.includes('liquidity floor'))) return 'LOW_LIQUIDITY_QUALITY';
     return 'GATES_FAILED';
   }
-  return 'ACCEPTED_BEST_CANDIDATE';
+  return snapshot.decisionReasonCode;
 }
 
 export function decisionSnapshotToLog(
@@ -80,11 +75,9 @@ export function decisionSnapshotToLog(
     isoTime,
     ticker: snapshot.symbol,
     direction,
-    decision: baselineDecisionStatus(snapshot),
-    reasonCode: baselineReasonCode(snapshot, direction),
-    reasonText: snapshot.baseline.guardPass
-      ? `Baseline ${snapshot.baseline.readinessTier} score ${snapshot.baseline.score}`
-      : snapshot.baseline.guardReasons.join(' ') || `Blocked: ${snapshot.baseline.readinessTier}`,
+    decision: canonicalDecisionStatus(snapshot),
+    reasonCode: canonicalReasonCode(snapshot),
+    reasonText: snapshot.decisionReasonText ?? (snapshot.direction === 'NO_TRADE' ? 'Canonical decision blocked.' : 'Canonical decision accepted.'),
     confidence: snapshot.confidence,
     rawScore: snapshot.rankingScore / 100,
     qStructDirectional: snapshot.shadow?.qStructDirectional ?? undefined,
@@ -103,6 +96,15 @@ export function decisionSnapshotToLog(
     smcDirectionalScore: snapshot.smartMoneyContext?.smcDirectionalScore,
     smcContextScore: snapshot.smartMoneyContext?.smcContextScore,
     smcSetupModel: snapshot.smartMoneyContext?.setupModel,
+    marketRegime: snapshot.intelligence?.regime.regime,
+    ensembleScore: snapshot.intelligence?.score,
+    ensembleModelAgreement: snapshot.intelligence?.modelAgreement,
+    parliamentMode: snapshot.parliamentContribution?.mode,
+    parliamentEligibleIfPromoted: snapshot.parliamentContribution?.eligibleIfPromoted,
+    parliamentCategoryConfluence: snapshot.parliamentContribution?.categoryConfluence,
+    parliamentScore: snapshot.parliamentContribution?.score,
+    parliamentConfidence: snapshot.parliamentContribution?.confidence,
+    parliamentReasonCode: snapshot.parliamentContribution?.reasonCode,
     marketSnapshotSummary: {
       logKind: 'SHADOW_COMPARISON',
       engineVersion: snapshot.engineVersion || DECISION_ADAPTER_VERSION,
@@ -115,8 +117,8 @@ export function decisionSnapshotToLog(
       microPrice: snapshot.shadow?.marketInputs?.microPrice ?? null,
       dataSource: snapshot.dataQuality === 'live' ? 'kucoin_live' : snapshot.dataQuality === 'unavailable' ? 'unavailable' : 'kucoin_live_binance_unavailable',
       mode: snapshot.mode,
-      authoritativeEngine: 'baseline_scoreCandidate',
-      shadowEngine: 'scannerCore_evaluateScanDecision',
+      authoritativeEngine: snapshot.authority === 'REGIME_ENSEMBLE_PARLIAMENT' ? 'liveSignalEnsemble_plus_promoted_parliament' : snapshot.authority === 'REGIME_ENSEMBLE' ? 'liveSignalEnsemble_regime_aware' : 'baseline_scoreCandidate',
+      shadowEngine: snapshot.authority === 'REGIME_ENSEMBLE_PARLIAMENT' ? 'scannerCore_plus_parliament_comparison' : snapshot.authority === 'REGIME_ENSEMBLE' ? 'scannerCore_plus_baseline_comparison' : 'scannerCore_evaluateScanDecision',
       comparison,
       baseline: {
         score: snapshot.baseline.score,
@@ -131,11 +133,18 @@ export function decisionSnapshotToLog(
       configuredConfig: snapshot.configuredConfig ?? null,
       effectiveConfig: snapshot.effectiveConfig ?? null,
       configOverrides: snapshot.configOverrides ?? [],
+      authority: snapshot.authority,
+      decisionReasonCode: snapshot.decisionReasonCode,
+      decisionReasonText: snapshot.decisionReasonText,
+      safetyGuardReasons: snapshot.safetyGuardReasons ?? null,
       featureCompletenessPct: snapshot.featureCompletenessPct,
       decisionQualityConfidence: snapshot.confidence,
       calibratedProbability: snapshot.calibratedProbability,
       expectedNetEdge: snapshot.expectedNetEdge,
       modelUncertainty: snapshot.modelUncertainty,
+      intelligence: snapshot.intelligence ?? null,
+      calibration: snapshot.calibration ?? null,
+      parliamentContribution: snapshot.parliamentContribution ?? null,
       supportingSignals: snapshot.supportingSignals,
       conflictingSignals: snapshot.conflictingSignals,
       expiresAt: snapshot.expiresAt,

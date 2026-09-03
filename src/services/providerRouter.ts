@@ -55,6 +55,11 @@ export interface DataEnvelope<T> {
   category: string;
   symbol: string;
   updatedAt: number;
+  sourceObservedAt: number | null;
+  providerReadAt: number;
+  receivedAt: number;
+  cacheStoredAt: number | null;
+  lineageId: string;
   reason?: string;
   latencyMs?: number;
 }
@@ -113,6 +118,9 @@ interface LkgEntry<T = any> {
   value: T;
   provider: string;
   storedAt: number;
+  sourceObservedAt: number | null;
+  providerReadAt: number;
+  lineageId: string;
 }
 const lkgCache = new Map<string, LkgEntry>();
 
@@ -120,15 +128,30 @@ function lkgKey(category: string, symbol: string): string {
   return `${category}:${symbol}`;
 }
 
-export function storeLkg(category: string, symbol: string, provider: string, value: any): void {
-  lkgCache.set(lkgKey(category, symbol), { value, provider, storedAt: Date.now() });
+export function storeLkg(
+  category: string,
+  symbol: string,
+  provider: string,
+  value: any,
+  metadata: { sourceObservedAt?: number | null; providerReadAt?: number; lineageId?: string } = {},
+): void {
+  const storedAt = Date.now();
+  lkgCache.set(lkgKey(category, symbol), {
+    value,
+    provider,
+    storedAt,
+    sourceObservedAt: metadata.sourceObservedAt ?? null,
+    providerReadAt: metadata.providerReadAt ?? storedAt,
+    lineageId: metadata.lineageId ?? `${category}:${provider}:${symbol}:${metadata.sourceObservedAt ?? 'unknown'}`,
+  });
 }
 
 export function readLkg(category: string, symbol: string): LkgEntry | null {
   const entry = lkgCache.get(lkgKey(category, symbol));
   if (!entry) return null;
   const ttl = LKG_TTL_MS[category] ?? 60_000;
-  if (Date.now() - entry.storedAt > ttl) return null; // expired → not a valid LKG
+  const freshnessAnchor = entry.sourceObservedAt ?? entry.storedAt;
+  if (Date.now() - freshnessAnchor > ttl) return null; // replay never resets the observation clock
   return entry;
 }
 
@@ -263,21 +286,27 @@ export async function routeBinanceSentiment(
     status: DataEnvelope<any>['status'],
     value: any,
     provider: string,
-    reason?: string
+    reason?: string,
+    observation?: Pick<LkgEntry, 'sourceObservedAt' | 'providerReadAt' | 'storedAt' | 'lineageId'>,
   ): DataEnvelope<any> => ({
     value,
     status,
     provider,
     category,
     symbol,
-    updatedAt: Date.now(),
+    updatedAt: observation?.providerReadAt ?? Date.now(),
+    sourceObservedAt: observation?.sourceObservedAt ?? null,
+    providerReadAt: observation?.providerReadAt ?? Date.now(),
+    receivedAt: Date.now(),
+    cacheStoredAt: observation?.storedAt ?? null,
+    lineageId: observation?.lineageId ?? `${category}:${provider}:${symbol}:unknown`,
     reason,
     latencyMs: Date.now() - started,
   });
 
   if (!BINANCE_SENTIMENT_ENABLED) {
     const lkg = readLkg(category, symbol);
-    if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'binance_sentiment_disabled_lkg');
+    if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'binance_sentiment_disabled_lkg', lkg);
     return envelope('unavailable', null, 'binance', 'binance_sentiment_disabled');
   }
 
@@ -290,14 +319,14 @@ export async function routeBinanceSentiment(
   }
   if (supported === null && BINANCE_SKIP_SENTIMENT_WHEN_SYMBOL_GATE_UNAVAILABLE) {
     const lkg = readLkg(category, symbol);
-    if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'symbol_gate_unavailable_lkg');
+    if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'symbol_gate_unavailable_lkg', lkg);
     return envelope('unavailable', null, 'binance', 'symbol_gate_unavailable');
   }
 
   // 2) Scoped cooldown → serve LKG (degraded) if present, else unavailable.
   if (isCoolingDown(ck)) {
     const lkg = readLkg(category, symbol);
-    if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'cooldown_active_lkg');
+    if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'cooldown_active_lkg', lkg);
     return envelope('unavailable', null, 'binance', 'cooldown_active');
   }
 
@@ -307,15 +336,25 @@ export async function routeBinanceSentiment(
     timeoutMs: BINANCE_SENTIMENT_TIMEOUT_MS,
   });
   if (res.ok && res.json) {
-    storeLkg(category, symbol, 'binance', res.json);
+    const rows = Array.isArray(res.json) ? res.json : [res.json];
+    const observed = rows
+      .map((row: any) => Number(row?.timestamp ?? row?.time ?? row?.closeTime))
+      .map((value) => Number.isFinite(value) && value < 10_000_000_000 ? value * 1000 : value)
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const sourceObservedAt = observed.length ? Math.min(...observed) : null;
+    const providerReadAt = Date.now();
+    const lineageId = `${category}:binance:${symbol}:${sourceObservedAt ?? 'unknown'}`;
+    storeLkg(category, symbol, 'binance', res.json, { sourceObservedAt, providerReadAt, lineageId });
     clearCooldown(ck);
-    return envelope('live', res.json, 'binance');
+    return envelope(sourceObservedAt === null ? 'degraded' : 'live', res.json, 'binance', sourceObservedAt === null ? 'provider_event_time_missing' : undefined, {
+      sourceObservedAt, providerReadAt, storedAt: providerReadAt, lineageId,
+    });
   }
 
   // 4) Fresh failure → record scoped cooldown, fall back to LKG (degraded) or unavailable.
   recordFailureCooldown(ck);
   const lkg = readLkg(category, symbol);
-  if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'fresh_failed_lkg');
+  if (lkg) return envelope('degraded', lkg.value, lkg.provider, 'fresh_failed_lkg', lkg);
   return envelope('unavailable', null, 'binance', res.error || 'fresh_failed_no_lkg');
 }
 
@@ -328,7 +367,7 @@ export function pruneProviderRouterState(activeSymbols?: string[]): void {
   for (const [key, entry] of lkgCache) {
     const ttl = LKG_TTL_MS[key.split(':')[0]] ?? 60_000;
     const symbol = key.slice(key.indexOf(':') + 1);
-    const expired = now - entry.storedAt > ttl * 4; // generous grace before eviction
+    const expired = now - (entry.sourceObservedAt ?? entry.storedAt) > ttl * 4; // replay never rejuvenates event time
     const inactive = active ? !active.has(symbol) : false;
     if (expired || inactive) lkgCache.delete(key);
   }

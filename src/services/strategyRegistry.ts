@@ -72,7 +72,7 @@ function fusionBlueprint(
 }
 
 function scannerWeightParameter(key: string, label: string, value: number, reason: string): StrategyParameterDefinition {
-  return { key: `weight.${key}`, label, default: value, min: 0.02, max: 0.45, step: 0.01, reason, optimization: 'enabled' };
+  return { key: `weight.${key}`, label, default: value, min: 0.02, max: 3.0, step: 0.01, reason, optimization: 'enabled' };
 }
 
 function liveFusionParameter(key: StrategyFusionComponentKey, label: string, value: number, reason: string): StrategyParameterDefinition {
@@ -397,7 +397,7 @@ export const strategyDefinitions: StrategyDefinition[] = [
     regimeRules: ['Route trending regimes to trend/pullback agents.', 'Route compression to squeeze expansion.', 'Route high-participation session breaks to ORB.', 'Use reversal only when structure and exhaustion agree.'],
     setupRules: ['Child agents remain deterministic and independently testable.', 'Router weights are bounded and versioned.'],
     triggerRules: ['The router may select or abstain; it cannot create a signal outside child-agent rules.'],
-    riskRules: ['Canonical governor remains authoritative.', 'One child position at a time.', 'Automatic promotion requires untouched holdout and neighbor stability.'],
+    riskRules: ['Canonical governor remains authoritative.', 'One child position at a time.', 'Automatic promotion requires development stability plus separate candidate-matched final sealed validation.'],
     exitRules: ['Delegated to the selected deterministic child agent.'],
     noTradeRules: ['No route when regime confidence is weak.', 'No route to a child lacking required data.', 'No AI override of risk/no-trade rules.', 'No AI-derived overlay is promoted without independently bound verification evidence.'],
     parameters: [

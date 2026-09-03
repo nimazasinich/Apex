@@ -90,10 +90,10 @@ const TOOLS: Array<{
   { key: 'order', label: 'Order ticket', shortLabel: 'Ticket', title: 'Order Ticket & Risk', description: 'opens inline ticket / drawer for review-first order entry', behavior: 'inline' },
   { key: 'orders', label: 'Open orders', shortLabel: 'Orders', title: 'Open Orders', description: 'opens drawer with working orders and full Orders link', behavior: 'drawer' },
   { key: 'positions', label: 'Open positions', shortLabel: 'Positions', title: 'Open Positions', description: 'opens drawer with current exposure and full Positions link', behavior: 'drawer' },
-  { key: 'depth', label: 'Order book depth', shortLabel: 'Depth', title: 'Order Book', description: 'opens inline depth ladder; prices can prefill the ticket when enabled', behavior: 'inline', badge: 'LIVE' },
+  { key: 'depth', label: 'Order book depth', shortLabel: 'Depth', title: 'Order Book', description: 'opens inline depth ladder; prices can prefill the ticket when enabled', behavior: 'inline', badge: 'CURRENT' },
   { key: 'trades', label: 'Recent trades', shortLabel: 'Trades', title: 'Recent Trades', description: 'opens drawer with recent account fills', behavior: 'drawer' },
   { key: 'strategy', label: 'Strategy context', shortLabel: 'Strategy', title: 'Strategy & Backtest Context', description: 'opens strategy context and linked signals', behavior: 'drawer' },
-  { key: 'signals', label: 'Setup signals', shortLabel: 'Signals', title: 'Setup Intelligence', description: 'opens current scanner levels, factors and setup evidence', behavior: 'drawer', badge: 'LIVE' },
+  { key: 'signals', label: 'Setup signals', shortLabel: 'Signals', title: 'Setup Intelligence', description: 'opens current scanner levels, factors and setup evidence', behavior: 'drawer', badge: 'SCANNER' },
   { key: 'settings', label: 'Trading settings', shortLabel: 'Settings', title: 'Settings', description: 'opens the full Settings workspace', behavior: 'workspace' },
 ];
 

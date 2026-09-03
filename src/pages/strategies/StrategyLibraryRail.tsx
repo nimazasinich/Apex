@@ -54,7 +54,8 @@ function snapshotLabel(strategy: StrategyDefinition): string {
   const snapshot = strategy.latestSnapshot;
   if (!snapshot) return 'Evidence pending';
   const win = Number.isFinite(snapshot.winRatePct) ? `${snapshot.winRatePct.toFixed(1)}% win` : 'Win —';
-  const score = Number.isFinite(snapshot.score) ? `score ${snapshot.score.toFixed(0)}` : 'score —';
+  const rankScore = snapshot.score;
+  const score = typeof rankScore === 'number' && Number.isFinite(rankScore) ? `score ${rankScore.toFixed(0)}` : 'score —';
   return `${win} · ${score}`;
 }
 

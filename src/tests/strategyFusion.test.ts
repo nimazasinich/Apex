@@ -3,6 +3,7 @@ import { evaluateStrategyFusion } from '../services/strategyFusion';
 import { getStrategyDefinition } from '../services/strategyRegistry';
 import type { BacktestCandle } from '../services/backtesting';
 import type { NewsResult, OnChainResult, SentimentResult } from '../services/providers/supplementalTypes';
+import { canonicalObservationMetadata } from '../contracts/evidence/observationMetadata';
 
 function candles(count = 240): BacktestCandle[] {
   let price = 100;
@@ -17,6 +18,21 @@ function candles(count = 240): BacktestCandle[] {
       low: Math.min(open, close) * 0.998,
       close,
       volume: 1_000 + index * 4,
+    };
+  });
+}
+
+function timeframeCandles(intervalMs: number, count = 80): BacktestCandle[] {
+  return Array.from({ length: count }, (_, index) => {
+    const open = 100 + index * 0.2;
+    const close = open + 0.1;
+    return {
+      time: new Date(1_699_920_000_000 + index * intervalMs).toISOString(),
+      open,
+      high: close + 0.2,
+      low: open - 0.2,
+      close,
+      volume: 1_000 + index,
     };
   });
 }
@@ -44,6 +60,37 @@ describe('dynamic strategy fusion', () => {
     expect(snapshot.actionable).toBe(false);
     expect(snapshot.state).toBe('INCOMPLETE');
     expect(snapshot.missingRequired.length).toBeGreaterThan(0);
+  });
+
+  it('does not relabel one candle series as three-timeframe smart-money confluence', () => {
+    const snapshot = evaluateStrategyFusion({
+      definition,
+      symbol: 'BTC-USDT',
+      interval: '1h',
+      direction: 'LONG',
+      candles: candles(),
+    });
+    expect(snapshot.components.find((component) => component.key === 'smartMoney')).toMatchObject({
+      available: false,
+      quality: 'MISSING',
+    });
+  });
+
+  it('accepts smart-money context only from explicit cadence-valid 5m, 15m, and 4h sets', () => {
+    const snapshot = evaluateStrategyFusion({
+      definition,
+      symbol: 'BTC-USDT',
+      interval: '1h',
+      direction: 'LONG',
+      candles: candles(),
+      candles5m: timeframeCandles(5 * 60_000),
+      candles15m: timeframeCandles(15 * 60_000),
+      candles4h: timeframeCandles(4 * 60 * 60_000),
+    });
+    expect(snapshot.components.find((component) => component.key === 'smartMoney')).toMatchObject({
+      available: true,
+      quality: 'HISTORICAL',
+    });
   });
 
   it('combines live news, sentiment and exchange-classified whale flow without inventing provenance', () => {
@@ -120,7 +167,7 @@ describe('dynamic strategy fusion', () => {
     expect(snapshot.components.find((component) => component.key === 'whaleFlow')?.available).toBe(false);
   });
 
-  it('clamps manual live-layer weights to the registry bounds', () => {
+  it('clamps and dependency-adjusts manual live-layer weights', () => {
     const snapshot = evaluateStrategyFusion({
       definition, symbol: 'BTC-USDT', interval: '1h', direction: 'LONG', candles: candles(),
       news: bullishNews, sentiment: positiveSentiment, onchain: accumulation,
@@ -128,6 +175,26 @@ describe('dynamic strategy fusion', () => {
     });
     const component = snapshot.components.find((row) => row.key === 'sentiment');
     const blueprint = definition.fusion?.components.find((row) => row.key === 'sentiment');
-    expect(component?.effectiveWeight).toBe(blueprint?.maxWeight);
+    expect(component?.configuredWeight).toBeGreaterThan(0);
+    expect(component?.effectiveWeight).toBeLessThanOrEqual(blueprint?.maxWeight ?? 0);
   });
+  it('is structurally shadow-only and cannot become live-authoritative from preview scoring', () => {
+    const snapshot = evaluateStrategyFusion({ definition, symbol: 'BTC-USDT', interval: '1h', direction: 'LONG', candles: candles() });
+    expect(snapshot.authorityStage).toBe('SHADOW');
+    expect(snapshot.liveAuthoritative).toBe(false);
+  });
+
+  it('does not accept bare funding numbers as verified observed evidence', () => {
+    const bare = evaluateStrategyFusion({ definition, symbol: 'BTC-USDT', interval: '1h', direction: 'LONG', candles: candles(), fundingDirectional: 0.8 });
+    expect(bare.components.find((row) => row.key === 'funding')?.available).toBe(false);
+
+    const metadata = canonicalObservationMetadata({
+      sourceObservedAt: Date.now() - 1_000, providerReadAt: Date.now(), receivedAt: Date.now(), cacheStoredAt: null,
+      provider: 'kucoin', venue: 'kucoin', canonicalInstrumentId: 'BTC-USDT', providerInstrumentId: 'XBTUSDTM',
+      adapterVersion: 'test', qualityState: 'VALID', staleReason: null, lineageId: 'funding:test', dependencyFamily: 'FUNDING', parentLineageIds: [], decisionEligible: true,
+    });
+    const observed = evaluateStrategyFusion({ definition, symbol: 'BTC-USDT', interval: '1h', direction: 'LONG', candles: candles(), fundingDirectional: 0.8, fundingMetadata: metadata });
+    expect(observed.components.find((row) => row.key === 'funding')).toMatchObject({ available: true, quality: 'LIVE' });
+  });
+
 });

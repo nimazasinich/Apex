@@ -60,15 +60,19 @@ describe('strategy optimization', () => {
     expect(reapplied.scoreWeights).not.toBe(laterAdaptiveState.scoreWeights);
   });
   it('finds a bounded stable improvement and marks it eligible', async () => {
+    const all = candles();
+    const holdoutStart = Date.parse(all[Math.floor(all.length * 0.8)].time);
+    let sealedHoldoutEvaluations = 0;
     const report = await optimizeStrategy({
       definition,
-      candles: candles(),
+      candles: all,
       baseScannerConfig: scannerConfig,
       baseParameters: { threshold: 0.2 },
       symbol: 'BTC-USDT', interval: '1h', direction: 'LONG', transactionCostPct: 0.18,
       autoPromote: true,
       budget: { coarseCandidates: 20, finalists: 6, refinementCandidates: 8, minTradesPerEvaluation: 8, maxConcurrent: 3 },
-      evaluator: ({ parameters, transactionCostPct }) => {
+      evaluator: ({ parameters, transactionCostPct, candles: rows }) => {
+        if (Date.parse(rows[0].time) >= holdoutStart) sealedHoldoutEvaluations += 1;
         const value = Number(parameters.threshold);
         const quality = Math.max(0, 1 - Math.abs(value - 0.65) * 2.2);
         return {
@@ -85,16 +89,19 @@ describe('strategy optimization', () => {
     expect(report.promotion.eligible).toBe(true);
     expect(report.promotion.automaticallyPromoted).toBe(false);
     expect(report.warnings).toEqual(expect.arrayContaining([
-      'Automatic promotion was requested; only a candidate that passes every promotion gate may become active.',
+      'Automatic promotion was requested, but optimization alone can only nominate a candidate for separate FULL_STRATEGY final validation.',
     ]));
     expect(report.validationIsolation.purgeBars).toBeGreaterThan(0);
     expect(report.validationIsolation.embargoBars).toBeGreaterThan(0);
-    expect(report.promotion.holdoutImprovement).toBeGreaterThan(0);
+    expect(report.promotion.developmentValidationImprovement).toBeGreaterThan(0);
+    expect(sealedHoldoutEvaluations).toBe(0);
+    expect(report.finalHoldoutStatus).toBe('SEALED_NOT_OPENED_DURING_OPTIMIZATION');
   });
 
-  it('withholds promotion when the untouched holdout reverses the apparent edge', async () => {
+  it('never exposes the final sealed partition to optimizer evaluators', async () => {
     const all = candles();
     const holdoutStart = Date.parse(all[Math.floor(all.length * 0.8)].time);
+    let sealedHoldoutEvaluations = 0;
     const report = await optimizeStrategy({
       definition,
       candles: all,
@@ -103,15 +110,18 @@ describe('strategy optimization', () => {
       symbol: 'BTC-USDT', interval: '1h', direction: 'LONG', transactionCostPct: 0.18,
       budget: { coarseCandidates: 20, finalists: 6, refinementCandidates: 6, minTradesPerEvaluation: 8 },
       evaluator: ({ parameters, candles: rows }) => {
+        if (Date.parse(rows[0].time) >= holdoutStart) {
+          sealedHoldoutEvaluations += 1;
+          throw new Error('optimizer_must_not_see_final_holdout');
+        }
         const value = Number(parameters.threshold);
-        const isHoldout = Date.parse(rows[0].time) >= holdoutStart;
-        const ideal = isHoldout ? 0.2 : 0.8;
-        const quality = Math.max(0, 1 - Math.abs(value - ideal) * 2.5);
+        const quality = Math.max(0, 1 - Math.abs(value - 0.7) * 2.5);
         return { totalPnlPct: quality * 10, maxDrawdownPct: 7, profitFactor: 1 + quality, tradeCount: 22, winRatePct: 50 + quality * 15, avgPnlPct: quality * 0.6 };
       },
     });
-    expect(report.promotion.eligible).toBe(false);
-    expect(report.promotion.blockers).toEqual(expect.arrayContaining(['holdout_improvement_below_minimum']));
+    expect(sealedHoldoutEvaluations).toBe(0);
+    expect(report.finalHoldoutStatus).toBe('SEALED_NOT_OPENED_DURING_OPTIMIZATION');
+    expect(report.promotion.evidenceScope).toBe('DEVELOPMENT_ONLY');
   });
 
   it('persists exact-context profiles and supports rollback', async () => {

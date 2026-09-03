@@ -64,6 +64,8 @@ function validationReport(overrides: Partial<StrategyValidationReport> = {}): St
       reproducibility: true,
     },
     passedAllGates: true,
+    validationScope: 'FULL_STRATEGY',
+    fullStrategyValidated: true,
     ...overrides,
   } as unknown as StrategyValidationReport;
 }
@@ -272,6 +274,20 @@ describe('automatic promotion gate — validation gate suite', () => {
     expect(result.failedGates).toEqual(['regime']);
   });
 });
+
+
+  it('blocks BASE_REPLAY even when all numerical gates pass', () => {
+    const result = evaluateAutomaticPromotionGate(input({ validation: validationReport({ validationScope: 'BASE_REPLAY', fullStrategyValidated: false }) }));
+    expect(result.authorized).toBe(false);
+    expect(result.blockers).toContain('validation_scope_not_full_strategy');
+    expect(result.blockers).toContain('full_strategy_validation_required');
+  });
+
+  it('requires the explicit fullStrategyValidated proof flag', () => {
+    const result = evaluateAutomaticPromotionGate(input({ validation: validationReport({ fullStrategyValidated: false }) }));
+    expect(result.authorized).toBe(false);
+    expect(result.blockers).toContain('full_strategy_validation_required');
+  });
 
 describe('automatic promotion gate — rank threshold', () => {
   it('blocks a rank score below the automation minimum', () => {

@@ -227,19 +227,29 @@ export class OpenInterestHistoryStore {
 
 export interface OpenInterestSamplerOptions {
   intervalMs?: number;
+  initialDelayMs?: number;
+  maxBackoffMs?: number;
   sample: () => Promise<OpenInterestSample[]>;
   store: OpenInterestHistoryStore;
   onError?: (error: unknown) => void;
 }
 
 export class OpenInterestSampler {
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
   private running = false;
+  private started = false;
+  private failureCount = 0;
   private readonly intervalMs: number;
+  private readonly initialDelayMs: number;
+  private readonly maxBackoffMs: number;
 
   constructor(private readonly options: OpenInterestSamplerOptions) {
     this.intervalMs = Number.isFinite(options.intervalMs) && Number(options.intervalMs) >= 30_000
       ? Math.floor(Number(options.intervalMs)) : DEFAULT_EXPECTED_INTERVAL_MS;
+    this.initialDelayMs = Number.isFinite(options.initialDelayMs) && Number(options.initialDelayMs) >= 0
+      ? Math.floor(Number(options.initialDelayMs)) : 0;
+    this.maxBackoffMs = Number.isFinite(options.maxBackoffMs) && Number(options.maxBackoffMs) >= this.intervalMs
+      ? Math.floor(Number(options.maxBackoffMs)) : Math.max(this.intervalMs, 30 * 60_000);
   }
 
   async runOnce(): Promise<{ accepted: number; rejected: number }> {
@@ -254,16 +264,33 @@ export class OpenInterestSampler {
   }
 
   start(): void {
-    if (this.timer) return;
-    void this.runOnce().catch((error) => this.options.onError?.(error));
-    this.timer = setInterval(() => {
-      void this.runOnce().catch((error) => this.options.onError?.(error));
-    }, this.intervalMs);
+    if (this.started) return;
+    this.started = true;
+    this.schedule(this.initialDelayMs);
+  }
+
+  private schedule(delayMs: number): void {
+    if (!this.started) return;
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      void this.runOnce()
+        .then(() => {
+          this.failureCount = 0;
+          this.schedule(this.intervalMs);
+        })
+        .catch((error) => {
+          this.failureCount += 1;
+          this.options.onError?.(error);
+          const backoffMs = Math.min(this.maxBackoffMs, this.intervalMs * (2 ** Math.min(5, this.failureCount)));
+          this.schedule(backoffMs);
+        });
+    }, Math.max(0, delayMs));
     this.timer.unref?.();
   }
 
   stop(): void {
-    if (this.timer) clearInterval(this.timer);
+    this.started = false;
+    if (this.timer) clearTimeout(this.timer);
     this.timer = null;
   }
 }

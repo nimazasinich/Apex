@@ -1,9 +1,12 @@
 import { performance } from 'node:perf_hooks';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import type { Express, Request, Response } from 'express';
 import { buildCorrelationMatrix } from '../lib/correlation';
 import { deriveSymbolLevels } from '../lib/levels';
 import { calculateSentimentComposite } from '../lib/sentiment';
 import { buildCanonicalDecision, DECISION_ADAPTER_VERSION } from './canonicalDecisionAdapter';
+import { compareCanonicalCandidates, withCandidateExpectedNetEdge, withCanonicalCandidateAuthority } from './canonicalCandidateDecision';
 import { decisionSnapshotsToLogs } from './decisionSnapshotLogger';
 import { buildTradePlan } from './tradePlan';
 import { MathEngine } from './mathEngine';
@@ -11,16 +14,18 @@ import { marketStatistics } from './onlineStatistics';
 import { buildDirectionDivergence } from './directionDivergence';
 import { runApexProductionInputReplay, runApexReplayBacktestDirectional, type BacktestCandle, type ProductionReplayDataset } from './backtesting';
 import * as marketDataService from './marketDataService';
+import { getReferenceCandles, getReferenceTickerForSymbol, getReferenceTickers } from './marketReferenceService';
 import { DEFAULT_STRATEGY_ID, clientSafeStrategy, getStrategyDefinition, listClientSafeStrategies, listStrategyDefinitions, strategyExecutionCapability, strategyValidationCapability } from './strategyRegistry';
 import { buildStrategyParameterValues, normalizeStrategyParameterAliases, readStrategyParameterValue, validateStrategyParameterValues } from './strategyParameters';
 import { buildScannerPresetConfig, runScannerPresetStrategy } from './strategyEngine/scannerPresetAdapter';
 import { bespokeStrategyRunners } from './strategyEngine';
 import type { HistoricalSignalBundle } from './strategyEngine/historicalSignals';
 import { buildStrategyValidationReport, gateData, gateDrawdown, gateOutOfSample, gateSample } from './strategyValidation';
+import { STATISTICAL_VALIDATION_POLICY_VERSION } from './statisticalValidation';
 import { scoreStrategyValidation } from './strategyRanking';
 import { buildStrategyEvidenceSnapshot } from './strategyEvidence';
 import { apiValidationError, validateBacktestQuery, validateProductionReplayRequest, validateStrategyOptimizationInput, validateStrategyValidationInput } from './apiValidation';
-import { BacktestExecutionCache, buildBacktestReplayCacheKey, type BacktestCacheState } from './backtestExecutionCache';
+import { BacktestExecutionCache, buildBacktestDatasetFingerprint, buildBacktestReplayCacheKey, type BacktestCacheState } from './backtestExecutionCache';
 import { applyStrategyOptimizationScannerDeltas, optimizeStrategy, strategyOptimizationMetricsFromSummary, type StrategyOptimizationReport } from './strategyOptimization';
 import { StrategyOptimizationStore, type StrategyOptimizationContext, type StrategyOptimizationProfile } from './strategyOptimizationStore';
 import { evaluateStrategyFusion } from './strategyFusion';
@@ -34,10 +39,17 @@ import {
   activeProfileSubject,
   definitionDefaultsSubject,
   identifyStrategyValidationSubject,
+  fingerprintStrategyValidationSubject,
   optimizationCandidateSubject,
   validationReplayInputs,
   type StrategyValidationSubject,
 } from './strategyValidationSubject';
+import {
+  authorizeFinalHoldoutAccess,
+  createOperationalHoldoutLedger,
+  fingerprintGovernanceConfiguration,
+  partitionFiveWayWithSealedHoldout,
+} from './sealedHoldout';
 import { resolveAutopilotSchedulerConfig, type AutopilotSchedulerConfig } from './autopilotScheduler';
 import {
   autopilotControllerReducer,
@@ -68,14 +80,15 @@ import {
 } from './paperForwardEvaluator';
 import { getSupplementalOrchestrator } from './supplementalOrchestrator';
 import type { SupplementalBundle } from './providers/supplementalTypes';
-import { computeTransactionCostPct, transactionCostInputsFromModel, transactionCostModelFromPerSideAssumptions, transactionCostModelFromRoundTripPct, type TransactionCostModel } from './transactionCosts';
+import { buildSystemHealthPayload, recordCandidateScanTelemetry, recordMarketCacheLookup } from './systemHealthTelemetry';
+import { computeTransactionCostPct, TRANSACTION_COST_MODEL_VERSION, transactionCostInputsFromModel, transactionCostModelFromPerSideAssumptions, transactionCostModelFromRoundTripPct, type TransactionCostModel } from './transactionCosts';
 import { selectIndependentRegimeSlices } from './marketRegimes';
 import { getLiquidityHunterRuntime } from './liquidityHunter/foundationRuntime';
 import { authorizeLiquidityHunterTradePlan } from './liquidityHunter/decisionBridge';
 import { liquidityHunterManualCanaryRegistry } from './liquidityHunter/manualCanaryRegistry';
 import { buildOpportunityShortlistComparison, discoverOpportunity } from './strategyCommander/opportunity/opportunityDiscovery';
 import type { OpportunityCandidateV1 } from './strategyCommander/opportunity/opportunityTypes';
-import { buildNativeParliamentSnapshot, buildParliamentScanShadow, type ParliamentScanShadowV1 } from './strategyCommander/parliamentShadow';
+import { buildNativeParliamentSnapshot, buildParliamentScanShadow, type NativeParliamentSnapshotV1, type ParliamentScanShadowV1 } from './strategyCommander/parliamentShadow';
 import type { IntelligenceConsensusV1 } from './strategyCommander/intelligenceConsensus';
 import { buildStrategyCommanderDecision, buildStrategyCommanderScanShadow, strategyParameterProfileFingerprint, type StrategyCommanderScanShadowV1 } from './strategyCommander/strategyCommander';
 import { buildCommanderOutcomeAttribution, buildCommanderResearchComparison, extractCommanderOutcomeObservations, type CommanderOutcomeAttributionV1, type CommanderResearchComparisonV1 } from './strategyCommander/commanderOutcomeFeedback';
@@ -83,6 +96,11 @@ import { resolveStrategyCompetenceForIdentity } from './strategyCommander/strate
 import { extractEvidenceOutcomeObservations, resolveEvidenceCompetence, type EvidenceCompetenceV1 } from './strategyCommander/evidenceCompetence';
 import type { CommanderEvidenceV1 } from '../contracts/commander/commanderEvidence';
 import type { BacktestResult, Candle, Candlestick, CandidateScore, DirectionMarketDataSource, OrderBookSummary, SignalDecisionLog, SymbolTicker, DataState, ScannerConfig, TradeDirection, StrategyDefinition, StrategyReplayResult, StrategyValidationReport, StrategyRankScore } from '../types';
+import { getParliamentPromotionStore } from './parliamentPromotionStore';
+import { registerParliamentPromotionRoutes } from './routes/parliamentPromotionRoutes';
+import { MARKET_RECONCILIATION_VERSION, reconcileTickerObservations } from './marketReconciliation';
+import { resolvePrivateDataDir } from './privateConfigFile';
+import { createAcademySubsystem, registerAcademySubsystem } from '../features/academy';
 
 // Real production defaults, copied verbatim from apex-trading-engine/src/App.tsx
 // (the live App's useState<ScannerConfig> initializer) so the backtest replay
@@ -119,13 +137,91 @@ interface MarketCacheItem<T> {
 
 const marketCache = new Map<string, MarketCacheItem<any>>();
 
+const LAST_VERIFIED_TICKER_MAX_AGE_MS = Math.max(15_000, Number(process.env.APEX_LAST_VERIFIED_TICKER_MAX_AGE_MS || 120_000));
+let lastVerifiedTickerUniverse: {
+  tickers: SymbolTicker[];
+  dataState: DataState;
+  source: marketDataService.MarketDataSource | 'none';
+  snapshotId: string;
+} | null = null;
+
+function tickerObservedAt(ticker: SymbolTicker): number | null {
+  const value = ticker.observationMetadata?.sourceObservedAt;
+  return Number.isFinite(value) && Number(value) > 0 ? Number(value) : null;
+}
+
+function tickerUniverseFingerprint(tickers: SymbolTicker[]): string {
+  const manifest = tickers
+    .map((ticker) => [ticker.symbol, tickerObservedAt(ticker), ticker.observationMetadata?.provider ?? 'unknown'])
+    .sort((left, right) => String(left[0]).localeCompare(String(right[0])));
+  return `ticker-universe-v2:${createHash('sha256').update(JSON.stringify(manifest)).digest('hex')}`;
+}
+
+export function rememberVerifiedTickerUniverse(
+  tickers: SymbolTicker[],
+  dataState: DataState,
+  source: marketDataService.MarketDataSource | 'none',
+): void {
+  if (!tickers.length || source === 'none' || dataState !== 'live') return;
+  const merged = new Map<string, SymbolTicker>();
+  for (const ticker of lastVerifiedTickerUniverse?.tickers ?? []) merged.set(ticker.symbol, ticker);
+  for (const ticker of tickers) {
+    const incomingObservedAt = tickerObservedAt(ticker);
+    if (incomingObservedAt === null || ticker.observationMetadata?.decisionEligible !== true) continue;
+    const existing = merged.get(ticker.symbol);
+    const existingObservedAt = existing ? tickerObservedAt(existing) : null;
+    if (!existing || (incomingObservedAt !== null && (existingObservedAt === null || incomingObservedAt > existingObservedAt))) {
+      merged.set(ticker.symbol, { ...ticker });
+    }
+  }
+  const reconciled = [...merged.values()].sort((left, right) => right.turnover24h - left.turnover24h);
+  lastVerifiedTickerUniverse = {
+    tickers: reconciled,
+    dataState,
+    source: lastVerifiedTickerUniverse?.source ?? source,
+    snapshotId: tickerUniverseFingerprint(reconciled),
+  };
+}
+
+export function staleVerifiedTickerUniverse(limit: number, now = Date.now()): { tickers: SymbolTicker[]; dataState: DataState; source: marketDataService.MarketDataSource | 'none'; snapshotId: string } | null {
+  const snapshot = lastVerifiedTickerUniverse;
+  if (!snapshot) return null;
+  const freshRows = snapshot.tickers.filter((ticker) => {
+    const observedAt = tickerObservedAt(ticker);
+    return observedAt !== null && now - observedAt <= LAST_VERIFIED_TICKER_MAX_AGE_MS;
+  });
+  if (!freshRows.length) return null;
+  return {
+    tickers: freshRows.slice(0, limit).map((ticker) => ({
+      ...ticker,
+      dataState: 'degraded' as DataState,
+      observationMetadata: ticker.observationMetadata ? {
+        ...ticker.observationMetadata,
+        qualityState: 'STALE',
+        staleReason: 'last_known_good_replay',
+        decisionEligible: false,
+      } : undefined,
+    })),
+    dataState: 'degraded',
+    source: snapshot.source,
+    snapshotId: snapshot.snapshotId,
+  };
+}
+
+export function __resetVerifiedTickerUniverse(): void { lastVerifiedTickerUniverse = null; }
+
 function getMarketCache<T>(key: string): T | null {
   const item = marketCache.get(key);
-  if (!item) return null;
-  if (Date.now() - item.timestamp > item.ttlMs) {
-    marketCache.delete(key);
+  if (!item) {
+    recordMarketCacheLookup(false);
     return null;
   }
+  if (Date.now() - item.timestamp > item.ttlMs) {
+    marketCache.delete(key);
+    recordMarketCacheLookup(false);
+    return null;
+  }
+  recordMarketCacheLookup(true);
   return item.data as T;
 }
 
@@ -188,6 +284,49 @@ function parseLeverageQuery(value: unknown, fallback = 5): number {
     : fallback;
 }
 
+function findTickerBySymbol(tickers: SymbolTicker[], symbol: string): SymbolTicker | null {
+  const normalized = normalizeTickerSymbol(symbol);
+  const cleaned = cleanSymbol(normalized);
+  return tickers.find((ticker) => {
+    const candidate = normalizeTickerSymbol(ticker.symbol);
+    return candidate === normalized || cleanSymbol(candidate) === cleaned;
+  }) || null;
+}
+
+function buildDerivedTickerFromCandles(
+  symbol: string,
+  candles: Candle[],
+  dataState: DataState,
+): SymbolTicker | null {
+  if (!candles.length) return null;
+  const normalized = normalizeTickerSymbol(symbol);
+  const first = candles[0];
+  const last = candles[candles.length - 1];
+  const close = Number(last?.close);
+  if (!Number.isFinite(close) || close <= 0) return null;
+
+  const high24h = candles.reduce((max, candle) => Math.max(max, Number.isFinite(candle.high) ? candle.high : 0), close);
+  const low24h = candles.reduce((min, candle) => Math.min(min, Number.isFinite(candle.low) ? candle.low : close), close);
+  const anchorOpen = Number.isFinite(first?.open) && first.open > 0 ? first.open : close;
+  const volume24h = candles.reduce((sum, candle) => sum + (Number.isFinite(candle.volume) ? candle.volume : 0), 0);
+  const turnover24h = candles.reduce((sum, candle) => sum + ((Number.isFinite(candle.close) ? candle.close : close) * (Number.isFinite(candle.volume) ? candle.volume : 0)), 0);
+
+  return {
+    symbol: normalized,
+    lastPrice: close,
+    turnover24h,
+    priceChange24hPct: anchorOpen > 0 ? ((close - anchorOpen) / anchorOpen) * 100 : 0,
+    volume24h,
+    high24h: high24h > 0 ? high24h : close,
+    low24h: low24h > 0 ? low24h : close,
+    fundingRate: 0,
+    openInterest: 0,
+    dataState,
+    timestamp: Number(last.timestamp),
+    sparkline1h: candles.slice(-12).map((candle) => candle.close).filter((value) => Number.isFinite(value) && value > 0),
+  };
+}
+
 // NOTE: this used to fetch KuCoin directly. It now delegates to
 // marketDataService.getTickers(), which tries Binance first, then KuCoin,
 // then HF Space (see marketDataService.ts header for the priority rationale
@@ -209,10 +348,26 @@ async function fetchKuCoinTickers(limit = 40): Promise<{
 
   try {
     const { tickers, dataState, source } = await marketDataService.getTickers(limit);
-    const result = { tickers, dataState: tickers.length ? dataState : 'unavailable' as DataState, source };
+    if (tickers.length) {
+      const result = { tickers, dataState, source };
+      rememberVerifiedTickerUniverse(tickers, dataState, source);
+      setMarketCache(cacheKey, result, 5000);
+      return result;
+    }
+    const stale = staleVerifiedTickerUniverse(limit);
+    if (stale) {
+      setMarketCache(cacheKey, stale, 5000);
+      return stale;
+    }
+    const result = { tickers: [], dataState: 'unavailable' as DataState, source: 'none' as const };
     setMarketCache(cacheKey, result, 5000);
     return result;
   } catch {
+    const stale = staleVerifiedTickerUniverse(limit);
+    if (stale) {
+      setMarketCache(cacheKey, stale, 5000);
+      return stale;
+    }
     const result = { tickers: [], dataState: 'unavailable' as DataState, source: 'none' as const };
     setMarketCache(cacheKey, result, 5000);
     return result;
@@ -254,6 +409,18 @@ function directionMarketSource(
   if (source === 'kucoin') return state === 'live' ? 'kucoin_live' : 'kucoin_live_binance_unavailable';
   if (source === 'binance') return 'binance_futures_failover';
   return 'unavailable';
+}
+
+async function settleWithin<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), timeoutMs); }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 async function mapWithConcurrency<T, R>(
@@ -410,8 +577,21 @@ async function fetchMicrostructure(symbol: string): Promise<{
 }
 
 function candidateFromSnapshot(snapshot: ReturnType<typeof buildCanonicalDecision>): CandidateScore {
+  const advancedAuthoritative = snapshot.authority === 'REGIME_ENSEMBLE' || snapshot.authority === 'REGIME_ENSEMBLE_PARLIAMENT';
+  const accepted = snapshot.direction !== 'NO_TRADE';
+  const score = advancedAuthoritative ? Math.round(snapshot.rankingScore) : snapshot.baseline.score;
+  const advancedBlockReason = advancedAuthoritative && !accepted
+    ? `Advanced engine: ${snapshot.decisionReasonText}`
+    : null;
+  const readinessTier: CandidateScore['readinessTier'] = accepted
+    ? (score >= 75 ? 'CONFIRMED' : score >= 55 ? 'WATCHLIST' : 'CAUTION')
+    : 'BLOCKED';
   return {
     ...snapshot.baseline,
+    score,
+    readinessTier,
+    guardPass: accepted,
+    guardReasons: [...(snapshot.safetyGuardReasons ?? snapshot.baseline.guardReasons), ...(advancedBlockReason ? [advancedBlockReason] : [])],
     shadowDecision: snapshot.shadow,
     canonicalDecision: {
       confidence: snapshot.confidence,
@@ -422,6 +602,18 @@ function candidateFromSnapshot(snapshot: ReturnType<typeof buildCanonicalDecisio
       engineVersion: snapshot.engineVersion,
       createdAt: snapshot.createdAt,
       expiresAt: snapshot.expiresAt,
+      authority: snapshot.authority,
+      reasonCode: snapshot.decisionReasonCode,
+      reasonText: snapshot.decisionReasonText,
+      marketRegime: snapshot.intelligence?.regime.regime,
+      modelAgreement: snapshot.intelligence?.modelAgreement,
+      calibrationSampleSize: snapshot.calibration?.sampleSize,
+      calibrationScope: snapshot.calibration?.scope,
+      parliamentMode: snapshot.parliamentContribution?.mode,
+      parliamentCategoryConfluence: snapshot.parliamentContribution?.categoryConfluence,
+      parliamentEligibleIfPromoted: snapshot.parliamentContribution?.eligibleIfPromoted,
+      parliamentContributionEnabled: snapshot.parliamentContribution?.contributionEnabled,
+      parliamentReasonCode: snapshot.parliamentContribution?.reasonCode,
     },
   };
 }
@@ -472,7 +664,7 @@ async function fetchCandidateEnrichment(
       open: row.open, high: row.high, low: row.low, close: row.close, volume: row.volume,
     }));
     const availability = [one.length >= 10, five.length >= 10, fifteen.length >= 10];
-    if (includeShadow && availability.some(Boolean)) {
+    if (availability.some(Boolean)) {
       qStructDirectional = MathEngine.calculateQStructDirectional({
         confluence1M: MathEngine.computeRealConfluence(one),
         confluence5M: MathEngine.computeRealConfluence(five),
@@ -522,8 +714,13 @@ export function registerApexNextMarketRoutes(
      */
     researchOutcomeLogProvider?: () => SignalDecisionLog[];
     scannerConfigProvider?: () => ScannerConfig;
+    /** Resolved LIVE decision-memory rows used only for outcome calibration; research rows are forbidden here. */
+    decisionOutcomeLogProvider?: () => SignalDecisionLog[];
   },
 ): ApexNextMarketRoutesHandle {
+  const parliamentPromotionStore = getParliamentPromotionStore();
+  registerParliamentPromotionRoutes(app, parliamentPromotionStore);
+
   const activeScannerConfig = (): ScannerConfig => {
     const configured = options?.scannerConfigProvider?.() ?? DEFAULT_SCANNER_CONFIG;
     return { ...configured, scoreWeights: { ...configured.scoreWeights } };
@@ -551,8 +748,25 @@ export function registerApexNextMarketRoutes(
   const rankScores = new Map<string, StrategyRankScore>();
   const backtestReplayCache = new BacktestExecutionCache<StrategyReplayResult>({ ttlMs: 30_000, maxEntries: 48 });
   const strategyOptimizationStore = new StrategyOptimizationStore();
+  const sealedHoldoutLedger = createOperationalHoldoutLedger();
   const strategyOptimizationJobs = new Map<string, Promise<StrategyOptimizationReport>>();
   const multiAgentCouncilStore = new MultiAgentCouncilStore();
+  const academySubsystem = createAcademySubsystem({
+    storagePath: process.env.APEX_ACADEMY_STORE_PATH
+      || join(resolvePrivateDataDir(), 'academy', 'strategy-intelligence-v1.json'),
+    intervalMs: Number(process.env.APEX_ACADEMY_INTERVAL_MS || 5 * 60_000),
+    strategyProvider: () => listClientSafeStrategies().map((strategy) => {
+      const validation = validationReports.get(strategy.strategyId);
+      const rank = rankScores.get(strategy.strategyId);
+      return {
+        ...strategy,
+        executionCapability: strategyExecutionCapability(strategy),
+        status: validation?.fullStrategyValidated ? 'validated' as const : strategy.status,
+        latestSnapshot: buildStrategyEvidenceSnapshot(strategy, validation, rank),
+      };
+    }),
+  });
+  registerAcademySubsystem(app, academySubsystem);
   const commanderShadowRecords = new Map<string, {
     decision: StrategyCommanderScanShadowV1['results'][number];
     horizon: string;
@@ -724,7 +938,10 @@ export function registerApexNextMarketRoutes(
             ...(args.definition.scannerConfigOverrides?.scoreWeights || {}),
           },
         };
-        const roundTripCostPct = args.commissionPctPerSide * 2 + args.slippagePctPerSide * 2 + args.fundingPctEstimate;
+        // Development optimization has no trade event-time funding coverage. Do not
+        // synthesize one settlement from a scalar estimate; temporal funding is applied
+        // only by the later validation/replay engine under its explicit policy.
+        const roundTripCostPct = args.commissionPctPerSide * 2 + args.slippagePctPerSide * 2;
         const report = await optimizeStrategy({
           definition: args.definition,
           candles: historical.candles,
@@ -735,6 +952,7 @@ export function registerApexNextMarketRoutes(
           direction: args.direction,
           transactionCostPct: roundTripCostPct,
           autoPromote: false,
+          holdoutLedger: sealedHoldoutLedger,
           budget: {
             coarseCandidates: args.coarseCandidates,
             refinementCandidates: args.refinementCandidates,
@@ -778,9 +996,9 @@ export function registerApexNextMarketRoutes(
       let promotionGate: AutomaticPromotionGateResult | null = null;
 
       // The council is the cheap gate. Only when it approves do we spend the
-      // walk-forward suite, and only when THAT also passes may the profile be
+      // temporal-robustness suite, and only when THAT also passes may the profile be
       // promoted without a human. This can only narrow promotion.
-      if (council.approvedForPromotion) {
+      if (council.approvedForFinalValidation) {
         let validation: StrategyValidationReport | null = null;
         let rank: StrategyRankScore | null = null;
         let validationError: string | null = null;
@@ -810,6 +1028,7 @@ export function registerApexNextMarketRoutes(
               fundingPctEstimate: args.fundingPctEstimate,
             },
             subject: candidateSubject,
+            selectionHypothesisFingerprints: report.selectionHypothesisFingerprints,
             // The active profile appears ONLY here, as an explicit comparison.
             // It never touches the candidate's own gates.
             baseline: activeProfile
@@ -834,7 +1053,7 @@ export function registerApexNextMarketRoutes(
           strategyVersion: args.definition.version,
           reportGeneratedAt: report.generatedAt,
           optimizerEligible: report.promotion.eligible,
-          councilApproved: council.approvedForPromotion,
+          councilApproved: council.approvedForFinalValidation,
           validation,
           rank,
           candidateSubject,
@@ -881,6 +1100,7 @@ export function registerApexNextMarketRoutes(
     costModel?: BacktestResult['costModel'];
     runId?: string;
     configFingerprint?: string;
+    datasetFingerprint?: string;
   }): BacktestResult => {
     const timeline = args.replay.trades.map((trade) => {
       const riskPct = trade.entry > 0 ? Math.abs(trade.entry - trade.stop) / trade.entry * 100 : 0;
@@ -986,6 +1206,9 @@ export function registerApexNextMarketRoutes(
         fillPolicy: 'NEXT_BAR_OR_BRACKET',
         deterministic: true,
         configFingerprint: args.configFingerprint || `${args.definition.strategyId}:${args.symbol}:${args.interval}:${args.direction}:${args.requestedBars}:${args.maxHoldBars}`,
+        datasetFingerprint: args.datasetFingerprint,
+        dataSource: args.source,
+        costModelVersion: TRANSACTION_COST_MODEL_VERSION,
         optimizationRevision: args.replay.summary.optimizationProfile?.revision,
         optimizationSourceReportAt: args.replay.summary.optimizationProfile?.sourceReportAt,
       },
@@ -994,7 +1217,7 @@ export function registerApexNextMarketRoutes(
   };
 
   /**
-   * Shared walk-forward validation suite.
+   * Shared temporal-robustness validation suite.
    *
    * Extracted verbatim from the `/validate` route so that Smart Autopilot's
    * automatic-promotion gate measures a candidate with exactly the same gates,
@@ -1021,6 +1244,7 @@ export function registerApexNextMarketRoutes(
     costAssumptions: { commissionPctPerSide: number; slippagePctPerSide: number; fundingPctEstimate: number };
     subject: StrategyValidationSubject;
     baseline?: StrategyValidationSubject | null;
+    selectionHypothesisFingerprints?: string[];
   }): Promise<
     | { status: 'insufficient_history'; candles: number }
     | { status: 'completed'; report: StrategyValidationReport; rank: StrategyRankScore }
@@ -1032,8 +1256,30 @@ export function registerApexNextMarketRoutes(
       return { status: 'insufficient_history', candles: historical.candles.length };
     }
 
-    const sliceSize = Math.floor(historical.candles.length / 4);
-    const slices = [0, 1, 2, 3].map((index) => historical.candles.slice(index * sliceSize, index === 3 ? historical.candles.length : (index + 1) * sliceSize));
+    // Five chronological partitions: three development windows, one validation
+    // window for fixed-candidate stress/neighbor/regime checks, and one final
+    // holdout that is immediately sealed behind a one-shot governance capability.
+    // The generic replay helper therefore cannot receive final-holdout rows until
+    // the candidate and all development policy fingerprints have been frozen.
+    const isolationBars = Math.max(1, Math.floor(maxHoldBars));
+    let validationPartition: ReturnType<typeof partitionFiveWayWithSealedHoldout>;
+    try {
+      validationPartition = partitionFiveWayWithSealedHoldout(
+        historical.candles,
+        isolationBars,
+        isolationBars,
+        80,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.startsWith('sealed_holdout_')) {
+        return { status: 'insufficient_history', candles: historical.candles.length };
+      }
+      throw error;
+    }
+    const developmentSlices = validationPartition.train.map((window) => window.candles);
+    const validationSlice = validationPartition.validation.candles;
+    const sealedHoldout = validationPartition.holdout;
     const runSlice = async (candles: BacktestCandle[], transactionCostModel = baseTransactionCostModel, overrides?: Record<string, number | string>) => {
       const replay = await runStrategyDefinition({
         definition, candles, symbol, interval, direction, maxBars: maxHoldBars, transactionCostModel,
@@ -1051,15 +1297,14 @@ export function registerApexNextMarketRoutes(
       });
     };
 
-    const windowResults = await Promise.all(slices.slice(0, 3).map((candles, index) => runSlice(candles).then((result) => ({
-      label: `Walk-forward ${index + 1}`,
+    const windowResults = await Promise.all(developmentSlices.map((candles, index) => runSlice(candles).then((result) => ({
+      label: `Temporal robustness ${index + 1}`,
       from: Date.parse(candles[0].time),
       to: Date.parse(candles.at(-1)?.time || candles[0].time),
       result,
     }))));
-    const holdoutResult = await runSlice(slices[3]);
     const stressedTransactionCostModel = transactionCostModelFromPerSideAssumptions(costAssumptions, { feeMultiplier: 2, slippageMultiplier: 2 });
-    const costStressResult = await runSlice(slices[3], stressedTransactionCostModel);
+    const costStressResult = await runSlice(validationSlice, stressedTransactionCostModel);
     // Neighbours perturb the values actually under test. The subject is already
     // fully materialized — for definition defaults it carries the defaults — so
     // there is one source of truth here rather than a candidate/else branch.
@@ -1071,40 +1316,111 @@ export function registerApexNextMarketRoutes(
     const neighborDeltas = [-0.1, 0.1, -0.2, 0.2];
     const neighborRuns = await Promise.all(neighborDeltas.map(async (delta) => {
       const parameters = Object.fromEntries(Object.entries(numericBase).map(([key, value]) => [key, value * (1 + delta)]));
-      const result = await runSlice(slices[3], baseTransactionCostModel, parameters);
+      const result = await runSlice(validationSlice, baseTransactionCostModel, parameters);
       return { paramDelta: Object.fromEntries(Object.keys(parameters).map((key) => [key, delta])), totalPnlPct: result.totalPnlPct };
     }));
-    const reproducibilityCheck = await runSlice(slices[3]);
-    const regimeSelection = selectIndependentRegimeSlices(historical.candles);
+    const regimeSelection = selectIndependentRegimeSlices([...developmentSlices, validationSlice].flat());
     const regimeResults = regimeSelection.status === 'available'
-      ? Object.fromEntries(await Promise.all(Object.entries(regimeSelection.slices).map(async ([label, slice]) => [label, await runSlice(slice.candles)] as const)))
+      ? Object.fromEntries(await Promise.all(Object.entries(regimeSelection.allSlices).map(async ([label, regimeSlices]) => {
+        const results = await Promise.all(regimeSlices.map((regimeSlice) => runSlice(regimeSlice.candles)));
+        const first = results[0];
+        const tradeCount = results.reduce((sum, result) => sum + result.timeline.length, 0);
+        const merged: BacktestResult = {
+          ...first,
+          candlesUsed: results.reduce((sum, result) => sum + result.candlesUsed, 0),
+          simulatedScans: results.reduce((sum, result) => sum + result.simulatedScans, 0),
+          flaggedSignals: results.reduce((sum, result) => sum + result.flaggedSignals, 0),
+          acceptedCandidates: results.reduce((sum, result) => sum + result.acceptedCandidates, 0),
+          rejectedCandidates: results.reduce((sum, result) => sum + result.rejectedCandidates, 0),
+          totalPnlPct: results.reduce((sum, result) => sum + result.totalPnlPct, 0),
+          maxDrawdownPct: Math.min(...results.map((result) => result.maxDrawdownPct)),
+          profitFactor: results.every((result) => result.profitFactor !== null)
+            ? results.reduce((sum, result) => sum + Number(result.profitFactor), 0) / results.length
+            : null,
+          historicalWinRatePct: tradeCount
+            ? results.reduce((sum, result) => sum + result.historicalWinRatePct * result.timeline.length, 0) / tradeCount
+            : 0,
+          timeline: results.flatMap((result) => result.timeline),
+          dataState: results.every((result) => result.dataState === 'live') ? 'live' : 'degraded',
+        };
+        return [label, merged] as const;
+      })))
       : undefined;
-    const holdoutRange = { from: Date.parse(slices[3][0].time), to: Date.parse(slices[3].at(-1)?.time || slices[3][0].time), result: holdoutResult };
+    // Candidate selection, neighbors, cost stress and regime analysis are now
+    // frozen. Only at this point can a one-shot capability reveal final-holdout
+    // rows. The candidate fingerprint intentionally binds the DEVELOPMENT dataset
+    // and policy/objective versions, not the unseen holdout contents.
+    const validationPolicyFingerprint = fingerprintGovernanceConfiguration('validation-policy', {
+      version: 'strategy_validation_temporal_robustness_v2',
+      isolationBars,
+      maxHoldBars,
+      costAssumptions,
+      regimeSelectionStatus: regimeSelection.status,
+      statisticalValidationPolicyVersion: STATISTICAL_VALIDATION_POLICY_VERSION,
+    });
+    const searchObjectiveFingerprint = fingerprintGovernanceConfiguration('search-objective', {
+      version: 'fixed_subject_no_parameter_search_v1',
+      subjectFingerprint: fingerprintStrategyValidationSubject(subject),
+    });
+    const finalHoldoutAccess = authorizeFinalHoldoutAccess({
+      dataset: sealedHoldout,
+      ledger: sealedHoldoutLedger,
+      candidate: {
+        strategyId: definition.strategyId,
+        strategyVersion: definition.version,
+        parameters: subject.parameters,
+        scannerConfig: subject.scannerConfig,
+        transactionCostProfileFingerprint: fingerprintGovernanceConfiguration('transaction-cost-policy', {
+          version: TRANSACTION_COST_MODEL_VERSION,
+          costAssumptions,
+        }),
+        validationPolicyFingerprint,
+        searchObjectiveFingerprint,
+        developmentDatasetFingerprint: validationPartition.developmentDatasetFingerprint,
+        featureVersions: ['strategy_validation_v3_structural_holdout', TRANSACTION_COST_MODEL_VERSION],
+        authorityConfiguration: { direction, interval, subject: fingerprintStrategyValidationSubject(subject) },
+      },
+    });
+    const candidateFingerprint = finalHoldoutAccess.candidateFingerprint;
+    const datasetFingerprint = finalHoldoutAccess.datasetFingerprint;
+    const openedHoldout = finalHoldoutAccess.openedUse;
+    let holdoutResult: BacktestResult;
+    try {
+      holdoutResult = await runSlice(finalHoldoutAccess.consumeForFinalGovernance());
+    } catch (error) {
+      finalHoldoutAccess.complete(false);
+      throw error;
+    }
+    const holdoutRange = {
+      from: sealedHoldout.metadata.from,
+      to: sealedHoldout.metadata.to,
+      result: holdoutResult,
+    };
 
     // The baseline is opt-in and comparison-only. It replays a DIFFERENT
-    // identity over the same holdout candles, using its own pinned subject, so
-    // it can never leak into the candidate's replays above — those already ran.
+    // identity over the pre-holdout validation slice. It cannot consume or
+    // reveal the candidate's sealed governance dataset.
     let baseline: StrategyValidationReport['baseline'];
     if (args.baseline) {
       const baselineSubject = args.baseline;
       const baselineReplay = await runStrategyDefinition({
-        definition, candles: slices[3], symbol, interval, direction, maxBars: maxHoldBars,
+        definition, candles: validationSlice, symbol, interval, direction, maxBars: maxHoldBars,
         transactionCostModel: baseTransactionCostModel,
         includeUniverse: false,
         ...validationReplayInputs(baselineSubject),
       });
       const baselineRoundTripCostPct = computeTransactionCostPct(
-        transactionCostInputsFromModel(baseTransactionCostModel, slices[3][0]?.close || 1, 1),
+        transactionCostInputsFromModel(baseTransactionCostModel, validationSlice[0]?.close || 1, 1),
       );
       const baselineResult = buildBacktestPayload({
-        replay: baselineReplay, candles: slices[3], definition, symbol, direction, interval,
+        replay: baselineReplay, candles: validationSlice, definition, symbol, direction, interval,
         source: historical.source, dataState: historical.dataState,
-        requestedBars: slices[3].length, maxHoldBars,
+        requestedBars: validationSlice.length, maxHoldBars,
         costModel: { ...costAssumptions, roundTripCostPct: baselineRoundTripCostPct, appliedByEngine: true },
       });
       baseline = {
         subject: identifyStrategyValidationSubject(baselineSubject),
-        comparedOn: 'HOLDOUT_SLICE',
+        comparedOn: 'DEVELOPMENT_VALIDATION_SLICE',
         holdoutTotalPnlPct: baselineResult.totalPnlPct,
         holdoutMaxDrawdownPct: baselineResult.maxDrawdownPct,
         holdoutGates: {
@@ -1129,31 +1445,85 @@ export function registerApexNextMarketRoutes(
       regimeResults,
       regimeStatus: regimeSelection.status,
       regimeReason: regimeSelection.reason,
-      triedVariants: neighborRuns.length + windowResults.length + 3,
-      reproducible: Math.abs(reproducibilityCheck.totalPnlPct - holdoutResult.totalPnlPct) < 0.0001,
+      selectionHypothesisFingerprints: args.selectionHypothesisFingerprints,
+      // Determinism is a replay-engine invariant recorded in the audit payload;
+      // re-running the sealed holdout just to prove it would consume it twice.
+      reproducible: holdoutResult.audit?.deterministic === true,
       validationScope: validationCapability.scope,
       validationLimitations: validationCapability.limitations,
       subject: identifyStrategyValidationSubject(subject),
       baseline,
     });
+    const completedHoldout = finalHoldoutAccess.complete(report.passedAllGates);
+    report.holdoutProtocol = {
+      candidateFingerprint,
+      datasetFingerprint,
+      openedAt: openedHoldout.openedAt,
+      completedAt: completedHoldout.completedAt,
+      status: completedHoldout.status === 'PASSED' ? 'PASSED' : 'FAILED_RETIRED',
+      developmentDatasetFingerprint: validationPartition.developmentDatasetFingerprint,
+      validationPolicyFingerprint,
+      searchObjectiveFingerprint,
+    };
     const rank = scoreStrategyValidation(report, { symbolGroup: symbol, timeframe: interval, regime: 'mixed' });
     return { status: 'completed', report, rank };
   };
   app.get('/api/market/top-volume', async (req: Request, res: Response) => {
     const requestedLimit = Number(req.query.limit ?? 40);
     const limit = Math.min(120, Math.max(10, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 40));
-    const { tickers, dataState, source } = await fetchKuCoinTickers(limit);
-    const sorted = [...tickers].sort((a, b) => b.turnover24h - a.turnover24h).slice(0, limit);
-    res.json({ symbols: sorted, count: sorted.length, dataState, source, limit, timestamp: Date.now() });
+    const futuresPromise = fetchKuCoinTickers(limit);
+    const referencePromise = getReferenceTickers(limit, 'interactive').catch(() => null);
+    // The browser gives this bootstrap 22s, while the full Futures chain can
+    // legitimately consume several bounded provider timeouts. Give canonical
+    // Futures a short first window; if it has not resolved, render a public
+    // reference universe now and let the Futures promise continue warming cache.
+    const futures = await settleWithin(futuresPromise, 6_500);
+    if (futures?.tickers.length) {
+      const sorted = [...futures.tickers].sort((a, b) => b.turnover24h - a.turnover24h).slice(0, limit);
+      const reference = await settleWithin(referencePromise, 50);
+      res.json({
+        symbols: sorted, count: sorted.length, dataState: futures.dataState, source: futures.source, limit,
+        referenceOnly: false, decisionEligible: true, timestamp: Date.now(),
+        reconciliation: {
+          version: MARKET_RECONCILIATION_VERSION,
+          diagnostics: reconcileTickerObservations([sorted, reference?.tickers || []]).filter((row) => row.observations > 1),
+        },
+      });
+      return;
+    }
+
+    // Keep market cards/read-only pages useful during a Futures transport outage,
+    // but never let spot/reference data qualify a trading decision.
+    // Do not let three sequential public-reference providers push this route
+    // beyond the browser's 22s bootstrap timeout. If reference data has not
+    // arrived inside this second bounded window, return an honest unavailable
+    // payload; the already-started promise can still populate transport caches.
+    const reference = await settleWithin(referencePromise, 7_000);
+    const sorted = [...(reference?.tickers || [])].sort((a, b) => b.turnover24h - a.turnover24h).slice(0, limit);
+    res.json({
+      symbols: sorted,
+      count: sorted.length,
+      dataState: sorted.length ? 'degraded' : 'unavailable',
+      source: reference?.source || 'none',
+      limit,
+      referenceOnly: sorted.length > 0,
+      decisionEligible: false,
+      reason: sorted.length ? 'futures_unavailable_public_reference_only' : 'all_market_sources_unavailable',
+      timestamp: Date.now(),
+    });
   });
 
   app.get('/api/market/gainers-losers', async (req: Request, res: Response) => {
     const minLiquidityUsd = Number(req.query.minLiquidity || '10000000');
-    const { tickers, dataState, source } = await fetchKuCoinTickers();
+    const futures = await fetchKuCoinTickers();
+    const reference = futures.tickers.length ? null : await getReferenceTickers(80, 'interactive').catch(() => null);
+    const tickers = futures.tickers.length ? futures.tickers : (reference?.tickers || []);
+    const dataState: DataState = futures.tickers.length ? futures.dataState : tickers.length ? 'degraded' : 'unavailable';
+    const source = futures.tickers.length ? futures.source : (reference?.source || 'none');
     const qualified = tickers.filter((t) => t.turnover24h >= minLiquidityUsd);
     const gainers = [...qualified].sort((a, b) => b.priceChange24hPct - a.priceChange24hPct).slice(0, 10);
     const losers = [...qualified].sort((a, b) => a.priceChange24hPct - b.priceChange24hPct).slice(0, 10);
-    res.json({ gainers, losers, minLiquidityUsd, dataState, source, timestamp: Date.now() });
+    res.json({ gainers, losers, minLiquidityUsd, dataState, source, referenceOnly: !futures.tickers.length && tickers.length > 0, decisionEligible: futures.tickers.length > 0, timestamp: Date.now() });
   });
 
   app.get('/api/market/correlation', async (req: Request, res: Response) => {
@@ -1200,21 +1570,46 @@ export function registerApexNextMarketRoutes(
 
   app.get('/api/market/candidates', async (req: Request, res: Response) => {
     const minLiquidityUsd = Number(req.query.minLiquidity || '10000000');
-    const requestedLimit = Number(req.query.limit || 16);
+    const requestedLimit = Number(req.query.limit || 36);
     const includeShadow = String(req.query.includeShadow ?? '1') !== '0';
     const includeDirection = String(req.query.includeDirection ?? '1') !== '0';
-    const scanLimit = Math.min(24, Math.max(6, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 16));
-    const responseCacheKey = `candidate_response_${scanLimit}_${Math.round(minLiquidityUsd)}_${includeShadow ? 'shadow' : 'fast'}_${includeDirection ? 'direction' : 'plain'}`;
+    const scanLimit = Math.min(60, Math.max(12, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 36));
+    const parliamentMode = parliamentPromotionStore.scannerMode();
+    const responseCacheKey = `candidate_response_${scanLimit}_${Math.round(minLiquidityUsd)}_${includeShadow ? 'shadow' : 'fast'}_${includeDirection ? 'direction' : 'plain'}_${parliamentMode}`;
+    const lastVerifiedResponseKey = `${responseCacheKey}_last_verified`;
     const cachedResponse = getMarketCache<any>(responseCacheKey);
     if (cachedResponse) {
       res.json(cachedResponse);
       return;
     }
-    const { tickers, dataState, source } = await fetchKuCoinTickers(Math.max(24, scanLimit));
-    const scanTickers = [...tickers]
+    const { tickers, dataState, source } = await fetchKuCoinTickers(120);
+    const eligibleUniverse = [...tickers]
       .filter((ticker) => ticker.turnover24h >= minLiquidityUsd)
-      .sort((a, b) => b.turnover24h - a.turnover24h)
-      .slice(0, scanLimit);
+      .sort((a, b) => b.turnover24h - a.turnover24h);
+    // The limit is now an enrichment budget, not a claim about the whole market.
+    // Cheap liquidity/tradability filtering covers the fetched universe first;
+    // expensive candle/book enrichment is bounded to the strongest liquid rows.
+    const scanTickers = eligibleUniverse.slice(0, scanLimit);
+    // Supplemental evidence is warmed from the scanner's own top-N shortlist,
+    // never from user navigation state. The bounded prefetch is intentionally
+    // much smaller than the candle/book enrichment budget.
+    await getSupplementalOrchestrator().prefetchShortlist(
+      scanTickers.map((ticker) => ticker.symbol),
+      { limit: Math.min(6, scanTickers.length), concurrency: 2 },
+    );
+    if (!scanTickers.length) {
+      const lastVerified = getMarketCache<any>(lastVerifiedResponseKey);
+      if (lastVerified) {
+        res.json({
+          ...lastVerified,
+          dataState: 'degraded',
+          stale: true,
+          staleReason: 'ticker_universe_temporarily_unavailable',
+          timestamp: Date.now(),
+        });
+        return;
+      }
+    }
     const scanTimestamp = Date.now();
     const cycleId = `candidates-${scanTimestamp}`;
     const longCandidates: CandidateScore[] = [];
@@ -1234,13 +1629,24 @@ export function registerApexNextMarketRoutes(
       commanderOutcomeObservations = [];
     }
     const evidenceOutcomeObservations = extractEvidenceOutcomeObservations(commanderOutcomeObservations);
+    const liveDecisionMemoryRows = options?.decisionOutcomeLogProvider?.() ?? [];
     const snapshotRows: Array<{ snapshot: ReturnType<typeof buildCanonicalDecision>; direction: TradeDirection }> = [];
 
     const marketInputs = await mapWithConcurrency(
       scanTickers,
-      3,
-      async (ticker) => {
-        const enrichment = await fetchCandidateEnrichment(ticker.symbol, ticker.lastPrice, includeShadow, includeDirection);
+      5,
+      async (ticker, index) => {
+        // 1m/5m direction diagnostics are deliberately bounded to the most
+        // liquid half of the scan budget. The canonical decision still gets
+        // its required 15m/1h/book evidence for every row, while one slow
+        // provider can no longer multiply the latency across the full screen.
+        const includeDirectionForTicker = includeDirection && index < Math.min(12, scanTickers.length);
+        const enrichment = await fetchCandidateEnrichment(
+          ticker.symbol,
+          ticker.lastPrice,
+          includeShadow,
+          includeDirectionForTicker,
+        );
         return {
           enrichment,
           state: combineDataStates(
@@ -1274,6 +1680,8 @@ export function registerApexNextMarketRoutes(
         minLiquidityUsd,
         scannerConfig: activeScannerConfig(),
         advancedInputs: { supplementalBundle: enrichment.supplementalBundle },
+        decisionMemoryRows: liveDecisionMemoryRows,
+        parliamentMode,
       };
       const opportunity = discoverOpportunity({
         ticker: guardedTicker,
@@ -1286,6 +1694,7 @@ export function registerApexNextMarketRoutes(
         minLiquidityUsd,
       });
       opportunityCandidates.push(opportunity);
+      let nativeParliamentSnapshot: NativeParliamentSnapshotV1 | undefined;
       try {
         const nativeParliament = buildNativeParliamentSnapshot({
           ticker: guardedTicker,
@@ -1298,6 +1707,7 @@ export function registerApexNextMarketRoutes(
           timestamp: scanTimestamp,
           source,
         });
+        nativeParliamentSnapshot = nativeParliament;
         const parliament = nativeParliament.consensus;
         parliamentResults.push(parliament);
         const preliminaryCommander = buildStrategyCommanderDecision({
@@ -1383,8 +1793,8 @@ export function registerApexNextMarketRoutes(
         parliamentFailures.push({ symbol: guardedTicker.symbol, reason: 'shadow_evaluation_failed' });
         commanderFailures.push({ symbol: guardedTicker.symbol, reason: 'commander_evaluation_failed' });
       }
-      const longSnapshot = buildCanonicalDecision(shadowCtx, 'LONG', { includeShadow });
-      const shortSnapshot = buildCanonicalDecision(shadowCtx, 'SHORT', { includeShadow });
+      const longSnapshot = buildCanonicalDecision({ ...shadowCtx, parliamentSnapshot: nativeParliamentSnapshot }, 'LONG', { includeShadow });
+      const shortSnapshot = buildCanonicalDecision({ ...shadowCtx, parliamentSnapshot: nativeParliamentSnapshot }, 'SHORT', { includeShadow });
       const oneMinute = toDirectionCandles(enrichment.candles1m);
       const fiveMinute = toDirectionCandles(enrichment.candles5m);
       const fifteenMinute = toDirectionCandles(enrichment.candles15m);
@@ -1412,20 +1822,20 @@ export function registerApexNextMarketRoutes(
         stopLoss: candidateLevels.resistances[0],
         takeProfit: candidateLevels.supports[0],
       };
-      const longCandidate: CandidateScore = {
+      const longCandidate = withCanonicalCandidateAuthority(withCandidateExpectedNetEdge({
         ...candidateFromSnapshot(longSnapshot),
         lifecycleContext: longLifecycleContext,
         directionDivergenceShadow: includeDirection
           ? buildDirectionDivergence('LONG', { '1m': oneMinute, '5m': fiveMinute, '15m': fifteenMinute, '1h': oneHour }, directionContext)
           : undefined,
-      };
-      const shortCandidate: CandidateScore = {
+      }, { spread: enrichment.orderBookResult?.spread, fundingRate: guardedTicker.fundingRate }), scanTimestamp);
+      const shortCandidate = withCanonicalCandidateAuthority(withCandidateExpectedNetEdge({
         ...candidateFromSnapshot(shortSnapshot),
         lifecycleContext: shortLifecycleContext,
         directionDivergenceShadow: includeDirection
           ? buildDirectionDivergence('SHORT', { '1m': oneMinute, '5m': fiveMinute, '15m': fifteenMinute, '1h': oneHour }, directionContext)
           : undefined,
-      };
+      }, { spread: enrichment.orderBookResult?.spread, fundingRate: guardedTicker.fundingRate }), scanTimestamp);
       longCandidates.push(longCandidate);
       shortCandidates.push(shortCandidate);
       if (includeShadow) {
@@ -1436,8 +1846,8 @@ export function registerApexNextMarketRoutes(
     const shadowLogs = includeShadow ? decisionSnapshotsToLogs(snapshotRows, cycleId) : [];
     if (shadowLogs.length) options?.onShadowLogs?.(shadowLogs);
 
-    longCandidates.sort((a, b) => b.score - a.score);
-    shortCandidates.sort((a, b) => b.score - a.score);
+    longCandidates.sort(compareCanonicalCandidates);
+    shortCandidates.sort(compareCanonicalCandidates);
     opportunityCandidates.sort((a, b) => b.opportunityScore - a.opportunityScore || a.symbol.localeCompare(b.symbol));
     const opportunityShadow = buildOpportunityShortlistComparison({
       longCandidates,
@@ -1470,33 +1880,40 @@ export function registerApexNextMarketRoutes(
       opportunityShadow,
       intelligenceParliamentShadow,
       strategyCommanderShadow,
+      // A real signal requires calibrated positive net edge. Strong accepted
+      // evidence without that final proof is reported separately as a setup.
       activeCandidateCount:
-        longCandidates.filter((c) => c.guardPass).length +
-        shortCandidates.filter((c) => c.guardPass).length,
+        longCandidates.filter((c) => c.decisionState === 'SIGNAL').length +
+        shortCandidates.filter((c) => c.decisionState === 'SIGNAL').length,
+      qualifiedSetupCount:
+        longCandidates.filter((c) => c.decisionState === 'QUALIFIED_SETUP').length +
+        shortCandidates.filter((c) => c.decisionState === 'QUALIFIED_SETUP').length,
+      watchCandidateCount:
+        longCandidates.filter((c) => c.decisionState === 'WATCH').length +
+        shortCandidates.filter((c) => c.decisionState === 'WATCH').length,
+      abstainedCandidateCount:
+        longCandidates.filter((c) => c.decisionState === 'ABSTAIN' || c.decisionState === 'REJECTED').length +
+        shortCandidates.filter((c) => c.decisionState === 'ABSTAIN' || c.decisionState === 'REJECTED').length,
+      universeCount: tickers.length,
+      eligibleUniverseCount: eligibleUniverse.length,
       scannedCount: scanTickers.length,
       requestedScanLimit: scanLimit,
       shadowLogCount: shadowLogs.length,
     };
-    setMarketCache(responseCacheKey, responsePayload, includeShadow || includeDirection ? 15_000 : 25_000);
+    recordCandidateScanTelemetry({
+      activeCandidateCount: responsePayload.activeCandidateCount,
+      scanTimestamp,
+    });
+    setMarketCache(responseCacheKey, responsePayload, includeShadow || includeDirection ? 45_000 : 60_000);
+    if (longCandidates.length || shortCandidates.length) setMarketCache(lastVerifiedResponseKey, responsePayload, 180_000);
     res.json(responsePayload);
   });
 
   app.get('/api/market/symbol/:symbol', async (req: Request, res: Response) => {
     const symbol = normalizeTickerSymbol(String(req.params.symbol));
+    const detailCacheKey = `symbol_detail_${symbol}_${String(req.query.interval || '1h')}_${String(req.query.includeMicrostructure || '0')}_${String(req.query.includeDirection ?? '1')}`;
+    let referenceFallbackPromise: Promise<any> | null = null;
     try {
-    const { tickers, dataState, source } = await fetchKuCoinTickers();
-    const ticker = tickers.find((t) => t.symbol.toUpperCase() === symbol.toUpperCase());
-    if (!ticker) {
-      res.status(503).json({
-        success: false,
-        symbol,
-        dataState: 'unavailable',
-        source,
-        error: 'verified_ticker_unavailable',
-      });
-      return;
-    }
-
     const requestedInterval = String(req.query.interval || '1h');
     const supportedIntervals = new Set(['1m', '5m', '15m', '1h', '4h', '1d']);
     const intervalKey = (supportedIntervals.has(requestedInterval) ? requestedInterval : '1h') as '1m'|'5m'|'15m'|'1h'|'4h'|'1d';
@@ -1505,8 +1922,36 @@ export function registerApexNextMarketRoutes(
     const includeMicrostructure = String(req.query.includeMicrostructure || '0') === '1';
     const includeShadow = String(req.query.includeShadow ?? '1') !== '0';
     const includeDirection = String(req.query.includeDirection ?? '1') !== '0';
+
+    let { tickers, dataState, source } = await fetchKuCoinTickers();
+    let ticker = findTickerBySymbol(tickers, symbol);
+    let bootstrapCandles: RouteCandlesResult | null = null;
+    let baseTickerState: DataState = dataState;
+
+    if (!ticker) {
+      // Start the read-only public-reference path in parallel with the canonical
+      // Futures recovery attempt. It is consumed only if Futures evidence fails,
+      // so a healthy Futures route never pays or exposes the fallback result.
+      referenceFallbackPromise = Promise.all([
+        getReferenceCandles(symbol, intervalKey, limit, 'interactive').catch(() => null),
+        getReferenceTickerForSymbol(symbol, 'interactive').catch(() => null),
+      ]).then(([candles, tickerResult]) => ({ candles, tickerResult }));
+      bootstrapCandles = await fetchCandlesForSymbol(symbol, 0, intervalKey, Math.max(limit, 90), 'critical');
+      if (!bootstrapCandles.candles.length) {
+        throw new Error(`verified_ticker_unavailable:${bootstrapCandles.source !== 'none' ? bootstrapCandles.source : source}`);
+      }
+      ticker = buildDerivedTickerFromCandles(symbol, bootstrapCandles.candles, bootstrapCandles.dataState);
+      if (!ticker) {
+        throw new Error(`verified_ticker_unavailable:${bootstrapCandles.source !== 'none' ? bootstrapCandles.source : source}`);
+      }
+      baseTickerState = bootstrapCandles.dataState;
+      if (bootstrapCandles.source !== 'none') source = bootstrapCandles.source;
+    }
+
     const [candleResult, scoring1hResult, scoring15mResult, microstructure] = await Promise.all([
-      fetchCandlesForSymbol(ticker.symbol, ticker.lastPrice, intervalKey, limit),
+      bootstrapCandles && ticker.symbol === symbol
+        ? Promise.resolve(bootstrapCandles)
+        : fetchCandlesForSymbol(ticker.symbol, ticker.lastPrice, intervalKey, limit),
       intervalKey === '1h'
         ? fetchCandlesForSymbol(ticker.symbol, ticker.lastPrice, '1h', Math.max(90, limit))
         : fetchCandlesForSymbol(ticker.symbol, ticker.lastPrice, '1h', 90),
@@ -1519,11 +1964,26 @@ export function registerApexNextMarketRoutes(
     ]);
     const { candles } = candleResult;
     const effectiveState = includeMicrostructure || includeShadow || includeDirection
-      ? combineDataStates(dataState, candleResult.dataState, scoring1hResult.dataState, scoring15mResult.dataState, microstructure.dataState)
-      : combineDataStates(dataState, candleResult.dataState, scoring1hResult.dataState, scoring15mResult.dataState);
+      ? combineDataStates(baseTickerState, candleResult.dataState, scoring1hResult.dataState, scoring15mResult.dataState, microstructure.dataState)
+      : combineDataStates(baseTickerState, candleResult.dataState, scoring1hResult.dataState, scoring15mResult.dataState);
     const guardedTicker: SymbolTicker = { ...ticker, dataState: effectiveState };
     const orderBook = microstructure.orderBook?.summary ?? unavailableOrderBook(ticker.symbol);
     const levels = deriveSymbolLevels(guardedTicker, candles, 'ATR_BANDS');
+    const liveDecisionMemoryRows = options?.decisionOutcomeLogProvider?.() ?? [];
+    const parliamentMode = parliamentPromotionStore.scannerMode();
+    const supplementalBundle = await getSupplementalOrchestrator().fetchAll(guardedTicker.symbol).catch(() => undefined);
+    const nativeParliamentSnapshot = buildNativeParliamentSnapshot({
+      ticker: guardedTicker,
+      candles1h: scoring1hResult.candles,
+      candles15m: scoring15mResult.candles,
+      candles5m: microstructure.candles5m,
+      candles1m: microstructure.candles1m,
+      orderBook: microstructure.orderBook?.book,
+      spread: microstructure.orderBook?.spread,
+      supplementalBundle,
+      timestamp: Date.now(),
+      source,
+    });
     const canonicalLong = buildCanonicalDecision({
       ticker: guardedTicker,
       candles1h: scoring1hResult.candles,
@@ -1535,6 +1995,9 @@ export function registerApexNextMarketRoutes(
       qStructDirectional: microstructure.qStructDirectional,
       minLiquidityUsd: 10000000,
       scannerConfig: activeScannerConfig(),
+      decisionMemoryRows: liveDecisionMemoryRows,
+      parliamentSnapshot: nativeParliamentSnapshot,
+      parliamentMode,
     }, 'LONG', { includeShadow });
     const scoreLong = candidateFromSnapshot(canonicalLong);
     const canonicalShort = buildCanonicalDecision({
@@ -1548,6 +2011,9 @@ export function registerApexNextMarketRoutes(
       qStructDirectional: microstructure.qStructDirectional,
       minLiquidityUsd: 10000000,
       scannerConfig: activeScannerConfig(),
+      decisionMemoryRows: liveDecisionMemoryRows,
+      parliamentSnapshot: nativeParliamentSnapshot,
+      parliamentMode,
     }, 'SHORT', { includeShadow });
     const scoreShort = candidateFromSnapshot(canonicalShort);
 
@@ -1569,6 +2035,14 @@ export function registerApexNextMarketRoutes(
     };
     scoreLong.lifecycleContext = { ...detailLifecycleBase, stopLoss: levels.supports[0], takeProfit: levels.resistances[0] };
     scoreShort.lifecycleContext = { ...detailLifecycleBase, stopLoss: levels.resistances[0], takeProfit: levels.supports[0] };
+    Object.assign(scoreLong, withCanonicalCandidateAuthority(withCandidateExpectedNetEdge(scoreLong, {
+      spread: microstructure.orderBook?.spread,
+      fundingRate: guardedTicker.fundingRate,
+    })));
+    Object.assign(scoreShort, withCanonicalCandidateAuthority(withCandidateExpectedNetEdge(scoreShort, {
+      spread: microstructure.orderBook?.spread,
+      fundingRate: guardedTicker.fundingRate,
+    })));
     if (includeDirection) {
       const detailTimeframes = { '1m': detailOneMinute, '5m': detailFiveMinute, '15m': detailFifteenMinute, '1h': detailOneHour };
       scoreLong.directionDivergenceShadow = buildDirectionDivergence('LONG', detailTimeframes, detailDirectionContext);
@@ -1579,9 +2053,26 @@ export function registerApexNextMarketRoutes(
     const riskPct = Number(req.query.riskPct || '1');
     const leverage = parseLeverageQuery(req.query.leverage, 5);
     const spread = microstructure.orderBook?.spread ?? null;
+    const requestedStrategyId = typeof req.query.strategyId === 'string' && req.query.strategyId.trim()
+      ? req.query.strategyId.trim()
+      : null;
+    const requestedStrategyVersion = req.query.strategyVersion != null && !Number.isNaN(Number(req.query.strategyVersion)) && Number(req.query.strategyVersion) > 0
+      ? Number(req.query.strategyVersion)
+      : (requestedStrategyId ? 1 : null);
+    const academyPlanResolution = requestedStrategyId && requestedStrategyVersion
+      ? academySubsystem.provider.resolve({
+          strategyId: requestedStrategyId,
+          strategyVersion: requestedStrategyVersion,
+          consumer: 'TRADE_PLAN',
+        })
+      : null;
+
     const tradePlanLong = buildTradePlan({
       symbol: ticker.symbol,
       direction: 'LONG',
+      strategyId: requestedStrategyId,
+      strategyVersion: requestedStrategyVersion,
+      academyIntelligence: academyPlanResolution?.intelligence ?? null,
       levels,
       sizing: {
         accountBalanceUsd: accountBalance,
@@ -1592,7 +2083,7 @@ export function registerApexNextMarketRoutes(
         stopLossPrice: levels.supports[0],
         takeProfitPrice: levels.resistances[0],
         direction: 'LONG',
-        successProbModel: scoreLong.score,
+        successProbModel: scoreLong.canonicalDecision?.calibratedProbability == null ? null : scoreLong.canonicalDecision.calibratedProbability * 100,
         successProbUserOverride: null,
       },
       decisionRef: {
@@ -1609,6 +2100,9 @@ export function registerApexNextMarketRoutes(
     const tradePlanShort = buildTradePlan({
       symbol: ticker.symbol,
       direction: 'SHORT',
+      strategyId: requestedStrategyId,
+      strategyVersion: requestedStrategyVersion,
+      academyIntelligence: academyPlanResolution?.intelligence ?? null,
       levels,
       sizing: {
         accountBalanceUsd: accountBalance,
@@ -1619,7 +2113,7 @@ export function registerApexNextMarketRoutes(
         stopLossPrice: levels.resistances[0],
         takeProfitPrice: levels.supports[0],
         direction: 'SHORT',
-        successProbModel: scoreShort.score,
+        successProbModel: scoreShort.canonicalDecision?.calibratedProbability == null ? null : scoreShort.canonicalDecision.calibratedProbability * 100,
         successProbUserOverride: null,
       },
       decisionRef: {
@@ -1651,7 +2145,7 @@ export function registerApexNextMarketRoutes(
             accountBalanceUsd: accountBalance,
             riskMode: 'PCT', riskValue: riskPct, leverage,
             entryPrice: levels.entry, stopLossPrice, takeProfitPrice, direction,
-            successProbModel: canonical.rankingScore, successProbUserOverride: null,
+            successProbModel: canonical.calibratedProbability == null ? null : canonical.calibratedProbability * 100, successProbUserOverride: null,
           },
           spread,
           spreadState: spread == null ? 'MISSING' : microstructure.orderBook?.dataState === 'live' ? 'VALID' : 'ESTIMATED',
@@ -1667,7 +2161,7 @@ export function registerApexNextMarketRoutes(
       liquidityHunterManualCanaryRegistry.put(liquidityHunterAuthorization);
     }
 
-    res.json({
+    const responsePayload = {
       ticker: guardedTicker,
       candles,
       candleFeed: {
@@ -1706,10 +2200,90 @@ export function registerApexNextMarketRoutes(
       dataState: effectiveState,
       source,
       timestamp: Date.now(),
-    });
+    };
+    // Keep the last verified detail snapshot available only as a bounded stale-if-error
+    // fallback. Normal requests always refresh upstream first; this cache is read only
+    // from the catch path, so it cannot mask a healthy live feed.
+    setMarketCache(detailCacheKey, responsePayload, 15 * 60_000);
+    res.json(responsePayload);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       console.warn(`[Market Symbol] ${symbol} unavailable: ${detail}`);
+      const cached = getMarketCache<any>(detailCacheKey);
+      if (cached && Array.isArray(cached.candles) && cached.candles.length) {
+        res.status(200).json({
+          ...cached,
+          dataState: 'degraded',
+          candleFeed: {
+            ...(cached.candleFeed || {}),
+            dataState: 'degraded',
+            stale: true,
+            ageMs: Math.max(Number(cached.candleFeed?.ageMs || 0), 1),
+            error: `live_refresh_failed:${detail}`,
+          },
+          staleFallback: true,
+          timestamp: Date.now(),
+        });
+        return;
+      }
+      const requestedInterval = String(req.query.interval || '1h');
+      const supportedIntervals = new Set(['1m', '5m', '15m', '1h', '4h', '1d']);
+      const intervalKey = (supportedIntervals.has(requestedInterval) ? requestedInterval : '1h') as '1m'|'5m'|'15m'|'1h'|'4h'|'1d';
+      const requestedCandleLimit = Number(req.query.limit);
+      const limit = Math.min(300, Math.max(30, Number.isFinite(requestedCandleLimit) ? Math.floor(requestedCandleLimit) : 90));
+      const reference = referenceFallbackPromise
+        ? await referenceFallbackPromise.catch(() => null)
+        : await Promise.all([
+            getReferenceCandles(symbol, intervalKey, limit, 'interactive').catch(() => null),
+            getReferenceTickerForSymbol(symbol, 'interactive').catch(() => null),
+          ]).then(([candles, tickerResult]) => ({ candles, tickerResult }));
+      const referenceCandles = reference?.candles;
+      const referenceTicker = reference?.tickerResult?.ticker;
+      if (referenceCandles?.candles?.length && referenceTicker) {
+        res.status(200).json({
+          ticker: { ...referenceTicker, dataState: 'degraded' },
+          candles: referenceCandles.candles,
+          candleFeed: {
+            source: referenceCandles.source,
+            dataState: 'degraded',
+            stale: referenceCandles.stale === true,
+            ageMs: Number(referenceCandles.ageMs || 0),
+            error: `futures_feed_unavailable_reference_only:${detail}`,
+          },
+          orderBook: unavailableOrderBook(symbol),
+          orderBookLevels: null,
+          microstructure: {
+            source: null,
+            obi: null,
+            microPrice: null,
+            spread: null,
+            qStructDirectional: null,
+            volumeUnit: null,
+          },
+          levels: null,
+          scoreLong: null,
+          scoreShort: null,
+          tradePlanLong: null,
+          tradePlanShort: null,
+          liquidityHunterAuthorization: null,
+          decisionAdapterVersion: DECISION_ADAPTER_VERSION,
+          shadowMode: false,
+          directionShadowMode: false,
+          timeframeFeeds: {
+            primary: { interval: intervalKey, dataState: 'degraded', source: referenceCandles.source },
+            tf1h: { interval: '1h', dataState: 'unavailable', source: 'none', ageMs: 0 },
+            tf15m: { interval: '15m', dataState: 'unavailable', source: 'none', ageMs: 0 },
+          },
+          dataState: 'degraded',
+          source: referenceCandles.source,
+          referenceOnly: true,
+          decisionEligible: false,
+          decisionBlockedReason: 'futures_market_evidence_unavailable',
+          futuresError: detail,
+          timestamp: Date.now(),
+        });
+        return;
+      }
       res.status(503).json({
         success: false,
         symbol,
@@ -1717,6 +2291,7 @@ export function registerApexNextMarketRoutes(
         source: 'unavailable',
         error: 'market_symbol_unavailable',
         detail,
+        referenceFallbackAttempted: true,
         timestamp: Date.now(),
       });
     }
@@ -1828,7 +2403,7 @@ export function registerApexNextMarketRoutes(
    * ---- Forward PAPER evaluation ------------------------------------------
    *
    * The replay half of the loop (researchOutcomeFeedback) compares the
-   * optimizer's holdout against a replay of the same history. The forward half
+   * optimizer's development-validation expectation against a replay of later research output. The forward half
    * below opens a SIMULATED position per approved paper slot and marks it on
    * later cycles against bars that did not exist when the slot was approved.
    *
@@ -2136,7 +2711,7 @@ export function registerApexNextMarketRoutes(
       if (!row) continue;
       const jobId = jobIdFor(row.context.id);
       contextByJobId.set(jobId, { context: row.context, activeRevision: row.activeRevision });
-      expectedPnlPctByJobId[jobId] = row.report?.holdout.candidate.metrics.totalPnlPct ?? null;
+      expectedPnlPctByJobId[jobId] = row.report?.developmentValidation.candidate.metrics.totalPnlPct ?? null;
       const commanderRecord = commanderRecordsForCycle.get(row.context.symbol.toUpperCase());
       const definition = getStrategyDefinition(row.context.strategyId);
       const actualProfileFingerprint = definition
@@ -2172,7 +2747,9 @@ export function registerApexNextMarketRoutes(
     let multiAgent: ReturnType<typeof runMultiAgentResearchCouncil> | null = null;
     let paperPlanReceipt: ReturnType<MultiAgentCouncilStore['put']> | null = null;
     if (successful.length) {
-      const roundTripCostPct = commissionPctPerSide * 2 + slippagePctPerSide * 2 + fundingPctEstimate;
+      // No event-time funding evidence is available inside development selection.
+      // Do not charge a fabricated minimum settlement here.
+      const roundTripCostPct = commissionPctPerSide * 2 + slippagePctPerSide * 2;
       const researchJobs = successful.map((row) => ({
         id: jobIdFor(row.context.id),
         strategyId: row.context.strategyId,
@@ -2242,7 +2819,7 @@ export function registerApexNextMarketRoutes(
 
     // ---- Outcome feedback -------------------------------------------------
     // Record what the promoted profiles actually did on replay, against what the
-    // optimizer's holdout predicted. These rows are SIMULATED and go to the
+    // optimizer's development-validation result predicted. These rows are SIMULATED and go to the
     // research-scoped sink only; they never enter the live decision memory that
     // backs adaptive threshold proposals for live scanning.
     let outcomeFeedback: ResearchOutcomeSummary | null = null;
@@ -2355,8 +2932,8 @@ export function registerApexNextMarketRoutes(
       activeRevision: row.activeRevision,
       error: row.error,
       evidence: row.report ? {
-        holdoutPnlPct: row.report.holdout.candidate.metrics.totalPnlPct,
-        holdoutImprovement: row.report.promotion.holdoutImprovement,
+        developmentValidationPnlPct: row.report.developmentValidation.candidate.metrics.totalPnlPct,
+        developmentValidationImprovement: row.report.promotion.developmentValidationImprovement,
         neighborPassRate: row.report.promotion.neighborPassRate,
         overfitGap: row.report.promotion.overfitGap,
       } : null,
@@ -2365,7 +2942,7 @@ export function registerApexNextMarketRoutes(
         cautions: row.council.cautions,
         vetoes: row.council.vetoes,
         consensusScore: row.council.consensusScore,
-        approvedForPromotion: row.council.approvedForPromotion,
+        approvedForFinalValidation: row.council.approvedForFinalValidation,
         blockers: row.council.blockers,
       } : null,
       promotionGate: row.promotionGate ? {
@@ -2484,7 +3061,7 @@ export function registerApexNextMarketRoutes(
   });
 
   // ---------------------------------------------------------------------------
-  // Optional server-side scheduler (default OFF).
+  // Server-side scheduler (safe research/paper mode is ON by default in v2).
   //
   // It drives `runSmartAutopilotCycle` — the exact same research/paper-only path
   // the client route uses — so it cannot reach execution authorization, the Risk
@@ -2497,9 +3074,10 @@ export function registerApexNextMarketRoutes(
     nextRunAt: null as number | null,
   };
   let schedulerTimer: ReturnType<typeof setInterval> | null = null;
+  let schedulerArmedBy: 'ENV' | 'OPERATOR' | 'NONE' = 'NONE';
 
   const publicSchedulerState = () => ({
-    mode: schedulerConfig.enabled ? 'SERVER_SCHEDULED' : 'CLIENT_OPT_IN',
+    mode: schedulerTimer === null ? 'MANUAL' : schedulerArmedBy === 'OPERATOR' ? 'CLIENT_OPT_IN' : 'SERVER_SCHEDULED',
     /** True only while a real interval is armed on this process. */
     serverBackgroundLoop: schedulerTimer !== null,
     version: schedulerConfig.version,
@@ -2514,6 +3092,9 @@ export function registerApexNextMarketRoutes(
   });
 
   const runScheduledAutopilotCycle = async (): Promise<void> => {
+    // A queued immediate run must become a no-op if STOP was received before
+    // the microtask started.
+    if (!autopilotController.enabled || schedulerTimer === null) return;
     // Single-flight: a slow cycle must never stack up behind the timer. The
     // controller is the one source of truth for whether a cycle is in flight.
     if (isCycleInFlight(autopilotController)) {
@@ -2549,6 +3130,7 @@ export function registerApexNextMarketRoutes(
       schedulerTimer = null;
     }
     schedulerState.nextRunAt = null;
+    schedulerArmedBy = 'NONE';
   };
 
   /**
@@ -2557,9 +3139,14 @@ export function registerApexNextMarketRoutes(
    */
   const armSmartAutopilotScheduler = (armedBy: 'ENV' | 'OPERATOR'): void => {
     if (schedulerTimer) return;
+    schedulerArmedBy = armedBy;
     schedulerTimer = setInterval(() => { void runScheduledAutopilotCycle(); }, schedulerConfig.intervalMs);
     // Never hold the process open; graceful shutdown also clears it explicitly.
     schedulerTimer.unref?.();
+    // Arming is deterministic: the first research cycle runs on the configured
+    // interval instead of a microtask. This prevents START/STOP races and gives
+    // the operator a real window to disarm before any network-backed research
+    // begins. No execution authority is granted by the timer.
     schedulerState.nextRunAt = Date.now() + schedulerConfig.intervalMs;
     console.log(JSON.stringify({
       level: 'info',
@@ -2853,9 +3440,11 @@ export function registerApexNextMarketRoutes(
         direction,
         candles: historical.candles,
         fundingDirectional,
+        fundingMetadata: fundingDirectional === null ? null : ticker?.observationMetadata ?? null,
         // A current OI level has no direction by itself. Keep it unavailable
         // until a timestamped delta or historical OI series is bound.
         openInterestDirectional: null,
+        openInterestMetadata: null,
         news: supplemental?.news ?? null,
         sentiment: supplemental?.sentiment ?? null,
         onchain: supplemental?.onchain ?? null,
@@ -2873,8 +3462,9 @@ export function registerApexNextMarketRoutes(
           onchainSource: supplemental?.onchain.source ?? 'unavailable',
           fundingSource: fundingDirectional === null ? 'unavailable_or_degraded' : `live:${tickerResult?.source || 'market'}`,
           openInterestSource: 'not_bound_to_fusion_preview',
+          authorityStage: snapshot.authorityStage,
         },
-        note: 'This preview is current-context evidence. Live-only layers are not used by historical optimization until timestamp-aligned snapshots exist.',
+        note: 'This preview is SHADOW evidence only. It is not SIGNAL_ELIGIBLE or live-authoritative; live-only layers are not used by historical optimization until timestamp-aligned snapshots exist.',
       });
     } catch (error) {
       res.status(503).json({ error: 'strategy_fusion_preview_failed', message: error instanceof Error ? error.message : 'Fusion preview failed.' });
@@ -2968,7 +3558,10 @@ export function registerApexNextMarketRoutes(
           ...(definition.scannerConfigOverrides?.scoreWeights || {}),
         },
       };
-      const roundTripCostPct = value.commissionPctPerSide * 2 + value.slippagePctPerSide * 2 + value.fundingPctEstimate;
+      // Selection-stage evaluator lacks event-time funding coverage. Fees/slippage
+      // are charged here; funding is deferred to temporal validation rather than
+      // fabricated as an unconditional settlement.
+      const roundTripCostPct = value.commissionPctPerSide * 2 + value.slippagePctPerSide * 2;
       const report = await optimizeStrategy({
         definition,
         candles: historical.candles,
@@ -2979,6 +3572,7 @@ export function registerApexNextMarketRoutes(
         direction,
         transactionCostPct: roundTripCostPct,
         autoPromote: value.autoPromote,
+        holdoutLedger: sealedHoldoutLedger,
         budget: {
           coarseCandidates: value.coarseCandidates,
           refinementCandidates: value.refinementCandidates,
@@ -3026,8 +3620,8 @@ export function registerApexNextMarketRoutes(
         report,
         activeProfile: strategyOptimizationStore.getActive(context),
         note: report.promotion.eligible
-          ? 'The optimizer produced an eligible candidate. Active thresholds did not change; use explicit manual promotion or the five-agent Smart Autopilot cycle.'
-          : 'The optimizer completed without changing active thresholds; one or more holdout, cost, drawdown, sample, stability, or isolation gates blocked promotion.',
+          ? 'The optimizer produced a development-eligible candidate without opening the final sealed holdout. Active thresholds did not change; candidate-matched FULL_STRATEGY validation is still required.'
+          : 'The optimizer completed without changing active thresholds; one or more development, cost, drawdown, sample, stability, or isolation gates blocked advancement.',
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Strategy optimization failed.';
@@ -3038,7 +3632,7 @@ export function registerApexNextMarketRoutes(
     }
   });
 
-  app.post('/api/strategies/:strategyId/optimization/promote', (req: Request, res: Response) => {
+  app.post('/api/strategies/:strategyId/optimization/promote', async (req: Request, res: Response) => {
     const definition = getStrategyDefinition(String(req.params.strategyId || ''));
     if (!definition) {
       res.status(404).json({ error: 'strategy_not_found', message: 'The requested strategy is not registered.' });
@@ -3066,12 +3660,71 @@ export function registerApexNextMarketRoutes(
       res.status(409).json({ error: 'strategy_optimization_not_eligible', blockers: report.promotion.blockers });
       return;
     }
+    const capability = strategyValidationCapability(definition);
+    if (capability.scope !== 'FULL_STRATEGY') {
+      res.status(409).json({
+        error: 'full_strategy_validation_required',
+        validationScope: capability.scope,
+        limitations: capability.limitations,
+        message: 'BASE_REPLAY evidence cannot authorize a production-affecting optimization profile.',
+      });
+      return;
+    }
+    const candidateSubject = optimizationCandidateSubject({
+      definition,
+      parameters: report.winner.parameters,
+      scannerConfig: report.winner.scannerConfig,
+      sourceReportAt: report.generatedAt,
+      activeProfileRevision: strategyOptimizationStore.getActive(context)?.revision ?? null,
+    });
+    const candidateFingerprint = fingerprintStrategyValidationSubject(candidateSubject);
+    let validation = validationReports.get(definition.strategyId) ?? null;
+    const existingMatches = validation?.subject?.kind === 'OPTIMIZATION_CANDIDATE'
+      && validation.subject.fingerprint === candidateFingerprint
+      && validation.validationScope === 'FULL_STRATEGY'
+      && validation.fullStrategyValidated === true;
     try {
+      if (!existingMatches) {
+        const validationInput = validateStrategyValidationInput({
+          symbol, direction, interval,
+          maxBars: req.body?.maxBars,
+          commissionPct: req.body?.commissionPct,
+          slippagePct: req.body?.slippagePct,
+          fundingPct: req.body?.fundingPct,
+        });
+        if (!validationInput.ok) {
+          res.status(422).json(apiValidationError(res.locals.requestId as string | undefined, validationInput.issues));
+          return;
+        }
+        const suite = await runStrategyValidationSuite({
+          definition, symbol, interval: interval as marketDataService.CandleInterval, direction,
+          maxHoldBars: validationInput.value.maxHoldBars,
+          costAssumptions: {
+            commissionPctPerSide: validationInput.value.commissionPctPerSide,
+            slippagePctPerSide: validationInput.value.slippagePctPerSide,
+            fundingPctEstimate: validationInput.value.fundingPctEstimate,
+          },
+          subject: candidateSubject,
+          selectionHypothesisFingerprints: report.selectionHypothesisFingerprints,
+        });
+        if (suite.status !== 'completed') {
+          res.status(503).json({ error: 'insufficient_validation_history', candles: suite.candles });
+          return;
+        }
+        validation = suite.report;
+        validationReports.set(definition.strategyId, suite.report);
+        rankScores.set(definition.strategyId, suite.rank);
+      }
+      if (!validation || validation.validationScope !== 'FULL_STRATEGY' || validation.fullStrategyValidated !== true || validation.subject?.fingerprint !== candidateFingerprint) {
+        res.status(409).json({ error: 'full_strategy_validation_required', validation: validation ?? null });
+        return;
+      }
       const profile = strategyOptimizationStore.promote(report);
       res.json({
         ok: true,
         activeProfile: profile,
-        note: 'The reviewed optimizer candidate was promoted manually for this exact strategy/symbol/interval/direction context.',
+        validationScope: validation.validationScope,
+        note: 'The reviewed optimizer candidate was promoted only after candidate-matched FULL_STRATEGY validation.',
       });
     } catch (error) {
       res.status(409).json({ error: 'strategy_optimization_promotion_failed', message: error instanceof Error ? error.message : 'Promotion failed.' });
@@ -3149,7 +3802,7 @@ export function registerApexNextMarketRoutes(
         definition, symbol, interval, direction, maxHoldBars, costAssumptions, subject,
       });
       if (suite.status === 'insufficient_history') {
-        res.status(503).json({ error: 'insufficient_validation_history', candles: suite.candles, message: 'At least 1,200 verified candles are required for walk-forward validation.' });
+        res.status(503).json({ error: 'insufficient_validation_history', candles: suite.candles, message: 'At least 1,200 verified candles are required for temporal-robustness validation.' });
         return;
       }
       const { report, rank } = suite;
@@ -3265,6 +3918,23 @@ export function registerApexNextMarketRoutes(
         transactionCostModel: routeTransactionCostModel,
         scannerConfig,
       };
+      const replayIdentity = {
+        strategyId: definition.strategyId,
+        strategyVersion: definition.version,
+        symbol: tickerSymbol,
+        interval,
+        direction,
+        optimizationRevision: `optimizer-r${routeOptimizationProfile?.revision ?? 0}`,
+        requestedBars,
+        maxHoldBars,
+        roundTripCostPct,
+        parameters: cacheParameters,
+        scannerConfig: cacheScannerConfig,
+        source: historical.source,
+        candles: historicalCandles,
+      };
+      const replayFingerprint = buildBacktestReplayCacheKey(replayIdentity);
+      const datasetFingerprint = buildBacktestDatasetFingerprint(historical.source, tickerSymbol, interval, historicalCandles);
       let replay: StrategyReplayResult;
       let replayCacheState: BacktestCacheState | 'BYPASS';
       if (definition.runFn === 'adaptiveTrendPortfolio') {
@@ -3274,21 +3944,7 @@ export function registerApexNextMarketRoutes(
         replay = await runStrategyDefinition(replayArgs);
         replayCacheState = 'BYPASS';
       } else {
-        const replayCacheKey = buildBacktestReplayCacheKey({
-          strategyId: definition.strategyId,
-          strategyVersion: definition.version,
-          symbol: tickerSymbol,
-          interval,
-          direction,
-          requestedBars,
-          maxHoldBars,
-          roundTripCostPct,
-          parameters: cacheParameters,
-          scannerConfig: cacheScannerConfig,
-          source: historical.source,
-          candles: historicalCandles,
-        });
-        const cachedReplay = await backtestReplayCache.execute(replayCacheKey, () => runStrategyDefinition(replayArgs));
+        const cachedReplay = await backtestReplayCache.execute(replayFingerprint, () => runStrategyDefinition(replayArgs));
         replay = cachedReplay.value;
         replayCacheState = cachedReplay.state;
       }
@@ -3306,7 +3962,8 @@ export function registerApexNextMarketRoutes(
         maxHoldBars,
         costModel,
         runId: `bt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        configFingerprint: `${definition.strategyId}:${tickerSymbol}:${interval}:${direction}:${requestedBars}:${maxHoldBars}:${roundTripCostPct.toFixed(4)}:optimizer-r${routeOptimizationProfile?.revision ?? 0}`,
+        configFingerprint: replayFingerprint,
+        datasetFingerprint,
       });
       const totalMs = performance.now() - routeStartedAt;
       res.json({
@@ -3325,29 +3982,23 @@ export function registerApexNextMarketRoutes(
   });
 
   app.get('/api/market/majors', async (_req: Request, res: Response) => {
-    const { tickers, dataState } = await fetchKuCoinTickers();
+    const futures = await fetchKuCoinTickers();
+    const reference = futures.tickers.length ? null : await getReferenceTickers(80, 'interactive').catch(() => null);
+    const tickers = futures.tickers.length ? futures.tickers : (reference?.tickers || []);
     const majors = [...tickers]
       .sort((a, b) => b.turnover24h - a.turnover24h)
       .filter((ticker) => ['BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'BNB-USDT', 'XRP-USDT', 'DOGE-USDT'].includes(ticker.symbol))
       .slice(0, 6);
-    res.json({ symbols: majors, dataState, timestamp: Date.now() });
+    res.json({ symbols: majors, dataState: futures.tickers.length ? futures.dataState : majors.length ? 'degraded' : 'unavailable', source: futures.tickers.length ? futures.source : (reference?.source || 'none'), referenceOnly: !futures.tickers.length && majors.length > 0, decisionEligible: futures.tickers.length > 0, timestamp: Date.now() });
   });
 
   app.get('/api/system/health', async (_req: Request, res: Response) => {
-    const market = await fetchKuCoinTickers();
-    const fallbackState = market.dataState === 'unavailable' ? 'unavailable' : 'degraded';
-    res.json({
-      kucoinStatus: market.source === 'kucoin' ? 'live' : fallbackState,
-      binanceStatus: market.source === 'binance' ? 'live' : 'not_configured',
-      sentimentStatus: 'not_configured',
-      cacheHitRatePct: 0,
-      cacheTotalQueries: 0,
-      cacheHits: 0,
-      uptimeSeconds: Math.round(process.uptime()),
-      lastErrorLog: [],
-      activeCandidateCount: 0,
-      lastScanTimestamp: 0,
-    });
+    // Health is measured independently for each provider capability. Generic
+    // connectivity never implies candles/funding/orderbook/account health.
+    const primary = await marketDataService.probePrimaryProviderHealth();
+    const supplementalStatus = getSupplementalOrchestrator().getProvidersStatus();
+    const sentimentConfigured = supplementalStatus.sentiment.some((provider) => provider.configured);
+    res.json(buildSystemHealthPayload({ primary, supplementalConfigured: sentimentConfigured }));
   });
 
   app.post('/api/market/backtest/production-input', (req: Request, res: Response) => {
@@ -3365,10 +4016,39 @@ export function registerApexNextMarketRoutes(
       return res.status(422).json(apiValidationError(res.locals.requestId as string | undefined, validated.issues));
     }
 
-    const { candles, inputs, direction, interval, maxHoldBars, symbol } = validated.value;
+    const { candles, inputs, fundingCoverage, direction, interval, maxHoldBars, symbol } = validated.value;
+    const candleTimes = candles
+      .map((row) => Date.parse(String(row.time ?? '')))
+      .filter((timestamp) => Number.isFinite(timestamp));
+    const replayFrom = candleTimes.length ? Math.min(...candleTimes) : null;
+    const replayTo = candleTimes.length ? Math.max(...candleTimes) : null;
+    const coverageComplete = fundingCoverage.state === 'COMPLETE'
+      && replayFrom != null
+      && replayTo != null
+      && fundingCoverage.coveredFrom != null
+      && fundingCoverage.coveredTo != null
+      && fundingCoverage.coveredFrom <= replayFrom
+      && fundingCoverage.coveredTo >= replayTo;
+    if (!coverageComplete) {
+      return res.status(422).json({
+        ok: false,
+        error: {
+          code: 'funding_coverage_incomplete',
+          message: 'Production-input replay requires COMPLETE funding coverage spanning the replay dataset; missing coverage is not treated as zero funding.',
+          requestId: (res.locals.requestId as string | undefined) || null,
+          retryable: false,
+          coverageState: fundingCoverage.state,
+          coveredFrom: fundingCoverage.coveredFrom,
+          coveredTo: fundingCoverage.coveredTo,
+          requiredFrom: replayFrom,
+          requiredTo: replayTo,
+        },
+      });
+    }
     const result = runApexProductionInputReplay({
       candles: candles as unknown as ProductionReplayDataset['candles'],
       inputs: inputs as unknown as ProductionReplayDataset['inputs'],
+      fundingCoverage: fundingCoverage as ProductionReplayDataset['fundingCoverage'],
     }, {
       symbol: normalizeTickerSymbol(symbol),
       interval,

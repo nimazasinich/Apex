@@ -2,8 +2,8 @@
  * Automatic-promotion authorization gate.
  *
  * Before this module existed, Smart Autopilot could promote an optimization
- * profile on optimizer-internal holdout evidence plus the multi-agent council
- * alone. The stricter walk-forward / cost-stress / regime gate suite in
+ * profile on optimizer development evidence plus the multi-agent council
+ * alone, before candidate-matched final validation. The stricter temporal-robustness / sealed-holdout / cost-stress / regime gate suite in
  * `strategyValidation.ts` and the comparable ranking in `strategyRanking.ts`
  * were computed only by the manual `/validate` route and never consulted for
  * promotion.
@@ -48,9 +48,9 @@ export interface AutomaticPromotionGateInput {
   reportGeneratedAt: number;
   /** Optimizer-internal eligibility (`report.promotion.eligible`). */
   optimizerEligible: boolean;
-  /** Multi-agent council verdict (`council.approvedForPromotion`). */
+  /** Multi-agent council verdict (`council.approvedForFinalValidation`). */
   councilApproved: boolean;
-  /** Walk-forward / holdout / cost-stress / regime evidence, when available. */
+  /** Temporal-robustness / sealed-holdout / cost-stress / regime evidence, when available. */
   validation: StrategyValidationReport | null;
   /** Comparable-group ranking for the same validation run, when available. */
   rank: StrategyRankScore | null;
@@ -135,10 +135,12 @@ export function evaluateAutomaticPromotionGate(
       blockers.push('validation_subject_mismatch');
     } else {
       subjectMatched = true;
+      if (validation.validationScope !== 'FULL_STRATEGY') blockers.push('validation_scope_not_full_strategy');
+      if (validation.fullStrategyValidated !== true) blockers.push('full_strategy_validation_required');
       for (const [gate, passed] of Object.entries(validation.gates)) {
         if (!passed) failedGates.push(gate);
       }
-      validationPassed = validation.passedAllGates === true && failedGates.length === 0;
+      validationPassed = validation.passedAllGates === true && validation.fullStrategyValidated === true && failedGates.length === 0;
       if (!validationPassed) blockers.push('validation_gates_failed');
     }
   }

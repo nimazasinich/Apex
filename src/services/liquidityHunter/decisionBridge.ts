@@ -89,6 +89,8 @@ export function authorizeLiquidityHunterTradePlan(input: {
     ...input.tradePlan,
     symbol: input.evaluation.symbol,
     direction,
+    strategyId: 'liquidity-hunter',
+    strategyVersion: 1,
     decisionRef: {
       score: bridged.decision.rankingScore,
       readinessTier: bridged.decision.baseline.readinessTier,
@@ -100,6 +102,14 @@ export function authorizeLiquidityHunterTradePlan(input: {
     ...input.risk,
     executionMode: 'MANUAL',
     plan: tradePlan,
+    academyResolution: {
+      status: 'NOT_APPLICABLE',
+      strategyId: 'liquidity-hunter',
+      strategyVersion: 1,
+      recordId: 'liquidity-hunter@1',
+      intelligence: null,
+      detail: 'ACADEMY_NOT_APPLICABLE_RESEARCH_MODULE: Liquidity Hunter is a research/shadow module requiring manual confirmation; autonomous live execution disabled.',
+    },
     order: {
       symbol: tradePlan.symbol,
       direction: tradePlan.direction,
@@ -109,6 +119,8 @@ export function authorizeLiquidityHunterTradePlan(input: {
       leverage: tradePlan.leverage,
       reduceOnly: false,
       exchange: 'kucoin-testnet',
+      strategyId: 'liquidity-hunter',
+      strategyVersion: 1,
       strategy: 'liquidity-hunter-manual-testnet',
     },
   });

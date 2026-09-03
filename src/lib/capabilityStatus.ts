@@ -179,3 +179,26 @@ export function listProviderCapabilities(): ProviderCapabilityStatus[] {
 export function listModuleCapabilities(): ModuleCapabilityStatus[] {
   return TRADING_MODULE_REGISTRY.map(describeModuleCapability);
 }
+
+export interface LiveEligibilityEvidence {
+  dataState: 'live' | 'degraded' | 'not_configured' | 'unavailable' | null | undefined;
+  observedAt: number | null | undefined;
+  /** A verified authority decision owned by the supplying subsystem. */
+  authorityVerified: boolean;
+  now?: number;
+  maxAgeMs?: number;
+}
+
+/**
+ * One fail-closed UI rule for the literal `LIVE` label. Connectivity, a score,
+ * or a non-empty payload is not sufficient: the supplying subsystem must also
+ * assert authority and provide a current source observation.
+ */
+export function isVerifiedLiveEligibility(evidence: LiveEligibilityEvidence): boolean {
+  if (!evidence.authorityVerified || evidence.dataState !== 'live') return false;
+  if (!Number.isFinite(evidence.observedAt)) return false;
+  const now = evidence.now ?? Date.now();
+  const maxAgeMs = evidence.maxAgeMs ?? 120_000;
+  const ageMs = now - Number(evidence.observedAt);
+  return Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= maxAgeMs;
+}

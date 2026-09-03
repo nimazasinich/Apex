@@ -1,6 +1,7 @@
 /**
- * Supplemental API configuration slots + free public endpoints from Doc/api-config-complete__1_.txt
- * Mapped onto reserved Intelligence / Custom API Settings slots.
+ * Browser-visible API configuration slots + public provider profiles.
+ * Secret defaults are intentionally NOT embedded here: server.ts loads the attached
+ * private API seed and Settings only receives configured/verified/count metadata.
  */
 export const COMPLETED_API_DEFAULTS = {
   tronScanKey: '',
@@ -12,7 +13,7 @@ export const COMPLETED_API_DEFAULTS = {
   huggingFaceToken: '',
 } as const;
 
-/** Keys that map 1:1 onto the Intelligence APIs supplemental store. */
+/** Safe client placeholders for the six managed server-side credential families. */
 export const COMPLETED_SUPPLEMENTAL_DEFAULTS = {
   newsApiKey: COMPLETED_API_DEFAULTS.newsApiKey,
   coinMarketCapKey: COMPLETED_API_DEFAULTS.coinMarketCapKey,
@@ -134,6 +135,114 @@ export function createCompletedDefaultExternalSources(): CompletedDefaultExterna
       secret: '',
       parserHint: 'market',
       notes: 'Approved owner-managed datasource fallback',
+    },
+    {
+      id: 'default-coingecko-market',
+      enabled: true,
+      category: 'exchange',
+      name: 'CoinGecko · public market reference',
+      baseUrl: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'market-reference',
+      notes: 'Attached API pack · context/diagnostics only; never substitutes futures funding or open interest',
+    },
+    {
+      id: 'default-coincap-market',
+      enabled: true,
+      category: 'exchange',
+      name: 'CoinCap · public market reference',
+      baseUrl: 'https://api.coincap.io/v2/assets/bitcoin',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'market-reference',
+      notes: 'Attached API pack · context/diagnostics only',
+    },
+    {
+      id: 'default-coinpaprika-market',
+      enabled: true,
+      category: 'exchange',
+      name: 'CoinPaprika · public market reference',
+      baseUrl: 'https://api.coinpaprika.com/v1/tickers/btc-bitcoin',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'market-reference',
+      notes: 'Attached API pack · context/diagnostics only',
+    },
+    {
+      id: 'default-alternative-me-sentiment',
+      enabled: true,
+      category: 'sentiment',
+      name: 'Alternative.me · Fear & Greed',
+      baseUrl: 'https://api.alternative.me/fng/?limit=1',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'sentiment',
+      notes: 'Attached API pack · active smart sentiment fallback after owner-managed HF source',
+    },
+    {
+      id: 'default-clankapp-whales',
+      enabled: true,
+      category: 'onchain',
+      name: 'ClankApp · whale feed',
+      baseUrl: 'https://clankapp.com/api/whales/recent',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'whales',
+      notes: 'Attached API pack · active smart on-chain fallback after symbol-specific sources',
+    },
+    {
+      id: 'default-reddit-crypto-news',
+      enabled: true,
+      category: 'news',
+      name: 'Reddit · CryptoCurrency public JSON',
+      baseUrl: 'https://www.reddit.com/r/CryptoCurrency/new.json?limit=25',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'news-reference',
+      notes: 'Attached API pack · diagnostics/reference profile; not promoted to trading evidence by default',
+    },
+    {
+      id: 'default-blockscout-ethereum',
+      enabled: true,
+      category: 'onchain',
+      name: 'BlockScout · Ethereum public explorer',
+      baseUrl: 'https://eth.blockscout.com/api',
+      method: 'GET',
+      authType: 'none',
+      secret: '',
+      parserHint: 'onchain-reference',
+      notes: 'Attached API pack · keyless explorer standby profile',
+    },
+    {
+      id: 'default-ethereum-public-rpc',
+      enabled: false,
+      category: 'onchain',
+      name: 'PublicNode · Ethereum RPC',
+      baseUrl: 'https://ethereum.publicnode.com',
+      method: 'POST',
+      authType: 'none',
+      secret: '',
+      parserHint: 'json-rpc',
+      notes: 'Attached API pack · RPC standby profile',
+    },
+    {
+      id: 'default-bsc-public-rpc',
+      enabled: false,
+      category: 'onchain',
+      name: 'BSC · official public RPC',
+      baseUrl: 'https://bsc-dataseed.binance.org',
+      method: 'POST',
+      authType: 'none',
+      secret: '',
+      parserHint: 'json-rpc',
+      notes: 'Attached API pack · RPC standby profile',
     },
   ];
 }

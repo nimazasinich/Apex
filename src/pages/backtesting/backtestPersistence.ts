@@ -150,12 +150,11 @@ export function loadPresets(): BacktestSavedPreset[] {
 function persistPresets(presets: BacktestSavedPreset[]): BacktestSavedPreset[] {
   const storage = safeStorage();
   const trimmed = presets.slice(0, MAX_PRESETS);
-  if (storage) {
-    try {
-      storage.setItem(BACKTEST_PRESETS_KEY, JSON.stringify(trimmed));
-    } catch {
-      /* quota or serialization failure — keep in-memory copy */
-    }
+  if (!storage) throw new Error('backtest_preset_persistence_unavailable');
+  try {
+    storage.setItem(BACKTEST_PRESETS_KEY, JSON.stringify(trimmed));
+  } catch {
+    throw new Error('backtest_preset_persistence_failed');
   }
   return trimmed;
 }
@@ -210,12 +209,11 @@ function persistNotes(notes: Record<string, BacktestNote>): Record<string, Backt
   const entries = Object.values(notes).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, MAX_NOTES);
   const capped: Record<string, BacktestNote> = {};
   for (const note of entries) capped[note.runId] = note;
-  if (storage) {
-    try {
-      storage.setItem(BACKTEST_NOTES_KEY, JSON.stringify(capped));
-    } catch {
-      /* quota or serialization failure — keep in-memory copy */
-    }
+  if (!storage) throw new Error('backtest_note_persistence_unavailable');
+  try {
+    storage.setItem(BACKTEST_NOTES_KEY, JSON.stringify(capped));
+  } catch {
+    throw new Error('backtest_note_persistence_failed');
   }
   return capped;
 }

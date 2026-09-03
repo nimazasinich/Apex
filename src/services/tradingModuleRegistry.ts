@@ -16,21 +16,36 @@ export interface TradingModuleRegistration {
 export const TRADING_MODULE_REGISTRY: readonly TradingModuleRegistration[] = [
   {
     module: 'src/lib/scoring.ts', roles: ['LIVE', 'REPLAY'], consumers: ['canonicalDecisionAdapter'],
-    inputs: ['1h candles', 'independent 15m candles', 'ticker', 'order-book summary'], authoritative: true,
-    notes: 'Current baseline ranking and guard engine. Missing/estimated evidence is quality-weighted and never silently neutral.',
+    inputs: ['1h candles', 'independent 15m candles', 'ticker', 'order-book summary'], authoritative: false,
+    notes: 'SUPERSEDED_FOR_RANKING: Live/prod-replay ranking is no longer sourced from this engine (scannerCore.ts / liveSignalEnsemble.ts are authoritative). Its legacy fail-closed guard remains active solely to constrain baseline eligibility.',
   },
   {
-    module: 'src/services/scannerCore.ts', roles: ['SHADOW', 'REPLAY'], consumers: ['canonicalDecisionAdapter'],
-    inputs: ['OBI', 'signed volume delta', 'QStruct', 'ATR', 'spread', 'micro-price', 'funding', 'OI', 'SMC'], authoritative: false,
-    notes: 'Advanced ATLAS-style evaluation. It remains shadow-only for live decisions until an audited promotion is approved.',
+    module: 'src/services/scannerCore.ts', roles: ['LIVE', 'REPLAY', 'SHARED'], consumers: ['canonicalDecisionAdapter'],
+    inputs: ['OBI', 'signed volume delta', 'QStruct', 'ATR', 'spread', 'micro-price', 'funding', 'OI', 'SMC'], authoritative: true,
+    notes: 'Advanced ATLAS-style microstructure evaluation. It is a primary ensemble vote and retains hard safety-quality vetoes; downstream Trade Plan and Risk Governor safety gates remain unchanged.',
+  },
+  {
+    module: 'src/services/liveMarketRegime.ts', roles: ['LIVE', 'REPLAY', 'SHARED'], consumers: ['liveSignalEnsemble'],
+    inputs: ['causal 1h candles', 'optional causal 4h candles'], authoritative: false,
+    notes: 'Classifies TREND_UP/TREND_DOWN/RANGE/HIGH_VOLATILITY/TRANSITION without future labels or holdout-derived thresholds.',
+  },
+  {
+    module: 'src/services/liveSignalEnsemble.ts', roles: ['LIVE', 'REPLAY', 'SHARED'], consumers: ['canonicalDecisionAdapter'],
+    inputs: ['scannerCore advanced result', 'trend momentum', 'compression breakout', 'mean reversion', 'causal regime'], authoritative: true,
+    notes: 'Regime-aware signal authority for live and production replay. It may rescue directional scanner gate misses only with independent model agreement, but cannot override advanced liquidity/SMC/squeeze/snapshot hard rejections.',
+  },
+  {
+    module: 'src/services/decisionCalibration.ts', roles: ['LIVE', 'OFFLINE_ANALYTICS', 'SHARED'], consumers: ['canonicalDecisionAdapter'],
+    inputs: ['resolved LIVE decision outcomes only'], authoritative: false,
+    notes: 'Publishes an empirical Bayesian win-probability estimate only after sufficient resolved live samples; calibration never authorizes or rescues a signal.',
   },
   {
     module: 'src/services/canonicalDecisionAdapter.ts', roles: ['LIVE', 'REPLAY', 'SHARED'], consumers: ['market routes', 'proxy replay', 'production-input replay'],
     inputs: ['baseline scoring context', 'advanced recorded/live context'], authoritative: true,
-    notes: 'Single normalized decision entry point. Baseline remains the live authority; advanced output is retained for parity analysis.',
+    notes: 'Single normalized decision entry point. Regime-aware ensemble output is authoritative for live/production-input replay; the baseline remains a fail-closed operational eligibility guard and proxy-replay fallback.',
   },
   {
-    module: 'src/services/smartMoneyContextAdapter.ts', roles: ['SHADOW', 'REPLAY', 'SHARED'], consumers: ['canonicalDecisionAdapter'],
+    module: 'src/services/smartMoneyContextAdapter.ts', roles: ['LIVE', 'REPLAY', 'SHARED'], consumers: ['canonicalDecisionAdapter'],
     inputs: ['1m', '5m', '15m', '4h closed candles'], authoritative: false,
     notes: 'Explicit availability states prevent missing SMC from appearing as neutral evidence.',
   },
@@ -40,9 +55,9 @@ export const TRADING_MODULE_REGISTRY: readonly TradingModuleRegistration[] = [
     notes: 'Not connected to live or replay execution gates.',
   },
   {
-    module: 'src/services/adaptiveThresholdEngine.ts', roles: ['STRESS_ONLY', 'OFFLINE_ANALYTICS'], consumers: ['adaptive learning stress utility'],
+    module: 'src/services/adaptiveThresholdEngine.ts', roles: ['SHARED', 'OFFLINE_ANALYTICS', 'STRESS_ONLY'], consumers: ['adaptiveThresholdGovernance', 'fast adaptive shadow', 'adaptive learning stress utility'],
     inputs: ['persisted resolved decision outcomes'], authoritative: false,
-    notes: 'Produces bounded proposals and audit records; it does not silently alter live thresholds.',
+    notes: 'Derives bounded evidence-based threshold proposals from resolved outcomes. Live effect is possible only through the separate manually approved adaptiveThresholdGovernance revision.',
   },
   {
     module: 'src/services/adaptiveThresholdGovernance.ts', roles: ['LIVE', 'OFFLINE_ANALYTICS', 'SHARED'], consumers: ['market route scanner-config provider', 'operations API'],

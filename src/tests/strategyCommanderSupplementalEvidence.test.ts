@@ -4,6 +4,7 @@ import { validateCommanderEvidence } from '../contracts/commander/commanderEvide
 import { buildNewsEvidence } from '../services/strategyCommander/evidence/newsEvidence';
 import { buildSentimentEvidence } from '../services/strategyCommander/evidence/sentimentEvidence';
 import { buildWhaleEvidence } from '../services/strategyCommander/evidence/whaleEvidence';
+import { canonicalObservationMetadata } from '../contracts/evidence/observationMetadata';
 
 const now = '2026-08-12T01:00:00.000Z';
 const base = {
@@ -11,10 +12,36 @@ const base = {
   source: 'cache-fixture', sourceVersion: 'v1', inputFingerprint: 'fixture-fingerprint',
 };
 
+function metadata(
+  provider: string,
+  dependencyFamily: 'NEWS_TEXT' | 'ONCHAIN_FLOW',
+  sourceObservedAt = Date.parse(now),
+  decisionEligible = true,
+) {
+  return canonicalObservationMetadata({
+    sourceObservedAt,
+    providerReadAt: Date.parse(now),
+    receivedAt: Date.parse(now),
+    cacheStoredAt: null,
+    provider,
+    venue: null,
+    canonicalInstrumentId: 'BTC-USDT',
+    providerInstrumentId: 'BTC-USDT',
+    adapterVersion: 'fixture-v1',
+    qualityState: decisionEligible ? 'VALID' : 'DEGRADED',
+    staleReason: null,
+    lineageId: `${provider}:${sourceObservedAt}`,
+    dependencyFamily,
+    parentLineageIds: [],
+    decisionEligible,
+  });
+}
+
 function bundle(): SupplementalBundle {
   return {
     news: {
       category: 'news', provider: 'news-fixture', symbol: 'BTC-USDT', source: 'live', status: 'OK', latencyMs: 1, updatedAt: now,
+      metadata: metadata('news-fixture', 'NEWS_TEXT'),
       data: [
         { title: 'a', url: 'https://example.test/a', source: 'x', publishedAt: now, sentiment: 'bullish' },
         { title: 'b', url: 'https://example.test/b', source: 'x', publishedAt: now, sentiment: 'bearish' },
@@ -23,10 +50,12 @@ function bundle(): SupplementalBundle {
     },
     sentiment: {
       category: 'sentiment', valid: true, provider: 'sentiment-fixture', symbol: 'BTC-USDT', source: 'degraded', status: 'OK', latencyMs: 1, updatedAt: now,
+      metadata: metadata('sentiment-fixture', 'NEWS_TEXT', Date.parse(now), false),
       data: { value: 0.7, label: 'POSITIVE', confidence: 0.8, modelVersion: 'fixture-model' },
     },
     onchain: {
       category: 'onchain', provider: 'chain-fixture', symbol: 'BTC-USDT', source: 'live', status: 'OK', latencyMs: 1, updatedAt: now,
+      metadata: metadata('chain-fixture', 'ONCHAIN_FLOW'),
       data: [
         { type: 'exchange_withdrawal', amount: 1, amountUSD: 750_000, direction: 'outbound', chain: 'ethereum', transactionHash: '0x1', timestamp: now },
         { type: 'exchange_deposit', amount: 1, amountUSD: 250_000, direction: 'inbound', chain: 'ethereum', transactionHash: '0x2', timestamp: now },
@@ -74,7 +103,18 @@ describe('Plan C supplemental Commander evidence', () => {
     expect(missing.confidence).toBe(0);
 
     const stale = bundle();
-    stale.news!.updatedAt = '2026-08-12T00:50:00.000Z';
+    stale.news!.updatedAt = now;
+    stale.news!.metadata = metadata('news-fixture', 'NEWS_TEXT', Date.parse('2026-08-12T00:50:00.000Z'));
     expect(buildNewsEvidence({ ...base, evidenceId: 'stale', supplementalBundle: stale }).valueQuality).toBe('STALE');
+  });
+
+  it('does not launder provider read time into event-time freshness', () => {
+    const missingEventTime = bundle();
+    missingEventTime.news!.updatedAt = now;
+    delete missingEventTime.news!.metadata;
+    const evidence = buildNewsEvidence({ ...base, evidenceId: 'missing-event-time', supplementalBundle: missingEventTime });
+    expect(evidence.valueQuality).toBe('INVALID');
+    expect(evidence.observedAt).toBe(now);
+    expect(evidence.score).toBe(0);
   });
 });

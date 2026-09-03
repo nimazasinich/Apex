@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 230" role="img" aria-labelledby="title desc">
+  <title id="title">APEX Autopilot beacon</title>
+  <desc id="desc">Decorative isometric pedestal with a green neutral beacon crystal.</desc>
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#edf4ff"/></linearGradient>
+    <linearGradient id="plate2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dce8fb"/></linearGradient>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6479c4"/><stop offset="1" stop-color="#35487e"/></linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34d399" stop-opacity=".08"/><stop offset=".6" stop-color="#22c783" stop-opacity=".28"/><stop offset="1" stop-color="#0ca66e" stop-opacity=".06"/></linearGradient>
+    <linearGradient id="crystalL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#65efac"/><stop offset="1" stop-color="#11b86e"/></linearGradient>
+    <linearGradient id="crystalR" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#21d788"/><stop offset="1" stop-color="#078e59"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#5d73a6" flood-opacity=".20"/></filter>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <g fill="none" stroke="#dbe7f4" stroke-width="1" opacity=".62">
+    <path d="M12 66 C54 31 99 33 132 57 S205 99 250 60"/><path d="M2 157 C43 122 78 124 113 148 S193 190 258 144"/>
+    <path d="M23 104 L61 86 L98 105 L61 124 Z"/><path d="M169 78 L207 60 L242 78 L205 98 Z"/><path d="M182 163 L220 145 L254 164 L218 183 Z"/>
+  </g>
+  <ellipse cx="131" cy="198" rx="92" ry="17" fill="#9eb5dc" opacity=".13" filter="url(#soft)"/>
+  <g filter="url(#shadow)">
+    <path d="M32 152 L124 108 Q132 104 140 108 L229 151 Q238 155 230 162 L145 207 Q132 214 119 208 L31 164 Q20 158 32 152 Z" fill="url(#plate)" stroke="#b8cbee" stroke-width="2"/>
+    <path d="M56 142 L124 110 Q132 106 140 110 L205 142 Q213 146 205 151 L143 184 Q132 190 121 185 L56 153 Q48 148 56 142 Z" fill="url(#plate2)" stroke="#d2def3" stroke-width="2"/>
+    <path d="M84 135 L124 116 Q132 112 140 116 L178 135 Q184 138 178 142 L141 162 Q132 167 123 162 L84 143 Q77 139 84 135 Z" fill="url(#base)" stroke="#344a85" stroke-width="1.5"/>
+    <path d="M96 125 L125 111 Q132 108 139 111 L166 125 Q171 128 166 131 L140 145 Q132 149 124 145 L96 132 Q90 129 96 125 Z" fill="#e9f1ff" stroke="#d7e4f7" stroke-width="1.5"/>
+  </g>
+  <g opacity=".62"><path d="M106 119 L121 52 L139 52 L156 119 L133 145 Z" fill="url(#beam)"/><path d="M120 117 L126 50 L135 50 L143 117 L132 139 Z" fill="#70e8b2" opacity=".13"/></g>
+  <g filter="url(#shadow)"><path d="M132 28 L104 63 L132 95 Z" fill="url(#crystalL)"/><path d="M132 28 L160 63 L132 95 Z" fill="url(#crystalR)"/><path d="M104 63 L132 69 L160 63 L132 95 Z" fill="#0ca96a" opacity=".52"/><path d="M132 28 L132 69 L104 63 Z" fill="#74f2b7" opacity=".58"/><path d="M132 28 L160 63 L132 69 Z" fill="#16bd72" opacity=".82"/><path d="M124 59 L131 52 L139 60 L135 60 L132 67 L129 60 Z" fill="#e8fff4" opacity=".92"/></g>
+  <g fill="none" stroke="#6fdcad" stroke-width="1" opacity=".28"><ellipse cx="132" cy="112" rx="52" ry="20"/><ellipse cx="132" cy="112" rx="70" ry="29"/><path d="M62 112 C78 89 99 82 132 82 S187 91 203 112"/></g>
+</svg>

@@ -146,6 +146,7 @@ describe('Futures symbol-universe filtering', () => {
     expect(isKuCoinUsdtMarginedContract({ symbol: 'ETHUSDTM' })).toBe(true);
     expect(isKuCoinUsdtMarginedContract({ symbol: 'XBTUSDM', settleCurrency: 'BTC', quoteCurrency: 'USD' })).toBe(false);
     expect(isKuCoinUsdtMarginedContract({ symbol: 'ETHUSDTM', settleCurrency: 'USDC' })).toBe(false);
+    expect(isKuCoinUsdtMarginedContract({ symbol: 'USDTM', settleCurrency: 'USDT', quoteCurrency: 'USDT' })).toBe(false);
   });
 
   it('uses Binance exchange metadata to keep active USDT perpetual contracts only', () => {

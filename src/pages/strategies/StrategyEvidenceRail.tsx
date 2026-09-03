@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle2, Database, FlaskConical, Gauge, Radar, RotateCcw, ShieldCheck } from 'lucide-react';
 import type { StrategyDefinition } from '../../types';
-import { SmartAutopilotMiniToggle } from '../../components/SmartAutopilotMiniToggle';
 import type { AutopilotPhase } from '../../lib/useAutopilotController';
 import type { StrategyOptimizationReport } from '../../services/strategyOptimization';
 import type { StrategyOptimizationProfile } from '../../services/strategyOptimizationStore';
@@ -42,12 +41,10 @@ interface StrategyEvidenceRailProps {
   onSubmitLiquidityHunterManualTestnet: (setupId: string) => Promise<void>;
   onRunLiquidityHunter: () => void;
   autopilotEnabled: boolean;
-  autopilotRunning: boolean;
   /** Real controller phase from the server; authoritative when present. */
   autopilotPhase?: AutopilotPhase | null;
   autopilotPhaseText?: string | null;
   autopilotDisconnected?: boolean;
-  onAutopilotEnabledChange: (enabled: boolean) => void;
 }
 
 function formatPct(value: number, signed = false): string {
@@ -78,7 +75,7 @@ export function StrategyEvidenceRail(props: StrategyEvidenceRailProps) {
     liquidityHunterRunning, liquidityHunterMessage, liquidityHunterEvaluation,
     liquidityHunterGovernance, liquidityHunterDatasets, liquidityHunterManualTestnetPlans,
     liquidityHunterManualTestnetSafety, onSubmitLiquidityHunterManualTestnet, onRunLiquidityHunter,
-    autopilotEnabled, autopilotRunning, onAutopilotEnabledChange,
+    autopilotEnabled,
     autopilotPhase = null, autopilotPhaseText = null, autopilotDisconnected = false,
   } = props;
   const governance = liquidityHunterGovernance as { activeRevision?: number; proposals?: Array<{ id: string; status: string; profile?: { edgeId?: string; candidate?: number | null } }> } | null;
@@ -128,15 +125,12 @@ export function StrategyEvidenceRail(props: StrategyEvidenceRailProps) {
 
       <section className="strategy-evidence-card strategy-secondary-research-card" aria-label="Research Tools">
         <div className="strategy-secondary-tools" aria-label="Secondary research tools">
-          <div className="strategy-secondary-research-header"><span>SECONDARY RESEARCH</span><SmartAutopilotMiniToggle
-            enabled={autopilotEnabled}
-            running={autopilotRunning}
-            phase={autopilotPhase}
-            phaseText={autopilotPhaseText}
-            disconnected={autopilotDisconnected}
-            onChange={onAutopilotEnabledChange}
-            title="Strategy Smart Autopilot"
-          /></div>
+          <div className="strategy-secondary-research-header">
+            <span>SECONDARY RESEARCH</span>
+            <em title={autopilotPhaseText ?? 'Global server-owned Autopilot status'}>
+              {autopilotDisconnected ? 'AUTOPILOT UNREACHABLE' : autopilotEnabled ? `AUTOPILOT ${autopilotPhase ?? 'STARTING'}` : 'MANUAL MODE'}
+            </em>
+          </div>
           <button
             type="button"
             className="strategy-optimization-button"
@@ -174,7 +168,7 @@ export function StrategyEvidenceRail(props: StrategyEvidenceRailProps) {
         <dl className="strategy-evidence-status-list">
           <div><dt>Snapshot age</dt><dd>{bound && snapshot ? relativeAge(snapshot.lastBacktestAt) : '—'}</dd></div>
           <div><dt>Sample</dt><dd>{bound && snapshot ? `${snapshot.sampleSize?.toLocaleString() ?? '—'} candles` : '—'}</dd></div>
-          <div><dt>Ranking score</dt><dd>{bound && snapshot ? snapshot.score.toFixed(0) : '—'}</dd></div>
+          <div><dt>Ranking score</dt><dd>{bound && snapshot && snapshot.score != null ? snapshot.score.toFixed(0) : '—'}</dd></div>
         </dl>
       </section>
 
@@ -197,15 +191,15 @@ export function StrategyEvidenceRail(props: StrategyEvidenceRailProps) {
           {optimizationMessage && <p className="strategy-validation-message" role="status">{optimizationMessage}</p>}
           {optimizationReport && (
             <section className="strategy-optimization-summary" aria-label="Latest optimization result">
-              <header><Gauge size={14} /><strong>{optimizationReport.promotion.automaticallyPromoted ? 'Evidence-eligible candidate promoted by Autopilot' : optimizationReport.promotion.eligible ? 'Candidate eligible for manual promotion' : 'Promotion blocked'}</strong></header>
-              <p>Eligibility uses untouched holdout, cost, drawdown, sample, stability and isolation gates.</p>
+              <header><Gauge size={14} /><strong>{optimizationReport.promotion.automaticallyPromoted ? 'Evidence-eligible candidate promoted by Autopilot' : optimizationReport.promotion.eligible ? 'Candidate eligible for final validation' : 'Promotion blocked'}</strong></header>
+              <p>Optimizer eligibility uses development validation, cost stress, drawdown, sample, stability and isolation gates; the final sealed holdout is not opened here.</p>
               <dl>
                 <div><dt>Robust utility delta</dt><dd>{optimizationReport.promotion.robustImprovement >= 0 ? '+' : ''}{optimizationReport.promotion.robustImprovement.toFixed(3)}</dd></div>
-                <div><dt>Holdout utility delta</dt><dd>{optimizationReport.promotion.holdoutImprovement >= 0 ? '+' : ''}{optimizationReport.promotion.holdoutImprovement.toFixed(3)}</dd></div>
+                <div><dt>Development utility delta</dt><dd>{optimizationReport.promotion.developmentValidationImprovement >= 0 ? '+' : ''}{optimizationReport.promotion.developmentValidationImprovement.toFixed(3)}</dd></div>
                 <div><dt>Neighbor pass</dt><dd>{(optimizationReport.promotion.neighborPassRate * 100).toFixed(0)}%</dd></div>
                 <div><dt>Candidates</dt><dd>{optimizationReport.triedCandidates}</dd></div>
                 <div><dt>Runtime</dt><dd>{(optimizationReport.durationMs / 1000).toFixed(1)}s</dd></div>
-                <div><dt>Holdout P&amp;L</dt><dd>{optimizationReport.holdout.candidate.metrics.totalPnlPct.toFixed(2)}%</dd></div>
+                <div><dt>Development validation P&amp;L</dt><dd>{optimizationReport.developmentValidation.candidate.metrics.totalPnlPct.toFixed(2)}%</dd></div>
               </dl>
               {optimizationReport.promotion.eligible && !optimizationReport.promotion.automaticallyPromoted && (
                 <button type="button" className="strategy-optimization-promote-button" disabled={optimizationRunning} onClick={onPromoteOptimization}><ShieldCheck size={13} /> Promote reviewed candidate</button>
@@ -279,11 +273,11 @@ export function StrategyEvidenceRail(props: StrategyEvidenceRailProps) {
         <details className="strategy-evidence-advanced">
           <summary><span>Advanced Evidence / Provenance</span><small>Canonical validation metrics &amp; run provenance</small></summary>
           <section className="strategy-evidence-metrics">
-            <div><span>Ranking score</span><strong>{snapshot.score.toFixed(0)}</strong></div>
+            <div><span>Ranking score</span><strong>{snapshot.score == null ? 'Not recorded' : snapshot.score.toFixed(0)}</strong></div>
             <div><span>Net return</span><strong className={snapshot.netReturnPct >= 0 ? 'positive' : 'negative'}>{formatPct(snapshot.netReturnPct, true)}</strong></div>
             <div><span>Max drawdown</span><strong className="negative">{formatPct(-Math.abs(snapshot.maxDrawdownPct))}</strong></div>
             <div><span>Win rate</span><strong>{formatPct(snapshot.winRatePct)}</strong></div>
-            <div><span>Profit factor</span><strong>{snapshot.profitFactor.toFixed(2)}</strong></div>
+            <div><span>Profit factor</span><strong>{snapshot.profitFactor == null ? 'Not finite' : snapshot.profitFactor.toFixed(2)}</strong></div>
             <div><span>Cost stress</span><strong>{snapshot.costStressPassed ? 'Passed' : 'Failed'}</strong></div>
           </section>
           <section className="strategy-provenance-card">

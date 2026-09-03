@@ -1,7 +1,7 @@
 import type { CommanderEvidenceV1 } from '../../../contracts/commander/commanderEvidence';
 import type { SupplementalBundle } from '../../providers/supplementalTypes';
 import { directionFromSignedScore, makeCommanderEvidence, type CommanderEvidenceAdapterBaseInput, unavailableCommanderEvidence } from './evidenceAdapterUtils';
-import { exactSupplementalSymbol, supplementalExpiry, supplementalQuality } from './supplementalEvidenceUtils';
+import { exactSupplementalSymbol, supplementalExpiry, supplementalObservedAt, supplementalQuality } from './supplementalEvidenceUtils';
 
 export interface SentimentEvidenceInput extends CommanderEvidenceAdapterBaseInput {
   supplementalBundle?: SupplementalBundle;
@@ -11,7 +11,7 @@ export function buildSentimentEvidence(input: SentimentEvidenceInput): Commander
   const sentiment = input.supplementalBundle?.sentiment;
   if (!sentiment) return unavailableCommanderEvidence(input, 'SENTIMENT', 'sentiment_cache_missing');
   if (!exactSupplementalSymbol(input.symbol, sentiment.symbol)) return unavailableCommanderEvidence(input, 'SENTIMENT', 'sentiment_symbol_identity_mismatch', 'INVALID');
-  const quality = supplementalQuality(sentiment.source, sentiment.updatedAt, input.receivedAt);
+  const quality = supplementalQuality(sentiment, input.receivedAt);
   if (quality === 'INVALID') return unavailableCommanderEvidence(input, 'SENTIMENT', 'sentiment_timestamp_or_source_invalid', 'INVALID');
   if (quality === 'NOT_CONFIGURED' || quality === 'MISSING') {
     return unavailableCommanderEvidence(input, 'SENTIMENT', sentiment.reason ?? `sentiment_${sentiment.source}`, quality);
@@ -28,8 +28,8 @@ export function buildSentimentEvidence(input: SentimentEvidenceInput): Commander
   }
   return makeCommanderEvidence({
     ...input,
-    observedAt: sentiment.updatedAt,
-    expiresAt: supplementalExpiry(sentiment.updatedAt),
+    observedAt: supplementalObservedAt(sentiment)!,
+    expiresAt: supplementalExpiry(sentiment),
     source: sentiment.provider,
     sourceVersion: data.modelVersion ?? input.sourceVersion,
   }, 'SENTIMENT', {
@@ -39,6 +39,6 @@ export function buildSentimentEvidence(input: SentimentEvidenceInput): Commander
     valueQuality: quality,
     supportingReasons: [`provider_label:${data.label.toLowerCase()}`, `provider_score:${data.value.toFixed(4)}`],
     conflictingReasons: data.label === 'NEUTRAL' ? ['provider_sentiment_neutral'] : [],
-    rawEvidenceIds: [`${sentiment.provider}:${sentiment.updatedAt}`],
+    rawEvidenceIds: sentiment.sourceArticleRefs?.map((row) => row.id) ?? [sentiment.metadata!.lineageId],
   });
 }

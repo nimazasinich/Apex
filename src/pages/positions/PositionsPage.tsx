@@ -17,6 +17,7 @@ import { notifyWorkspace } from '../../lib/workspaceFeedback';
 import type { WorkspacePosition } from '../../services/workspaceInsights';
 import type { AccountWorkspaceProps } from '../pageTypes';
 import { AccountFreshnessChip } from '../../components/ui/AccountFreshnessChip';
+import { TabdealAccountSurface } from '../../components/account/TabdealAccountSurface';
 import {
   Donut,
   fmtCompact,
@@ -57,7 +58,7 @@ function fmtSignedMoney(value: number | null | undefined) {
 }
 
 function liquidationGap(position: WorkspacePosition) {
-  if (!position.liquidationPrice || position.markPrice <= 0) return Number.POSITIVE_INFINITY;
+  if (position.liquidationPrice == null || position.markPrice == null || position.markPrice <= 0) return Number.POSITIVE_INFINITY;
   return Math.abs(position.markPrice - position.liquidationPrice) / position.markPrice * 100;
 }
 
@@ -158,11 +159,16 @@ export function PositionsPage(props: AccountWorkspaceProps) {
 
   const selected = filteredPositions.find((position) => position.id === selectedId) || filteredPositions[0] || null;
   const account = props.insights?.account;
-  const totalValue = positions.reduce((sum, position) => sum + position.valueUsd, 0);
-  const totalPnl = positions.reduce((sum, position) => sum + position.unrealizedPnlUsd, 0);
+  const verifiedValues = positions.map((position) => position.valueUsd).filter((value): value is number => value != null && Number.isFinite(value));
+  const verifiedPnl = positions.map((position) => position.unrealizedPnlUsd).filter((value): value is number => value != null && Number.isFinite(value));
+  const totalValue = verifiedValues.length ? verifiedValues.reduce((sum, value) => sum + value, 0) : null;
+  const totalPnl = verifiedPnl.length ? verifiedPnl.reduce((sum, value) => sum + value, 0) : null;
   const exposureItems = useMemo(() => {
     const totals = new Map<string, number>();
-    positions.forEach((position) => totals.set(position.asset, (totals.get(position.asset) || 0) + Math.max(0, position.valueUsd)));
+    positions.forEach((position) => {
+      if (!position.asset || position.valueUsd == null || !Number.isFinite(position.valueUsd)) return;
+      totals.set(position.asset, (totals.get(position.asset) || 0) + Math.max(0, position.valueUsd));
+    });
     return [...totals.entries()]
       .sort((left, right) => right[1] - left[1])
       .slice(0, 6)
@@ -170,11 +176,12 @@ export function PositionsPage(props: AccountWorkspaceProps) {
   }, [positions]);
   const leverageDistribution = useMemo(() => {
     const buckets = [
-      { label: '≤2x', count: positions.filter((position) => position.leverage <= 2).length },
-      { label: '2–5x', count: positions.filter((position) => position.leverage > 2 && position.leverage <= 5).length },
-      { label: '>5x', count: positions.filter((position) => position.leverage > 5).length },
+      { label: '≤2x', count: positions.filter((position) => position.leverage != null && position.leverage <= 2).length },
+      { label: '2–5x', count: positions.filter((position) => position.leverage != null && position.leverage > 2 && position.leverage <= 5).length },
+      { label: '>5x', count: positions.filter((position) => position.leverage != null && position.leverage > 5).length },
     ];
-    return { buckets, total: Math.max(1, positions.length) };
+    const measured = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
+    return { buckets, total: measured };
   }, [positions]);
   const liquidationDistances = positions
     .map(liquidationGap)
@@ -190,6 +197,10 @@ export function PositionsPage(props: AccountWorkspaceProps) {
 
   const openTrading = (position: WorkspacePosition | null) => {
     if (!position) return;
+    if (!position.symbol) {
+      notifyWorkspace({ title: 'Trading navigation unavailable', detail: 'This position has no authoritative symbol.', tone: 'warning' });
+      return;
+    }
     if (props.onOpenTrading) {
       props.onOpenTrading(position.symbol);
       notifyWorkspace({
@@ -252,9 +263,9 @@ export function PositionsPage(props: AccountWorkspaceProps) {
         <div className="v20-metrics five positions-reference-metrics">
           <PositionMetricCard label="Total Position Value" value={fmtMoney(totalValue)} detail={positions.length ? `${positions.length} open position${positions.length === 1 ? '' : 's'}` : 'No open exposure'} icon={ChartNoAxesCombined} accent="green" />
           <PositionMetricCard label="Unrealized P&L" value={fmtSignedMoney(totalPnl)} detail="Across open positions" icon={Activity} accent="green" />
-          <PositionMetricCard label="Realized P&L" value={fmtSignedMoney(account?.realizedPnlUsd ?? 0)} detail="Current account snapshot" icon={ChartNoAxesCombined} accent="green" />
-          <PositionMetricCard label="Margin Used" value={fmtMoney(account?.marginUsedUsd ?? 0)} detail={account ? `${account.marginRatioPct.toFixed(2)}% of equity` : 'Account unavailable'} icon={Gauge} accent="blue" />
-          <PositionMetricCard label="Available Balance" value={fmtMoney(account?.availableBalanceUsd ?? 0)} detail="Available for account operations" icon={WalletCards} accent="violet" />
+          <PositionMetricCard label="Realized P&L" value={fmtSignedMoney(account?.realizedPnlUsd)} detail="Current account snapshot" icon={ChartNoAxesCombined} accent="green" />
+          <PositionMetricCard label="Margin Used" value={fmtMoney(account?.marginUsedUsd)} detail={account?.marginRatioPct == null ? 'Margin ratio unavailable' : `${account.marginRatioPct.toFixed(2)}% of equity`} icon={Gauge} accent="blue" />
+          <PositionMetricCard label="Available Balance" value={fmtMoney(account?.availableBalanceUsd)} detail="Available for account operations" icon={WalletCards} accent="violet" />
         </div>
 
         <section className="v20-table-card v20-positions-table">
@@ -293,23 +304,24 @@ export function PositionsPage(props: AccountWorkspaceProps) {
                   tabIndex={0}
                   onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(position.id); } }}
                 >
-                  <td><CoinIcon symbol={position.symbol} size={24} /><span><strong>{position.asset}</strong><small>{position.symbol}</small></span></td>
-                  <td><span className={`v20-pill ${position.side === 'LONG' ? 'success' : 'danger'}`}>{position.side}</span></td>
-                  <td><strong className="v20-position-primary-value">{position.size.toLocaleString()}</strong><small>≈ {fmtMoney(position.valueUsd)}</small></td>
+                  <td>{position.symbol ? <CoinIcon symbol={position.symbol} size={24} /> : null}<span><strong>{position.asset || '—'}</strong><small>{position.symbol || '—'}</small></span></td>
+                  <td><span className={`v20-pill ${position.side === 'LONG' ? 'success' : position.side === 'SHORT' ? 'danger' : ''}`}>{position.side}</span></td>
+                  <td><strong className="v20-position-primary-value">{position.size == null ? '—' : position.size.toLocaleString()}</strong><small>≈ {fmtMoney(position.valueUsd)}</small></td>
                   <td>{fmtPrice(position.entryPrice)}</td>
                   <td>{fmtPrice(position.markPrice)}</td>
                   <td className={tone(position.unrealizedPnlUsd)}>{fmtSignedMoney(position.unrealizedPnlUsd)}</td>
                   <td className={tone(position.pnlPct)}>{fmtPct(position.pnlPct)}</td>
                   <td>{fmtMoney(position.marginUsd)}</td>
-                  <td>{position.leverage.toFixed(position.leverage % 1 ? 2 : 0)}x</td>
+                  <td>{position.leverage == null ? '—' : `${position.leverage.toFixed(position.leverage % 1 ? 2 : 0)}x`}</td>
                   <td className={position.liquidationPrice ? 'negative' : ''}>{position.liquidationPrice ? fmtPrice(position.liquidationPrice) : '—'}</td>
-                  <td><button type="button" className="v20-icon-button" title="Open this market in Trading" aria-label={`Open ${position.symbol} in Trading`} onClick={(event) => { event.stopPropagation(); openTrading(position); }}><ExternalLink size={15} /></button></td>
+                  <td><button type="button" className="v20-icon-button" title="Open this market in Trading" aria-label={`Open ${position.symbol || 'position market'} in Trading`} onClick={(event) => { event.stopPropagation(); openTrading(position); }}><ExternalLink size={15} /></button></td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
           {!filteredPositions.length && <PositionsEmptyVisual title={emptyTitle} detail={emptyDetail} />}
         </section>
+        <TabdealAccountSurface mode="positions" />
       </div>
 
       <aside className="v20-context-sidebar">
@@ -319,7 +331,7 @@ export function PositionsPage(props: AccountWorkspaceProps) {
             <div className="v20-donut-row">
               <Donut items={exposureItems} totalLabel={fmtCompact(totalValue)} />
               <ul>{exposureItems.map((item) => (
-                <li key={item.label}><i style={{ background: item.color }} /><span>{item.label}</span><b>{totalValue ? (item.value / totalValue * 100).toFixed(1) : '0.0'}%</b></li>
+                <li key={item.label}><i style={{ background: item.color }} /><span>{item.label}</span><b>{totalValue && totalValue > 0 ? `${(item.value / totalValue * 100).toFixed(1)}%` : '—'}</b></li>
               ))}</ul>
             </div>
           ) : <ExposureEmpty />}
@@ -329,25 +341,25 @@ export function PositionsPage(props: AccountWorkspaceProps) {
           <div className="v20-section-title"><strong>Leverage Distribution</strong><span>{positions.length ? `${positions.length} positions` : 'No exposure'}</span></div>
           <div className="positions-leverage-bars" aria-label="Leverage distribution">
             {leverageDistribution.buckets.map((bucket) => {
-              const pct = positions.length ? bucket.count / positions.length * 100 : 0;
-              return <div key={bucket.label}><span>{bucket.label}</span><i><em style={{ width: `${pct}%` }} /></i><strong>{positions.length ? `${pct.toFixed(0)}%` : '—'}</strong></div>;
+              const pct = leverageDistribution.total ? bucket.count / leverageDistribution.total * 100 : null;
+              return <div key={bucket.label}><span>{bucket.label}</span><i><em style={{ width: `${pct ?? 0}%` }} /></i><strong>{pct == null ? '—' : `${pct.toFixed(0)}%`}</strong></div>;
             })}
           </div>
         </div>
 
         <div className="v20-context-section positions-risk-card">
-          <div className="v20-section-title"><strong>Account Risk</strong><span className={`v20-pill ${account?.riskLabel === 'High' ? 'danger' : account?.riskLabel === 'Medium' ? 'partially_filled' : 'success'}`}>{account?.riskLabel || 'Low'} Risk</span></div>
-          <HalfGauge
-            value={account?.riskScore || 0}
-            label={`${account?.riskLabel || 'Low'} Risk`}
-            toneName={account?.riskLabel === 'High' ? 'red' : account?.riskLabel === 'Medium' ? 'amber' : 'green'}
-            centerText={account?.riskLabel || 'Low'}
-          />
+          <div className="v20-section-title"><strong>Account Risk</strong><span className={`v20-pill ${account?.riskLabel === 'High' ? 'danger' : account?.riskLabel === 'Medium' ? 'partially_filled' : account?.riskLabel === 'Low' ? 'success' : ''}`}>{account?.riskLabel ? `${account.riskLabel} Risk` : 'UNAVAILABLE'}</span></div>
+          {account?.riskScore == null || account?.riskLabel == null ? <div className="positions-exposure-empty"><strong>Risk score unavailable</strong><small>No zero/low-risk state is synthesized.</small></div> : <HalfGauge
+            value={account.riskScore}
+            label={`${account.riskLabel} Risk`}
+            toneName={account.riskLabel === 'High' ? 'red' : account.riskLabel === 'Medium' ? 'amber' : 'green'}
+            centerText={account.riskLabel}
+          />}
           <dl className="v20-detail-list">
-            <div><dt>Margin Level</dt><dd>{account ? `${Math.max(0, 100 - account.marginRatioPct).toFixed(2)}%` : '—'}</dd></div>
+            <div><dt>Margin Level</dt><dd>{account?.marginRatioPct == null ? '—' : `${Math.max(0, 100 - account.marginRatioPct).toFixed(2)}%`}</dd></div>
             <div><dt>Liquidation Risk</dt><dd>{liquidationRisk}</dd></div>
             <div><dt>Nearest Liq. Gap</dt><dd>{nearestLiquidationDistance == null ? '—' : `${nearestLiquidationDistance.toFixed(1)}%`}</dd></div>
-            <div><dt>Risk Score</dt><dd>{account ? `${account.riskScore.toFixed(0)}/100` : '—'}</dd></div>
+            <div><dt>Risk Score</dt><dd>{account?.riskScore == null ? '—' : `${account.riskScore.toFixed(0)}/100`}</dd></div>
           </dl>
           <p className="v20-risk-note"><ShieldCheck size={12} /> Risk indicators reflect the current verified account snapshot.</p>
         </div>

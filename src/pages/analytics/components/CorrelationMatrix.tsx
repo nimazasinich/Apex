@@ -3,6 +3,8 @@ import * as d3 from 'd3';
 import { ArrowRightLeft, RefreshCw } from 'lucide-react';
 import type { CorrelationMatrixResult, CorrelationPair } from '../../../types';
 import { fetchJsonWithTimeout } from '../../../services/apiQuery';
+import { ProvenanceChip } from '../../../components/ui/ProvenanceChip';
+import { describeProvenance } from '../../../lib/dataProvenance';
 import './CorrelationMatrix.css';
 
 interface CorrelationMatrixProps {
@@ -92,12 +94,21 @@ export function CorrelationMatrix({ onSelectSymbol, active = true }: Correlation
   }, [data, onSelectSymbol, tab, width]);
 
   const topPairs = useMemo(() => (data?.pairs || []).slice().sort((a, b) => Math.abs(b.r) - Math.abs(a.r)).slice(0, 8), [data]);
+  const provenance = useMemo(() => describeProvenance({
+    dataState: data?.dataState ?? 'unavailable',
+    timestamp: data?.timestamp ?? null,
+    source: data?.source ?? null,
+    loading: loading && !data,
+    error: error && !data ? error : null,
+    staleAfterMs: 120_000,
+  }), [data, error, loading]);
 
   return (
     <section className="apex-correlation" aria-labelledby="correlation-title">
       <header>
         <div><span><ArrowRightLeft size={15} /></span><div><h3 id="correlation-title">Correlation Matrix</h3><p>Live Pearson co-movement from verified candle series.</p></div></div>
         <div className="apex-correlation-actions">
+          <ProvenanceChip meta={provenance} />
           {data && <em className={data.dataState === 'live' ? 'positive' : 'warning'}>{data.dataState.replace('_', ' ')}</em>}
           <button type="button" onClick={() => void load()} disabled={loading} aria-label="Refresh correlation matrix"><RefreshCw size={14} className={loading ? 'spin' : ''} /></button>
         </div>

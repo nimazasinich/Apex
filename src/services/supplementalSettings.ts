@@ -39,6 +39,8 @@ export interface SupplementalProbeResult {
   detail?: string;
 }
 
+export type SupplementalProbeHistory = import('./integrationHealthHistory').IntegrationHealthEntry[];
+
 export { COMPLETED_SUPPLEMENTAL_DEFAULTS };
 
 const EMPTY_STATUS: SupplementalConfigStatus = {
@@ -66,24 +68,32 @@ function verifiedFromStatusPayload(
 export async function fetchSupplementalConfigStatus(): Promise<{
   configured: SupplementalConfigStatus;
   verified: SupplementalVerifiedStatus;
+  keyCounts: Partial<Record<SupplementalProbeKey, number>>;
+  defaultPackLoaded: boolean;
+  defaultPackSource: string | null;
   newsApiQuery: NewsApiQueryOptions;
   lastProbe: Partial<Record<SupplementalProbeKey, SupplementalProbeResult>>;
+  probeHistory: SupplementalProbeHistory;
 }> {
   try {
     const res = await fetch('/api/supplemental/config/status');
     if (!res.ok) {
-      return { configured: EMPTY_STATUS, verified: { ...EMPTY_STATUS }, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {} };
+      return { configured: EMPTY_STATUS, verified: { ...EMPTY_STATUS }, keyCounts: {}, defaultPackLoaded: false, defaultPackSource: null, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {}, probeHistory: [] };
     }
     const json = await res.json();
     const lastProbe = json?.lastProbe ?? {};
     return {
       configured: { ...EMPTY_STATUS, ...(json?.configured ?? {}) },
       verified: verifiedFromStatusPayload(json?.verified ?? {}, lastProbe),
+      keyCounts: json?.keyCounts ?? {},
+      defaultPackLoaded: Boolean(json?.defaultPackLoaded),
+      defaultPackSource: typeof json?.defaultPackSource === 'string' ? json.defaultPackSource : null,
       newsApiQuery: normalizeNewsApiQuery(json?.newsApiQuery),
       lastProbe,
+      probeHistory: Array.isArray(json?.probeHistory) ? json.probeHistory : [],
     };
   } catch {
-    return { configured: EMPTY_STATUS, verified: { ...EMPTY_STATUS }, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {} };
+    return { configured: EMPTY_STATUS, verified: { ...EMPTY_STATUS }, keyCounts: {}, defaultPackLoaded: false, defaultPackSource: null, newsApiQuery: { ...DEFAULT_NEWSAPI_QUERY }, lastProbe: {}, probeHistory: [] };
   }
 }
 
@@ -92,6 +102,7 @@ export async function saveSupplementalConfig(input: SupplementalConfigInput): Pr
   configured: SupplementalConfigStatus;
   verified: SupplementalVerifiedStatus;
   error?: string;
+  history?: SupplementalProbeHistory;
 }> {
   try {
     const res = await apiMutate('/api/supplemental/config', {
@@ -141,12 +152,13 @@ export async function probeSupplementalKeys(key?: SupplementalProbeKey): Promise
   configured: SupplementalConfigStatus;
   verified: SupplementalVerifiedStatus;
   error?: string;
+  history?: SupplementalProbeHistory;
 }> {
   try {
     const res = await apiMutate('/api/supplemental/config/probe', {
       method: 'POST',
       body: JSON.stringify(key ? { key } : {}),
-      signal: AbortSignal.timeout(45_000),
+      signal: AbortSignal.timeout(70_000),
     });
     if (!res.ok) {
       return {
@@ -163,6 +175,7 @@ export async function probeSupplementalKeys(key?: SupplementalProbeKey): Promise
       results: json?.results ?? {},
       configured: { ...EMPTY_STATUS, ...(json?.configured ?? {}) },
       verified: verifiedFromStatusPayload(json?.verified ?? {}, json?.results),
+      history: Array.isArray(json?.history) ? json.history : [],
     };
   } catch (e: any) {
     return {

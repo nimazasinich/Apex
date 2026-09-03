@@ -32,7 +32,7 @@ export function AutopilotHeaderControl({ preferenceEnabled, controller, onToggle
     >
       <span className="apex-autopilot-header-icon" aria-hidden="true"><Activity size={15} /></span>
       <span className="apex-autopilot-header-copy">
-        <strong>AUTOPILOT</strong>
+        <strong>{enabled ? 'AUTO RESEARCH' : 'MANUAL'}</strong>
         <small>{controller.pending ? 'UPDATING' : phase}</small>
       </span>
       <span className="apex-autopilot-header-owner" aria-label={`Controller owner ${owner}`}><ShieldCheck size={11} />{owner}</span>

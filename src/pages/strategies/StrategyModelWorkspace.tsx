@@ -26,6 +26,7 @@ import type { StrategyDefinition, TradeDirection } from '../../types';
 import type { StrategyFusionSnapshot } from '../../services/strategyFusion';
 import { strategyDataTier, strategyDisplayStatus, supportedDirections } from './strategyPresentation';
 import { StrategyArtwork } from './StrategyArtwork';
+import { isVerifiedLiveEligibility } from '../../lib/capabilityStatus';
 
 export type StrategyWorkspaceInterval = '5m' | '15m' | '1h' | '4h' | '1d';
 
@@ -145,6 +146,11 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
   const compositeScoreLabel = fusionSnapshot ? `${Math.round((fusionSnapshot.score <= 1 ? fusionSnapshot.score * 100 : fusionSnapshot.score))}` : '—';
   const fusionStateLabel = !fusionSnapshot ? 'Pending' : fusionSnapshot.state === 'ACTIONABLE' ? 'Aligned' : fusionSnapshot.state === 'CONFLICTED' ? 'Conflicted' : fusionSnapshot.state === 'INCOMPLETE' ? 'Incomplete' : 'Blocked';
   const liquidityQualityLabel = !liquidity ? '—' : liquidity.quality === 'LIVE' ? 'High' : liquidity.quality === 'HISTORICAL' ? 'Good' : liquidity.quality === 'PROXY' ? 'Proxy' : liquidity.quality === 'STALE' ? 'Stale' : 'Low';
+  const fusionIsVerifiedLive = isVerifiedLiveEligibility({
+    dataState: fusionSnapshot?.components.some((component) => component.quality === 'LIVE') ? 'live' : 'degraded',
+    observedAt: fusionSnapshot?.generatedAt,
+    authorityVerified: Boolean(fusionSnapshot?.liveAuthoritative),
+  });
   const explanation = [
     { title: 'Inputs', tone: 'input', icon: <FileInput size={18} />, items: strategy.dataRequirements },
     { title: 'Regime & Setup', tone: 'setup', icon: <Boxes size={18} />, items: [...strategy.regimeRules, ...strategy.setupRules] },
@@ -175,6 +181,7 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
           <div><dt>INTERVALS</dt><dd>{strategy.supportedIntervals.join(' · ')}</dd></div>
           <div><dt>DATA TIER</dt><dd>{strategyDataTier(strategy)}</dd></div>
           <div><dt>SIGNAL</dt><dd>{strategy.engine}</dd></div>
+          <div><dt>FUSION AUTHORITY</dt><dd>{fusionSnapshot?.authorityStage ?? 'SHADOW'}</dd></div>
           <div><dt>LAST UPDATED</dt><dd>{fusionSnapshot ? new Date(fusionSnapshot.generatedAt).toLocaleDateString() : '—'}</dd></div>
         </dl>
       </section>
@@ -244,11 +251,11 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
       {strategy.fusion && (
         <section className="strategy-fusion-panel" aria-label="Dynamic strategy fusion">
           <header className="strategy-fusion-header">
-            <div><Waves size={16} /><strong>DYNAMIC FUSION</strong><span className="strategy-live-context-badge">LIVE CONTEXT</span></div>
+            <div><Waves size={16} /><strong>DYNAMIC FUSION</strong><span className="strategy-live-context-badge">{fusionIsVerifiedLive ? 'LIVE CONTEXT' : 'SHADOW CONTEXT'}</span></div>
             <div className="strategy-fusion-toolbar">
               <label className="strategy-auto-refresh">Auto-refresh <input type="checkbox" checked={autoRefresh} onChange={(event) => setAutoRefresh(event.target.checked)} /><span aria-hidden="true" /></label>
               <small>{fusionSnapshot ? 'Just now' : 'Not refreshed'}</small>
-              <button type="button" onClick={onRefreshFusion} disabled={fusionRunning} aria-label="Refresh live fusion"><RefreshCw size={13} className={fusionRunning ? 'spin' : ''} /></button>
+              <button type="button" onClick={onRefreshFusion} disabled={fusionRunning} aria-label="Refresh strategy fusion evidence"><RefreshCw size={13} className={fusionRunning ? 'spin' : ''} /></button>
             </div>
           </header>
           {fusionMessage && <p className="strategy-fusion-message" role="status">{fusionMessage}</p>}
@@ -295,7 +302,7 @@ export function StrategyModelWorkspace(props: StrategyModelWorkspaceProps) {
           {blocked ? 'Prerequisites Required' : 'Send to Backtesting'}
           {blocked ? <AlertTriangle size={15} /> : <Send size={16} />}
         </button>
-        <button type="button" onClick={onBookmark}><Bookmark size={15} />{bookmarked ? 'Remove Preset' : 'Save as Preset'}</button>
+        <button type="button" onClick={onBookmark}><Bookmark size={15} />{bookmarked ? 'Remove Bookmark' : 'Bookmark Strategy'}</button>
         <button type="button" onClick={onCompare}><ArrowLeftRight size={15} />Compare</button>
         <button type="button" onClick={onOpenDetails}><BookOpen size={15} />View Details</button>
       </footer>

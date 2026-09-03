@@ -1,11 +1,16 @@
 /**
  * Canonical Decision Adapter — normalizes baseline and advanced engines.
- * The baseline remains authoritative until an audited promotion policy changes it,
- * but live, proxy replay and production-input replay all enter through this adapter.
+ * Live and production-input replay use the audited advanced scanner as decision authority,
+ * while the legacy baseline remains a fail-closed eligibility guard and proxy-replay fallback.
+ * All modes still enter through this single adapter.
  */
 import { calculateAtr } from '../lib/levels';
 import { scoreCandidate, type ScoringInput } from '../lib/scoring';
 import { evaluateScanDecision, type ScanDecisionTrace } from './scannerCore';
+import { evaluateLiveSignalEnsemble, type LiveSignalEnsembleResult } from './liveSignalEnsemble';
+import { calibrateDecisionFromMemory, type EmpiricalDecisionCalibration } from './decisionCalibration';
+import { evaluateParliamentScannerContribution, type ParliamentScannerContribution, type ParliamentScannerMode } from './parliamentScannerContributor';
+import type { NativeParliamentSnapshotV1 } from './strategyCommander/parliamentShadow';
 import { normalizeEffectiveScannerConfig, type EffectiveScannerConfig, type ScannerConfigContext } from './scannerConfigPolicy';
 import { adaptSmartMoneyContext, type SmcAdapterResult } from './smartMoneyContextAdapter';
 import { MathEngine } from './mathEngine';
@@ -25,13 +30,17 @@ import type {
   SmartMoneyContext,
   SmcAvailabilityState,
   TradeDirection,
+  SignalDecisionLog,
 } from '../types';
 import type * as marketDataService from './marketDataService';
 
-export const DECISION_ADAPTER_VERSION = 'canonical_v2';
+import type { AcademyConsumerIntelligence } from '../features/academy/types';
+
+export const DECISION_ADAPTER_VERSION = 'canonical_v5_parliament_confluence';
 const SHADOW_TTL_MS = 90_000;
 
 export type CanonicalDecisionMode = 'live' | 'replay_proxy' | 'replay_production';
+export type DecisionAuthority = 'REGIME_ENSEMBLE' | 'REGIME_ENSEMBLE_PARLIAMENT' | 'ADVANCED' | 'BASELINE_PROXY';
 
 export interface AdvancedDecisionInputs {
   smoothedObi?: number | null;
@@ -50,35 +59,13 @@ export interface AdvancedDecisionInputs {
     'obi' | 'volumeDelta' | 'qStruct' | 'atr' | 'microPrice' | 'spread' | 'funding' | 'openInterest' | 'smc',
     FeatureQualityState
   >>;
+  academyIntelligence?: AcademyConsumerIntelligence | null;
+  strategyId?: string;
+  strategyVersion?: number;
 }
 
-export interface ShadowDecisionSummary {
-  status: ScanDecisionTrace['status'];
-  direction: ScanDecisionTrace['direction'];
-  reasonCode: ScanDecisionTrace['reasonCode'];
-  reasonText: ScanDecisionTrace['reasonText'];
-  confidence: number | null;
-  rawScore: number | null;
-  smcAvailability: SmcAvailabilityState;
-  engineVersion: string;
-  latencyMs?: number;
-  inputQuality?: Record<string, FeatureQualityState>;
-  squeezeRiskScore?: number | null;
-  evidenceAgreementScore?: number | null;
-  qStructDirectional?: number | null;
-  atrExpansionScore?: number | null;
-  fundingBiasScore?: number | null;
-  oiChangePercent?: number | null;
-  microPriceSkewScore?: number | null;
-  liquidityQualityScore?: number | null;
-  smcDirectionalScore?: number | null;
-  smcContextScore?: number | null;
-  scoringBreakdown?: Record<string, unknown> | null;
-  gatesSnapshot?: ScanDecisionTrace['gatesSnapshot'];
-  marketInputs?: { obi: number; volumeDelta: number; fundingRate: number; spread: number; atr: number; microPrice: number };
-  /** Supplemental evidence is descriptive only and never enters the score. */
-  shadowSupplementalEvidence?: ShadowSupplementalEvidence;
-}
+export type { ShadowDecisionSummary } from './decisionSummaryContracts';
+import type { ShadowDecisionSummary } from './decisionSummaryContracts';
 
 export interface DecisionSnapshot {
   symbol: string;
@@ -104,6 +91,35 @@ export interface DecisionSnapshot {
   effectiveConfig?: ScannerConfig;
   configuredConfig?: ScannerConfig;
   mode: CanonicalDecisionMode;
+  authority?: DecisionAuthority;
+  decisionReasonCode?: ScanDecisionTrace['reasonCode'] | 'BASELINE_GUARD_BLOCKED' | 'PARLIAMENT_CONFLUENCE_BLOCKED' | 'PARLIAMENT_CONTRIBUTOR_ACCEPTED' | 'ACADEMY_INTELLIGENCE_BLOCKED';
+  decisionReasonText?: string;
+  /** Fail-closed reasons retained from the legacy guard after excluding legacy directional heuristics. */
+  safetyGuardReasons?: string[];
+  /** Regime-aware multi-model decision evidence used for live/replay-production authority. */
+  intelligence?: LiveSignalEnsembleResult;
+  /** Empirical outcome-backed probability; null until the live memory sample is sufficient. */
+  calibration?: EmpiricalDecisionCalibration;
+  parliamentContribution?: ParliamentScannerContribution;
+  academyIntelligence?: AcademyConsumerIntelligence;
+}
+
+
+const LEGACY_DIRECTIONAL_GUARD_PREFIXES = [
+  'Cross-timeframe contradiction:',
+  'Multi-timeframe confluence unavailable:',
+  'Multi-timeframe confluence partial:',
+] as const;
+
+/**
+ * The old scanner mixes hard operational guardrails with directional ROC/structure
+ * confluence. Once scannerCore is authoritative we retain only the fail-closed
+ * operational/data/liquidity/squeeze guardrails here. This prevents a legacy
+ * momentum heuristic from vetoing an otherwise accepted advanced decision while
+ * keeping degraded data, thin books, unsafe funding and missing evidence blocked.
+ */
+function legacySafetyGuardReasons(reasons: readonly string[]): string[] {
+  return reasons.filter((reason) => !LEGACY_DIRECTIONAL_GUARD_PREFIXES.some((prefix) => reason.startsWith(prefix)));
 }
 
 export interface LiveShadowMarketContext {
@@ -120,12 +136,21 @@ export interface LiveShadowMarketContext {
   scannerConfig: ScannerConfig;
   mode?: CanonicalDecisionMode;
   advancedInputs?: AdvancedDecisionInputs;
+  /** Live decision-memory rows only. Research/simulated outcome rows must never be passed here. */
+  decisionMemoryRows?: SignalDecisionLog[];
+  /** 13-stream Parliament snapshot. It remains shadow-only unless its explicit signal-promotion mode is enabled. */
+  parliamentSnapshot?: NativeParliamentSnapshotV1;
+  /** Evidence-gated runtime promotion mode supplied by ParliamentPromotionStore. */
+  parliamentMode?: ParliamentScannerMode;
+  academyIntelligence?: AcademyConsumerIntelligence | null;
+  strategyId?: string;
+  strategyVersion?: number;
 }
 
 const SUPPLEMENTAL_FRESHNESS_WINDOW_MS = 5 * 60_000;
 
-function supplementalFreshness(updatedAt: string | undefined, now: number): SupplementalFreshness {
-  const timestamp = updatedAt ? Date.parse(updatedAt) : NaN;
+function supplementalFreshness(result: SupplementalResult, now: number): SupplementalFreshness {
+  const timestamp = result.metadata?.sourceObservedAt ?? NaN;
   if (!Number.isFinite(timestamp)) return 'UNKNOWN';
   return now - timestamp <= SUPPLEMENTAL_FRESHNESS_WINDOW_MS ? 'CURRENT' : 'STALE';
 }
@@ -149,7 +174,8 @@ function supplementalItem(
       reason: 'No cached supplemental result is available for this symbol.',
     };
   }
-  const freshness = supplementalFreshness(result.updatedAt, now);
+  const freshness = supplementalFreshness(result, now);
+  const observedAt = result.metadata?.sourceObservedAt ?? NaN;
   const observationCount = Array.isArray(result.data) ? result.data.length : 0;
   const confidence = result.category === 'sentiment' && result.data ? result.data.confidence : undefined;
   return {
@@ -158,9 +184,9 @@ function supplementalItem(
     symbol: result.symbol,
     source: result.source,
     status: result.status,
-    observedAt: result.updatedAt || null,
+    observedAt: Number.isFinite(observedAt) ? new Date(observedAt).toISOString() : null,
     freshness,
-    available: (result.source === 'live' || result.source === 'degraded') && freshness !== 'STALE',
+    available: result.metadata?.decisionEligible === true && freshness === 'CURRENT',
     observationCount,
     ...(confidence !== undefined ? { confidence } : {}),
     reason: result.reason,
@@ -283,6 +309,7 @@ function buildShadowInputs(
       smartMoneyContext: smartMoneyContext ?? undefined,
       cfg,
       heuristicAdj: 0,
+      academyIntelligence: supplied?.academyIntelligence ?? ctx.academyIntelligence ?? undefined,
     },
   };
 }
@@ -394,7 +421,15 @@ export function buildCanonicalDecision(
   let smcAvailability: SmcAvailabilityState | undefined;
   let smartMoneyContext: SmartMoneyContext | null | undefined;
 
-  if (options?.includeShadow !== false) {
+  // The advanced OBI/QStruct/microstructure engine is authoritative for live and
+  // production-input replay. `includeShadow` now controls diagnostics intent, not
+  // whether the decision engine runs. This prevents a UI query flag from silently
+  // falling back to the legacy RSI/ROC baseline. Replay-proxy remains baseline-led
+  // because its microstructure inputs are synthetic/estimated by design.
+  const advancedAuthoritative = mode !== 'replay_proxy';
+  const shouldEvaluateAdvanced = advancedAuthoritative || options?.includeShadow !== false;
+
+  if (shouldEvaluateAdvanced) {
     const shadowStartedAt = Date.now();
     const smc = ctx.advancedInputs?.smartMoneyContext
       ? { context: ctx.advancedInputs.smartMoneyContext, availability: 'AVAILABLE' as const, reasons: ['SMC supplied by recorded production input.'] }
@@ -425,18 +460,108 @@ export function buildCanonicalDecision(
     }
   }
 
-  const directionResolved: TradeDirection | 'NO_TRADE' =
-    baseline.guardPass && baseline.readinessTier !== 'BLOCKED' ? direction : 'NO_TRADE';
-  const confidence = deriveDecisionQuality(baseline, shadow);
+  const safetyGuardReasons = legacySafetyGuardReasons(baseline.guardReasons);
+  const baselineSafetyPass = safetyGuardReasons.length === 0;
+  const intelligence = advancedAuthoritative
+    ? evaluateLiveSignalEnsemble({
+        direction,
+        candles1h: ctx.candles1h,
+        candles15m: ctx.candles15m,
+        candles4h: ctx.candles4h,
+        advanced: shadow,
+        authorityStage: 'SIGNAL_ELIGIBLE',
+      })
+    : undefined;
+  const ensembleAccepted = intelligence?.status === 'ACCEPTED';
+  const parliamentContribution = advancedAuthoritative && intelligence
+    ? evaluateParliamentScannerContribution({
+        snapshot: ctx.parliamentSnapshot,
+        direction,
+        regime: intelligence.regime,
+        coreModelSupport: ensembleAccepted ? Math.max(intelligence.score, intelligence.modelAgreement) : 0,
+        timestamp: now,
+        fundingRate: ctx.advancedInputs?.fundingRate ?? ctx.ticker.fundingRate,
+        oiChangePercent: ctx.advancedInputs?.oiChangePercent,
+        mode: ctx.parliamentMode,
+      })
+    : undefined;
+  const parliamentRequired = parliamentContribution?.contributionEnabled === true;
+  const parliamentPass = !parliamentRequired || parliamentContribution?.actionable === true;
+  const authority: DecisionAuthority = advancedAuthoritative
+    ? (parliamentRequired ? 'REGIME_ENSEMBLE_PARLIAMENT' : 'REGIME_ENSEMBLE')
+    : 'BASELINE_PROXY';
+  const academyBlocked = shadow?.reasonCode === 'ACADEMY_INTELLIGENCE_BLOCKED';
+  const directionResolved: TradeDirection | 'NO_TRADE' = academyBlocked
+    ? 'NO_TRADE'
+    : advancedAuthoritative
+      ? (baselineSafetyPass && ensembleAccepted && parliamentPass ? direction : 'NO_TRADE')
+      : (baselineSafetyPass ? direction : 'NO_TRADE');
+  const coreScore = Math.max(0, Math.min(1, intelligence?.score ?? 0));
+  const parliamentWeight = parliamentRequired && parliamentContribution?.actionable
+    ? (parliamentContribution.crowdingRegime ? 0.35 : 0.25)
+    : 0;
+  const combinedScore = parliamentWeight > 0
+    ? coreScore * (1 - parliamentWeight) + (parliamentContribution?.score ?? 0) * parliamentWeight
+    : coreScore;
+  const rankingScore = advancedAuthoritative
+    ? Math.round(Math.max(0, Math.min(1, combinedScore)) * 100)
+    : baseline.score;
+  const confidence = advancedAuthoritative
+    ? Math.max(0, Math.min(1, parliamentWeight > 0
+        ? (intelligence?.confidence ?? 0) * (1 - parliamentWeight) + (parliamentContribution?.confidence ?? 0) * parliamentWeight
+        : (intelligence?.confidence ?? 0)))
+    : deriveDecisionQuality(baseline, shadow);
+  const calibration = advancedAuthoritative && intelligence
+    ? calibrateDecisionFromMemory(ctx.decisionMemoryRows ?? [], { regime: intelligence.regime.regime, direction })
+    : undefined;
+  const decisionReasonCode: NonNullable<DecisionSnapshot['decisionReasonCode']> = academyBlocked
+    ? 'ACADEMY_INTELLIGENCE_BLOCKED'
+    : !baselineSafetyPass
+      ? 'BASELINE_GUARD_BLOCKED'
+      : advancedAuthoritative && parliamentRequired && !parliamentPass
+        ? 'PARLIAMENT_CONFLUENCE_BLOCKED'
+        : advancedAuthoritative && parliamentRequired && parliamentPass
+          ? 'PARLIAMENT_CONTRIBUTOR_ACCEPTED'
+          : advancedAuthoritative
+            ? (intelligence?.reasonCode ?? 'ENSEMBLE_CONFLICT')
+            : 'ACCEPTED_BEST_CANDIDATE';
+  const decisionReasonText = academyBlocked
+    ? (shadow?.reasonText ?? 'Academy intelligence blocked this candidate.')
+    : !baselineSafetyPass
+      ? (safetyGuardReasons.join(' ') || `Legacy safety guard blocked the candidate.`)
+      : advancedAuthoritative && parliamentRequired && !parliamentPass
+        ? `Promoted Parliament contributor remained fail-closed: ${parliamentContribution?.reasonCode ?? 'unknown'} (${parliamentContribution?.categoryConfluence ?? 0}/${parliamentContribution?.requiredCategoryConfluence ?? 2} signal categories).`
+        : advancedAuthoritative && parliamentRequired && parliamentPass
+          ? `Regime ensemble plus promoted Parliament contributor support ${direction}; ${parliamentContribution?.categoryConfluence ?? 0} signal categories are in confluence.`
+          : advancedAuthoritative
+            ? (intelligence?.reasonText ?? 'Regime-aware ensemble evidence was unavailable.')
+            : `Baseline proxy replay accepted with ${baseline.readinessTier} readiness.`;
+  if (advancedAuthoritative && intelligence) {
+    for (const vote of intelligence.votes) {
+      const token = `model:${vote.model}:${vote.signal}:${vote.confidence.toFixed(2)}`;
+      if (vote.directionalScore >= 0.25) supporting.push(token);
+      else if (vote.directionalScore <= -0.25) conflicting.push(token);
+    }
+  }
+  if (parliamentContribution) {
+    for (const category of parliamentContribution.categoryScores) {
+      const token = `parliament:${category.category}:support=${category.support.toFixed(2)}:oppose=${category.opposition.toFixed(2)}`;
+      if (category.support >= 0.46 && category.support > category.opposition) supporting.push(token);
+      else if (category.opposition >= 0.46) conflicting.push(token);
+    }
+    if (parliamentContribution.reasonCode !== 'CONTRIBUTION_ACCEPTED' && parliamentContribution.contributionEnabled) {
+      conflicting.push(`parliament_gate:${parliamentContribution.reasonCode}`);
+    }
+  }
 
   return {
     symbol: ctx.ticker.symbol,
     direction: directionResolved,
-    rankingScore: baseline.score,
+    rankingScore,
     confidence,
-    calibratedProbability: null,
+    calibratedProbability: calibration?.probability ?? null,
     expectedNetEdge: null,
-    modelUncertainty: null,
+    modelUncertainty: calibration?.uncertainty ?? null,
     featureCompletenessPct: baseline.featureCompletenessPct ?? 0,
     supportingSignals: supporting,
     conflictingSignals: conflicting,
@@ -452,5 +577,13 @@ export function buildCanonicalDecision(
     effectiveConfig: effectiveConfig.effective,
     configuredConfig: effectiveConfig.configured,
     mode,
+    authority,
+    decisionReasonCode,
+    decisionReasonText,
+    safetyGuardReasons,
+    intelligence,
+    calibration,
+    parliamentContribution,
+    academyIntelligence: ctx.advancedInputs?.academyIntelligence ?? ctx.academyIntelligence ?? undefined,
   };
 }

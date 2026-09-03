@@ -9,23 +9,15 @@
  * Renders metadata only — it never gates or hides card content.
  */
 import React from 'react';
-import type { DataState, UiDataMeta } from '../../types';
+import type { UiDataMeta } from '../../types';
 import { provenanceSourceLabel } from '../../lib/dataProvenance';
-import { StatusBadge } from '../primitives';
+import { StatusBadge } from './WorkspacePrimitives';
 
 export interface ProvenanceChipProps {
   meta: UiDataMeta;
   /** Show the underlying StatusBadge dot. Off where a badge already exists. */
   showBadge?: boolean;
   className?: string;
-}
-
-/** Map the richer UiDataState back onto the 4-value DataState the badge takes. */
-function badgeState(meta: UiDataMeta): DataState {
-  if (meta.state === 'live') return 'live';
-  if (meta.state === 'unavailable' || meta.state === 'error') return 'unavailable';
-  if (meta.state === 'blocked') return 'not_configured';
-  return 'degraded';
 }
 
 export function ProvenanceChip({ meta, showBadge = false, className = '' }: ProvenanceChipProps) {
@@ -39,7 +31,7 @@ export function ProvenanceChip({ meta, showBadge = false, className = '' }: Prov
       data-provenance-source={meta.source ?? 'unreported'}
       title={meta.observedAt ? `Observed at ${meta.observedAt}` : 'No observation time reported'}
     >
-      {showBadge && <StatusBadge state={badgeState(meta)} showLabel={false} />}
+      {showBadge && <StatusBadge state={meta.state} label={meta.state.toUpperCase()} />}
       <span className="apex-provenance-label">{meta.label}</span>
       <span className="apex-provenance-source">{source}</span>
     </span>

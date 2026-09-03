@@ -122,7 +122,7 @@ describe('strategy evidence truthfulness', () => {
       symbol: 'BTC-USDT',
       interval: '1h',
       direction: 'LONG',
-      validationMethod: 'walk-forward-3-window-plus-holdout-v1',
+      validationMethod: 'temporal-robustness-3-window-plus-sealed-holdout-v2',
       commissionPctPerSide: 0.04,
       slippagePctPerSide: 0.05,
       fundingPctEstimate: 0.01,

@@ -106,6 +106,10 @@ export interface SmartBacktestCheckpoint {
   bestNetReturnPct: number | null;
   latestNetReturnPct: number | null;
   latestTradeCount: number | null;
+  /** Complete run identities already evaluated by this campaign. */
+  experimentFingerprints?: string[];
+  /** Whether the last optimizer step produced and activated a new research subject. */
+  lastOptimizationAdvanced?: boolean;
   stopReason: string | null;
   lastChange: string;
   nextAction: string;

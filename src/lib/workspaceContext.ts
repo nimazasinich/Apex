@@ -83,6 +83,7 @@ export type NavigableWorkspacePage =
   | 'overview'
   | 'markets'
   | 'watchlist'
+  | 'screener'
   | 'portfolio'
   | 'trading'
   | 'orders'

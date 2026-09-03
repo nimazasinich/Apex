@@ -7,9 +7,11 @@
  * bundle (it requires `undici`).
  *
  * Behaviour (per spec):
- *   1. In auto mode, try a detected local loopback proxy first, then direct.
- *   2. On a network/transport failure (or geo-block 451/403), fall through to
- *      the configured proxy pool, rotating by health.
+ *   1. In auto mode, always try the direct network first. A proxy is not touched
+ *      while direct connectivity is healthy.
+ *   2. On a network/transport failure (or geo-block 451/403/418), fall through to
+ *      the configured proxy pool, rotating by health. When no proxy is configured,
+ *      APEX can lazily probe a local loopback tunnel only after direct has failed.
  *   3. Track failures per proxy (proxyId). Unhealthy proxies are temporarily
  *      skipped with exponential backoff.
  *   4. Bounded attempts; never an unbounded retry storm.
@@ -19,6 +21,9 @@
  */
 
 import dns from 'node:dns';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
+import { gunzipSync, inflateSync, brotliDecompressSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
@@ -50,27 +55,10 @@ function loadSocksProxyAgent(): any | null {
 
 // ── Configuration ────────────────────────────────────────────────────────────
 
-const PROXY_MODE = (process.env.PROXY_MODE || 'auto').trim().toLowerCase();
+const ENV_PROXY_MODE = (process.env.PROXY_MODE || 'auto').trim().toLowerCase();
 
-/** HTTP(S) CONNECT proxy URL for undici ProxyAgent. */
-export function normalizeProxyUrl(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return '';
-  if (/^socks5h?:\/\//i.test(trimmed)) return '';
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  // host:port shorthand — e.g. 127.0.0.1:10808
-  if (/^[\w.-]+:\d+$/.test(trimmed)) return `http://${trimmed}`;
-  return trimmed;
-}
-
-/** SOCKS5 proxy URL for socks-proxy-agent (NewsAPI and geo-blocked providers). */
-export function normalizeSocksProxyUrl(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return '';
-  if (/^socks5h?:\/\//i.test(trimmed)) return trimmed;
-  if (/^[\w.-]+:\d+$/.test(trimmed)) return `socks5://${trimmed}`;
-  return trimmed;
-}
+import { normalizeProxyUrl, normalizeSocksProxyUrl, normalizeProxyConfig, type ProxyConfig } from './proxyConfig';
+export { normalizeProxyUrl, normalizeSocksProxyUrl } from './proxyConfig';
 
 export function isSocksProxyRoute(route: string): boolean {
   return /^socks5h?:\/\//i.test(route);
@@ -88,19 +76,22 @@ function parseProxyPool(): string[] {
 
   pushCsv(process.env.PROXY_POOL_URLS);
   pushCsv(process.env.APEX_LOCAL_PROXY);
-  pushCsv(process.env.HTTPS_PROXY);
-  pushCsv(process.env.HTTP_PROXY);
-  pushCsv(process.env.ALL_PROXY);
+  pushCsv(process.env.HTTPS_PROXY || process.env.https_proxy);
+  pushCsv(process.env.HTTP_PROXY || process.env.http_proxy);
+  pushCsv(process.env.ALL_PROXY || process.env.all_proxy);
 
-  const socks = (process.env.SOCKS5_PROXY || process.env.SOCKS_PROXY_URL || process.env.SOCKS_PROXY || '').trim();
+  const socks = (process.env.SOCKS5_PROXY || process.env.SOCKS_PROXY_URL || process.env.SOCKS_PROXY
+    || (process.env.ALL_PROXY && /^socks/i.test(process.env.ALL_PROXY) ? process.env.ALL_PROXY : '')
+    || (process.env.all_proxy && /^socks/i.test(process.env.all_proxy) ? process.env.all_proxy : '')
+    || '').trim();
   if (socks) {
-    const socksUrl = normalizeSocksProxyUrl(socks.startsWith('socks') ? socks : socks);
-    if (socksUrl) {
+    const socksUrl = normalizeSocksProxyUrl(socks);
+    if (socksUrl && !candidates.includes(socksUrl)) {
       candidates.push(socksUrl);
       // Many local clients (Clash/V2Ray) expose HTTP CONNECT on the same host:port as SOCKS5.
       if (process.env.APEX_SOCKS_HTTP_FALLBACK !== 'false') {
         const hostPort = socksUrl.replace(/^socks5h?:\/\//i, '');
-        if (hostPort) candidates.push(`http://${hostPort}`);
+        if (hostPort && !candidates.includes(`http://${hostPort}`)) candidates.push(`http://${hostPort}`);
       }
     }
   }
@@ -110,19 +101,30 @@ function parseProxyPool(): string[] {
     candidates.push(`http://127.0.0.1:${localPort}`);
   }
 
-  // Release archives intentionally do not ship a populated .env. Windows APEX
-  // setups commonly expose either SOCKS5 or HTTP CONNECT on loopback port
-  // 10808, so recover both safe local-only routes automatically. Operators can
-  // still select one scheme through APEX_AUTO_LOCAL_PROXY_SCHEME. Missing
-  // listeners fail locally and the direct route remains available; no remote
-  // proxy, credential, or provider secret is embedded in the release.
+  // Release archives intentionally do not ship a populated .env. Some Windows
+  // APEX setups expose SOCKS5 or HTTP CONNECT on loopback port 10808, and this
+  // block recovers those local-only routes — but it is OPT-IN.
+  //
+  // It used to be opt-out (on unless APEX_AUTO_LOCAL_PROXY=false). On a host
+  // with no such listener that injected two dead loopback routes ahead of
+  // 'direct' (see buildAttemptOrder), so every market-data call paid failed
+  // proxy attempts before reaching a working direct route. Verified on the
+  // target VPS: no listener on 10808, and direct HTTPS to all market-data
+  // hosts succeeds in 203-540 ms. Defaulting to direct is therefore correct
+  // for an unconfigured host.
+  //
+  // Operators who do run a loopback tunnel opt in with APEX_AUTO_LOCAL_PROXY=true
+  // (port via APEX_AUTO_LOCAL_PROXY_PORT, scheme via APEX_AUTO_LOCAL_PROXY_SCHEME),
+  // or configure an explicit proxy through SOCKS5_PROXY / HTTPS_PROXY / etc.
+  // Ordering remains controlled by PROXY_MODE. No remote proxy, credential, or
+  // provider secret is embedded in the release.
   const hasExplicitProxy = candidates.length > 0;
-  if (!hasExplicitProxy && process.env.APEX_AUTO_LOCAL_PROXY !== 'false') {
+  if (!hasExplicitProxy && process.env.APEX_AUTO_LOCAL_PROXY === 'true') {
     const autoPort = (process.env.APEX_AUTO_LOCAL_PROXY_PORT || '10808').trim();
     const autoScheme = (process.env.APEX_AUTO_LOCAL_PROXY_SCHEME || 'both').trim().toLowerCase();
     if (/^\d+$/.test(autoPort)) {
       if (autoScheme === 'socks5' || autoScheme === 'both') {
-        candidates.push(`socks5://127.0.0.1:${autoPort}`);
+        candidates.push(`socks5h://127.0.0.1:${autoPort}`);
       }
       if (autoScheme === 'http' || autoScheme === 'both') {
         candidates.push(`http://127.0.0.1:${autoPort}`);
@@ -135,34 +137,159 @@ function parseProxyPool(): string[] {
 
 const PROXY_POOL: string[] = parseProxyPool();
 
+/**
+ * Lazy local discovery routes used only by PROXY_MODE=auto and only after a
+ * direct request has produced a retryable transport/geo failure. This is the
+ * important distinction from the old auto-local behaviour: these routes do not
+ * receive a connection attempt while direct access is working.
+ *
+ * APEX_SMART_PROXY_DISCOVERY=false disables discovery. Operators can override
+ * the loopback port/scheme without populating the main proxy pool.
+ */
+function parseSmartFallbackRoutes(): string[] {
+  if (process.env.APEX_SMART_PROXY_DISCOVERY === 'false') return [];
+  const port = (process.env.APEX_SMART_PROXY_PORT || process.env.APEX_AUTO_LOCAL_PROXY_PORT || '10808').trim();
+  if (!/^\d+$/.test(port)) return [];
+  const scheme = (process.env.APEX_SMART_PROXY_SCHEME || process.env.APEX_AUTO_LOCAL_PROXY_SCHEME || 'both').trim().toLowerCase();
+  const routes: string[] = [];
+  if (scheme === 'http' || scheme === 'both') routes.push(`http://127.0.0.1:${port}`);
+  if (scheme === 'socks5' || scheme === 'both') routes.push(`socks5h://127.0.0.1:${port}`);
+  return routes;
+}
+
+const SMART_FALLBACK_ROUTES = PROXY_POOL.length === 0 ? parseSmartFallbackRoutes() : [];
+
+// Runtime settings override environment routing only after an explicit save.
+let runtimeProxyConfig: ProxyConfig | null = null;
+let proxyConfigRevision = 0;
+let proxyConfigurationError: string | null = null;
+function activeMode(): string { return runtimeProxyConfig?.mode ?? ENV_PROXY_MODE; }
+function activePool(): string[] {
+  const mode = activeMode();
+  if (mode === 'off' || mode === 'direct_only') return [];
+  if (mode === 'manual') {
+    if (runtimeProxyConfig) return runtimeProxyConfig.address ? [runtimeProxyConfig.address] : [];
+    // Explicit env addresses only: no implicit HTTP conversion or local discovery.
+    return [...(process.env.PROXY_POOL_URLS || '').split(',').map(normalizeProxyUrl).filter(Boolean),
+      normalizeSocksProxyUrl(process.env.SOCKS5_PROXY || process.env.SOCKS_PROXY_URL || process.env.SOCKS_PROXY || '')].filter(Boolean);
+  }
+  return PROXY_POOL;
+}
+export function getRuntimeProxyConfig(): ProxyConfig {
+  if (runtimeProxyConfig) return { ...runtimeProxyConfig };
+  const mode = activeMode();
+  const address = mode === 'manual' ? activePool()[0] || '' : '';
+  // Never disclose credentials inherited from an environment URL.
+  let safeAddress = address;
+  try { const url = new URL(address); url.username = ''; url.password = ''; safeAddress = `${url.protocol}//${url.host}`; } catch { safeAddress = ''; }
+  return { mode: mode === 'manual' ? 'manual' : mode === 'off' || mode === 'direct_only' ? 'off' : 'auto', type: isSocksProxyRoute(address) ? 'socks5' : 'http', address: safeAddress };
+}
+export function applyRuntimeProxyConfig(value: unknown): void {
+  runtimeProxyConfig = normalizeProxyConfig(value);
+  proxyConfigurationError = null;
+  proxyConfigRevision += 1;
+  responseCache.clear();
+  upstreamCircuits.clear();
+  proxyHealth.clear();
+}
+
+/** Corrupt persisted configuration must not expose traffic through a direct fallback. */
+export function blockInvalidProxyConfig(): void {
+  runtimeProxyConfig = { mode: 'manual', type: 'socks5', address: '' };
+  proxyConfigurationError = 'Saved proxy configuration is invalid. Provider requests are blocked until corrected in Settings.';
+  proxyConfigRevision += 1;
+  responseCache.clear();
+  upstreamCircuits.clear();
+}
+
+// Smart DNS is deliberately scoped to the direct route and is used only when
+// the operating-system resolver fails. It does not replace working DNS, alter
+// the host machine's resolver, or touch requests that already succeed. The
+// original hostname remains the TLS/SNI authority; only address resolution is
+// retried through the configured resolvers.
+const SMART_DNS_MODE = (process.env.APEX_SMART_DNS || 'auto').trim().toLowerCase();
+const SMART_DNS_SERVERS = (process.env.APEX_SMART_DNS_SERVERS || '1.1.1.1,8.8.8.8')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+const smartDnsResolvers = SMART_DNS_MODE === 'off'
+  ? []
+  : SMART_DNS_SERVERS.map((server) => {
+      const resolver = new dns.Resolver();
+      resolver.setServers([server]);
+      return resolver;
+    });
+const smartDnsCache = new Map<string, { addresses: Array<{ address: string; family: number; ttl: number }>; expiresAt: number }>();
+
 // Cloudflare can publish multiple IPv4 addresses for KuCoin. On this Windows
 // runtime, one of those addresses can complete TCP but stall during TLS, so
 // Node's normal first-address choice times out while curl still succeeds.
 // Resolve all IPv4 records and prefer the responsive Cloudflare address family
 // on this runtime; the sibling 172.64.* address can stall during TLS. The DNS
 // interceptor keeps TLS/SNI on the original hostname.
+function orderDirectAddresses(addresses: Array<{ address: string; family: number; ttl?: number }>): Array<{ address: string; family: number; ttl: number }> {
+  return addresses
+    .map((address) => ({ ...address, ttl: Math.max(15, Number(address.ttl) || 60) }))
+    .sort((left, right) => Number(right.address.startsWith('104.')) - Number(left.address.startsWith('104.')));
+}
+
+function resolveWithSmartDns(
+  hostname: string,
+  callback: (error: NodeJS.ErrnoException | null, addresses?: Array<{ address: string; family: number; ttl: number }>) => void,
+): void {
+  const cached = smartDnsCache.get(hostname);
+  if (cached && cached.expiresAt > Date.now()) {
+    callback(null, cached.addresses);
+    return;
+  }
+  let resolverIndex = 0;
+  let lastError: NodeJS.ErrnoException | null = null;
+  const next = () => {
+    const resolver = smartDnsResolvers[resolverIndex++];
+    if (!resolver) {
+      callback(lastError || Object.assign(new Error(`smart_dns_failed:${hostname}`), { code: 'ENOTFOUND' }));
+      return;
+    }
+    (resolver.resolve4 as any)(hostname, { ttl: true }, (error: NodeJS.ErrnoException | null, records: Array<string | { address: string; ttl?: number }> = []) => {
+      if (error || !records.length) {
+        lastError = error;
+        next();
+        return;
+      }
+      const addresses = orderDirectAddresses(records.map((record) => ({
+        address: typeof record === 'string' ? record : record.address,
+        family: 4,
+        ttl: typeof record === 'string' ? 60 : record.ttl,
+      })));
+      const minimumTtl = Math.min(...addresses.map((address) => address.ttl));
+      smartDnsCache.set(hostname, { addresses, expiresAt: Date.now() + minimumTtl * 1000 });
+      callback(null, addresses);
+    });
+  };
+  next();
+}
+
 const directDnsLookup = (origin: any, _options: any, callback: any): void => {
   const hostname = typeof origin === 'string' ? origin : origin.hostname;
+  if (SMART_DNS_MODE === 'always' && smartDnsResolvers.length) {
+    resolveWithSmartDns(hostname, callback);
+    return;
+  }
   dns.lookup(
     hostname,
     { all: true, family: 4, order: 'ipv4first' },
     (err, addresses) => {
-      callback(
-        err,
-        (addresses || []).map((address) => ({
-          address: address.address,
-          family: address.family,
-          ttl: 60,
-        })),
-      );
+      if (!err && addresses.length) {
+        callback(null, orderDirectAddresses(addresses));
+        return;
+      }
+      if (SMART_DNS_MODE === 'auto' && smartDnsResolvers.length) {
+        resolveWithSmartDns(hostname, callback);
+        return;
+      }
+      callback(err, []);
     },
   );
-};
-
-const directDnsPick = (_origin: any, hostnameRecords: any): any => {
-  const ipv4 = hostnameRecords?.records?.[4]?.ips || [];
-  const addressOf = (ip: any) => typeof ip === 'string' ? ip : ip?.address;
-  return ipv4.find((ip: any) => addressOf(ip)?.startsWith('104.')) || ipv4[0] || null;
 };
 
 // Fail-fast cap for the DIRECT route. The caller's timeoutMs (e.g. 20s) is the
@@ -171,6 +298,10 @@ const directDnsPick = (_origin: any, hostnameRecords: any): any => {
 // proxy (when configured) gets its turn promptly. Proxy routes keep the full
 // caller timeout. Tunable via DIRECT_TIMEOUT_MS.
 const DIRECT_TIMEOUT_MS = Number(process.env.DIRECT_TIMEOUT_MS || 7000);
+// When a fallback route exists, reserve enough of the caller budget for it.
+// This prevents a blocked direct route from consuming the entire request before
+// the proxy ever gets a chance (the failure mode that made Binance look dead).
+const DIRECT_WITH_PROXY_TIMEOUT_MS = Number(process.env.DIRECT_WITH_PROXY_TIMEOUT_MS || 2500);
 
 // Per-route effective timeout: direct fails fast; proxy uses the full budget.
 function timeoutForRoute(route: string, callerTimeoutMs: number): number {
@@ -184,7 +315,7 @@ const MIN_ROUTE_BUDGET_MS = 750;
 
 // Treat these upstream HTTP statuses as transport/geo failures worth retrying
 // through a different route (proxy) rather than surfacing immediately.
-const ROUTE_RETRYABLE_STATUS = new Set([403, 451, 408, 425, 500, 502, 503, 504]);
+const ROUTE_RETRYABLE_STATUS = new Set([403, 408, 418, 425, 429, 451, 500, 502, 503, 504, 520, 521, 522, 523, 524]);
 
 // ── Pure backoff helper (exported for tests) ─────────────────────────────────
 
@@ -206,6 +337,7 @@ interface ProxyHealth {
 
 const proxyHealth = new Map<string, ProxyHealth>();
 const dispatcherCache = new Map<string, Dispatcher>();
+let directDispatcher: Dispatcher | undefined;
 
 function getHealth(id: string): ProxyHealth {
   let h = proxyHealth.get(id);
@@ -240,50 +372,45 @@ function recordProxyFailure(id: string): void {
  * least-recently-used first so load spreads across the pool.
  */
 function buildAttemptOrder(now: number): string[] {
-  const healthyProxies = PROXY_POOL.filter((p) => isHealthy(p, now)).sort(
+  const mode = activeMode();
+  if (mode === 'off' || mode === 'direct_only') return ['direct'];
+  const pool = activePool();
+  const configured = pool.length ? pool : (mode === 'auto' ? SMART_FALLBACK_ROUTES : []);
+  const healthyProxies = configured.filter((p) => isHealthy(p, now)).sort(
     (a, b) => getHealth(a).lastUsed - getHealth(b).lastUsed
   );
   // If every proxy is cooling down, allow the single least-bad one as a last resort.
   const proxies =
     healthyProxies.length > 0
       ? healthyProxies
-      : PROXY_POOL.slice().sort(
+      : configured.slice().sort(
           (a, b) => getHealth(a).cooldownUntil - getHealth(b).cooldownUntil
         ).slice(0, 1);
 
+  if (mode === 'manual') return proxies;
   if (!proxies.length) return ['direct'];
-  if (PROXY_MODE === 'direct_first') return ['direct', ...proxies];
-  // proxy_first and auto prefer the loopback tunnel. A missing local listener
-  // fails quickly, while direct-first can exhaust the short market-data budget
-  // before a working proxy receives an attempt.
-  return [...proxies, 'direct'];
+  if (mode === 'proxy_first') return [...proxies, 'direct'];
+  // auto and direct_first are intentionally direct-first. Proxy routes are
+  // therefore never touched when the provider is reachable directly.
+  return ['direct', ...proxies];
 }
 
 function dispatcherFor(route: string): Dispatcher | undefined {
-  const undici = loadUndici();
   if (route === 'direct') {
-    // Node 22 provides a standards-compliant global fetch. When the optional
-    // locked `undici` dependency has not been installed yet, fall back to that
-    // direct dispatcher instead of making dependency-light QA and read-only
-    // runtimes fail at import time. Installed production builds still use the
-    // DNS-pinning Undici dispatcher below.
-    if (!undici?.Agent || !undici?.interceptors?.dns) return undefined;
-    let d = dispatcherCache.get('direct');
-    if (!d) {
-      d = new undici.Agent({
-        connect: { timeout: 10_000 },
-      }).compose([
-        undici.interceptors.dns({
-          affinity: 4,
-          dualStack: false,
+    const undici = loadUndici();
+    if (!undici?.Agent) return undefined;
+    if (!directDispatcher) {
+      directDispatcher = new undici.Agent({
+        connect: {
           lookup: directDnsLookup,
-          pick: directDnsPick,
-        }),
-      ]);
-      dispatcherCache.set('direct', d);
+          autoSelectFamily: true,
+          autoSelectFamilyAttemptTimeout: 250,
+        },
+      });
     }
-    return d;
+    return directDispatcher;
   }
+  const undici = loadUndici();
   let d = dispatcherCache.get(route);
   if (!d) {
     if (isSocksProxyRoute(route)) {
@@ -292,7 +419,7 @@ function dispatcherFor(route: string): Dispatcher | undefined {
       d = new SocksProxyAgent(route) as unknown as Dispatcher;
     } else {
       if (!undici?.ProxyAgent) throw new Error('missing_optional_dependency:undici');
-      d = new undici.ProxyAgent(route);
+      d = new undici.ProxyAgent({ uri: route, proxyTunnel: true });
     }
     dispatcherCache.set(route, d);
   }
@@ -300,14 +427,151 @@ function dispatcherFor(route: string): Dispatcher | undefined {
 }
 
 
+// Node's global `fetch` embeds its own bundled (older) undici request-handler
+// interface. When a dispatcher is constructed from the optional local `undici`
+// package (a different, independently-versioned copy in node_modules), passing
+// it to the *global* fetch throws `UND_ERR_INVALID_ARG: invalid onRequestStart
+// method` — the two undici copies' internal Dispatcher/Handler contracts don't
+// match across versions. The fix is to always dispatch through the same
+// undici module that produced the dispatcher (its own `fetch` export), and
+// only fall back to Node's global fetch when no local dispatcher was built.
+// ---------------------------------------------------------------------------
+// Test-only fetch seam (CP28 Task 0B, fork (b)).
+//
+// The `undici.fetch` dispatch below is load-bearing for production correctness
+// (see the comment above), but it has an observability cost: for every route
+// backed by a real Undici Dispatcher — the `direct` route (`undici.Agent`, built
+// in dispatcherFor) and every HTTP/HTTPS proxy-pool route (`undici.ProxyAgent`) —
+// the ambient `globalThis.fetch` binding is never consulted. A test or QA script
+// that stubs `globalThis.fetch` to simulate provider failure/latency/timeout on
+// those routes therefore exercises the REAL network instead, with no error, no
+// warning, and a green result.
+//
+// This seam closes that hole without changing production behaviour by one byte:
+// it is completely inert unless the process is explicitly a test runtime.
+// `__setProxyFetchImpl` is the import-order-independent, deterministic path and
+// is what regression tests and the mockability guard should use. The ambient
+// `globalThis.fetch` detection is a best-effort convenience so existing tests
+// that stub the global keep working project-wide without having to know which
+// internal branch of fetchImplFor their request happens to take; it can only
+// detect a stub installed AFTER this module was first imported.
+// ---------------------------------------------------------------------------
+const nativeGlobalFetch: typeof fetch = fetch;
+let fetchOverride: typeof fetch | undefined;
+
+function isTestFetchSeamEnabled(): boolean {
+  return Boolean(process.env.VITEST) || process.env.APEX_TEST_FETCH_SEAM === '1';
+}
+
+/**
+ * Test-only. Installs a fetch implementation used by EVERY route regardless of
+ * dispatcher kind. Throws outside a test runtime so shipped code can never
+ * redirect real outbound traffic through an injected implementation.
+ */
+export function __setProxyFetchImpl(impl: typeof fetch | undefined): void {
+  if (!isTestFetchSeamEnabled()) {
+    throw new Error('proxy_fetch_seam_forbidden: __setProxyFetchImpl requires VITEST or APEX_TEST_FETCH_SEAM=1');
+  }
+  fetchOverride = impl;
+}
+
+/** Test-only. Restores real transport selection. */
+export function __resetProxyFetchImpl(): void {
+  fetchOverride = undefined;
+}
+
+/** Test-only introspection, used by scripts/qa/verifyProxyFetchMockability.mjs. */
+export function __proxyFetchSeamStatus(): { enabled: boolean; overrideInstalled: boolean; ambientStubDetected: boolean } {
+  return {
+    enabled: isTestFetchSeamEnabled(),
+    overrideInstalled: fetchOverride !== undefined,
+    ambientStubDetected: globalThis.fetch !== nativeGlobalFetch,
+  };
+}
+
+function testSeamFetch(): typeof fetch | undefined {
+  if (!isTestFetchSeamEnabled()) return undefined;
+  if (fetchOverride) return fetchOverride;
+  if (globalThis.fetch !== nativeGlobalFetch) return globalThis.fetch;
+  return undefined;
+}
+
+function fetchImplFor(dispatcher: Dispatcher | undefined): typeof fetch {
+  const seam = testSeamFetch();
+  if (seam) return seam;
+  if (!dispatcher) return fetch;
+  // socks-proxy-agent is a Node HTTP Agent, not an Undici Dispatcher.
+  // Passing it as `dispatcher` fails before any SOCKS connection is made.
+  if (typeof dispatcher.addRequest === 'function') {
+    return ((input: string | URL | Request, init: RequestInit = {}) => fetchThroughSocks(String(input), init, dispatcher)) as typeof fetch;
+  }
+  const undici = loadUndici();
+  return typeof undici?.fetch === 'function' ? (undici.fetch as typeof fetch) : fetch;
+}
+
+/** Node HTTP transport for the existing SOCKS agent; TLS validation stays enabled. */
+function fetchThroughSocks(url: string, init: RequestInit, agent: any, redirects = 0): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const target = new URL(url);
+    const request = target.protocol === 'https:' ? httpsRequest : httpRequest;
+    const req = request(target, {
+      agent, method: init.method, headers: Object.fromEntries(new Headers(init.headers)), signal: init.signal ?? undefined,
+    }, (res) => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode || 0) && res.headers.location) {
+        res.resume();
+        if (redirects >= 5) { reject(new Error('too_many_redirects')); return; }
+        const next = new URL(res.headers.location, target);
+        if (!['http:', 'https:'].includes(next.protocol)) { reject(new Error('invalid_redirect_protocol')); return; }
+        const headers = new Headers(init.headers);
+        if (next.origin !== target.origin) { headers.delete('authorization'); headers.delete('cookie'); }
+        const switchToGet = res.statusCode === 303 || ([301, 302].includes(res.statusCode!) && init.method === 'POST');
+        if (switchToGet) { headers.delete('content-type'); headers.delete('content-length'); }
+        resolve(fetchThroughSocks(next.href, { ...init, headers, ...(switchToGet ? { method: 'GET', body: undefined } : {}) }, agent, redirects + 1));
+        return;
+      }
+      const chunks: Buffer[] = [];
+      res.on('data', (chunk: Buffer) => chunks.push(chunk));
+      res.on('error', reject);
+      res.on('end', () => {
+        const headers = new Headers();
+        for (const [key, value] of Object.entries(res.headers)) {
+          if (Array.isArray(value)) value.forEach((item) => headers.append(key, item));
+          else if (value !== undefined) headers.set(key, String(value));
+        }
+        const status = res.statusCode || 502;
+        try {
+          let payload = Buffer.concat(chunks);
+          const encoding = headers.get('content-encoding');
+          if (payload.length && encoding === 'gzip') payload = gunzipSync(payload);
+          if (payload.length && encoding === 'deflate') payload = inflateSync(payload);
+          if (payload.length && encoding === 'br') payload = brotliDecompressSync(payload);
+          resolve(new Response([204, 205, 304].includes(status) || init.method === 'HEAD' ? null : payload, { status, headers }));
+        } catch (error) { reject(error); }
+      });
+    });
+    req.on('error', reject);
+    if (init.body != null) req.write(init.body);
+    req.end();
+  });
+}
+
 function describeFetchError(err: any): string {
   const parts = [err?.message || 'transport_error'];
-  const cause = err?.cause;
-  if (cause?.code) parts.push(cause.code);
-  if (cause?.errno && cause.errno !== cause.code) parts.push(String(cause.errno));
-  if (cause?.syscall) parts.push(cause.syscall);
-  if (cause?.hostname) parts.push(cause.hostname);
-  return parts.join(' ');
+  const append = (value: any) => {
+    if (!value) return;
+    if (value.code) parts.push(String(value.code));
+    if (value.errno && value.errno !== value.code) parts.push(String(value.errno));
+    if (value.syscall) parts.push(String(value.syscall));
+    if (value.hostname) parts.push(String(value.hostname));
+    if (value.address) parts.push(String(value.address));
+  };
+  // Node HTTP agents (including socks-proxy-agent) often put the useful code on
+  // the top-level error, while undici usually nests it under cause. Preserve both
+  // so diagnostics can distinguish DNS, refused tunnel, TLS, and timeout faults.
+  append(err);
+  append(err?.cause);
+  append(err?.cause?.cause);
+  return [...new Set(parts.filter(Boolean))].join(' ');
 }
 
 // ── Warning throttle ─────────────────────────────────────────────────────────
@@ -421,6 +685,7 @@ const upstreamCircuits = new Map<string, UpstreamCircuit>();
 
 function isRetryableFailure(result: SmartFetchResult): boolean {
   if (result.ok) return false;
+  if (ROUTE_RETRYABLE_STATUS.has(result.status)) return true;
   if (!result.error) return result.status === 0 || result.status >= 500;
   return result.status === 0 || /transport_error|timeout|aborted|bad_json|budget_exhausted|http_5\d\d/i.test(result.error);
 }
@@ -656,6 +921,118 @@ export interface SmartFetchOptions {
   circuitKey?: string;
 }
 
+export interface ProxyProviderProbeTarget {
+  provider: string;
+  url: string;
+}
+
+export interface ProxyProviderProbeResult {
+  provider: string;
+  ok: boolean;
+  status: number;
+  latencyMs: number;
+  route: 'direct' | 'proxy' | 'none';
+  routeLabel: string;
+  error: string | null;
+}
+
+function safeProxyRouteLabel(route: string): string {
+  if (route === 'direct') return 'Direct network';
+  try {
+    const url = new URL(route);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return 'Configured proxy';
+  }
+}
+
+function probeOrderForConfig(config: ProxyConfig): string[] {
+  if (config.mode === 'off') return ['direct'];
+  if (config.mode === 'manual') return config.address ? [config.address] : [];
+  const environmentRoutes = PROXY_POOL.length ? PROXY_POOL : SMART_FALLBACK_ROUTES;
+  return ['direct', ...environmentRoutes];
+}
+
+/** Browser-safe policy projection used by regression tests and operator UI copy. */
+export function proxyProbeRouteKinds(value: unknown): Array<'direct' | 'proxy'> {
+  const config = normalizeProxyConfig(value);
+  return probeOrderForConfig(config).map((route) => route === 'direct' ? 'direct' : 'proxy');
+}
+
+/**
+ * Test an unsaved proxy draft against fixed server-selected providers without
+ * mutating runtime routing. Manual mode never falls back to direct; Off never
+ * tries a proxy; Auto remains direct-first.
+ */
+export async function probeProxyConfiguration(
+  value: unknown,
+  targets: readonly ProxyProviderProbeTarget[],
+  timeoutMs = 8_000,
+): Promise<{ config: ProxyConfig; checkedAt: number; results: ProxyProviderProbeResult[] }> {
+  const config = normalizeProxyConfig(value);
+  const routes = probeOrderForConfig(config);
+  const results = await Promise.all(targets.map(async (target): Promise<ProxyProviderProbeResult> => {
+    const startedAt = Date.now();
+    let last: ProxyProviderProbeResult = {
+      provider: target.provider,
+      ok: false,
+      status: 0,
+      latencyMs: 0,
+      route: 'none',
+      routeLabel: routes.length ? safeProxyRouteLabel(routes[0]) : 'No permitted route',
+      error: routes.length ? 'probe_failed' : 'manual_proxy_not_configured',
+    };
+    const deadline = startedAt + Math.max(2_000, timeoutMs);
+    for (let routeIndex = 0; routeIndex < routes.length; routeIndex += 1) {
+      const route = routes[routeIndex];
+      const remaining = deadline - Date.now();
+      if (remaining < MIN_ROUTE_BUDGET_MS) break;
+      const hasLaterFallback = route === 'direct' && routes.slice(routeIndex + 1).some((candidate) => candidate !== 'direct');
+      const routeBudget = Math.min(
+        timeoutForRoute(route, timeoutMs),
+        hasLaterFallback ? DIRECT_WITH_PROXY_TIMEOUT_MS : remaining,
+        remaining,
+      );
+      if (routeBudget < MIN_ROUTE_BUDGET_MS) break;
+      try {
+        const dispatcher = dispatcherFor(route);
+        const fetchImpl = fetchImplFor(dispatcher);
+        const response = await fetchImpl(target.url, {
+          method: 'GET',
+          headers: { 'User-Agent': 'APEX-Trading-Engine/1.0', Accept: 'application/json' },
+          signal: AbortSignal.timeout(routeBudget),
+          // @ts-ignore Node/undici fetch accepts its matching dispatcher.
+          ...(dispatcher ? { dispatcher } : {}),
+        });
+        await response.arrayBuffer().catch(() => undefined);
+        last = {
+          provider: target.provider,
+          ok: response.ok,
+          status: response.status,
+          latencyMs: Date.now() - startedAt,
+          route: route === 'direct' ? 'direct' : 'proxy',
+          routeLabel: safeProxyRouteLabel(route),
+          error: response.ok ? null : `http_${response.status}`,
+        };
+        if (response.ok || config.mode !== 'auto') return last;
+      } catch (error) {
+        last = {
+          provider: target.provider,
+          ok: false,
+          status: 0,
+          latencyMs: Date.now() - startedAt,
+          route: route === 'direct' ? 'direct' : 'proxy',
+          routeLabel: safeProxyRouteLabel(route),
+          error: describeFetchError(error),
+        };
+        if (config.mode !== 'auto') return last;
+      }
+    }
+    return last;
+  }));
+  return { config, checkedAt: Date.now(), results };
+}
+
 /**
  * Fetch JSON with direct-first then proxy-pool rotation.
  * Returns a structured result; never throws on network failure.
@@ -669,8 +1046,9 @@ async function smartFetchJsonRaw(
 ): Promise<SmartFetchResult> {
   const { method = 'GET', headers = {}, timeoutMs = 20_000, logKey = url, proxyOnly = false, body } = opts;
   const now = Date.now();
+  const revision = proxyConfigRevision;
   let order = buildAttemptOrder(now);
-  if (proxyOnly && PROXY_POOL.length > 0) {
+  if (proxyOnly && order.some((route) => route !== 'direct')) {
     order = order.filter((route) => route !== 'direct');
   }
 
@@ -679,7 +1057,7 @@ async function smartFetchJsonRaw(
     status: 0,
     json: null,
     route: 'direct',
-    error: 'no_route',
+    error: proxyConfigurationError ? 'invalid_proxy_configuration' : activeMode() === 'manual' ? 'manual_proxy_not_configured' : 'no_route',
   };
 
   // timeoutMs is the budget for the whole call, not per route: a retryable
@@ -687,14 +1065,25 @@ async function smartFetchJsonRaw(
   const deadline = now + timeoutMs;
   const remainingBudget = () => deadline - Date.now();
 
-  for (const route of order) {
-    const routeBudget = Math.min(timeoutForRoute(route, timeoutMs), remainingBudget());
+  for (let routeIndex = 0; routeIndex < order.length; routeIndex += 1) {
+    if (revision !== proxyConfigRevision) return { ...last, error: 'proxy_configuration_changed' };
+    const route = order[routeIndex];
+    const hasLaterFallback = route === 'direct' && order.slice(routeIndex + 1).some((candidate) => candidate !== 'direct');
+    const routeBudget = Math.min(
+      timeoutForRoute(route, timeoutMs),
+      hasLaterFallback ? DIRECT_WITH_PROXY_TIMEOUT_MS : remainingBudget(),
+      remainingBudget(),
+    );
     if (routeBudget < MIN_ROUTE_BUDGET_MS) {
       last = { ...last, error: last.error === 'no_route' ? 'budget_exhausted' : last.error };
       break;
     }
+    let dispatcher: Dispatcher | undefined;
+    let fetchImpl: typeof fetch = fetch;
     try {
-      const res = await fetch(url, {
+      dispatcher = dispatcherFor(route);
+      fetchImpl = fetchImplFor(dispatcher);
+      const res = await fetchImpl(url, {
         method,
         headers: {
           'User-Agent': 'APEX-Trading-Engine/1.0',
@@ -703,8 +1092,8 @@ async function smartFetchJsonRaw(
         },
         body,
         signal: AbortSignal.timeout(routeBudget),
-        // @ts-ignore Node fetch accepts an Undici Dispatcher; undefined uses Node's default dispatcher.
-        dispatcher: dispatcherFor(route),
+        // @ts-ignore Node/undici fetch accepts an Undici Dispatcher; undefined uses the default dispatcher.
+        ...(dispatcher ? { dispatcher } : {}),
       });
 
       if (res.ok) {
@@ -746,12 +1135,13 @@ async function smartFetchJsonRaw(
         return /ENOTFOUND|getaddrinfo|EAI_AGAIN|ENETUNREACH|EAI_NONAME/i.test(s);
       };
 
-      if (isDnsLike(last.error)) {
+      if (isDnsLike(last.error) && !hasLaterFallback) {
         for (let attempt = 1; attempt <= quickRetries; attempt++) {
-          if (remainingBudget() < MIN_ROUTE_BUDGET_MS + retryDelayMs) break;
+          if (revision !== proxyConfigRevision || remainingBudget() < MIN_ROUTE_BUDGET_MS + retryDelayMs) break;
           await new Promise((r) => setTimeout(r, retryDelayMs));
+          if (revision !== proxyConfigRevision) return { ...last, error: 'proxy_configuration_changed' };
           try {
-            const retryRes = await fetch(url, {
+            const retryRes = await fetchImpl(url, {
               method,
               headers: {
                 'User-Agent': 'APEX-Trading-Engine/1.0',
@@ -762,8 +1152,8 @@ async function smartFetchJsonRaw(
               signal: AbortSignal.timeout(
                 Math.max(MIN_ROUTE_BUDGET_MS, Math.min(routeBudget, remainingBudget())),
               ),
-              // @ts-ignore Node fetch accepts an Undici Dispatcher.
-              dispatcher: dispatcherFor(route),
+              // @ts-ignore Node/undici fetch accepts an Undici Dispatcher.
+              ...(dispatcher ? { dispatcher } : {}),
             });
 
             if (retryRes.ok) {
@@ -813,7 +1203,7 @@ export async function smartFetchJson(
   url: string,
   opts: SmartFetchOptions = {}
 ): Promise<SmartFetchResult> {
-  const key = governorCacheKey(url, opts);
+  const key = `${proxyConfigRevision}:${governorCacheKey(url, opts)}`;
   const policy = cachePolicyFor(opts);
   const logKey = opts.logKey || url;
   const startedAt = Date.now();
@@ -825,7 +1215,7 @@ export async function smartFetchJson(
   const staleGraceMs = staleEnabled && Number.isFinite(opts.staleGraceMs)
     ? Math.max(0, Number(opts.staleGraceMs))
     : staleEnabled ? STALE_CACHE_GRACE_MS : 0;
-  const circuitKey = opts.circuitKey || circuitKeyFor(logKey, url);
+  const circuitKey = `${proxyConfigRevision}:${opts.circuitKey || circuitKeyFor(logKey, url)}`;
 
   const cached = cacheEnabled ? getUsableCachedResult(key, staleGraceMs) : null;
   if (cached && !cached.stale) {
@@ -951,6 +1341,9 @@ export function pruneProxyState(): void {
   for (const [k, circuit] of upstreamCircuits) {
     if (circuit.openUntil <= now && now - circuit.lastFailureAt > STALE_MS) upstreamCircuits.delete(k);
   }
+  for (const [hostname, entry] of smartDnsCache) {
+    if (entry.expiresAt <= now) smartDnsCache.delete(hostname);
+  }
 }
 
 /**
@@ -961,8 +1354,11 @@ export function pruneProxyState(): void {
 export function describeUpstreamUnreachable(host: string, error?: string | null): string {
   const pool = getProxyPoolInfo();
   const detail = String(error || '').slice(0, 120);
-  if (pool.poolSize === 0) {
+  if (pool.poolSize === 0 && pool.discoveryRoutes === 0) {
     return `${host} unreachable on the direct network. Start the local proxy or configure PROXY_POOL_URLS/SOCKS5_PROXY, then restart the server.${detail ? ` (${detail})` : ''}`;
+  }
+  if (pool.poolSize === 0 && pool.discoveryRoutes > 0) {
+    return `${host} unreachable directly, and none of the ${pool.discoveryRoutes} lazy loopback proxy candidates were reachable.${detail ? ` (${detail})` : ''}`;
   }
   if (pool.healthy === 0) {
     return `${host} unreachable — all ${pool.poolSize} proxy routes are cooling down. Check that your local proxy on port 10808 is running.${detail ? ` (${detail})` : ''}`;
@@ -975,12 +1371,40 @@ export function getProxyPoolInfo(): {
   poolSize: number;
   healthy: number;
   maxConcurrency: number;
+  smartDns: 'off' | 'auto' | 'always';
+  smartProxyDiscovery: boolean;
+  discoveryRoutes: number;
+  configurationError: string | null;
+  routes: Array<{
+    address: string;
+    transport: 'socks5' | 'http';
+    healthy: boolean;
+    failureCount: number;
+    cooldownUntil: number;
+    lastUsed: number | null;
+  }>;
 } {
   const now = Date.now();
+  const routes = activePool().map((route) => {
+    const health = proxyHealth.get(route);
+    return {
+      address: safeProxyRouteLabel(route),
+      transport: isSocksProxyRoute(route) ? 'socks5' as const : 'http' as const,
+      healthy: isHealthy(route, now),
+      failureCount: health?.failureCount ?? 0,
+      cooldownUntil: health?.cooldownUntil ?? 0,
+      lastUsed: health?.lastUsed ? health.lastUsed : null,
+    };
+  });
   return {
-    mode: PROXY_MODE,
-    poolSize: PROXY_POOL.length,
-    healthy: PROXY_POOL.filter((p) => isHealthy(p, now)).length,
+    mode: activeMode(),
+    configurationError: proxyConfigurationError,
+    poolSize: activePool().length,
+    healthy: activePool().filter((p) => isHealthy(p, now)).length,
     maxConcurrency: GOVERNOR_MAX_CONCURRENCY,
+    smartDns: SMART_DNS_MODE === 'off' || SMART_DNS_MODE === 'always' ? SMART_DNS_MODE : 'auto',
+    smartProxyDiscovery: activeMode() === 'auto' && activePool().length === 0 && SMART_FALLBACK_ROUTES.length > 0,
+    discoveryRoutes: activeMode() === 'auto' && activePool().length === 0 ? SMART_FALLBACK_ROUTES.length : 0,
+    routes,
   };
 }

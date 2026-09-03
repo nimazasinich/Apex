@@ -33,7 +33,7 @@ export function AlertsPage(props: AlertsWorkspaceProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(DEFAULT_ALERT_DRAFT);
   const enabled = props.rules.filter((rule) => rule.enabled).length;
-  const triggeredCount = props.rules.reduce((sum, rule) => sum + (rule.triggeredCount || 0), 0) + props.activeAlerts.length;
+  const triggeredCount = props.activeAlerts.length;
   const coverage = new Set(props.rules.map((rule) => rule.symbolFilter || 'ALL')).size;
   const latestTrigger = props.activeAlerts[0] || null;
   const visibleRules = useMemo(() => {
@@ -44,13 +44,17 @@ export function AlertsPage(props: AlertsWorkspaceProps) {
 
   const updateRule = (id: string, patch: Partial<AlertRule>) => {
     const current = props.rules.find((rule) => rule.id === id);
-    props.onRulesChange(props.rules.map((rule) => rule.id === id ? { ...rule, ...patch } : rule));
+    const persisted = props.onRulesChange(props.rules.map((rule) => rule.id === id ? { ...rule, ...patch } : rule));
+    if (!persisted) { notifyWorkspace({ title: 'Alert change not saved', detail: 'Browser persistence is unavailable.', tone: 'error' }); return; }
     if (current && patch.enabled !== undefined) notifyWorkspace({ title: patch.enabled ? 'Alert enabled' : 'Alert paused', detail: current.name, tone: patch.enabled ? 'success' : 'info' });
   };
   const removeRule = (id: string) => {
     const current = props.rules.find((rule) => rule.id === id);
     if (!current || !window.confirm(`Delete alert rule “${current.name}”?`)) return;
-    props.onRulesChange(props.rules.filter((rule) => rule.id !== id));
+    if (!props.onRulesChange(props.rules.filter((rule) => rule.id !== id))) {
+      notifyWorkspace({ title: 'Alert rule not deleted', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return;
+    }
     if (selectedId === id) setSelectedId(null);
     if (editingId === id) {
       setEditingId(null);
@@ -66,7 +70,7 @@ export function AlertsPage(props: AlertsWorkspaceProps) {
       return;
     }
     if (editingId) {
-      props.onRulesChange(props.rules.map((rule) => rule.id === editingId ? {
+      const persisted = props.onRulesChange(props.rules.map((rule) => rule.id === editingId ? {
         ...rule,
         name: normalizedName,
         direction: draft.direction,
@@ -74,6 +78,7 @@ export function AlertsPage(props: AlertsWorkspaceProps) {
         minScore: normalizedScore,
         symbolFilter: draft.symbolFilter.trim().toUpperCase() || undefined,
       } : rule));
+      if (!persisted) { notifyWorkspace({ title: 'Alert rule not saved', detail: 'Browser persistence is unavailable.', tone: 'error' }); return; }
       setSelectedId(editingId);
       setEditingId(null);
       notifyWorkspace({ title: 'Alert rule updated', detail: normalizedName, tone: 'success' });
@@ -89,7 +94,10 @@ export function AlertsPage(props: AlertsWorkspaceProps) {
       symbolFilter: draft.symbolFilter.trim().toUpperCase() || undefined,
       triggeredCount: 0,
     };
-    props.onRulesChange([next, ...props.rules]);
+    if (!props.onRulesChange([next, ...props.rules])) {
+      notifyWorkspace({ title: 'Alert rule not created', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return;
+    }
     setSelectedId(next.id);
     notifyWorkspace({ title: 'Alert rule created', detail: normalizedName, tone: 'success' });
   };
@@ -118,7 +126,7 @@ export function AlertsPage(props: AlertsWorkspaceProps) {
       <div className="apex-v3-metrics five alerts-summary">
         <MetricTile label="Enabled rules" value={enabled} detail="Actively evaluating" icon={<BellRing size={15} />} tone="positive" />
         <MetricTile label="Total rules" value={props.rules.length} detail="Saved in this browser" icon={<Bell size={15} />} />
-        <MetricTile label="Session triggers" value={triggeredCount} detail="Saved count plus this session" icon={<Radio size={15} />} tone="warning" />
+        <MetricTile label="Session triggers" value={triggeredCount} detail="Triggered in this runtime session" icon={<Radio size={15} />} tone="warning" />
         <MetricTile label="Coverage" value={coverage} detail="All-market or symbol scopes" icon={<Sparkles size={15} />} tone="violet" />
         <MetricTile label="Last trigger" value={latestTrigger?.symbol || '—'} detail={latestTrigger?.tier || 'No session trigger'} icon={<Clock3 size={15} />} tone="info" />
       </div>

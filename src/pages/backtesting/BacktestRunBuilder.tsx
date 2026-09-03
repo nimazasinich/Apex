@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { CoinIcon } from '../../components/CoinIcon';
 import { DirectionSelector } from '../../components/ui/DirectionSelector';
-import { SmartAutopilotMiniToggle } from '../../components/SmartAutopilotMiniToggle';
 import type { AutopilotPhase } from '../../lib/useAutopilotController';
 import type { BacktestResult, DataState, SymbolTicker, TradeDirection } from '../../types';
 import type { BacktestInterval, BacktestRiskProfile, BacktestStrategyPreset, BacktestStudioMode, SmartBacktestCheckpoint } from './backtestingTypes';
@@ -26,7 +25,6 @@ import type { BacktestSavedPreset } from './backtestPersistence';
 
 export interface BacktestRunBuilderProps {
   studioMode: BacktestStudioMode;
-  onStudioModeChange: (mode: BacktestStudioMode) => void;
   smartCheckpoint: SmartBacktestCheckpoint | null;
   smartRunning: boolean;
   smartStopping: boolean;
@@ -89,18 +87,15 @@ export interface BacktestRunBuilderProps {
   optimizationMessage?: string | null;
   optimizationEligible?: boolean;
   optimizationPromoted?: boolean;
-  optimizationHoldoutPnlPct?: number | null;
-  optimizationHoldoutImprovement?: number | null;
+  optimizationDevelopmentPnlPct?: number | null;
+  optimizationDevelopmentImprovement?: number | null;
   optimizationNeighborPassRate?: number | null;
   activeOptimizationRevision?: number | null;
   autopilotEnabled?: boolean;
-  autopilotRunning?: boolean;
   /** Real controller phase from the server; authoritative when present. */
   autopilotPhase?: AutopilotPhase | null;
   autopilotPhaseText?: string | null;
   autopilotDisconnected?: boolean;
-  autopilotMessage?: string | null;
-  onAutopilotToggle?: (enabled: boolean) => void;
   onRunOptimization?: () => void;
   onPromoteOptimization?: () => void;
 }
@@ -125,7 +120,6 @@ function FieldHint({ text }: { text: string }) {
 export function BacktestRunBuilder(props: BacktestRunBuilderProps) {
   const {
     studioMode,
-    onStudioModeChange,
     smartCheckpoint,
     smartRunning,
     smartStopping,
@@ -188,17 +182,14 @@ export function BacktestRunBuilder(props: BacktestRunBuilderProps) {
     optimizationMessage = null,
     optimizationEligible = false,
     optimizationPromoted = false,
-    optimizationHoldoutPnlPct = null,
-    optimizationHoldoutImprovement = null,
+    optimizationDevelopmentPnlPct = null,
+    optimizationDevelopmentImprovement = null,
     optimizationNeighborPassRate = null,
     activeOptimizationRevision = null,
     autopilotEnabled = false,
-    autopilotRunning = false,
     autopilotPhase = null,
     autopilotPhaseText = null,
     autopilotDisconnected = false,
-    autopilotMessage = null,
-    onAutopilotToggle = () => undefined,
     onRunOptimization = () => undefined,
     onPromoteOptimization = () => undefined,
   } = props;
@@ -300,11 +291,6 @@ export function BacktestRunBuilder(props: BacktestRunBuilderProps) {
           <span>Stops on user Stop</span><span>max runtime 2h</span><span>max iterations 250</span><span>20 no-improvement iterations</span><span>provider/data failure</span>
         </div>
       </section>
-
-      <div className="apex-bt-builder-mode-inline" role="group" aria-label="Builder mode switch">
-        <button type="button" aria-pressed={studioMode === 'smart'} className={studioMode === 'smart' ? 'active' : ''} onClick={() => onStudioModeChange('smart')}>Smart</button>
-        <button type="button" aria-pressed={studioMode === 'manual'} className={studioMode === 'manual' ? 'active' : ''} onClick={() => onStudioModeChange('manual')}>Manual / Expert</button>
-      </div>
 
       <details className="apex-bt-expert-details" open>
         <summary>Advanced manual controls</summary>
@@ -472,29 +458,20 @@ export function BacktestRunBuilder(props: BacktestRunBuilderProps) {
         </div>
       </div>
 
-      <section className={`apex-bt-smart-autopilot ${autopilotEnabled ? 'active' : ''} ${autopilotRunning ? 'running' : ''}`} aria-label="Smart Autopilot auto-tuning">
+      <section className={`apex-bt-smart-autopilot ${autopilotEnabled ? 'active' : ''} ${autopilotPhase === 'RESEARCHING' || autopilotPhase === 'VALIDATING' ? 'running' : ''}`} aria-label="Global Autopilot status">
         <header>
-          <span><Activity size={14} aria-hidden="true" /><strong>Smart Autopilot</strong><em>{autopilotPhaseText ?? (autopilotEnabled ? (autopilotRunning ? 'TUNING' : 'ARMED') : 'OFF')}</em></span>
-          <SmartAutopilotMiniToggle
-            enabled={autopilotEnabled}
-            running={autopilotRunning}
-            phase={autopilotPhase}
-            phaseText={autopilotPhaseText}
-            disconnected={autopilotDisconnected}
-            disabled={!autopilotEnabled && loading}
-            onChange={onAutopilotToggle}
-            title="Backtesting Smart Autopilot"
-          />
+          <span><Activity size={14} aria-hidden="true" /><strong>Global Autopilot</strong><em>{autopilotDisconnected ? 'UNREACHABLE' : autopilotPhase ?? (autopilotEnabled ? 'STARTING' : 'MANUAL')}</em></span>
+          <small>Controlled from the application header</small>
         </header>
         <div className="apex-bt-smart-autopilot-grid">
           <span><small>Scope</small><strong>Strategy × market × timeframe × direction</strong></span>
-          <span><small>Cadence</small><strong>Every 5 minutes</strong></span>
+          <span><small>Cadence</small><strong>Immediate start + server schedule</strong></span>
           <span><small>Promotion gate</small><strong>5-agent consensus</strong></span>
           <span><small>Output</small><strong>Research + paper plan only</strong></span>
         </div>
-        <p>{autopilotMessage || (autopilotEnabled
-          ? 'Cycles rotate through executable contexts, tune thresholds, validate untouched holdout + cost stress + stability, then re-test promoted profiles through the multi-strategy paper council.'
-          : 'One switch starts bounded auto-tuning. Weak or overfit candidates are vetoed; no exchange order is created.')}</p>
+        <p>{autopilotPhaseText || (autopilotEnabled
+          ? 'The server owns the only automatic lifecycle. This page observes it and cannot create a duplicate timer.'
+          : 'Manual research mode is active. Start safe research Autopilot from the global header when required.')}</p>
       </section>
 
       <section className={`apex-bt-optimization-panel ${optimizationExpanded ? 'expanded' : ''}`} aria-label="Robust strategy optimization">
@@ -508,13 +485,13 @@ export function BacktestRunBuilder(props: BacktestRunBuilderProps) {
         {optimizationExpanded && (
           <div className="apex-bt-optimization-body">
             <div className="apex-bt-optimization-copy">
-              <strong>{optimizationPromoted ? 'Verified profile active' : optimizationEligible ? 'Holdout-eligible candidate ready' : 'Search for robust improvement'}</strong>
-              <small>{optimizationMessage || autopilotMessage || 'Uses chronological windows, untouched holdout, cost stress and neighbor stability. It never forces a positive result.'}</small>
+              <strong>{optimizationPromoted ? 'Validated profile active' : optimizationEligible ? 'Development-eligible candidate ready' : 'Search for robust improvement'}</strong>
+              <small>{optimizationMessage || 'Uses development-only chronological selection, cost stress, neighbor stability and a sealed final holdout reserved for later validation.'}</small>
             </div>
-            {(optimizationHoldoutPnlPct != null || optimizationHoldoutImprovement != null || optimizationNeighborPassRate != null) && (
+            {(optimizationDevelopmentPnlPct != null || optimizationDevelopmentImprovement != null || optimizationNeighborPassRate != null) && (
               <dl>
-                <div><dt>Holdout P&amp;L</dt><dd className={(optimizationHoldoutPnlPct ?? 0) >= 0 ? 'positive' : 'negative'}>{optimizationHoldoutPnlPct == null ? '—' : `${optimizationHoldoutPnlPct >= 0 ? '+' : ''}${optimizationHoldoutPnlPct.toFixed(2)}%`}</dd></div>
-                <div><dt>Utility Δ</dt><dd>{optimizationHoldoutImprovement == null ? '—' : `${optimizationHoldoutImprovement >= 0 ? '+' : ''}${optimizationHoldoutImprovement.toFixed(3)}`}</dd></div>
+                <div><dt>Development validation P&amp;L</dt><dd className={(optimizationDevelopmentPnlPct ?? 0) >= 0 ? 'positive' : 'negative'}>{optimizationDevelopmentPnlPct == null ? '—' : `${optimizationDevelopmentPnlPct >= 0 ? '+' : ''}${optimizationDevelopmentPnlPct.toFixed(2)}%`}</dd></div>
+                <div><dt>Utility Δ</dt><dd>{optimizationDevelopmentImprovement == null ? '—' : `${optimizationDevelopmentImprovement >= 0 ? '+' : ''}${optimizationDevelopmentImprovement.toFixed(3)}`}</dd></div>
                 <div><dt>Neighbor pass</dt><dd>{optimizationNeighborPassRate == null ? '—' : `${(optimizationNeighborPassRate * 100).toFixed(0)}%`}</dd></div>
               </dl>
             )}

@@ -3,7 +3,7 @@
  *
  * WHY THIS EXISTS
  *
- * The walk-forward validation suite is the evidence the automatic-promotion gate
+ * The temporal-robustness + sealed-holdout validation suite is the evidence the automatic-promotion gate
  * relies on. Before this module, that suite decided WHAT it was measuring
  * implicitly: `runStrategyDefinition` treated a missing `applyActiveOptimization`
  * flag as "read whatever profile is currently active from the store". The

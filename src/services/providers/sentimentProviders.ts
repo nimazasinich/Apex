@@ -236,26 +236,46 @@ export class AlternativeMeSentimentProvider implements SupplementalProvider {
       });
       const latency = Date.now() - startTime;
 
-      if (response.status === 429) {
-        return {
-          category: 'sentiment',
-        valid: false,
-          provider: this.name,
-          symbol,
-          data: null,
-          source: 'degraded',
-          status: 'RATE_LIMITED',
-          reason: 'Alternative.me rate limit exceeded',
-          latencyMs: latency,
-          updatedAt: new Date().toISOString(),
-        };
+      let json = response.json;
+      let row = json?.data?.[0];
+      let raw = Number(row?.value);
+
+      if (!response.ok || !Number.isFinite(raw)) {
+        // Multi-source fallback to Space 2
+        try {
+          const fallbackRes = await smartFetchJson('https://really-amin-datasourceforcryptocurrency-2.hf.space/api/multi-source/sentiment', {
+            timeoutMs: tmo,
+            logKey: 'alternativeme:fng_fallback_space2',
+          });
+          if (fallbackRes.ok && fallbackRes.json?.success === true && fallbackRes.json.data) {
+            json = fallbackRes.json;
+            row = fallbackRes.json.data;
+            raw = Number(row?.value);
+          }
+        } catch {
+          // fallback failed, continue to standard error handling
+        }
       }
 
-      if (!response.ok) {
+      if (!Number.isFinite(raw)) {
+        if (response.status === 429) {
+          return {
+            category: 'sentiment',
+            valid: false,
+            provider: this.name,
+            symbol,
+            data: null,
+            source: 'degraded',
+            status: 'RATE_LIMITED',
+            reason: 'Alternative.me rate limit exceeded',
+            latencyMs: latency,
+            updatedAt: new Date().toISOString(),
+          };
+        }
         const unreachable = response.status === 0;
         return {
           category: 'sentiment',
-        valid: false,
+          valid: false,
           provider: this.name,
           symbol,
           data: null,
@@ -264,24 +284,6 @@ export class AlternativeMeSentimentProvider implements SupplementalProvider {
           reason: unreachable
             ? describeUpstreamUnreachable('api.alternative.me', response.error)
             : `Alternative.me returned HTTP ${response.status}`,
-          latencyMs: latency,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-
-      const json = response.json;
-      const row = json?.data?.[0];
-      const raw = Number(row?.value);
-      if (!Number.isFinite(raw)) {
-        return {
-          category: 'sentiment',
-        valid: false,
-          provider: this.name,
-          symbol,
-          data: null,
-          source: 'unavailable',
-          status: 'BAD_RESPONSE',
-          reason: 'Alternative.me Fear & Greed response missing value',
           latencyMs: latency,
           updatedAt: new Date().toISOString(),
         };
@@ -331,33 +333,3 @@ export class AlternativeMeSentimentProvider implements SupplementalProvider {
   }
 }
 
-export class NewsBasedSentimentProvider implements SupplementalProvider {
-  name = 'NewsSentiment';
-  category = 'sentiment' as const;
-  private timeout: number;
-
-  constructor(config?: ProviderConfig) {
-    this.timeout = config?.timeout || 8000;
-  }
-
-  isConfigured(): boolean {
-    return true; // Always available (doesn't require API key)
-  }
-
-  async fetch(symbol: string, timeoutMs?: number): Promise<SentimentResult> {
-    const startTime = Date.now();
-
-    return {
-      category: 'sentiment',
-        valid: false,
-      provider: this.name,
-      symbol,
-      data: null,
-      source: 'not_configured',
-      status: 'NO_NEWS_DATA',
-      reason: 'Requires news data input from news providers',
-      latencyMs: Date.now() - startTime,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}

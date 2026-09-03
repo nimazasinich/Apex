@@ -6,6 +6,7 @@ import { getTickerSparkline } from '../../lib/sparkline';
 import { CoinIcon } from '../CoinIcon';
 import { ColoredGauge } from '../ColoredGauge';
 import { MiniSparkline } from '../MiniSparkline';
+import { isVerifiedLiveEligibility } from '../../lib/capabilityStatus';
 
 export type ToolboxKey = 'watchlist' | 'scanner' | 'movers' | 'signals';
 
@@ -121,7 +122,7 @@ export function DrawerShell({
 
 const MAJOR_PREFIXES = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'AVAX'];
 
-function WatchlistDrawer({ tickers, selectedSymbol, onSelectSymbol, onClose }: { tickers: SymbolTicker[]; selectedSymbol: string; onSelectSymbol: (symbol: string) => void; onClose: () => void }) {
+export function WatchlistDrawer({ tickers, selectedSymbol, onSelectSymbol, onClose }: { tickers: SymbolTicker[]; selectedSymbol: string; onSelectSymbol: (symbol: string) => void; onClose: () => void }) {
   const [tab, setTab] = useState<'all' | 'majors'>('all');
   const visible = useMemo(() => {
     const source = tab === 'majors'
@@ -133,9 +134,13 @@ function WatchlistDrawer({ tickers, selectedSymbol, onSelectSymbol, onClose }: {
       .filter((ticker, index, rows) => rows.findIndex((candidate) => candidate.symbol === ticker.symbol) === index)
       .slice(0, 20);
   }, [selectedSymbol, tab, tickers]);
+  const newestObservation = tickers.length ? Math.max(...tickers.map((ticker) => ticker.timestamp).filter(Number.isFinite)) : null;
+  const verifiedLive = tickers.length > 0
+    && tickers.every((ticker) => ticker.dataState === 'live' && Number.isFinite(ticker.timestamp))
+    && isVerifiedLiveEligibility({ dataState: 'live', observedAt: newestObservation, authorityVerified: true });
 
   return (
-    <DrawerShell title="Watchlist" badge="LIVE" onClose={onClose}>
+    <DrawerShell title="Watchlist" badge={verifiedLive ? 'LIVE' : 'UNAVAILABLE'} onClose={onClose}>
       <div className="apex-toolbox-watchlist">
         <div className="apex-tf-tabs drawer-tabs watchlist-drawer-tabs">
           <button type="button" className={tab === 'all' ? 'active' : ''} onClick={() => setTab('all')}>ALL</button>
@@ -167,7 +172,7 @@ function ScannerDrawer({ longCandidates, shortCandidates, onClose, onOpenMarkets
   const rowsData = tab === 'long' ? longCandidates : shortCandidates;
 
   return (
-    <DrawerShell title="Two-Directional Scanner" badge="LIVE" onClose={onClose}>
+    <DrawerShell title="Two-Directional Scanner" badge="CURRENT" onClose={onClose}>
       <div className="apex-tf-tabs drawer-tabs">
         <button type="button" className={tab === 'long' ? 'active' : ''} onClick={() => setTab('long')}>Long setups</button>
         <button type="button" className={tab === 'short' ? 'active' : ''} onClick={() => setTab('short')}>Short setups</button>
@@ -183,25 +188,25 @@ function ScannerDrawer({ longCandidates, shortCandidates, onClose, onOpenMarkets
         )) : <div className="apex-honest-empty compact">No qualified {tab} setups right now.</div>}
       </div>
       <div className="apex-drawer-footer">
-        <span>Last updated: {new Date().toISOString().slice(11, 19)} UTC</span>
+        <span>Source time: {(() => { const times = rowsData.map((row) => row.canonicalDecision?.createdAt).filter((value): value is number => Number.isFinite(value)); return times.length ? new Date(Math.max(...times)).toISOString().slice(11, 19) + ' UTC' : 'UNAVAILABLE'; })()}</span>
         <button type="button" className="apex-drawer-link" onClick={onOpenMarkets}>View full scanner <ArrowUpRight size={14} /></button>
       </div>
     </DrawerShell>
   );
 }
 
-function MoversDrawer({ tickers, sentiment, onClose }: { tickers: SymbolTicker[]; sentiment: SentimentComposite | null; onClose: () => void }) {
+export function MoversDrawer({ tickers, sentiment, onClose }: { tickers: SymbolTicker[]; sentiment: SentimentComposite | null; onClose: () => void }) {
   const [tab, setTab] = useState<'gainers' | 'losers'>('gainers');
   const sorted = useMemo(() => [...tickers].sort((a, b) => (tab === 'gainers' ? b.priceChange24hPct - a.priceChange24hPct : a.priceChange24hPct - b.priceChange24hPct)).slice(0, 6), [tickers, tab]);
   const turnoverLeaders = useMemo(() => [...tickers].sort((a, b) => (b.turnover24h || 0) - (a.turnover24h || 0)).slice(0, 6), [tickers]);
-  const mood = sentiment?.score ?? 50;
-  const moodLabel = mood >= 70 ? 'Greed' : mood >= 55 ? 'Greed' : mood >= 45 ? 'Neutral' : mood >= 30 ? 'Fear' : 'Fear';
+  const mood = sentiment && Number.isFinite(sentiment.score) ? sentiment.score : null;
+  const moodLabel = mood == null ? 'UNAVAILABLE' : mood >= 70 ? 'Greed' : mood >= 55 ? 'Greed' : mood >= 45 ? 'Neutral' : mood >= 30 ? 'Fear' : 'Fear';
 
   return (
     <DrawerShell title="Market Movers" onClose={onClose}>
       <div className="apex-mood-card">
         <div className="apex-mood-head"><span>Market Mood</span><small>Real-time market intelligence</small></div>
-        <ColoredGauge value={mood} size={126} displayValue={String(Math.round(mood))} label={moodLabel} className="apex-mood-colored-gauge" />
+        {mood == null ? <div className="apex-honest-empty compact">Sentiment unavailable — no neutral score is synthesized.</div> : <ColoredGauge value={mood} size={126} displayValue={String(Math.round(mood))} label={moodLabel} className="apex-mood-colored-gauge" />}
         <div className="apex-mood-scale"><span>Fear</span><span>Greed</span></div>
       </div>
       <div className="apex-tf-tabs drawer-tabs">
@@ -234,31 +239,36 @@ function MoversDrawer({ tickers, sentiment, onClose }: { tickers: SymbolTicker[]
 
 function SignalsDrawer({ longCandidates, shortCandidates, tickers, onClose, onOpenAnalytics }: { longCandidates: CandidateScore[]; shortCandidates: CandidateScore[]; tickers: SymbolTicker[]; onClose: () => void; onOpenAnalytics: () => void }) {
   const [showAll, setShowAll] = useState(false);
-  const active = longCandidates.length + shortCandidates.length;
-  const longPct = active ? Math.round((longCandidates.length / active) * 100) : 50;
-  const rankedSignals = [...longCandidates.map((c) => ({ ...c, type: 'Long' })), ...shortCandidates.map((c) => ({ ...c, type: 'Short' }))]
-    .sort((a, b) => b.score - a.score);
+  const isSignalOrSetup = (candidate: CandidateScore) => candidate.decisionState
+    ? candidate.decisionState === 'SIGNAL' || candidate.decisionState === 'QUALIFIED_SETUP'
+    : candidate.guardPass && candidate.readinessTier !== 'BLOCKED';
+  const activeLong = longCandidates.filter(isSignalOrSetup);
+  const activeShort = shortCandidates.filter(isSignalOrSetup);
+  const active = activeLong.length + activeShort.length;
+  const longPct = active ? Math.round((activeLong.length / active) * 100) : null;
+  const rankedSignals = [...activeLong.map((c) => ({ ...c, type: 'Long' })), ...activeShort.map((c) => ({ ...c, type: 'Short' }))]
+    .sort((a, b) => (b.canonicalRankScore ?? b.score) - (a.canonicalRankScore ?? a.score));
   const recent = rankedSignals.slice(0, showAll ? 20 : 6);
   const allCandidates = [...longCandidates, ...shortCandidates];
-  const guardPassRate = active ? Math.round((allCandidates.filter((candidate) => candidate.guardPass).length / active) * 100) : 0;
-  const averageScore = active ? allCandidates.reduce((sum, candidate) => sum + candidate.score, 0) / active : 0;
+  const guardPassRate = allCandidates.length ? Math.round((allCandidates.filter((candidate) => candidate.guardPass).length / allCandidates.length) * 100) : null;
+  const averageScore = allCandidates.length ? allCandidates.reduce((sum, candidate) => sum + candidate.score, 0) / allCandidates.length : null;
   const confirmed = allCandidates.filter((candidate) => candidate.readinessTier === 'CONFIRMED').length;
   const bestSignal = recent[0];
 
   return (
-    <DrawerShell title="Signal Pulse" badge="LIVE" onClose={onClose}>
+    <DrawerShell title="Signal Pulse" badge="CURRENT" onClose={onClose}>
       <div className="apex-signal-snapshot">
         <div><strong>{active}</strong><span>Active Signals</span></div>
-        <div><strong className="positive">{longCandidates.length}</strong><span>Long Signals</span></div>
-        <div><strong className="negative">{shortCandidates.length}</strong><span>Short Signals</span></div>
+        <div><strong className="positive">{activeLong.length}</strong><span>Long Setups</span></div>
+        <div><strong className="negative">{activeShort.length}</strong><span>Short Setups</span></div>
       </div>
-      <div className="apex-split-bar"><i style={{ width: `${longPct}%` }} /></div>
-      <div className="apex-drawer-meta"><span>Markets Scanned <strong>{tickers.length}</strong></span><span>Last Update <strong>{new Date().toISOString().slice(11, 19)} UTC</strong></span></div>
+      {longPct == null ? <div className="apex-honest-empty compact">No signal-direction split available.</div> : <div className="apex-split-bar"><i style={{ width: `${longPct}%` }} /></div>}
+      <div className="apex-drawer-meta"><span>Markets Scanned <strong>{tickers.length}</strong></span><span>Source Time <strong>{(() => { const times = tickers.map((ticker) => ticker.observationMetadata?.sourceObservedAt ?? ticker.timestamp).filter((value): value is number => Number.isFinite(value)); return times.length ? new Date(Math.max(...times)).toISOString().slice(11, 19) + ' UTC' : 'UNAVAILABLE'; })()}</strong></span></div>
 
       <div className="apex-drawer-subhead">Live quality <em>current scan</em></div>
       <div className="apex-perf-grid">
-        <div><span>Guard Pass</span><strong className="positive">{guardPassRate}%</strong><MiniSparkline values={allCandidates.slice(0, 12).map((candidate) => candidate.score)} tone="positive" /></div>
-        <div><span>Average Score</span><strong>{active ? averageScore.toFixed(1) : '—'}</strong><MiniSparkline values={allCandidates.slice(0, 12).map((candidate) => candidate.score)} tone="violet" /></div>
+        <div><span>Guard Pass</span><strong className="positive">{guardPassRate == null ? '—' : `${guardPassRate}%`}</strong><MiniSparkline values={allCandidates.slice(0, 12).map((candidate) => candidate.score)} tone="positive" /></div>
+        <div><span>Average Score</span><strong>{averageScore == null ? '—' : averageScore.toFixed(1)}</strong><MiniSparkline values={allCandidates.slice(0, 12).map((candidate) => candidate.score)} tone="violet" /></div>
         <div><span>Confirmed</span><strong>{confirmed}</strong><MiniSparkline values={allCandidates.slice(0, 12).map((candidate) => candidate.readinessTier === 'CONFIRMED' ? candidate.score : 0)} tone="positive" bars /></div>
         <div><span>Best Signal</span><strong className="positive">{bestSignal ? `${bestSignal.symbol} ${bestSignal.type}` : '—'}</strong><MiniSparkline values={allCandidates.slice(0, 12).map((candidate) => Math.abs(candidate.priceChange24hPct))} tone="positive" /></div>
       </div>

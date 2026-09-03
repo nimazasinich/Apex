@@ -47,6 +47,8 @@ function report(subject: ReturnType<typeof identifyStrategyValidationSubject>): 
     subject,
     gates: { data: true, sample: true, outOfSample: true, drawdown: true, stability: true, costResilience: true, regime: true, reproducibility: true },
     passedAllGates: true,
+    validationScope: 'FULL_STRATEGY',
+    fullStrategyValidated: true,
   } as unknown as StrategyValidationReport;
 }
 

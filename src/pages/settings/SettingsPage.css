@@ -19,7 +19,7 @@
   min-height: 0;
   padding: 8px;
   display: grid;
-  grid-template-columns: 132px repeat(7, minmax(76px, 1fr));
+  grid-template-columns: 132px repeat(8, minmax(76px, 1fr));
   align-items: stretch;
   gap: 6px;
   overflow: hidden;
@@ -570,7 +570,7 @@
 
 @media (max-width: 1279px) {
   .apex-v3-settings-page { grid-template-columns: minmax(0, 1fr) 272px; }
-  .apex-v3-settings-nav { grid-template-columns: 112px repeat(7, minmax(67px, 1fr)); gap: 4px; }
+  .apex-v3-settings-nav { grid-template-columns: 112px repeat(8, minmax(67px, 1fr)); gap: 4px; }
   .apex-v3-settings-nav-intro { padding-inline: 5px; gap: 6px; }
   .apex-v3-settings-nav-brand { width: 30px; height: 30px; flex-basis: 30px; }
   .apex-v3-settings-nav-copy strong { font-size: 7.5px; }
@@ -1089,6 +1089,12 @@
   --settings-tab-soft: #effaff;
 }
 
+.apex-v3-settings-nav button:nth-of-type(8) {
+  --settings-tab-accent: #52647a;
+  --settings-tab-border: rgba(82, 100, 122, .24);
+  --settings-tab-soft: #f2f5f8;
+}
+
 .apex-v3-settings-nav button .apex-v3-settings-nav-icon {
   color: var(--settings-tab-accent);
   border-color: var(--settings-tab-border);
@@ -1120,7 +1126,7 @@
 
 /* Final icon-only nav override. */
 .apex-v3-settings-page .apex-v3-settings-nav {
-  grid-template-columns: 62px repeat(7, minmax(62px, 1fr));
+  grid-template-columns: 62px repeat(8, minmax(62px, 1fr));
   min-height: 82px;
 }
 
@@ -1168,7 +1174,7 @@
 
 /* Icon-only Settings menu: element navigation is driven by large SVG tiles. */
 .apex-v3-settings-nav {
-  grid-template-columns: 62px repeat(7, minmax(62px, 1fr));
+  grid-template-columns: 62px repeat(8, minmax(62px, 1fr));
   min-height: 82px;
 }
 
@@ -2457,10 +2463,16 @@
   --settings-section-border: rgba(30, 115, 190, .24);
 }
 
-.apex-v3-settings-body.active-settings-devices {
+.apex-v3-settings-body.active-settings-smart-proxy {
   --settings-section-accent: #168ebf;
   --settings-section-soft: #effaff;
   --settings-section-border: rgba(22, 142, 191, .24);
+}
+
+.apex-v3-settings-body.active-settings-devices {
+  --settings-section-accent: #52647a;
+  --settings-section-soft: #f2f5f8;
+  --settings-section-border: rgba(82, 100, 122, .24);
 }
 
 .apex-v3-settings-body::before {
@@ -3150,7 +3162,7 @@
 
 /* Settings header v4: borderless flatter 3D icons with refined SVG labels. */
 .apex-v3-settings-page .apex-v3-settings-nav {
-  grid-template-columns: 58px repeat(7, minmax(58px, 1fr));
+  grid-template-columns: 58px repeat(8, minmax(58px, 1fr));
   min-height: 92px;
   padding: 8px 10px;
   align-items: center;
@@ -3336,23 +3348,24 @@
 }
 
 .apex-v3-settings-workspace {
-  display: grid;
-  grid-template-columns: 228px minmax(0, 1fr);
+  display: flex !important;
+  flex-direction: column !important;
   gap: 14px;
   min-height: 0;
 }
 
 .apex-v3-settings-nav {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
   min-height: 0;
-  padding: 8px;
-  overflow: auto;
+  padding: 6px 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
   border: 1px solid var(--apex-border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--apex-surface);
   box-shadow: none;
 }
@@ -3360,18 +3373,27 @@
 .apex-v3-settings-nav .apex-v3-settings-nav-intro { display: none; }
 
 .apex-v3-settings-nav button {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  grid-template-rows: auto;
-  align-items: center;
-  justify-items: stretch;
-  gap: 10px;
-  min-height: 58px;
-  padding: 9px 10px;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 6px 14px !important;
   overflow: visible;
   border: 1px solid transparent;
-  border-radius: 9px;
-  text-align: left;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.apex-v3-settings-nav button .apex-v3-settings-nav-copy small {
+  display: none !important;
+}
+
+.apex-v3-settings-nav button .apex-v3-settings-nav-copy strong {
+  font-size: 13px !important;
+  font-weight: 650 !important;
 }
 .apex-v3-settings-nav button::after { display: none; }
 .apex-v3-settings-nav-icon {
@@ -3557,4 +3579,647 @@
   .settings-overview-values,
   .settings-overview-theme-toggle,
   .settings-overview-row > .apex-v3-button { grid-column: 2; }
+}
+
+/* CP20 integration observability */
+.apex-v3-feed-health-grid, .apex-v3-telegram-health-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; padding: 10px 12px; }
+.apex-v3-feed-health-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.apex-v3-feed-health-grid > div, .apex-v3-telegram-health-grid > div { min-width: 0; padding: 8px; border: 1px solid var(--apex-divider); border-radius: 8px; background: var(--apex-surface); }
+.apex-v3-feed-health-grid span, .apex-v3-feed-health-grid strong, .apex-v3-feed-health-grid small, .apex-v3-telegram-health-grid span, .apex-v3-telegram-health-grid strong, .apex-v3-telegram-health-grid small { min-width: 0; display: block; }
+.apex-v3-feed-health-grid span { display: flex; align-items: center; gap: 5px; color: var(--apex-ink-950); font-size: 8px; font-weight: 700; }
+.apex-v3-feed-health-grid span i { width: 6px; height: 6px; border-radius: 50%; background: var(--apex-muted-500); }
+.apex-v3-feed-health-grid strong { margin-top: 5px; font-size: 9px; text-transform: uppercase; }
+.apex-v3-feed-health-grid small { margin-top: 3px; overflow: hidden; color: var(--apex-muted-600); font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-feed-health-grid .feed-ok span i { background: var(--apex-positive); }
+.apex-v3-feed-health-grid .feed-ok strong { color: var(--apex-positive); }
+.apex-v3-feed-health-grid .feed-degraded span i { background: var(--apex-orange-500); }
+.apex-v3-feed-health-grid .feed-degraded strong { color: var(--apex-orange-500); }
+.apex-v3-feed-health-grid .feed-error span i, .apex-v3-feed-health-grid .feed-blocked span i { background: var(--apex-negative); }
+.apex-v3-feed-health-grid .feed-error strong, .apex-v3-feed-health-grid .feed-blocked strong { color: var(--apex-negative); }
+.apex-v3-feed-health-skeleton, .apex-v3-telegram-skeleton { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; padding: 10px 12px; }
+.apex-v3-telegram-skeleton { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.apex-v3-feed-health-skeleton i, .apex-v3-telegram-skeleton i { height: 54px; border-radius: 8px; background: var(--apex-surface-muted); opacity: .75; }
+.apex-v3-telegram-health-grid > div { display: flex; align-items: center; gap: 7px; color: var(--apex-blue-500); }
+.apex-v3-telegram-health-grid span, .apex-v3-telegram-health-grid strong, .apex-v3-telegram-health-grid small { min-width: 0; }
+.apex-v3-telegram-health-grid strong { overflow: hidden; color: var(--apex-ink-950); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-telegram-health-grid small { margin-top: 2px; color: var(--apex-muted-600); font-size: 7px; }
+.apex-v3-integration-history { margin: 0 12px 10px; overflow: hidden; border: 1px solid var(--apex-divider); border-radius: 8px; }
+.apex-v3-integration-history > strong { display: block; padding: 7px 9px; background: var(--apex-surface-muted); color: var(--apex-ink-950); font-size: 9px; }
+.apex-v3-integration-history > div { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 7px; align-items: center; padding: 6px 9px; border-top: 1px solid var(--apex-divider); font-size: 8px; }
+.apex-v3-integration-history > div span { color: var(--apex-blue-500); font-weight: 750; }
+.apex-v3-integration-history > div b { min-width: 0; overflow: hidden; color: var(--apex-ink-950); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.apex-v3-integration-history > div small { color: var(--apex-muted-600); white-space: nowrap; }
+.apex-v3-integration-history > p { margin: 0; padding: 8px 9px; color: var(--apex-muted-600); font-size: 8px; }
+.apex-v3-integration-error { display: flex; align-items: center; gap: 5px; margin: 0 12px 10px; padding: 8px; border: 1px solid color-mix(in srgb, var(--apex-negative) 25%, transparent); border-radius: 7px; color: var(--apex-negative); background: color-mix(in srgb, var(--apex-negative) 7%, transparent); font-size: 9px; }
+@media (max-width: 900px) { .apex-v3-feed-health-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .apex-v3-telegram-health-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* CP22 / Phase 3.6 — cohesive Settings visual hierarchy.
+   Scoped to the Settings workspace and built only from existing APEX theme tokens. */
+.apex-v3-settings-page {
+  --settings-section-accent: var(--apex-green-600);
+  --settings-section-accent-soft: color-mix(in srgb, var(--settings-section-accent) 9%, var(--apex-surface));
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav {
+  background:
+    radial-gradient(circle at 8% 18%, color-mix(in srgb, var(--apex-green-500) 9%, transparent) 0 18%, transparent 42%),
+    linear-gradient(180deg, var(--apex-surface) 0%, color-mix(in srgb, var(--apex-surface-soft) 82%, var(--apex-surface)) 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 12px 28px rgba(15, 23, 42, .045);
+}
+
+.apex-v3-settings-nav button[data-settings-section="account"] { --settings-tab-accent: var(--apex-green-600); }
+.apex-v3-settings-nav button[data-settings-section="security"] { --settings-tab-accent: var(--apex-blue); }
+.apex-v3-settings-nav button[data-settings-section="appearance"] { --settings-tab-accent: var(--apex-violet); }
+.apex-v3-settings-nav button[data-settings-section="notifications"] { --settings-tab-accent: var(--apex-amber); }
+.apex-v3-settings-nav button[data-settings-section="trading"] { --settings-tab-accent: var(--apex-orange-500); }
+.apex-v3-settings-nav button[data-settings-section="api"] { --settings-tab-accent: var(--apex-green-600); }
+.apex-v3-settings-nav button[data-settings-section="smart-proxy"] { --settings-tab-accent: var(--apex-blue); }
+.apex-v3-settings-nav button[data-settings-section="devices"] { --settings-tab-accent: var(--apex-violet); }
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section]::after {
+  background: color-mix(in srgb, var(--settings-tab-accent, var(--apex-green-600)) 0%, transparent);
+  transition: background-color .16s ease, left .16s ease, right .16s ease;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section]:hover .apex-v3-settings-nav-icon,
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section].active .apex-v3-settings-nav-icon {
+  color: var(--settings-tab-accent, var(--apex-green-700));
+  border-color: color-mix(in srgb, var(--settings-tab-accent, var(--apex-green-600)) 28%, var(--apex-border));
+  background: color-mix(in srgb, var(--settings-tab-accent, var(--apex-green-600)) 9%, var(--apex-surface));
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section].active::after {
+  right: 12%;
+  left: 12%;
+  background: var(--settings-tab-accent, var(--apex-green-500));
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section].active {
+  border-color: color-mix(in srgb, var(--settings-tab-accent, var(--apex-green-600)) 26%, var(--apex-border));
+  background: linear-gradient(180deg, var(--apex-surface) 0%, color-mix(in srgb, var(--settings-tab-accent, var(--apex-green-600)) 5%, var(--apex-surface)) 100%);
+  box-shadow: 0 7px 18px rgba(15, 23, 42, .065);
+}
+
+.settings-section-account { --settings-section-accent: var(--apex-green-600); }
+.settings-section-security { --settings-section-accent: var(--apex-blue); }
+.settings-section-appearance { --settings-section-accent: var(--apex-violet); }
+.settings-section-notifications { --settings-section-accent: var(--apex-amber); }
+.settings-section-trading { --settings-section-accent: var(--apex-orange-500); }
+.settings-section-api { --settings-section-accent: var(--apex-green-600); }
+.settings-section-smart-proxy { --settings-section-accent: var(--apex-blue); }
+.settings-section-devices { --settings-section-accent: var(--apex-violet); }
+
+.apex-v3-settings-page .apex-v3-settings-section > .apex-v3-panel-head {
+  position: relative;
+  min-height: 52px;
+  padding: 9px 12px 10px 15px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--settings-section-accent) 16%, var(--apex-border));
+  border-radius: 11px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--settings-section-accent) 8%, var(--apex-surface)) 0%, var(--apex-surface) 54%, var(--apex-surface-soft) 100%);
+  box-shadow: 0 5px 15px rgba(15, 23, 42, .035);
+}
+
+.apex-v3-settings-page .apex-v3-settings-section > .apex-v3-panel-head::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: var(--settings-section-accent);
+}
+
+.apex-v3-settings-page .settings-overview-card,
+.apex-v3-settings-page .settings-inner-card,
+.apex-v3-settings-page .settings-integration-card {
+  border-color: color-mix(in srgb, var(--settings-section-accent) 12%, var(--apex-border));
+  background:
+    linear-gradient(145deg, var(--apex-surface) 0%, color-mix(in srgb, var(--settings-section-accent) 3.5%, var(--apex-surface)) 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .035), 0 8px 20px rgba(15, 23, 42, .028);
+}
+
+.apex-v3-settings-page .settings-overview-card:hover,
+.apex-v3-settings-page .settings-integration-card:hover {
+  border-color: color-mix(in srgb, var(--settings-section-accent) 22%, var(--apex-border));
+}
+
+.apex-v3-settings-page .settings-overview-icon {
+  border-color: color-mix(in srgb, var(--settings-section-accent) 20%, var(--apex-border));
+  color: var(--settings-section-accent);
+  background: color-mix(in srgb, var(--settings-section-accent) 8%, var(--apex-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--apex-surface) 72%, transparent), 0 5px 14px rgba(15, 23, 42, .045);
+}
+
+.apex-v3-settings-page .apex-v3-form-grid > label,
+.apex-v3-settings-page .apex-v3-form-grid > .two > label {
+  border-radius: 10px;
+}
+
+.apex-v3-settings-page .apex-v3-form-grid input:focus,
+.apex-v3-settings-page .apex-v3-form-grid select:focus,
+.apex-v3-settings-page .apex-v3-form-grid textarea:focus {
+  border-color: color-mix(in srgb, var(--settings-section-accent) 55%, var(--apex-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--settings-section-accent) 10%, transparent);
+}
+
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-settings {
+  position: relative;
+  overflow: hidden;
+}
+
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-settings::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--apex-blue), color-mix(in srgb, var(--apex-blue) 35%, transparent) 64%, transparent);
+}
+
+/* CP27 / Settings UX enhancement — control-center hierarchy and tab polish.
+   This block intentionally lives last so it is the single authoritative visual
+   override for Settings without changing any runtime, execution, or safety logic. */
+.apex-v3-settings-page {
+  --settings-shell-radius: 16px;
+  --settings-card-radius: 14px;
+  --settings-control-radius: 10px;
+  --settings-outline: color-mix(in srgb, var(--settings-section-accent, var(--apex-green-600)) 18%, var(--apex-border));
+  --settings-lift-shadow: 0 12px 34px rgba(15, 23, 42, .055);
+  --settings-hover-shadow: 0 15px 34px rgba(15, 23, 42, .075);
+}
+
+.apex-v3-settings-heading {
+  --settings-section-accent: var(--apex-green-600);
+  position: relative;
+  min-height: 92px;
+  padding: 15px 17px 15px 19px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--settings-section-accent) 16%, var(--apex-border));
+  border-radius: var(--settings-shell-radius);
+  background:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--settings-section-accent) 10%, transparent) 0 18%, transparent 44%),
+    linear-gradient(120deg, var(--apex-surface) 0%, color-mix(in srgb, var(--settings-section-accent) 4%, var(--apex-surface)) 58%, var(--apex-surface-soft) 100%);
+  box-shadow: var(--settings-lift-shadow), inset 0 1px 0 color-mix(in srgb, #fff 66%, transparent);
+}
+
+.apex-v3-settings-heading::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--settings-section-accent), color-mix(in srgb, var(--settings-section-accent) 35%, transparent));
+}
+
+.apex-v3-settings-heading.active-settings-account { --settings-section-accent: var(--apex-green-600); }
+.apex-v3-settings-heading.active-settings-security { --settings-section-accent: var(--apex-blue); }
+.apex-v3-settings-heading.active-settings-appearance { --settings-section-accent: var(--apex-violet); }
+.apex-v3-settings-heading.active-settings-notifications { --settings-section-accent: var(--apex-amber); }
+.apex-v3-settings-heading.active-settings-trading { --settings-section-accent: var(--apex-orange-500); }
+.apex-v3-settings-heading.active-settings-api { --settings-section-accent: var(--apex-green-600); }
+.apex-v3-settings-heading.active-settings-smart-proxy { --settings-section-accent: var(--apex-blue); }
+.apex-v3-settings-heading.active-settings-devices { --settings-section-accent: var(--apex-violet); }
+
+.apex-v3-settings-heading-copy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+}
+
+.apex-v3-settings-heading-kicker {
+  width: fit-content;
+  margin-bottom: 5px;
+  color: var(--settings-section-accent);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 780;
+  letter-spacing: .085em;
+  text-transform: uppercase;
+}
+
+.apex-v3-settings-heading h1 {
+  font-size: 23px;
+  font-weight: 760;
+  letter-spacing: -.027em;
+}
+
+.apex-v3-settings-heading p {
+  max-width: 680px;
+  margin-top: 5px;
+  color: var(--apex-muted-600);
+  font-size: 10.5px;
+  line-height: 1.38;
+}
+
+.apex-v3-settings-heading-section {
+  min-width: 178px;
+  padding: 9px 11px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  border: 1px solid color-mix(in srgb, var(--settings-section-accent) 20%, var(--apex-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--settings-section-accent) 6%, var(--apex-surface));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 62%, transparent);
+}
+
+.apex-v3-settings-heading-section-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--settings-section-accent);
+  background: color-mix(in srgb, var(--settings-section-accent) 11%, var(--apex-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--settings-section-accent) 16%, transparent);
+}
+
+.apex-v3-settings-heading-section-copy {
+  min-width: 0;
+  display: grid;
+}
+
+.apex-v3-settings-heading-section-copy small,
+.apex-v3-settings-heading-section-copy strong,
+.apex-v3-settings-heading-section-copy em { display: block; min-width: 0; }
+.apex-v3-settings-heading-section-copy small {
+  color: var(--apex-muted-500);
+  font-size: 6.8px;
+  font-style: normal;
+  font-weight: 720;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.apex-v3-settings-heading-section-copy strong {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--apex-ink-950);
+  font-size: 10.5px;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.apex-v3-settings-heading-section-copy em {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--apex-muted-600);
+  font-size: 7.5px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apex-v3-settings-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--apex-border, #e2e8f0);
+  border-radius: 10px;
+  background: var(--apex-surface, #ffffff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section] {
+  position: relative;
+  min-height: 38px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s ease;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section]::after {
+  display: none;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section]:hover {
+  transform: none;
+  background: var(--apex-surface-hover, #f1f5f9);
+  color: var(--apex-ink, #0f172a);
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section].active {
+  transform: none;
+  border-color: color-mix(in srgb, var(--settings-tab-accent) 24%, var(--apex-border));
+  background: color-mix(in srgb, var(--settings-tab-accent) 10%, var(--apex-surface));
+  color: var(--settings-tab-accent);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--settings-tab-accent) 8%, transparent);
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav-icon {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  box-shadow: none;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav-copy small {
+  display: none;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav-copy strong {
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.apex-v3-settings-page .apex-v3-settings-nav-copy {
+  display: flex !important;
+  align-items: flex-start;
+}
+.apex-v3-settings-page .apex-v3-settings-nav-copy strong {
+  color: var(--apex-ink-900);
+  font-size: 10.5px;
+  font-weight: 720;
+  letter-spacing: -.006em;
+}
+.apex-v3-settings-page .apex-v3-settings-nav-copy small {
+  display: block;
+  margin-top: 3px;
+  color: var(--apex-muted-500);
+  font-size: 7.6px;
+  line-height: 1.15;
+}
+.apex-v3-settings-page .apex-v3-settings-nav button.active .apex-v3-settings-nav-copy strong { color: var(--settings-tab-accent); }
+
+.apex-v3-settings-page .apex-v3-settings-body {
+  min-width: 0;
+  padding: 1px;
+}
+
+.apex-v3-settings-page .apex-v3-settings-section {
+  gap: 13px;
+}
+
+.apex-v3-settings-page .apex-v3-settings-section > .apex-v3-panel-head {
+  min-height: 56px;
+  padding: 10px 13px 10px 16px;
+  border-radius: 13px;
+  box-shadow: 0 7px 19px rgba(15, 23, 42, .04);
+}
+
+.apex-v3-settings-page .apex-v3-settings-section > .apex-v3-panel-head strong {
+  font-size: 12.2px;
+  font-weight: 760;
+}
+.apex-v3-settings-page .apex-v3-settings-section > .apex-v3-panel-head small {
+  margin-top: 3px;
+  font-size: 8px;
+  line-height: 1.3;
+}
+
+.apex-v3-settings-page .settings-overview-card,
+.apex-v3-settings-page .settings-inner-card,
+.apex-v3-settings-page .settings-integration-card,
+.apex-v3-settings-page .apex-proxy-settings {
+  border-radius: var(--settings-card-radius);
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.apex-v3-settings-page .settings-overview-card:hover,
+.apex-v3-settings-page .settings-integration-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--settings-hover-shadow);
+}
+
+.apex-v3-settings-page .settings-overview-row {
+  min-height: 74px;
+  padding: 11px 14px;
+}
+
+.apex-v3-settings-page .settings-overview-icon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--settings-section-accent) 18%, var(--apex-border));
+  border-radius: 12px;
+  color: var(--settings-section-accent);
+  background: color-mix(in srgb, var(--settings-section-accent) 7%, var(--apex-surface));
+}
+
+.apex-v3-settings-page .settings-overview-copy strong { font-size: 11.3px; font-weight: 730; }
+.apex-v3-settings-page .settings-overview-copy small { font-size: 8.7px; }
+.apex-v3-settings-page .settings-overview-values small { font-size: 8px; }
+.apex-v3-settings-page .settings-overview-values strong { font-size: 10px; font-weight: 700; }
+
+.apex-v3-settings-page .apex-v3-form-grid > label,
+.apex-v3-settings-page .apex-v3-form-grid > .two > label,
+.apex-v3-settings-page .apex-v3-default-field {
+  border: 1px solid color-mix(in srgb, var(--settings-section-accent) 11%, var(--apex-border));
+  border-radius: var(--settings-control-radius);
+  background: color-mix(in srgb, var(--settings-section-accent) 2.3%, var(--apex-surface));
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.apex-v3-settings-page .apex-v3-form-grid > label:focus-within,
+.apex-v3-settings-page .apex-v3-form-grid > .two > label:focus-within,
+.apex-v3-settings-page .apex-v3-default-field:focus-within {
+  border-color: color-mix(in srgb, var(--settings-section-accent) 38%, var(--apex-border));
+  background: var(--apex-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--settings-section-accent) 7%, transparent);
+}
+
+.apex-v3-settings-page input:not([type='checkbox']):not([type='radio']),
+.apex-v3-settings-page select,
+.apex-v3-settings-page textarea {
+  border-radius: 8px;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.apex-v3-settings-page .apex-v3-button {
+  border-radius: 9px;
+  font-weight: 690;
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease, background-color .14s ease;
+}
+.apex-v3-settings-page .apex-v3-button:not(:disabled):hover { transform: translateY(-1px); }
+.apex-v3-settings-page .apex-v3-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--settings-section-accent) 11%, transparent);
+}
+
+.apex-v3-settings-page .apex-v3-theme-grid button {
+  min-height: 88px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, var(--apex-surface) 0%, color-mix(in srgb, var(--settings-section-accent) 3%, var(--apex-surface)) 100%);
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.apex-v3-settings-page .apex-v3-theme-grid button:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(15, 23, 42, .05); }
+.apex-v3-settings-page .apex-v3-theme-grid button.active { box-shadow: 0 0 0 3px color-mix(in srgb, var(--settings-section-accent) 9%, transparent), 0 9px 22px rgba(15, 23, 42, .05); }
+
+.apex-v3-settings-page .settings-section-api .settings-integration-card,
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-settings {
+  border-color: color-mix(in srgb, var(--settings-section-accent) 17%, var(--apex-border));
+  background:
+    linear-gradient(145deg, var(--apex-surface) 0%, color-mix(in srgb, var(--settings-section-accent) 3.5%, var(--apex-surface)) 100%);
+}
+
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-summary-grid > div {
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--apex-blue) 13%, var(--apex-divider));
+  background: color-mix(in srgb, var(--apex-blue) 4%, var(--apex-surface));
+}
+
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-mode-cards label {
+  min-height: 78px;
+  border-radius: 11px;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-mode-cards label:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--apex-blue) 28%, var(--apex-divider));
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .04);
+}
+.apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-mode-cards label.selected {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--apex-blue) 8%, transparent), 0 8px 18px rgba(15, 23, 42, .04);
+}
+
+.apex-v3-settings-page .apex-proxy-provider-results,
+.apex-v3-settings-page .apex-proxy-route-health,
+.apex-v3-settings-page .apex-proxy-history,
+.apex-v3-settings-page .apex-v3-integration-history {
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--settings-section-accent) 12%, var(--apex-divider));
+}
+
+.apex-v3-settings-page .settings-context {
+  padding-top: 104px;
+  gap: 12px;
+}
+.apex-v3-settings-page .settings-context > .apex-v3-panel {
+  border-radius: var(--settings-card-radius);
+  border-color: color-mix(in srgb, var(--apex-green-500) 10%, var(--apex-border));
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .04);
+}
+
+.apex-v3-settings-page .apex-v3-inline-message {
+  position: sticky;
+  bottom: 8px;
+  z-index: 5;
+  margin: 10px 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 9px 24px rgba(15, 23, 42, .09);
+  backdrop-filter: blur(8px);
+}
+
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-heading,
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-page .apex-v3-settings-nav {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .20), inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-heading-section,
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section].active,
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-page .settings-overview-card,
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-page .settings-inner-card,
+:root[data-apex-theme-resolved='dark'] .apex-v3-settings-page .settings-integration-card {
+  box-shadow: 0 9px 24px rgba(0, 0, 0, .15);
+}
+
+@media (max-width: 1180px) {
+  .apex-v3-settings-workspace { grid-template-columns: 208px minmax(0, 1fr); gap: 12px; }
+  .apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section] { padding-inline: 8px; gap: 8px; }
+  .apex-v3-settings-page .apex-v3-settings-nav-copy strong { font-size: 9.8px; }
+  .apex-v3-settings-page .apex-v3-settings-nav-copy small { font-size: 7px; }
+  .apex-v3-settings-heading-section { min-width: 158px; }
+}
+
+@media (max-width: 900px) {
+  .apex-v3-settings-heading { min-height: 82px; grid-template-columns: minmax(0, 1fr); padding: 13px 15px 14px 17px; }
+  .apex-v3-settings-heading-section { display: none; }
+  .apex-v3-settings-page .settings-context { padding-top: 0; }
+  .apex-v3-settings-workspace { grid-template-columns: 1fr; gap: 10px; }
+  .apex-v3-settings-page .apex-v3-settings-nav {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(138px, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 7px;
+    scroll-snap-type: x proximity;
+  }
+  .apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section] {
+    min-height: 56px;
+    grid-template-columns: 32px minmax(0, 1fr);
+    scroll-snap-align: start;
+  }
+  .apex-v3-settings-page .apex-v3-settings-nav-icon { width: 32px; height: 32px; }
+  .apex-v3-settings-page .apex-v3-settings-nav-copy small { display: none; }
+  .apex-v3-settings-page .settings-overview-card:hover,
+  .apex-v3-settings-page .settings-integration-card:hover,
+  .apex-v3-settings-page .apex-v3-theme-grid button:hover,
+  .apex-v3-settings-page .settings-section-smart-proxy .apex-proxy-mode-cards label:hover { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .apex-v3-settings-heading { border-radius: 13px; }
+  .apex-v3-settings-heading h1 { font-size: 20px; }
+  .apex-v3-settings-heading p { font-size: 9.5px; }
+  .apex-v3-settings-page .apex-v3-settings-nav { grid-auto-columns: minmax(112px, 1fr); }
+  .apex-v3-settings-page .apex-v3-settings-nav button[data-settings-section] { grid-template-columns: 28px minmax(0, 1fr); gap: 7px; padding: 7px; }
+  .apex-v3-settings-page .apex-v3-settings-nav-icon { width: 28px; height: 28px; border-radius: 9px; }
+  .apex-v3-settings-page .apex-v3-settings-nav-icon svg { width: 16px; height: 16px; }
+  .apex-v3-settings-page .settings-overview-row { grid-template-columns: 40px minmax(0, 1fr); }
+  .apex-v3-settings-page .settings-overview-values,
+  .apex-v3-settings-page .settings-overview-theme-toggle,
+  .apex-v3-settings-page .settings-overview-row > .apex-v3-button { grid-column: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apex-v3-settings-page *,
+  .apex-v3-settings-page *::before,
+  .apex-v3-settings-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* CP27 Smart Proxy target uses the whole Settings canvas; the generic account/security rail is irrelevant here. */
+.apex-v3-settings-page.settings-active-smart-proxy {
+  grid-template-columns: minmax(0, 1fr);
+}
+.apex-v3-settings-page.settings-active-smart-proxy > .apex-context-panel {
+  display: none;
+}
+.apex-v3-settings-page.settings-active-smart-proxy .apex-v3-settings-main {
+  min-width: 0;
+}
+.apex-v3-settings-page.settings-active-smart-proxy .apex-v3-settings-body {
+  overflow-y: auto;
+}
+.apex-v3-settings-page.settings-active-smart-proxy .settings-section-smart-proxy {
+  padding: 12px;
 }

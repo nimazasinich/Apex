@@ -1,6 +1,6 @@
 import type { AccountSnapshot, ConnectionState, LiveReconciliationSummary } from '../services/accountClient';
 import type { WorkspaceInsights } from '../services/workspaceInsights';
-import type { AlertRule, CandidateScore, DataState, SentimentComposite, SymbolTicker, TerminalSettings } from '../types';
+import type { AlertRule, Candle, CandidateScore, ChartFeedStatus, DataState, SentimentComposite, SymbolTicker, TerminalSettings } from '../types';
 
 export interface MarketWorkspaceProps {
   tickers: SymbolTicker[];
@@ -12,6 +12,8 @@ export interface MarketWorkspaceProps {
   selectedSymbol: string;
   onSelectSymbol: (symbol: string) => void;
   onRefresh: () => void;
+  candles?: Candle[];
+  chartFeed?: ChartFeedStatus;
 }
 
 export interface AccountWorkspaceProps {
@@ -32,7 +34,7 @@ export interface AlertsWorkspaceProps {
   activeAlerts: Array<{ rule: AlertRule; symbol: string; tier: string }>;
   tickers: SymbolTicker[];
   candidates: CandidateScore[];
-  onRulesChange: (rules: AlertRule[]) => void;
+  onRulesChange: (rules: AlertRule[]) => boolean;
 }
 
 export interface SettingsWorkspaceProps {

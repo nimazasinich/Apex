@@ -6,6 +6,8 @@
 import { assertTradePlanSubmittable, type TradePlan } from './tradePlan';
 import { canonicalInstrumentId } from './providers/publicExchangeClient';
 import type { DataState, TradeDirection } from '../types';
+import { academyRiskGate } from '../features/academy/api/strategyIntelligence';
+import type { AcademyConsumerIntelligence, AcademyIntelligenceResolution } from '../features/academy/types';
 
 export const RISK_GOVERNOR_POLICY_VERSION = 'risk_governor_v1';
 
@@ -50,6 +52,8 @@ export interface RiskOrderIntent {
   leverage: number;
   reduceOnly: boolean;
   exchange: string;
+  strategyId?: string | null;
+  strategyVersion?: number | null;
   strategy?: string | null;
 }
 
@@ -86,6 +90,8 @@ export interface RiskGovernorInput {
   plan?: TradePlan | null;
   policy?: RiskGovernorPolicy;
   now?: number;
+  academyIntelligence?: AcademyConsumerIntelligence | null;
+  academyResolution?: AcademyIntelligenceResolution | null;
 }
 
 export interface RiskCheckResult {
@@ -171,13 +177,32 @@ export function evaluateRiskGovernor(input: RiskGovernorInput): RiskGovernorResu
   };
 
   const { order, account, portfolio, market } = input;
+  const effectiveStrategyId = order.strategyId ?? input.plan?.strategyId ?? null;
+  const effectiveStrategyVersion = order.strategyVersion ?? input.plan?.strategyVersion ?? null;
+
   const switchHit = policy.killSwitches.allTrading
     || (!order.reduceOnly && policy.killSwitches.newEntries)
     || (input.executionMode === 'AUTOMATED' && policy.killSwitches.automatedExecution)
     || policy.killSwitches.exchanges.includes(order.exchange.toLowerCase())
     || policy.killSwitches.symbols.includes(order.symbol.toUpperCase())
-    || Boolean(order.strategy && policy.killSwitches.strategies.includes(order.strategy));
+    || Boolean(order.strategy && policy.killSwitches.strategies.includes(order.strategy))
+    || Boolean(order.strategyId && policy.killSwitches.strategies.includes(order.strategyId));
   add('KILL_SWITCH', switchHit ? 'FAIL' : 'PASS', switchHit ? 'A configured trading kill switch blocks this order.' : 'No applicable kill switch is active.');
+
+  if (input.plan && order.strategyId && input.plan.strategyId && order.strategyId !== input.plan.strategyId) {
+    add('STRATEGY_IDENTITY_MISMATCH', 'FAIL', `Order strategyId '${order.strategyId}' does not match TradePlan strategyId '${input.plan.strategyId}'.`);
+  }
+  if (input.plan && order.strategyVersion != null && input.plan.strategyVersion != null && order.strategyVersion !== input.plan.strategyVersion) {
+    add('STRATEGY_IDENTITY_MISMATCH', 'FAIL', `Order strategyVersion '${order.strategyVersion}' does not match TradePlan strategyVersion '${input.plan.strategyVersion}'.`);
+  }
+
+  const intelligenceSource = input.academyResolution ?? input.academyIntelligence ?? input.plan?.academyIntelligence ?? null;
+  const academyGate = academyRiskGate(intelligenceSource, order.reduceOnly, {
+    executionMode: input.executionMode,
+    expectedStrategyId: effectiveStrategyId,
+    expectedStrategyVersion: effectiveStrategyVersion,
+  });
+  if (academyGate) add('ACADEMY_STRATEGY_INTELLIGENCE', academyGate.status, academyGate.detail);
 
   const contractMultiplier = order.contractMultiplier ?? 1;
   const geometryValid = finitePositive(order.quantity)
@@ -289,6 +314,12 @@ export function evaluateRiskGovernor(input: RiskGovernorInput): RiskGovernorResu
     return { policyVersion: RISK_GOVERNOR_POLICY_VERSION, decision: 'REJECTED', approvedQuantity: 0, sizeScale: 0, reasons: failures, checks, evaluatedAt: now };
   }
 
+  // Critical unknown state must never authorize a NEW ENTRY, including the
+  // APPROVED_REDUCED branch below. Reduce-only orders keep their existing risk-
+  // reducing semantics; all new entries defer with zero approved quantity.
+  if (criticalUnknown && !order.reduceOnly) {
+    return { policyVersion: RISK_GOVERNOR_POLICY_VERSION, decision: 'DEFERRED', approvedQuantity: 0, sizeScale: 0, reasons: warnings, checks, evaluatedAt: now };
+  }
   if (criticalUnknown && input.executionMode === 'AUTOMATED' && policy.failClosedForAutomation) {
     return { policyVersion: RISK_GOVERNOR_POLICY_VERSION, decision: 'DEFERRED', approvedQuantity: 0, sizeScale: 0, reasons: warnings, checks, evaluatedAt: now };
   }

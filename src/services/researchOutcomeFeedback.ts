@@ -4,7 +4,7 @@
  * The lifecycle audit found the loop's last break: Smart Autopilot produced a
  * paper plan and a research replay, but nothing recorded what actually happened,
  * so "monitor → improve → repeat" had no memory. Expected performance (the
- * optimizer's holdout) was never compared against realized performance (the
+ * optimizer's development-validation expectation) was never compared against realized performance (the
  * replay of the promoted profile).
  *
  * This module closes that break by translating one completed cycle into the
@@ -84,7 +84,7 @@ export interface ResearchOutcomeInput {
   generatedAt: number;
   jobs: ResearchOutcomeJob[];
   paperTradePlan: ResearchOutcomePaperSlot[];
-  /** Optimizer holdout expectation per context id, when one was produced. */
+  /** Optimizer development-validation expectation per context id, when one was produced. */
   expectedPnlPctByJobId?: Record<string, number | null>;
   /** Exact SHADOW Commander identity carried by the producing lifecycle. */
   commanderAttributionByJobId?: Record<string, CommanderOutcomeAttributionV1 | undefined>;
@@ -103,7 +103,7 @@ export interface ResearchOutcomeSummary {
   unresolved: number;
   /** Mean realized minus expected pnl%, or null when no pair was comparable. */
   meanExpectationGapPct: number | null;
-  /** Contexts whose realized replay underperformed the optimizer holdout. */
+  /** Contexts whose realized replay underperformed the optimizer development-validation expectation. */
   underperformingJobIds: string[];
   commanderShadowComparison: CommanderResearchComparisonSummaryV1;
   researchOnly: true;

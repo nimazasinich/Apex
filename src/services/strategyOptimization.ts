@@ -1,7 +1,21 @@
 import type { BacktestCandle } from './backtesting';
 import type { ScannerConfig, StrategyDefinition, StrategyParameterDefinition, StrategyReplaySummary } from '../types';
+import {
+  fingerprintGovernanceConfiguration,
+  partitionFiveWayWithSealedHoldout,
+} from './sealedHoldout';
+import type { AuthorityStage } from '../contracts/evidence/evidenceGraph';
+import {
+  computeCscvPbo,
+  distinctSelectionHypothesisFingerprints,
+  STATISTICAL_VALIDATION_POLICY_VERSION,
+  fingerprintSelectionHypothesis,
+  type CscvPboResult,
+} from './statisticalValidation';
 
-export const STRATEGY_OPTIMIZER_VERSION = 'strategy_optimizer_v1';
+export const STRATEGY_OPTIMIZER_VERSION = 'strategy_optimizer_v4_development_only_selection';
+export const STRATEGY_OPTIMIZER_OBJECTIVE_VERSION = 'strategy_optimizer_utility_v1';
+export const STRATEGY_OPTIMIZER_VALIDATION_POLICY_VERSION = 'strategy_optimizer_validation_policy_v2';
 
 export type OptimizationFieldTarget = 'PARAMETER' | 'SCANNER_CONFIG';
 
@@ -58,10 +72,11 @@ export interface StrategyOptimizationPromotion {
   eligible: boolean;
   automaticallyPromoted: boolean;
   blockers: string[];
-  baselineHoldoutUtility: number;
-  candidateHoldoutUtility: number;
+  evidenceScope: 'DEVELOPMENT_ONLY';
+  baselineDevelopmentUtility: number;
+  candidateDevelopmentUtility: number;
   robustImprovement: number;
-  holdoutImprovement: number;
+  developmentValidationImprovement: number;
   overfitGap: number;
   neighborPassRate: number;
 }
@@ -77,10 +92,20 @@ export interface StrategyOptimizationReport {
   direction: 'LONG' | 'SHORT';
   budget: Required<StrategyOptimizationBudget>;
   validationIsolation: { purgeBars: number; embargoBars: number };
+  candidateFingerprint: string;
+  finalHoldoutDatasetFingerprint: string;
+  developmentDatasetFingerprint: string;
+  validationPolicyFingerprint: string;
+  searchObjectiveFingerprint: string;
+  selectionHypothesisFingerprints: string[];
+  selectionHypothesisCount: number;
+  developmentPbo: CscvPboResult;
+  finalHoldoutStatus: 'SEALED_NOT_OPENED_DURING_OPTIMIZATION';
+  authorityStage: AuthorityStage;
   fields: NumericOptimizationField[];
   baseline: StrategyOptimizationEvaluation;
   winner: StrategyOptimizationEvaluation;
-  holdout: {
+  developmentValidation: {
     baseline: StrategyOptimizationWindowResult;
     candidate: StrategyOptimizationWindowResult;
     costStress: StrategyOptimizationWindowResult;
@@ -141,6 +166,10 @@ export interface OptimizeStrategyInput {
   budget?: StrategyOptimizationBudget;
   autoPromote?: boolean;
   signal?: AbortSignal;
+  /** Deprecated compatibility input. The optimizer is development-only and
+   * never opens the final sealed governance holdout. Final holdout access is
+   * owned exclusively by the candidate-matched validation suite. */
+  holdoutLedger?: unknown;
 }
 
 const SCANNER_FIELD_RANGES: Record<string, { min: number; max: number; step: number }> = {
@@ -175,7 +204,7 @@ const DEFAULT_BUDGET: Required<StrategyOptimizationBudget> = {
   finalists: 8,
   refinementCandidates: 12,
   maxConcurrent: 4,
-  minTradesPerEvaluation: 12,
+  minTradesPerEvaluation: 30,
   maxDrawdownPct: 24,
   minimumRobustImprovement: 0.035,
   minimumHoldoutImprovement: 0.01,
@@ -224,9 +253,9 @@ function normalizeBudget(input?: StrategyOptimizationBudget): Required<StrategyO
   return {
     coarseCandidates: Math.floor(clamp(finite(merged.coarseCandidates, DEFAULT_BUDGET.coarseCandidates), 8, 64)),
     finalists: Math.floor(clamp(finite(merged.finalists, DEFAULT_BUDGET.finalists), 3, 16)),
-    refinementCandidates: Math.floor(clamp(finite(merged.refinementCandidates, DEFAULT_BUDGET.refinementCandidates), 0, 32)),
-    maxConcurrent: Math.floor(clamp(finite(merged.maxConcurrent, DEFAULT_BUDGET.maxConcurrent), 1, 8)),
-    minTradesPerEvaluation: Math.floor(clamp(finite(merged.minTradesPerEvaluation, DEFAULT_BUDGET.minTradesPerEvaluation), 4, 100)),
+    refinementCandidates: Math.floor(clamp(finite(merged.refinementCandidates, DEFAULT_BUDGET.refinementCandidates), 1, 100)),
+    maxConcurrent: Math.floor(clamp(finite(merged.maxConcurrent, DEFAULT_BUDGET.maxConcurrent), 1, 16)),
+    minTradesPerEvaluation: Math.floor(clamp(finite(merged.minTradesPerEvaluation, DEFAULT_BUDGET.minTradesPerEvaluation), 1, 100)),
     maxDrawdownPct: clamp(finite(merged.maxDrawdownPct, DEFAULT_BUDGET.maxDrawdownPct), 5, 60),
     minimumRobustImprovement: clamp(finite(merged.minimumRobustImprovement, DEFAULT_BUDGET.minimumRobustImprovement), 0, 1),
     minimumHoldoutImprovement: clamp(finite(merged.minimumHoldoutImprovement, DEFAULT_BUDGET.minimumHoldoutImprovement), -0.25, 1),
@@ -405,40 +434,6 @@ function generateRefinementCandidates(
   return candidates;
 }
 
-function splitChronologically(candles: BacktestCandle[], purgeBars: number, embargoBars: number): {
-  train: Array<{ label: string; candles: BacktestCandle[] }>;
-  validation: { label: string; candles: BacktestCandle[] };
-  holdout: { label: string; candles: BacktestCandle[] };
-} {
-  const sorted = [...candles].sort((left, right) => Date.parse(left.time) - Date.parse(right.time));
-  const size = Math.floor(sorted.length / 5);
-  if (size < 80) throw new Error('strategy_optimizer_insufficient_history');
-
-  const purge = Math.max(0, Math.floor(purgeBars));
-  const embargo = Math.max(0, Math.floor(embargoBars));
-  const boundaryGap = Math.max(purge, embargo);
-  if (boundaryGap >= Math.floor(size / 2)) throw new Error('strategy_optimizer_isolation_gap_too_large');
-
-  const slice = (from: number, to: number): BacktestCandle[] => sorted.slice(Math.max(0, from), Math.min(sorted.length, to));
-  const train1 = slice(0, size);
-  const train2 = slice(size, size * 2);
-  // Purge the training tail before validation so positions/features from the
-  // optimization set cannot overlap the first validation observations.
-  const train3 = slice(size * 2, size * 3 - purge);
-  // Embargo the start and purge the tail of validation before final holdout.
-  const validation = slice(size * 3 + embargo, size * 4 - purge);
-  const holdout = slice(size * 4 + embargo, sorted.length);
-
-  const windows = [train1, train2, train3, validation, holdout];
-  if (windows.some((window) => window.length < 40)) throw new Error('strategy_optimizer_isolated_window_too_small');
-
-  return {
-    train: [train1, train2, train3].map((window, index) => ({ label: `train-${index + 1}`, candles: window })),
-    validation: { label: 'validation', candles: validation },
-    holdout: { label: 'holdout', candles: holdout },
-  };
-}
-
 function utility(metrics: StrategyOptimizationMetrics, budget: Required<StrategyOptimizationBudget>): number {
   const pnl = Math.tanh(metrics.totalPnlPct / 12);
   const profitFactor = metrics.profitFactor === null ? 0 : clamp(metrics.profitFactor, 0, 4);
@@ -586,8 +581,42 @@ export async function optimizeStrategy(input: OptimizeStrategyInput): Promise<St
   if (input.candles.length < 400) throw new Error('strategy_optimizer_insufficient_history');
   throwIfAborted(input.signal);
 
-  const split = splitChronologically(input.candles, budget.purgeBars, budget.embargoBars);
+  let split: ReturnType<typeof partitionFiveWayWithSealedHoldout>;
+  try {
+    split = partitionFiveWayWithSealedHoldout(input.candles, budget.purgeBars, budget.embargoBars, 40);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message === 'sealed_holdout_insufficient_history') throw new Error('strategy_optimizer_insufficient_history');
+    if (message === 'sealed_holdout_isolation_gap_too_large') throw new Error('strategy_optimizer_isolation_gap_too_large');
+    if (message === 'sealed_holdout_isolated_window_too_small') throw new Error('strategy_optimizer_isolated_window_too_small');
+    throw error;
+  }
   const baseParameters = { ...(input.baseParameters || {}) };
+  const validationPolicyFingerprint = fingerprintGovernanceConfiguration('validation-policy', {
+    version: STRATEGY_OPTIMIZER_VALIDATION_POLICY_VERSION,
+    purgeBars: budget.purgeBars,
+    embargoBars: budget.embargoBars,
+    minTradesPerEvaluation: budget.minTradesPerEvaluation,
+    maxDrawdownPct: budget.maxDrawdownPct,
+    minimumRobustImprovement: budget.minimumRobustImprovement,
+    maximumOverfitGap: budget.maximumOverfitGap,
+    costStressMultiplier: budget.costStressMultiplier,
+    statisticalValidationPolicyVersion: STATISTICAL_VALIDATION_POLICY_VERSION,
+  });
+  const searchObjectiveFingerprint = fingerprintGovernanceConfiguration('search-objective', {
+    version: STRATEGY_OPTIMIZER_OBJECTIVE_VERSION,
+    coarseCandidates: budget.coarseCandidates,
+    finalists: budget.finalists,
+    refinementCandidates: budget.refinementCandidates,
+    randomSeed: budget.randomSeed,
+  });
+  const hypothesisFingerprint = (candidate: StrategyOptimizationCandidate): string => fingerprintSelectionHypothesis({
+    strategyId: input.definition.strategyId,
+    strategyVersion: input.definition.version,
+    parameters: candidate.parameters,
+    scannerConfig: candidate.scannerConfig,
+    searchObjectiveFingerprint,
+  });
   const cache = new Map<string, Promise<StrategyOptimizationMetrics>>();
   let cacheHits = 0;
   let completedEvaluations = 0;
@@ -712,49 +741,95 @@ export async function optimizeStrategy(input: OptimizeStrategyInput): Promise<St
     ?? await evaluate(buildCandidate('baseline', fields, Object.fromEntries(fields.map((field) => [field.key, field.base])), baseParameters, input.baseScannerConfig), fullSelectionWindows);
   const winner = selectionResults[0] ?? baseline;
 
-  const baselineCandidate = buildCandidate('baseline', fields, baseline.values, baseParameters, input.baseScannerConfig);
   const winnerCandidate = buildCandidate(winner.candidateId, fields, winner.values, baseParameters, input.baseScannerConfig);
-  const holdoutWindows = [split.holdout];
-  const [baselineHoldoutEval, candidateHoldoutEval, costStressEval] = await Promise.all([
-    evaluate(baselineCandidate, holdoutWindows),
-    evaluate(winnerCandidate, holdoutWindows),
-    evaluate(winnerCandidate, [{ label: 'cost-stress', candles: split.holdout.candles }], input.transactionCostPct * budget.costStressMultiplier),
-  ]);
-  const baselineHoldout = baselineHoldoutEval.windows[0];
-  const candidateHoldout = candidateHoldoutEval.windows[0];
+  // Neighbor and cost-stress development checks run only on the pre-holdout
+  // validation window. Candidate identity is frozen only after these pass.
+  const costStressEval = await evaluate(
+    winnerCandidate,
+    [{ label: 'development-cost-stress', candles: split.validation.candles }],
+    input.transactionCostPct * budget.costStressMultiplier,
+  );
   const costStress = costStressEval.windows[0];
-
   const neighborCandidates = buildNeighborCandidates(winner, fields, baseParameters, input.baseScannerConfig);
-  const neighbors = await mapLimit(neighborCandidates, budget.maxConcurrent, (candidate) => evaluate(candidate, [split.validation, split.holdout]));
+  const neighbors = await mapLimit(neighborCandidates, budget.maxConcurrent, (candidate) => evaluate(candidate, [split.validation]));
   const neighborPassRate = neighbors.length
     ? neighbors.filter((row) => !row.error && row.robustScore >= baseline.robustScore).length / neighbors.length
     : 0;
 
   const robustImprovement = winner.robustScore - baseline.robustScore;
-  const holdoutImprovement = candidateHoldout.utility - baselineHoldout.utility;
-  const overfitGap = Math.max(0, winner.meanUtility - candidateHoldout.utility);
-  const blockers = evaluateParameterMovement(winner.values, fields);
-  if (winner.candidateId === 'baseline') blockers.push('baseline_remains_best');
-  if (robustImprovement < budget.minimumRobustImprovement) blockers.push('robust_improvement_below_minimum');
-  if (holdoutImprovement < budget.minimumHoldoutImprovement) blockers.push('holdout_improvement_below_minimum');
-  if (candidateHoldout.metrics.totalPnlPct <= 0) blockers.push('holdout_return_not_positive');
-  if ((candidateHoldout.metrics.profitFactor ?? 0) < 1.05) blockers.push('holdout_profit_factor_below_1_05');
-  if (candidateHoldout.metrics.tradeCount < budget.minTradesPerEvaluation) blockers.push('holdout_trade_count_too_low');
-  if (candidateHoldout.metrics.maxDrawdownPct > budget.maxDrawdownPct) blockers.push('holdout_drawdown_exceeds_limit');
-  if (costStress.metrics.totalPnlPct <= 0 || (costStress.metrics.profitFactor ?? 0) < 1) blockers.push('cost_stress_failed');
-  if (overfitGap > budget.maximumOverfitGap) blockers.push('overfit_gap_exceeds_limit');
-  if (neighborPassRate < 0.60) blockers.push('neighbor_stability_failed');
+  const developmentBlockers = evaluateParameterMovement(winner.values, fields);
+  if (winner.candidateId === 'baseline') developmentBlockers.push('baseline_remains_best');
+  if (robustImprovement < budget.minimumRobustImprovement) developmentBlockers.push('robust_improvement_below_minimum');
+  if (!costStress || costStress.metrics.totalPnlPct <= 0 || (costStress.metrics.profitFactor ?? 0) < 1) developmentBlockers.push('development_cost_stress_failed');
+  if (neighborPassRate < 0.60) developmentBlockers.push('neighbor_stability_failed');
+  if (developmentBlockers.length) {
+    throw new Error(`strategy_optimizer_development_gates_failed:${[...new Set(developmentBlockers)].join(',')}`);
+  }
+
+  const selectionHypothesisFingerprints = distinctSelectionHypothesisFingerprints(
+    [...coarse, ...refinementCandidates].map(hypothesisFingerprint),
+  );
+  const fullMatrixCandidates = selectionResults.map((evaluation) => buildCandidate(
+    evaluation.candidateId,
+    fields,
+    evaluation.values,
+    baseParameters,
+    input.baseScannerConfig,
+  ));
+  const developmentPbo = computeCscvPbo({
+    source: 'DEVELOPMENT_SELECTION_MATRIX',
+    candidateFingerprints: fullMatrixCandidates.map(hypothesisFingerprint),
+    partitionLabels: fullSelectionWindows.map((window) => window.label),
+    matrix: selectionResults.map((evaluation) => evaluation.windows.map((window) => window.utility)),
+  });
+  // Optimization is selection/development only. The fifth partition is sealed
+  // at partition time and is NEVER exposed to this function. This prevents the
+  // search/council from spending the codebase-wide final governance holdout
+  // before the candidate-matched validation suite has frozen all development
+  // choices. The sealed dataset fingerprint may be recorded as identity only;
+  // its rows are inaccessible here.
+  const candidateFingerprint = fingerprintGovernanceConfiguration('optimizer-development-candidate', {
+    strategyId: input.definition.strategyId,
+    strategyVersion: input.definition.version,
+    parameters: winnerCandidate.parameters,
+    scannerConfig: winnerCandidate.scannerConfig,
+    transactionCostProfileFingerprint: `cost-profile:roundtrip:${input.transactionCostPct}`,
+    validationPolicyFingerprint,
+    searchObjectiveFingerprint,
+    developmentDatasetFingerprint: split.developmentDatasetFingerprint,
+    featureVersions: [STRATEGY_OPTIMIZER_VERSION, 'closed_candle_validator_v1', 'transaction_cost_model_v3_event_time'],
+    authorityConfiguration: { direction: input.direction, interval: input.interval },
+  });
+  const finalHoldoutDatasetFingerprint = split.holdout.metadata.datasetFingerprint;
+
+  const candidateDevelopment = winner.windows.find((window) => window.label === split.validation.label)
+    ?? winner.windows.at(-1);
+  const baselineDevelopment = baseline.windows.find((window) => window.label === split.validation.label)
+    ?? baseline.windows.at(-1);
+  if (!candidateDevelopment || !baselineDevelopment) {
+    throw new Error('development_validation_comparator_missing');
+  }
+  const developmentValidationImprovement = candidateDevelopment.utility - baselineDevelopment.utility;
+  const trainUtilities = winner.windows.filter((window) => window.label.startsWith('train-')).map((window) => window.utility);
+  const meanTrainUtility = trainUtilities.length ? trainUtilities.reduce((sum, value) => sum + value, 0) / trainUtilities.length : winner.meanUtility;
+  const overfitGap = Math.max(0, meanTrainUtility - candidateDevelopment.utility);
+  const blockers: string[] = [];
+  if (candidateDevelopment.metrics.totalPnlPct <= 0) blockers.push('development_validation_return_not_positive');
+  if ((candidateDevelopment.metrics.profitFactor ?? 0) < 1.05) blockers.push('development_validation_profit_factor_below_1_05');
+  if (candidateDevelopment.metrics.tradeCount < budget.minTradesPerEvaluation) blockers.push('development_validation_trade_count_too_low');
+  if (candidateDevelopment.metrics.maxDrawdownPct > budget.maxDrawdownPct) blockers.push('development_validation_drawdown_exceeds_limit');
+  if (overfitGap > budget.maximumOverfitGap) blockers.push('development_overfit_gap_exceeds_limit');
   const uniqueBlockers = [...new Set(blockers)];
   const eligible = uniqueBlockers.length === 0;
   const warnings = [
-    'Optimization cannot prove a perfect strategy; it searches a bounded parameter neighborhood and requires untouched holdout evidence.',
+    'Optimization is development-only: candidate search, cost stress, neighbors and CSCV/PBO run without opening the final sealed governance holdout.',
     input.autoPromote
-      ? 'Automatic promotion was requested; only a candidate that passes every promotion gate may become active.'
-      : 'Automatic promotion was not requested; eligible candidates require explicit manual governance before becoming active.',
+      ? 'Automatic promotion was requested, but optimization alone can only nominate a candidate for separate FULL_STRATEGY final validation.'
+      : 'The optimizer can only nominate a development-eligible candidate; final sealed validation and explicit promotion governance remain separate.',
   ];
   const theoreticalWindowEvaluations = (coarse.length + refinementCandidates.length) * fullSelectionWindows.length
     + 3
-    + neighborCandidates.length * 2;
+    + neighborCandidates.length;
   const reductionPct = theoreticalWindowEvaluations > 0
     ? Math.max(0, (1 - completedEvaluations / theoreticalWindowEvaluations) * 100)
     : 0;
@@ -770,22 +845,38 @@ export async function optimizeStrategy(input: OptimizeStrategyInput): Promise<St
     direction: input.direction,
     budget,
     validationIsolation: { purgeBars: budget.purgeBars, embargoBars: budget.embargoBars },
+    candidateFingerprint,
+    finalHoldoutDatasetFingerprint,
+    developmentDatasetFingerprint: split.developmentDatasetFingerprint,
+    validationPolicyFingerprint,
+    searchObjectiveFingerprint,
+    selectionHypothesisFingerprints,
+    selectionHypothesisCount: selectionHypothesisFingerprints.length,
+    developmentPbo,
+    finalHoldoutStatus: 'SEALED_NOT_OPENED_DURING_OPTIMIZATION',
+    authorityStage: 'RESEARCH',
     fields,
     baseline,
     winner,
-    holdout: { baseline: baselineHoldout, candidate: candidateHoldout, costStress, neighbors },
+    developmentValidation: {
+      baseline: { ...baselineDevelopment, label: 'development-baseline-comparator' },
+      candidate: { ...candidateDevelopment, label: 'development-validation-candidate' },
+      costStress,
+      neighbors,
+    },
     promotion: {
       eligible,
       automaticallyPromoted: false,
       blockers: uniqueBlockers,
-      baselineHoldoutUtility: baselineHoldout.utility,
-      candidateHoldoutUtility: candidateHoldout.utility,
+      evidenceScope: 'DEVELOPMENT_ONLY',
+      baselineDevelopmentUtility: baselineDevelopment.utility,
+      candidateDevelopmentUtility: candidateDevelopment.utility,
       robustImprovement: round(robustImprovement, 10),
-      holdoutImprovement: round(holdoutImprovement, 10),
+      developmentValidationImprovement: round(developmentValidationImprovement, 10),
       overfitGap: round(overfitGap, 10),
       neighborPassRate: round(neighborPassRate, 6),
     },
-    triedCandidates: coarse.length + refinementCandidates.length,
+    triedCandidates: selectionHypothesisFingerprints.length,
     completedEvaluations,
     cacheHits,
     searchEfficiency: {

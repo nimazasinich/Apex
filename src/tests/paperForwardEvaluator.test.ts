@@ -183,9 +183,9 @@ describe('forward marking against bars that arrived later', () => {
       commissionPctPerSide: 0.04, slippagePctPerSide: 0.05, fundingPctEstimate: 0.01,
     });
     const marked = markForwardPosition(open({ costModel: model }), [bar(2_000, 105, 99, 104.8)], 9_000);
-    // fee 0.08 + spread 0.05 + slippage 0.05 + funding 0.01 = 0.19
-    expect(marked.costPct).toBe(0.19);
-    expect(marked.netPnlPct).toBe(4.31);
+    // No configured UTC funding event crosses this synthetic timestamp range.
+    expect(marked.costPct).toBe(0.18);
+    expect(marked.netPnlPct).toBe(4.32);
   });
 
   it('sorts unordered bars before walking them', () => {

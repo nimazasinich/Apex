@@ -373,6 +373,13 @@
   font-weight: 820;
 }
 
+.apex-chart-bias-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .apex-chart-bias-card .bias.bullish {
   background: color-mix(in srgb, var(--apex-green-soft, #eff9e9) 92%, #fff);
   color: var(--apex-green-dark, #178f36);

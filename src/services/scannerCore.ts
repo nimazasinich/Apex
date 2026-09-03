@@ -7,6 +7,8 @@
 import { MathEngine, clampHeuristicAdjustment } from './mathEngine';
 import { smcAlignmentForDirection } from './smartMoneyContextEngine';
 import { effectiveQStructThreshold } from './scannerConfigPolicy';
+import { academyScannerGate } from '../features/academy/api/strategyIntelligence';
+import type { AcademyConsumerIntelligence } from '../features/academy/types';
 import type { ScanGateSnapshot } from '../contracts/scanner/scanContracts';
 import {
   BinanceSentiment,
@@ -46,6 +48,7 @@ export interface ScanDecisionTrace {
   direction: 'SHORT' | 'LONG' | 'NONE';
   evaluation?: ScanEvaluation;
   gatesSnapshot: ScanGateSnapshot;
+  academyIntelligence?: AcademyConsumerIntelligence;
 }
 
 export interface ScanSlice {
@@ -140,6 +143,7 @@ export function evaluateScanDecision(args: {
     'oiExpansionThresholdPct' | 'atrExpansionThreshold' | 'maxSqueezeRisk' |
     'minEvidenceAgreement' | 'minSmartMoneyScore' | 'smcHardRejectThreshold' | 'scoreWeights' | 'directionBias' | 'minConfidence'>;
   heuristicAdj: number;
+  academyIntelligence?: AcademyConsumerIntelligence | null;
 }): ScanDecisionTrace {
   const { smoothedObi, smoothedVolDelta, qStructDirectional, price, atr, microPrice, spread, fundingRate, sentiment, oiTrend, oiChangePercent, smartMoneyContext, cfg, heuristicAdj } = args;
 
@@ -161,6 +165,18 @@ export function evaluateScanDecision(args: {
     smoothedVolDelta,
     qStructDirectional,
   };
+
+  const academyGate = academyScannerGate(args.academyIntelligence);
+  if (!academyGate.allowed) {
+    return {
+      status: 'REJECTED',
+      direction: 'NONE',
+      reasonCode: 'ACADEMY_INTELLIGENCE_BLOCKED',
+      reasonText: academyGate.detail ?? 'Academy strategy intelligence blocked this scanner evaluation.',
+      gatesSnapshot,
+      academyIntelligence: args.academyIntelligence ?? undefined,
+    };
+  }
 
   const shortGates = gatesSnapshot.shortObi && gatesSnapshot.shortVolume && gatesSnapshot.shortQStruct;
   const longGates = gatesSnapshot.longObi && gatesSnapshot.longVolume && gatesSnapshot.longQStruct;

@@ -1,0 +1,112 @@
+/* Compare dialog styling, owned by the dialog component rather than by
+   StrategyPage.css.
+
+   The dialog is shared: Strategies and Academy both render it. The rules used to
+   live in StrategyPage.css and read `--strategy-*` tokens that are declared on
+   `.strategy-studio`, so the same markup rendered from any other page inherited
+   no tokens and painted transparent borders on a transparent surface. The tokens
+   are therefore provisioned here, on the dialog's own backdrop, which is the
+   outermost element the component actually owns. */
+.strategy-compare-backdrop {
+  --strategy-surface: #FFFFFF;
+  --strategy-soft: #F9FBFD;
+  --strategy-border: #E5EAF0;
+  --strategy-ink: #0F172A;
+  --strategy-muted: #64748B;
+  --strategy-green: #009B7A;
+  --strategy-red: #EF4444;
+  --strategy-amber: #B77700;
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(4, 9, 6, .55);
+  backdrop-filter: blur(8px);
+}
+
+html[data-apex-theme-resolved='dark'] .strategy-compare-backdrop {
+  --strategy-surface: #0f1a14;
+  --strategy-soft: #142219;
+  --strategy-border: #24392c;
+  --strategy-ink: #eef9f1;
+  --strategy-muted: #94aa9a;
+  --strategy-amber: #e3a54a;
+}
+
+.strategy-compare-dialog {
+  width: min(1050px, 100%);
+  max-height: min(760px, calc(100vh - 44px));
+  overflow: auto;
+  border: 1px solid var(--strategy-border);
+  border-radius: 16px;
+  background: var(--strategy-surface);
+  color: var(--strategy-ink);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, .3);
+}
+.strategy-compare-dialog > header { position: sticky; top: 0; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px; border-bottom: 1px solid var(--strategy-border); background: color-mix(in srgb, var(--strategy-surface) 96%, transparent); backdrop-filter: blur(14px); }
+.strategy-compare-dialog > header span { color: var(--strategy-green); font-size: 9.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.strategy-compare-dialog > header h2 { margin: 3px 0; font-size: 18px; }
+/* This paragraph carries `evidenceComparable().reason` — the single sentence that
+   tells the operator whether the metrics below mean anything — and the `small`
+   below it explains the selection limit. Both were 8-9px in a 1050px-wide dialog
+   that has room to spare; neither is a decorative caption. */
+.strategy-compare-dialog > header p { margin: 0; color: var(--strategy-muted); font-size: 10.5px; line-height: 1.45; }
+.strategy-compare-dialog > header small { display: block; margin-top: 4px; max-width: 62ch; color: var(--strategy-muted); font-size: 10px; line-height: 1.45; }
+.strategy-compare-dialog > header button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--strategy-border); border-radius: 8px; background: var(--strategy-surface); color: var(--strategy-muted); cursor: pointer; }
+.strategy-compare-picker { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 15px; border-bottom: 1px solid var(--strategy-border); }
+.strategy-compare-picker button { display: inline-flex; align-items: center; gap: 5px; min-height: 29px; padding: 0 9px; border: 1px solid var(--strategy-border); border-radius: 8px; background: var(--strategy-soft); color: var(--strategy-muted); cursor: pointer; font-size: 10px; }
+.strategy-compare-picker button span { width: 14px; height: 14px; display: grid; place-items: center; border: 1px solid var(--strategy-border); border-radius: 4px; }
+.strategy-compare-picker button.selected { border-color: color-mix(in srgb, var(--strategy-green) 40%, var(--strategy-border)); color: var(--strategy-green); }
+.strategy-compare-picker button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* One matrix, not one card per model. Table rows align by construction and the
+   columns divide the real width, so no row height has to be pinned. */
+.strategy-compare-grid { display: grid; gap: 10px; padding: 15px; overflow-x: auto; }
+.strategy-compare-matrix { width: 100%; min-width: 430px; border-collapse: collapse; table-layout: fixed; }
+.strategy-compare-matrix caption { caption-side: top; margin-bottom: 9px; color: var(--strategy-muted); font-size: 10px; line-height: 1.45; text-align: left; }
+/* Fixed label column; the model columns then split whatever is left, so two
+   models get half the dialog each and four get a quarter. */
+.strategy-compare-matrix col.strategy-compare-label-col { width: 148px; }
+.strategy-compare-matrix thead td { border: 0; }
+.strategy-compare-matrix thead th { padding: 0 10px 9px; border-bottom: 1px solid var(--strategy-border); border-left: 1px solid var(--strategy-border); text-align: left; vertical-align: bottom; }
+.strategy-compare-matrix thead th strong { display: block; margin-top: 5px; font-size: 11.5px; line-height: 1.3; }
+.strategy-compare-matrix tbody th { padding: 8px 10px 8px 0; border-top: 1px solid var(--strategy-border); color: var(--strategy-muted); font-size: 10px; font-weight: 600; text-align: left; vertical-align: top; }
+.strategy-compare-matrix tbody td { padding: 8px 10px; border-top: 1px solid var(--strategy-border); border-left: 1px solid var(--strategy-border); font-size: 10.5px; line-height: 1.45; vertical-align: top; overflow-wrap: anywhere; }
+.strategy-compare-matrix tbody tr:nth-child(even) th,
+.strategy-compare-matrix tbody tr:nth-child(even) td { background: var(--strategy-soft); }
+.strategy-compare-matrix tbody td.numeric { font-weight: 800; font-variant-numeric: tabular-nums; }
+/* "Not comparable", "Unavailable" and "Not recorded" are states, not
+   measurements. They are muted and italic so an operator scanning the metric
+   rows cannot read one as a value, and each such cell carries a title naming the
+   precondition that failed. */
+.strategy-compare-matrix tbody td.unavailable { color: var(--strategy-muted); font-weight: 500; font-style: italic; }
+.strategy-compare-matrix tbody tr.prose td { color: var(--strategy-muted); font-size: 10px; }
+/* Section dividers inside the matrix separate context-independent facts from
+   dataset-dependent measurements, because only the second group depends on the
+   selected models sharing a dataset. */
+.strategy-compare-matrix tbody tr.section th { padding-top: 14px; color: var(--strategy-ink); font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.strategy-compare-matrix tbody tr.section td { padding-top: 14px; color: var(--strategy-muted); font-size: 9.5px; }
+
+.strategy-compare-chip { display: inline-flex; align-items: center; min-height: 18px; padding: 0 6px; border: 1px solid var(--strategy-border); border-radius: 5px; background: var(--strategy-soft); color: var(--strategy-muted); font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.strategy-compare-chip.is-pass { border-color: color-mix(in srgb, var(--strategy-green) 38%, var(--strategy-border)); color: var(--strategy-green); }
+.strategy-compare-chip.is-fail { border-color: color-mix(in srgb, var(--strategy-red) 38%, var(--strategy-border)); color: var(--strategy-red); }
+.strategy-compare-chip.is-warn { border-color: color-mix(in srgb, var(--strategy-amber) 38%, var(--strategy-border)); color: var(--strategy-amber); }
+
+.strategy-compare-empty {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 18px;
+  color: var(--strategy-muted);
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  /* The matrix keeps its columns here — at this width the dialog still has room
+     for the model columns once the label column gives up 46px. */
+  .strategy-compare-matrix col.strategy-compare-label-col { width: 102px; }
+}

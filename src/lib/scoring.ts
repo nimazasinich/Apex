@@ -3,7 +3,7 @@
  * Pure, unit-tested scoring module used for both LONG and SHORT directions (REQ-013, 014, 016, 017).
  */
 
-import {
+import type {
   CandidateScore,
   Candle,
   DataState,
@@ -359,7 +359,6 @@ export function scoreCandidate(input: ScoringInput, direction: TradeDirection): 
   const weightedEvidence = weightedComponents.reduce((sum, component) => sum + component.score * component.weight * component.availability, 0);
   const rawScore = availableWeight > 0 ? weightedEvidence / availableWeight : 0;
   const featureCompletenessPct = Math.round(availableWeight * 100);
-  const score = Math.round(Math.max(0, Math.min(100, rawScore)));
 
   const tf15mQuality: FeatureQualityMeta =
     input.candles15m && input.candles15m.length >= TF15M_MIN_BARS
@@ -378,6 +377,26 @@ export function scoreCandidate(input: ScoringInput, direction: TradeDirection): 
   const tf1h = structureQuality.state === 'VALID' ? structure.trend : 'NEUTRAL';
 
   const confluence = evaluateTimeframeConfluence(direction, tf15m, tf1h, tf15mQuality, tf1hQuality);
+  const macdV1 = computeRealMacdSignal(candles);
+
+  // Incomplete evidence shrinks the score toward neutral instead of letting a
+  // small subset of available features look fully authoritative. Independent
+  // timeframe and MACD agreement then provide bounded confirmation/penalties.
+  const evidenceAdjustedScore = availableWeight > 0
+    ? 50 + (rawScore - 50) * availableWeight
+    : 0;
+  const confluenceAdjustment: Record<TimeframeConfluenceState, number> = {
+    ALIGNED: 8,
+    PARTIAL: -4,
+    CONFLICTING: -12,
+    UNAVAILABLE: -10,
+  };
+  let confirmationAdjustment = confluenceAdjustment[confluence.state];
+  if (macdV1 !== 'NEUTRAL') {
+    if (signalSupportsDirection(macdV1, direction) && macdV1 === roc) confirmationAdjustment += 4;
+    else if (signalOpposesDirection(macdV1, direction)) confirmationAdjustment -= 6;
+  }
+  const score = Math.round(Math.max(0, Math.min(100, evidenceAdjustedScore + confirmationAdjustment)));
 
   const featureQuality: ScoringFeatureQuality = {
     rsi: rsiQuality,
@@ -390,6 +409,13 @@ export function scoreCandidate(input: ScoringInput, direction: TradeDirection): 
   };
 
   const guard = evaluateNoTradeGuard(input, direction, confluence, ticker.dataState);
+  if (
+    structureQuality.state === 'VALID'
+    && signalOpposesDirection(structure.trend, direction)
+    && signalOpposesDirection(macdV1, direction)
+  ) {
+    guard.guardReasons.push('Trend confirmation failed: market structure and MACD both oppose the candidate direction.');
+  }
   if (featureCompletenessPct < 60) {
     guard.guardReasons.push(`Feature evidence completeness is ${featureCompletenessPct}% — missing evidence cannot be treated as neutral confirmation.`);
   }
@@ -402,8 +428,6 @@ export function scoreCandidate(input: ScoringInput, direction: TradeDirection): 
     featureCompletenessPct < 40;
 
   const readinessTier = deriveReadinessTier(score, guardPass, hasHardBlock);
-  const macdV1 = computeRealMacdSignal(candles);
-
   return {
     symbol: ticker.symbol,
     lastPrice: ticker.lastPrice,

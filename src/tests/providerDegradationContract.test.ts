@@ -17,16 +17,16 @@ function sequence(...results: Array<{ ok: boolean; status: number; json: any; er
 describe('provider degradation envelope contract', () => {
   beforeEach(() => __resetProviderRouterState());
 
-  it('labels a verified fresh provider response live', async () => {
+  it('degrades a provider response whose source event time is unknown', async () => {
     const fetchJson = sequence(
       { ok: true, status: 200, json: EXCHANGE_INFO },
       { ok: true, status: 200, json: [{ longShortRatio: '1.2' }] },
     );
     const result = await routeBinanceSentiment('longShortRatio', 'ratio', 'BTCUSDT', 'https://example.test/ratio', fetchJson);
-    expect(result.status).toBe('live');
+    expect(result.status).toBe('degraded');
     expect(result.provider).toBe('binance');
     expect(result.value).toEqual([{ longShortRatio: '1.2' }]);
-    expect(result.reason).toBeUndefined();
+    expect(result.reason).toBe('provider_event_time_missing');
   });
 
   it('labels last-known-good fallback degraded after a fresh provider failure', async () => {

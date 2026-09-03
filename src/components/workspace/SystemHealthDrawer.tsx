@@ -112,7 +112,7 @@ export function SystemHealthDrawer({ isOpen, onClose }: SystemHealthDrawerProps)
   const streaming = snapshot?.streaming.data?.kucoinPublicStreaming ?? null;
   const marketStats = snapshot?.marketStatistics.data ?? null;
   const summary = summarizeOperationsDiagnostics(snapshot);
-  const cacheRate = report && report.cacheTotalQueries > 0 ? report.cacheHitRatePct : null;
+  const cacheRate = typeof report?.cacheTotalQueries === 'number' && report.cacheTotalQueries > 0 ? report.cacheHitRatePct : null;
   const providerRows = operations?.providers.items ?? [];
 
   return (

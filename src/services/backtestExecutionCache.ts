@@ -46,6 +46,22 @@ export function buildBacktestReplayCacheKey(identity: BacktestReplayCacheIdentit
   return hash.digest('hex');
 }
 
+/** Content identity for the exact historical series, independent of strategy parameters. */
+export function buildBacktestDatasetFingerprint(
+  source: string,
+  symbol: string,
+  interval: string,
+  candles: BacktestReplayCacheIdentity['candles'],
+): string {
+  const hash = createHash('sha256');
+  hash.update(stableSerialize({ source, symbol, interval, rows: candles.length }));
+  for (const candle of candles) {
+    hash.update('\n');
+    hash.update(stableSerialize([candle.time, candle.open, candle.high, candle.low, candle.close, candle.volume]));
+  }
+  return hash.digest('hex');
+}
+
 export type BacktestCacheState = 'HIT' | 'MISS' | 'COALESCED';
 
 export interface BacktestCacheResult<T> {

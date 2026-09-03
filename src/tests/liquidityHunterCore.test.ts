@@ -5,6 +5,7 @@ import { RealtimeSeriesStore } from '../services/realtime/realtimeSeriesStore';
 import { OrderBookRebuilder } from '../services/realtime/orderBookRebuilder';
 import { LiquidityHunterDynamicFusionEngine } from '../services/liquidityHunter/dynamicFusionEngine';
 import { authorizeLiquidityHunterTradePlan } from '../services/liquidityHunter/decisionBridge';
+import { createBaselineEdgeThresholdProfile } from '../services/liquidityHunter/edgeThresholdRegistry';
 import { AppendOnlyEventLog } from '../services/realtime/appendOnlyEventLog';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -185,4 +186,30 @@ describe('Liquidity Hunter core', () => {
       await secondLog.close();
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
+  it('resolves governed edge thresholds against the causal macro volatility regime instead of ANY', async () => {
+    const seenRegimes = new Set<string>();
+    const engine = new LiquidityHunterDynamicFusionEngine({
+      ...buildRuntime(),
+      flags: {
+        liquidityHunterEnabled: true, shadowOnly: true, realtimeEventRecordingEnabled: false, publicFeedsEnabled: false,
+        binancePublicFeedEnabled: false, kucoinPublicFeedEnabled: false, bybitPublicFeedEnabled: false, realtimeL2Enabled: true,
+        optionsGexEnabled: false, deribitOptionsPublicEnabled: false, hyblockLiquidationTopologyEnabled: false,
+        walletGradingEnabled: true, hyperliquidWalletObserverEnabled: false, hyperliquidWalletHistoryGradingEnabled: false,
+        sentimentVelocityEnabled: false, metaModelEnabled: true, websocketEnabled: false, paperCanaryEnabled: false,
+        testnetCanaryEnabled: false, autonomousLiveExecutionEnabled: false,
+      },
+      edgeThresholdResolver: (edgeId, _symbol, timeframe = 'REALTIME', regime = 'ANY') => {
+        seenRegimes.add(regime);
+        return createBaselineEdgeThresholdProfile({ edgeId, symbolClass: 'BTC', timeframe, regime });
+      },
+    });
+    const result = await engine.evaluate({
+      symbol: 'BTC-USDT', now: NOW, currentPrice: 100, smartMoneyContext,
+      metaModelEvaluation: { direction: 'LONG', score: 0.82, modelVersion: 'fixture-v1', featureVersion: 'fixture-features-v1', generatedAt: NOW - 500, expiresAt: NOW + 20_000 },
+    });
+    expect(seenRegimes.size).toBeGreaterThan(0);
+    expect(seenRegimes.has('ANY')).toBe(false);
+    expect(result.reasons.some((reason) => reason.startsWith('threshold_regime:'))).toBe(true);
+  });
+
 });

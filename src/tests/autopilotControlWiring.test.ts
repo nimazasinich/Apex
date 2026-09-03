@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
 
 const HOOK = 'src/lib/useAutopilotController.ts';
-const TOGGLE = 'src/components/SmartAutopilotMiniToggle.tsx';
+const HEADER = 'src/components/workspace/AutopilotHeaderControl.tsx';
 const APP = 'src/App.tsx';
 const RUN_BUILDER = 'src/pages/backtesting/BacktestRunBuilder.tsx';
 const BACKTESTING_PAGE = 'src/pages/backtesting/BacktestingPage.tsx';
@@ -53,10 +53,9 @@ describe('Autopilot control surface — real server binding', () => {
     expect(hook).toContain('setTransportError(error instanceof Error ? error.message : String(error));');
     expect(hook).not.toMatch(/catch[\s\S]{0,200}setSnapshot\(EMPTY\)/);
 
-    const toggle = read(TOGGLE);
-    expect(toggle).toContain("const state = disconnected");
-    expect(toggle).toContain("'UNREACHABLE'");
-    expect(toggle).toContain("const isFailed = phase === 'FAILED' || disconnected;");
+    const header = read(HEADER);
+    expect(header).toContain("controller.transportError ? 'UNREACHABLE'");
+    expect(header).toContain("const failed = phase === 'FAILED' || phase === 'UNREACHABLE';");
   });
 
   it('grants no execution authority from the control surface', () => {
@@ -66,28 +65,25 @@ describe('Autopilot control surface — real server binding', () => {
   });
 });
 
-describe('Autopilot badge — server phase is authoritative', () => {
+describe('Autopilot header — server phase is authoritative', () => {
   it('prefers the server phase over the local enabled/running props', () => {
-    const toggle = read(TOGGLE);
-    expect(toggle).toContain('const PHASE_LABEL: Record<AutopilotPhase, string>');
-    for (const phase of ['OFF', 'WAITING', 'RESEARCHING', 'VALIDATING', 'FAILED']) {
-      expect(toggle).toContain(`${phase}: '${phase}'`);
-    }
-    expect(toggle).toContain('const isRunning = phase ? serverBusy : running;');
-    expect(toggle).toContain("const isOn = phase ? phase !== 'OFF' : enabled;");
+    const header = read(HEADER);
+    expect(header).toContain('const enabled = known ? controller.enabled : preferenceEnabled;');
+    expect(header).toContain("const phase = controller.transportError ? 'UNREACHABLE' : controller.phase");
+    expect(header).toContain("<strong>{enabled ? 'AUTO RESEARCH' : 'MANUAL'}</strong>");
   });
 
-  it('stops the Backtesting header from claiming a phase of its own', () => {
+  it('keeps research pages read-only instead of claiming a local phase', () => {
     const builder = read(RUN_BUILDER);
-    // The old header hardcoded TUNING/ARMED/OFF from local state alone.
-    expect(builder).toContain('{autopilotPhaseText ?? (autopilotEnabled ? (autopilotRunning ? \'TUNING\' : \'ARMED\') : \'OFF\')}');
-    expect(builder).toContain('phase={autopilotPhase}');
-    expect(builder).toContain('disconnected={autopilotDisconnected}');
+    expect(builder).toContain('aria-label="Global Autopilot status"');
+    expect(builder).toContain('Controlled from the application header');
+    expect(builder).not.toContain('SmartAutopilotMiniToggle');
+    expect(read(EVIDENCE_RAIL)).not.toContain('SmartAutopilotMiniToggle');
   });
 
   it('has a distinct failed style so a broken loop cannot look idle', () => {
-    const css = read('src/components/SmartAutopilotMiniToggle.css');
-    expect(css).toContain('.apex-smart-auto-mini.is-failed');
+    const css = read('src/styles/workspace-shell.css');
+    expect(css).toContain('.apex-autopilot-header.is-failed');
   });
 });
 
@@ -96,31 +92,29 @@ describe('Autopilot wiring — one controller, one driver', () => {
     const app = read(APP);
     expect(app).toContain("import { useAutopilotController } from './lib/useAutopilotController';");
     expect(app.match(/useAutopilotController\(settings\.autopilotEnabled\)/g)?.length).toBe(1);
-    // The global shell plus all three page consumers (Overview, Backtesting, Strategies) receive the same controller binding.
-    expect(app.match(/autopilotController=\{autopilotController\}/g)?.length).toBe(4);
-    // The existing persisted-preference path is untouched.
-    expect(app.match(/onAutopilotEnabledChange=\{setAutopilotEnabled\}/g)?.length).toBeGreaterThanOrEqual(2);
+    // The global shell plus all page consumers receive the same controller binding.
+    expect(app.match(/autopilotController=\{autopilotController\}/g)?.length).toBe(5);
+    // Only the global header can change automatic/manual mode.
+    expect(app.match(/onAutopilotEnabledChange=\{setAutopilotEnabled\}/g)?.length).toBe(1);
   });
 
-  it('threads the real phase down to both toggles', () => {
+  it('threads the real phase down to both read-only research status surfaces', () => {
     for (const path of [BACKTESTING_PAGE, STRATEGY_PAGE]) {
       const page = read(path);
       expect(page).toContain('autopilotPhase={autopilotController?.phase ?? null}');
       expect(page).toContain('autopilotPhaseText={autopilotController?.phaseText ?? null}');
       expect(page).toContain('autopilotDisconnected={Boolean(autopilotController?.transportError)}');
     }
-    expect(read(EVIDENCE_RAIL)).toContain('phase={autopilotPhase}');
+    expect(read(EVIDENCE_RAIL)).toContain("`AUTOPILOT ${autopilotPhase ?? 'STARTING'}`");
   });
 
-  it('yields the cadence to the server scheduler instead of double-driving cycles', () => {
+  it('yields all automatic cadence to the server scheduler', () => {
     const backtesting = read(BACKTESTING_HOOK);
-    expect(backtesting).toContain('if (serverDriven) return undefined;');
-    expect(backtesting).toContain('}, [autopilotEnabled, runAutopilotOptimization, serverDriven]);');
-    expect(read(BACKTESTING_PAGE)).toContain('serverDriven: autopilotController?.serverBackgroundLoop === true,');
-
+    expect(backtesting).not.toContain('/api/strategies/autopilot/cycle');
+    expect(backtesting).not.toContain('window.setInterval');
     const strategies = read(STRATEGY_PAGE);
-    expect(strategies).toContain('if (autopilotServerDriven) return undefined;');
-    expect(strategies).toContain('const autopilotServerDriven = autopilotController?.serverBackgroundLoop === true;');
+    expect(strategies).not.toContain('/api/strategies/autopilot/cycle');
+    expect(strategies).not.toContain('5 * 60_000');
   });
 
   it('adds no competing controller or cycle timer in the client', () => {

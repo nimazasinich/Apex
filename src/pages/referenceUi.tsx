@@ -6,23 +6,23 @@ const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFra
 const moneyFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 
 export function fmtMoney(value: number | null | undefined, suffix = 'USDT') {
-  if (!Number.isFinite(Number(value))) return '—';
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   return `${moneyFormat.format(Number(value))} ${suffix}`;
 }
 
 export function fmtCompact(value: number | null | undefined, suffix = '') {
-  if (!Number.isFinite(Number(value))) return '—';
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   return `${compact.format(Number(value))}${suffix}`;
 }
 
 export function fmtPct(value: number | null | undefined, signed = true) {
-  if (!Number.isFinite(Number(value))) return '—';
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   const numeric = Number(value);
   return `${signed && numeric > 0 ? '+' : ''}${numeric.toFixed(2)}%`;
 }
 
 export function fmtPrice(value: number | null | undefined) {
-  if (!Number.isFinite(Number(value))) return '—';
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   const numeric = Number(value);
   return numeric >= 1000
     ? numeric.toLocaleString('en-US', { maximumFractionDigits: 2 })

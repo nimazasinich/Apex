@@ -29,6 +29,10 @@ export function strategyValidationWarnings(
   return Array.from(new Set(warnings));
 }
 
+function finiteOrNull(value: number | undefined | null): number | null {
+  return Number.isFinite(value) ? Number(value) : null;
+}
+
 export function buildStrategyEvidenceSnapshot(
   definition: StrategyDefinition,
   validation?: StrategyValidationReport,
@@ -37,12 +41,18 @@ export function buildStrategyEvidenceSnapshot(
   const holdout = validation?.holdout?.result;
   if (!validation || !holdout) return undefined;
 
+  // Regime coverage is reported from the labels the run actually measured. When
+  // no regime results exist the arrays stay undefined rather than empty, so a
+  // consumer can distinguish "measured nothing" from "measured and found none".
+  const regimeEntries = validation.regimeResults ? Object.entries(validation.regimeResults) : null;
+  const statistical = validation.statisticalEvidence;
+
   return {
-    score: rank?.score ?? 0,
+    score: finiteOrNull(rank?.score),
     winRatePct: holdout.historicalWinRatePct,
     netReturnPct: holdout.totalPnlPct,
     maxDrawdownPct: holdout.maxDrawdownPct,
-    profitFactor: holdout.profitFactor ?? 0,
+    profitFactor: finiteOrNull(holdout.profitFactor),
     lastBacktestAt: holdout.audit?.generatedAt || validation.runAt,
     costStressPassed: validation.costStress.passed,
     source: 'validation',
@@ -58,11 +68,45 @@ export function buildStrategyEvidenceSnapshot(
     engine: holdout.audit?.engine || holdout.replayMode || definition.engine,
     runId: holdout.audit?.runId,
     validationMethod: validation.validationScope === 'BASE_REPLAY'
-      ? 'base-replay-walk-forward-3-window-plus-holdout-v1'
-      : 'walk-forward-3-window-plus-holdout-v1',
+      ? 'base-replay-temporal-robustness-3-window-plus-sealed-holdout-v2'
+      : 'temporal-robustness-3-window-plus-sealed-holdout-v2',
     validationScope: validation.validationScope ?? 'FULL_STRATEGY',
     fullStrategyValidated: validation.fullStrategyValidated ?? validation.passedAllGates,
     dataState: holdout.dataState,
     warnings: strategyValidationWarnings(validation, holdout),
+    gates: { ...validation.gates },
+    passedAllGates: validation.passedAllGates,
+    validationLimitations: validation.validationLimitations ?? [],
+    regimeStatus: validation.regimeStatus,
+    regimeReason: validation.regimeReason,
+    regimesMeasured: regimeEntries ? regimeEntries.map(([label]) => label) : undefined,
+    regimesProfitable: regimeEntries
+      ? regimeEntries.filter(([, result]) => result.totalPnlPct > 0).map(([label]) => label)
+      : undefined,
+    costStress: {
+      feeMultiplier: validation.costStress.feeMultiplier,
+      slippageMultiplier: validation.costStress.slippageMultiplier,
+      passed: validation.costStress.passed,
+      totalPnlPct: validation.costStress.result.totalPnlPct,
+      profitFactor: finiteOrNull(validation.costStress.result.profitFactor),
+      maxDrawdownPct: validation.costStress.result.maxDrawdownPct,
+    },
+    statistical: statistical
+      ? {
+        passed: statistical.passed,
+        observations: statistical.observations,
+        effectiveSampleSize: statistical.effectiveSampleSize,
+        meanReturnPct: statistical.meanReturnPct,
+        lowerConfidenceBoundPct: finiteOrNull(statistical.lowerConfidenceBoundPct),
+        probabilityPositiveMean: finiteOrNull(statistical.probabilityPositiveMean),
+        deflatedSharpeRatioProbability: finiteOrNull(statistical.deflatedSharpeRatioProbability),
+        selectionHypotheses: statistical.selectionHypothesisFingerprints.length,
+        familyWiseAlpha: statistical.familyWiseAlpha,
+        correctedAlpha: statistical.correctedAlpha,
+        blockers: [...statistical.blockers],
+      }
+      : undefined,
+    datasetFingerprint: validation.holdoutProtocol?.datasetFingerprint,
+    holdoutProtocolStatus: validation.holdoutProtocol?.status,
   };
 }

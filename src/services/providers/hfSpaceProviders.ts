@@ -12,8 +12,16 @@ import {
 } from '../hfSpaceIntel';
 import { analyzeSpace2Sentiment } from '../hfSpacesClient';
 
+/**
+ * Canonical exchange symbols are pair identifiers. Do not strip the quote
+ * currency here: BTCUSDT and BTC are different contracts for upstream routes.
+ * UI aliases are normalized at the boundary, but provider requests must keep
+ * the instrument identity.
+ */
 function normalizeSymbol(symbol: string): string {
-  return String(symbol || '').toUpperCase().replace(/[-_/]?(USDT|USDC|USD|PERP)$/i, '');
+  return String(symbol || '')
+    .toUpperCase()
+    .replace(/[-_/]/g, '');
 }
 
 /**

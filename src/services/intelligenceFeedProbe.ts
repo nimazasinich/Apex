@@ -102,13 +102,17 @@ function blockedDetail(text: string): string {
 
 export async function fetchIntelligenceFeedSnapshot(opts?: {
   etherscanKey?: string;
+  etherscanKeys?: string[];
   coinMarketCapKey?: string;
+  coinMarketCapKeys?: string[];
   newsApiKey?: string;
+  newsApiKeys?: string[];
   newsApiQuery?: NewsApiQueryOptions;
 }): Promise<IntelligenceFeedSnapshot> {
-  const etherscanKey = opts?.etherscanKey?.trim() || '';
-  const coinMarketCapKey = opts?.coinMarketCapKey?.trim() || '';
-  const newsApiKey = opts?.newsApiKey?.trim() || '';
+  const unique = (values: Array<string | undefined>): string[] => [...new Set(values.map((value) => value?.trim() || '').filter(Boolean))];
+  const etherscanKeys = unique([...(opts?.etherscanKeys || []), opts?.etherscanKey]);
+  const coinMarketCapKeys = unique([...(opts?.coinMarketCapKeys || []), opts?.coinMarketCapKey]);
+  const newsApiKeys = unique([...(opts?.newsApiKeys || []), opts?.newsApiKey]);
   const newsApiQuery = opts?.newsApiQuery;
   const hfStatusP = fetchHfSpaceIntelStatus();
 
@@ -124,12 +128,26 @@ export async function fetchIntelligenceFeedSnapshot(opts?: {
         detail: `Source: ${hf.source}`,
       };
     }
+    try {
+      const direct = await getJson('https://api.alternative.me/fng/?limit=1');
+      const row = direct.json?.data?.[0];
+      const value = Number(row?.value);
+      if (direct.status >= 200 && direct.status < 300 && Number.isFinite(value)) {
+        return {
+          ok: true,
+          status: 'degraded' as const,
+          value,
+          classification: typeof row?.value_classification === 'string' ? row.value_classification : null,
+          detail: 'Approved HF sentiment unavailable; using Alternative.me public fallback',
+        };
+      }
+    } catch { /* continue to explicit unavailable state */ }
     return {
       ok: false,
       status: 'error' as const,
       value: null,
       classification: null,
-      detail: hf.detail || 'Both approved Hugging Face Spaces are unavailable',
+      detail: hf.detail || 'HF Spaces and Alternative.me are unavailable',
     };
   })();
 
@@ -187,76 +205,59 @@ export async function fetchIntelligenceFeedSnapshot(opts?: {
       };
     }
 
-    // Tier 4 — operator-entered CoinMarketCap key only. No hidden direct
-    // aggregator is inserted after this point.
-    if (coinMarketCapKey) {
-      const cmc = await fetchCoinMarketCapQuotes(coinMarketCapKey, ['BTC', 'ETH'], TIMEOUT_MS);
+    // Tier 4 — attached CoinMarketCap key rotation. Each key gets an independent
+    // attempt, so a revoked/rate-limited primary cannot suppress a healthy reserve.
+    let lastCmcDetail = '';
+    for (let index = 0; index < coinMarketCapKeys.length; index += 1) {
+      const cmc = await fetchCoinMarketCapQuotes(coinMarketCapKeys[index], ['BTC', 'ETH'], TIMEOUT_MS);
       const btc = cmc.quotes.BTC?.usdPrice ?? null;
       const eth = cmc.quotes.ETH?.usdPrice ?? null;
       if (cmc.ok && (btc != null || eth != null)) {
         return {
           ok: true,
           status: 'degraded',
-          source: 'CoinMarketCap · operator key',
+          source: index === 0 ? 'CoinMarketCap · default key' : `CoinMarketCap · reserve ${index + 1}`,
           btcUsd: btc,
           ethUsd: eth,
           detail: 'Public exchanges and approved Hugging Face Spaces were unavailable',
         };
       }
-      return {
-        ok: false,
-        status: 'error',
-        source: 'CoinMarketCap · operator key',
-        btcUsd: null,
-        ethUsd: null,
-        detail: cmc.apiMessage || hf.detail || 'All market providers unavailable',
-      };
+      lastCmcDetail = cmc.apiMessage || cmc.apiCode || `HTTP ${cmc.status}`;
     }
 
     return {
       ok: false,
-      status: 'not_configured',
+      status: coinMarketCapKeys.length ? 'error' : 'not_configured',
       source: 'market provider chain',
       btcUsd: null,
       ethUsd: null,
-      detail: hf.detail || 'Binance, KuCoin and both approved Hugging Face Spaces are unavailable; CoinMarketCap key is not configured',
+      detail: lastCmcDetail || hf.detail || 'Binance, KuCoin, HF Spaces and CoinMarketCap key rotation are unavailable',
     };
   })();
 
   const ethOracleP = (async () => {
-    if (!etherscanKey) {
-      return {
-        ok: false,
-        status: 'error' as const,
-        ethUsd: null,
-        detail: 'No Etherscan key',
-      };
+    if (!etherscanKeys.length) {
+      return { ok: false, status: 'error' as const, ethUsd: null, detail: 'No Etherscan key' };
     }
-    try {
-      const url = new URL('https://api.etherscan.io/v2/api');
-      url.searchParams.set('chainid', '1');
-      url.searchParams.set('module', 'stats');
-      url.searchParams.set('action', 'ethprice');
-      url.searchParams.set('apikey', etherscanKey);
-      const r = await getJson(url.toString());
-      const ethUsd = Number(r.json?.result?.ethusd);
-      if (String(r.json?.status) === '1' && Number.isFinite(ethUsd)) {
-        return { ok: true, status: 'ok' as const, ethUsd };
+    let detail = 'failed';
+    for (const key of etherscanKeys) {
+      try {
+        const url = new URL('https://api.etherscan.io/v2/api');
+        url.searchParams.set('chainid', '1');
+        url.searchParams.set('module', 'stats');
+        url.searchParams.set('action', 'ethprice');
+        url.searchParams.set('apikey', key);
+        const r = await getJson(url.toString());
+        const ethUsd = Number(r.json?.result?.ethusd);
+        if (String(r.json?.status) === '1' && Number.isFinite(ethUsd)) {
+          return { ok: true, status: 'ok' as const, ethUsd };
+        }
+        detail = String(r.json?.result || r.json?.message || blockedDetail(r.text)).slice(0, 160);
+      } catch (e: any) {
+        detail = e?.message || 'failed';
       }
-      return {
-        ok: false,
-        status: 'error' as const,
-        ethUsd: null,
-        detail: String(r.json?.result || r.json?.message || blockedDetail(r.text)).slice(0, 160),
-      };
-    } catch (e: any) {
-      return {
-        ok: false,
-        status: 'error' as const,
-        ethUsd: null,
-        detail: e?.message || 'failed',
-      };
     }
+    return { ok: false, status: 'error' as const, ethUsd: null, detail };
   })();
 
   /** News: approved HF Spaces first, operator-entered Newsdata.io key last. */
@@ -274,7 +275,7 @@ export async function fetchIntelligenceFeedSnapshot(opts?: {
 
     const query = normalizeNewsApiQuery(newsApiQuery);
     const label = query.endpoint === 'top-headlines' ? 'Newsdata.io top-headlines' : 'Newsdata.io everything';
-    if (!newsApiKey) {
+    if (!newsApiKeys.length) {
       return {
         ok: false,
         status: 'not_configured',
@@ -284,44 +285,36 @@ export async function fetchIntelligenceFeedSnapshot(opts?: {
       };
     }
 
-    try {
-      const result = await fetchCryptoNewsArticles(newsApiKey, 'BTCUSDT', {
-        ...query,
-        pageSize: Math.min(5, query.pageSize ?? 5),
-      });
-
-      if (result.ok && result.articles.length) {
-        return {
-          ok: true,
-          status: 'degraded',
-          source: label,
-          headlines: result.articles.map((a) => ({
-            title: a.title.slice(0, 140),
-            url: a.url,
-            source: a.source,
-          })),
-          detail: result.filteredOut > 0
-            ? `${result.filteredOut} non-crypto headline${result.filteredOut === 1 ? '' : 's'} filtered out`
-            : 'Approved Hugging Face Spaces unavailable; using operator-entered Newsdata.io key',
-        };
+    let lastNewsDetail = '';
+    for (let index = 0; index < newsApiKeys.length; index += 1) {
+      try {
+        const result = await fetchCryptoNewsArticles(newsApiKeys[index], 'BTCUSDT', {
+          ...query,
+          pageSize: Math.min(5, query.pageSize ?? 5),
+        });
+        if (result.ok && result.articles.length) {
+          return {
+            ok: true,
+            status: 'degraded',
+            source: index === 0 ? label : `${label} · reserve ${index + 1}`,
+            headlines: result.articles.map((a) => ({ title: a.title.slice(0, 140), url: a.url, source: a.source })),
+            detail: result.filteredOut > 0
+              ? `${result.filteredOut} non-crypto headline${result.filteredOut === 1 ? '' : 's'} filtered out`
+              : 'Approved Hugging Face Spaces unavailable; using configured Newsdata.io fallback',
+          };
+        }
+        lastNewsDetail = result.apiMessage || result.apiCode || `HTTP ${result.status}`;
+      } catch (e: any) {
+        lastNewsDetail = e?.message || 'Newsdata.io request failed';
       }
-
-      if (result.apiCode === 'networkError') {
-        return { ok: false, status: 'error', source: 'Newsdata.io', headlines: [], detail: result.apiMessage || formatNewsApiTransportError() };
-      }
-      if (result.apiCode === 'apiKeyInvalid' || result.status === 401) {
-        return { ok: false, status: 'error', source: 'Newsdata.io', headlines: [], detail: result.apiMessage || 'invalid Newsdata.io key' };
-      }
-      return {
-        ok: false,
-        status: result.ok ? 'degraded' : 'error',
-        source: label,
-        headlines: [],
-        detail: result.apiMessage || hfNews.detail || 'No news available from approved Spaces or Newsdata.io',
-      };
-    } catch (e: any) {
-      return { ok: false, status: 'error', source: 'Newsdata.io', headlines: [], detail: e?.message || 'Newsdata.io request failed' };
     }
+    return {
+      ok: false,
+      status: 'error',
+      source: 'Newsdata.io',
+      headlines: [],
+      detail: lastNewsDetail || hfNews.detail || formatNewsApiTransportError(),
+    };
   })();
 
   const whalesP = (async (): Promise<IntelligenceFeedSnapshot['whales']> => {
@@ -337,17 +330,31 @@ export async function fetchIntelligenceFeedSnapshot(opts?: {
       };
     }
 
-    // Generic whale tracking has no honest Etherscan equivalent without a
-    // relevant address/contract. Do not substitute an unrelated hard-coded
-    // wallet merely because an explorer key exists. Symbol-specific keyed
-    // explorer fallbacks remain available in SupplementalOrchestrator.
+    // Keyless attached fallback: ClankApp. It is used only for the Settings
+    // preview here; symbol-specific explorer evidence remains in the orchestrator.
+    try {
+      const clank = await getJson('https://clankapp.com/api/whales/recent');
+      const rows = Array.isArray(clank.json) ? clank.json : Array.isArray(clank.json?.data) ? clank.json.data : Array.isArray(clank.json?.whales) ? clank.json.whales : [];
+      if (clank.status >= 200 && clank.status < 300 && rows.length) {
+        return {
+          ok: true,
+          status: 'degraded',
+          source: 'ClankApp · public',
+          count: rows.length,
+          sample: rows.slice(0, 5).map((row: any) => ({
+            summary: [row?.amount, row?.symbol || row?.coin, row?.chain].filter(Boolean).join(' ') || 'whale transfer',
+          })),
+          detail: 'Approved HF whale feed unavailable; using ClankApp public fallback',
+        };
+      }
+    } catch { /* explicit unavailable state below */ }
     return {
       ok: false,
       status: 'error',
-      source: 'APEX Hugging Face Spaces',
+      source: 'whale provider chain',
       count: 0,
       sample: [],
-      detail: hfWhales.detail || 'Both approved Hugging Face Spaces returned no whale/on-chain rows',
+      detail: hfWhales.detail || 'HF Spaces and ClankApp returned no whale/on-chain rows',
     };
   })();
 

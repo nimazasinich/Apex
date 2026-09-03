@@ -30,7 +30,9 @@ export function AccountFreshnessChip({ className, showSource = true, ...input }:
       data-snapshot-state={status.state}
       data-snapshot-live={status.isLive ? 'true' : 'false'}
       data-snapshot-source={status.source ?? 'unreported'}
-      title={status.title ? `Snapshot synced at ${status.title}` : 'Snapshot sync time unavailable'}
+      title={input.snapshot?.quality?.state === 'partial'
+        ? `Partial snapshot · unavailable: ${(input.snapshot.quality.failures || []).join(', ') || 'secondary account resources'}${status.title ? ` · synced at ${status.title}` : ''}`
+        : status.title ? `Snapshot synced at ${status.title}` : 'Snapshot sync time unavailable'}
     >
       <i />
       {status.label}

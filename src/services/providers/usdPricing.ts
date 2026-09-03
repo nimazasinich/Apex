@@ -8,6 +8,7 @@
  */
 import { getCandles } from '../marketDataService';
 import { fetchCoinMarketCapQuotes } from './coinMarketCapApiRequest';
+import { smartFetchJson } from '../proxyFetch';
 
 const MARKET_BASE_BY_ASSET: Record<string, string> = {
   WBTC: 'BTC',
@@ -27,11 +28,16 @@ const MARKET_BASE_BY_ASSET: Record<string, string> = {
 const STABLE_ASSETS = new Set(['USDT', 'USDC', 'BUSD', 'DAI', 'TUSD']);
 const CACHE_TTL_MS = 3 * 60 * 1000;
 const cache = new Map<string, { at: number; price: number }>();
-let operatorCoinMarketCapKey = '';
+let operatorCoinMarketCapKeys: string[] = [];
+let coinMarketCapCursor = 0;
 
-/** Called by the server-side supplemental orchestrator; the secret is never exposed to UI code. */
-export function configureUsdPricingFallback(input?: { coinMarketCapKey?: string }): void {
-  operatorCoinMarketCapKey = input?.coinMarketCapKey?.trim() || '';
+/** Called by the server-side supplemental orchestrator; secrets are never exposed to UI code. */
+export function configureUsdPricingFallback(input?: { coinMarketCapKey?: string; coinMarketCapKeys?: string[] }): void {
+  operatorCoinMarketCapKeys = [...new Set([
+    ...(input?.coinMarketCapKeys || []),
+    input?.coinMarketCapKey || '',
+  ].map((value) => value.trim()).filter(Boolean))];
+  coinMarketCapCursor = 0;
 }
 
 async function fetchFromPrimaryMarketChain(base: string): Promise<number | undefined> {
@@ -48,10 +54,56 @@ async function fetchFromPrimaryMarketChain(base: string): Promise<number | undef
 }
 
 async function fetchFromOperatorCoinMarketCap(base: string): Promise<number | undefined> {
-  if (!operatorCoinMarketCapKey) return undefined;
-  const result = await fetchCoinMarketCapQuotes(operatorCoinMarketCapKey, [base], 8_000);
-  const price = result.quotes[base]?.usdPrice;
-  return result.ok && Number.isFinite(price) && Number(price) > 0 ? Number(price) : undefined;
+  if (!operatorCoinMarketCapKeys.length) return undefined;
+  for (let offset = 0; offset < operatorCoinMarketCapKeys.length; offset += 1) {
+    const index = (coinMarketCapCursor + offset) % operatorCoinMarketCapKeys.length;
+    const key = operatorCoinMarketCapKeys[index];
+    const result = await fetchCoinMarketCapQuotes(key, [base], 8_000);
+    const price = result.quotes[base]?.usdPrice;
+    if (result.ok && Number.isFinite(price) && Number(price) > 0) {
+      coinMarketCapCursor = index;
+      return Number(price);
+    }
+  }
+  coinMarketCapCursor = (coinMarketCapCursor + 1) % operatorCoinMarketCapKeys.length;
+  return undefined;
+}
+
+const COINGECKO_ID_BY_BASE: Record<string, string> = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  BNB: 'binancecoin',
+  LINK: 'chainlink',
+  UNI: 'uniswap',
+  AAVE: 'aave',
+  PEPE: 'pepe',
+  SHIB: 'shiba-inu',
+  CAKE: 'pancakeswap-token',
+  SOL: 'solana',
+  XRP: 'ripple',
+  DOGE: 'dogecoin',
+  AVAX: 'avalanche-2',
+  TRX: 'tron',
+  NEAR: 'near',
+  DOT: 'polkadot',
+};
+
+async function fetchFromCoinGeckoPublic(base: string): Promise<number | undefined> {
+  const coinId = COINGECKO_ID_BY_BASE[base];
+  if (!coinId) return undefined;
+  try {
+    const res = await smartFetchJson(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`, {
+      timeoutMs: 5000,
+      logKey: 'coingecko:price',
+    });
+    if (res.ok && res.json && res.json[coinId]?.usd) {
+      const p = Number(res.json[coinId].usd);
+      return Number.isFinite(p) && p > 0 ? p : undefined;
+    }
+  } catch {
+    // continue to next fallback
+  }
+  return undefined;
 }
 
 /**
@@ -73,6 +125,12 @@ export async function getUsdUnitPrice(assetSymbol: string | undefined): Promise<
   if (primary !== undefined) {
     cache.set(base, { at: Date.now(), price: primary });
     return primary;
+  }
+
+  const cg = await fetchFromCoinGeckoPublic(base);
+  if (cg !== undefined) {
+    cache.set(base, { at: Date.now(), price: cg });
+    return cg;
   }
 
   const cmc = await fetchFromOperatorCoinMarketCap(base);

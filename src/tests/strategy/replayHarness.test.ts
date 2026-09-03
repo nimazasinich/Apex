@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BacktestCandle } from '../../services/backtesting';
 import { simulateBracketTrade } from '../../services/strategyEngine/replayHarness';
-import { computeTransactionCostPct } from '../../services/transactionCosts';
+import { computeTransactionCostPct, transactionCostInputsFromModel } from '../../services/transactionCosts';
 
 const candles: BacktestCandle[] = [
   { time: '2026-01-01T00:00:00.000Z', open: 99, high: 111, low: 98, close: 110, volume: 1_000 },
@@ -38,12 +38,13 @@ describe('causal strategy replay fills and shared costs', () => {
       transactionCostModel: model,
       entryReason: 'fixture',
     });
-    const canonicalCost = computeTransactionCostPct({
-      entryPrice: candles[1].open,
-      holdingBars: trade.barsHeld,
-      ...model,
-    });
+    const canonicalCost = computeTransactionCostPct(transactionCostInputsFromModel(model, candles[1].open, {
+      entryAt: Date.parse(trade.entryTime),
+      exitAt: Date.parse(trade.exitTime),
+      direction: 'LONG',
+      fundingEvents: [],
+    }));
     expect(trade.transactionCostPct).toBeCloseTo(canonicalCost, 12);
-    expect(trade.transactionCostPct).toBeCloseTo(0.19, 12);
+    expect(trade.transactionCostPct).toBeCloseTo(0.18, 12);
   });
 });

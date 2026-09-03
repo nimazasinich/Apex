@@ -314,19 +314,19 @@ export async function fetchHfSpaceNews(status?: HfSpaceIntelStatus): Promise<{
   const attempts: Array<{ source: string; path: string; origin: string; skip?: boolean }> = [
     {
       source: 'HF Space-2 · news',
-      path: '/api/news/latest?limit=10',
+      path: '/api/apex/news',
       origin: HF_SPACE_2_ORIGIN,
       skip: status ? !status.space2.reachable : false,
     },
     {
       source: 'HF Space-4 · news',
-      path: '/api/news/latest?limit=10',
+      path: '/api/apex/news',
       origin: HF_SPACE_4_ORIGIN,
       skip: status ? !status.space4.reachable : false,
     },
     {
       source: 'HF Space-2 · resources',
-      path: '/api/resources/news/latest',
+      path: '/api/apex/news',
       origin: HF_SPACE_2_ORIGIN,
       skip: status ? !status.space2.reachable : false,
     },
@@ -350,7 +350,22 @@ export async function fetchHfSpaceNews(status?: HfSpaceIntelStatus): Promise<{
     }
     try {
       const r = await hfGet(attempt.path, attempt.origin);
-      const parsed = parseHfNewsPayload(r.json);
+      const canonicalBody = r.json;
+      if (canonicalBody?.success !== true && canonicalBody?.dataState) {
+        diagnostics.push({
+          endpoint: attempt.path,
+          provider: attempt.source,
+          latencyMs: r.latencyMs,
+          httpStatus: r.status,
+          resultState: 'SCHEMA_MISMATCH',
+          itemCount: 0,
+          rawItemCount: 0,
+          receivedKeys: collectTopLevelKeys(canonicalBody),
+          error: 'canonical_success_missing',
+        });
+        continue;
+      }
+      const parsed = parseHfNewsPayload(canonicalBody);
       const state = classifyHfPayload({
         ok: r.ok,
         container: parsed.container,

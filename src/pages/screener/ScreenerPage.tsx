@@ -239,7 +239,7 @@ const COLUMN_SET_OPTIONS: Array<{ id: ScreenerColumnSet; label: string; icon: Re
 ];
 
 const PRESETS: Array<{ id: string; label: string; detail: string; state: Omit<Partial<ScreenerWorkspaceState>, 'filters'> & { filters: Partial<ScreenerFilters> } }> = [
-  { id: 'all', label: 'All signals', detail: 'Full ranked candidate set', state: { filters: {}, sort: DEFAULT_SCREENER_SORT, columnSet: 'overview', viewMode: 'table' } },
+  { id: 'all', label: 'All candidates', detail: 'Qualified, watch, abstained, and rejected evidence', state: { filters: {}, sort: DEFAULT_SCREENER_SORT, columnSet: 'overview', viewMode: 'table' } },
   { id: 'conviction', label: 'High conviction', detail: '75+ · aligned · guarded · liquid', state: { filters: { minScore: 75, minTurnoverUsd: 10_000_000, guard: 'PASS', confluence: 'ALIGNED', dataQuality: 'LIVE' }, sort: { key: 'score', ascending: false }, columnSet: 'overview', viewMode: 'table' } },
   { id: 'momentum', label: 'Momentum leaders', detail: 'Positive tape · 65+ momentum', state: { filters: { performance: 'GAINERS', minMomentum: 65, guard: 'PASS' }, sort: { key: 'momentum', ascending: false }, columnSet: 'momentum', viewMode: 'table' } },
   { id: 'shorts', label: 'Short pressure', detail: 'Falling short-biased candidates', state: { filters: { direction: 'SHORT', performance: 'LOSERS', minScore: 60 }, sort: { key: 'score', ascending: false }, columnSet: 'derivatives', viewMode: 'table' } },
@@ -608,7 +608,12 @@ export function ScreenerPage(props: ScreenerPageProps) {
 
   const toggleFavorite = (symbol: string) => {
     const existed = favorites.has(symbol);
-    setFavorites(toggleWatchlistFavorite(favorites, symbol));
+    const result = toggleWatchlistFavorite(favorites, symbol);
+    if (!result.persisted) {
+      notifyWorkspace({ title: 'Watchlist not saved', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return;
+    }
+    setFavorites(result.favorites);
     notifyWorkspace({ title: existed ? 'Removed from watchlist' : 'Added to watchlist', detail: symbol, tone: 'success' });
   };
 
@@ -640,8 +645,11 @@ export function ScreenerPage(props: ScreenerPageProps) {
       workspace: { filters, sort, columnSet, viewMode },
     };
     const next = [screen, ...savedScreens.filter((item) => item.name.toLowerCase() !== name.toLowerCase())].slice(0, 12);
+    if (!saveSavedScreenerScreens(next)) {
+      notifyWorkspace({ title: 'Screen not saved', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return;
+    }
     setSavedScreens(next);
-    saveSavedScreenerScreens(next);
     setActiveScreenId(screen.id);
     setSaveDraft('');
     setSaveOpen(false);
@@ -652,8 +660,11 @@ export function ScreenerPage(props: ScreenerPageProps) {
     if (!activeScreenId) return;
     const removed = savedScreens.find((screen) => screen.id === activeScreenId);
     const next = savedScreens.filter((screen) => screen.id !== activeScreenId);
+    if (!saveSavedScreenerScreens(next)) {
+      notifyWorkspace({ title: 'Saved screen not removed', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return;
+    }
     setSavedScreens(next);
-    saveSavedScreenerScreens(next);
     setActiveScreenId('');
     if (removed) notifyWorkspace({ title: 'Saved screen removed', detail: removed.name, tone: 'info' });
   };
@@ -877,8 +888,15 @@ export function ScreenerPage(props: ScreenerPageProps) {
                       {LENS_METRICS[columnSet].map((slot) => renderMetricSlot(row, slot))}
                     </span>
                     <span className="apex-screener-row-state">
-                      <StatusBadge tone={TIER_TONES[row.readinessTier]} detail={`Scanner readiness: ${row.readinessTier}`}>
-                        {TIER_LABELS[row.readinessTier]}
+                      <StatusBadge
+                        tone={row.decisionState
+                          ? row.decisionState === 'SIGNAL' ? 'positive' : row.decisionState === 'QUALIFIED_SETUP' ? 'info' : row.decisionState === 'WATCH' ? 'warning' : 'neutral'
+                          : TIER_TONES[row.readinessTier]}
+                        detail={row.decisionState
+                          ? 'Canonical server-owned decision lifecycle'
+                          : `Scanner readiness: ${row.readinessTier}`}
+                      >
+                        {row.decisionState ? row.decisionState.replace('_', ' ') : TIER_LABELS[row.readinessTier]}
                       </StatusBadge>
                       {(showConfluenceBadge(columnSet)) && <StatusBadge
                         tone={confluenceLabel(row) === 'ALIGNED' ? 'positive' : confluenceLabel(row) === 'CONFLICTING' ? 'negative' : 'warning'}
@@ -923,7 +941,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
       <div className="apex-screener-hero-copy">
         <span><Sparkles size={11} /> Market intelligence</span>
         <h1>Crypto opportunity scanner</h1>
-        <p>Calm, evidence-led signals ranked by the APEX scanner.</p>
+        <p>Evidence-led candidates ranked by one canonical server decision. A setup is not called a signal until calibrated net edge exists.</p>
       </div>
       <div className="apex-screener-heading-actions">
         <button type="button" className="apex-v3-button secondary" onClick={exportVisible} disabled={!visible.length}><Download size={14} /> Export</button>
@@ -942,29 +960,32 @@ export function ScreenerPage(props: ScreenerPageProps) {
       <StatusBadge tone={MARKET_STATE_TONES[props.dataState]}>{MARKET_STATE_LABELS[props.dataState]}</StatusBadge>
     </div>
 
-    <section className="apex-screener-screenbar" aria-label="Screens and presets">
-      <div className="apex-screener-presets">
-        {PRESETS.map((preset) => <button key={preset.id} type="button" className={activePresetId === preset.id ? 'active' : ''} title={preset.detail} aria-pressed={activePresetId === preset.id} onClick={() => applyPreset(preset)}><span />{preset.label}</button>)}
+    <details className="apex-screener-screenbar" aria-label="Screens and presets">
+      <summary><Save size={13} /> Views &amp; saved screens</summary>
+      <div className="apex-screener-screenbar-content">
+        <div className="apex-screener-presets">
+          {PRESETS.map((preset) => <button key={preset.id} type="button" className={activePresetId === preset.id ? 'active' : ''} title={preset.detail} aria-pressed={activePresetId === preset.id} onClick={() => applyPreset(preset)}><span />{preset.label}</button>)}
+        </div>
+        <span className="apex-screener-screen-divider" aria-hidden="true" />
+        <label className="apex-screener-saved-select">
+          <span>Saved</span>
+          <select value={activeScreenId} onChange={(event) => {
+            const id = event.target.value;
+            const screen = savedScreens.find((item) => item.id === id);
+            if (screen) applyWorkspace(screen.workspace, screen.id); else setActiveScreenId('');
+          }}>
+            <option value="">Select screen…</option>
+            {savedScreens.map((screen) => <option key={screen.id} value={screen.id}>{screen.name}</option>)}
+          </select>
+        </label>
+        {saveOpen ? <form className="apex-screener-save-form" onSubmit={(event) => { event.preventDefault(); saveNamedScreen(); }}>
+          <input autoFocus value={saveDraft} maxLength={48} onChange={(event) => setSaveDraft(event.target.value)} placeholder="Screen name" aria-label="Saved screen name" />
+          <button type="submit" className="apex-v3-icon-button" disabled={!saveDraft.trim()} aria-label="Confirm saved screen"><Save size={13} /></button>
+          <button type="button" className="apex-v3-icon-button" onClick={() => { setSaveOpen(false); setSaveDraft(''); }} aria-label="Cancel saved screen"><X size={13} /></button>
+        </form> : <button type="button" className="apex-v3-button secondary" onClick={() => setSaveOpen(true)}><Save size={13} /> Save screen</button>}
+        <button type="button" className="apex-v3-icon-button" onClick={deleteActiveScreen} disabled={!activeScreenId} aria-label="Delete selected saved screen"><Trash2 size={13} /></button>
       </div>
-      <span className="apex-screener-screen-divider" aria-hidden="true" />
-      <label className="apex-screener-saved-select">
-        <span>Saved</span>
-        <select value={activeScreenId} onChange={(event) => {
-          const id = event.target.value;
-          const screen = savedScreens.find((item) => item.id === id);
-          if (screen) applyWorkspace(screen.workspace, screen.id); else setActiveScreenId('');
-        }}>
-          <option value="">Select screen…</option>
-          {savedScreens.map((screen) => <option key={screen.id} value={screen.id}>{screen.name}</option>)}
-        </select>
-      </label>
-      {saveOpen ? <form className="apex-screener-save-form" onSubmit={(event) => { event.preventDefault(); saveNamedScreen(); }}>
-        <input autoFocus value={saveDraft} maxLength={48} onChange={(event) => setSaveDraft(event.target.value)} placeholder="Screen name" aria-label="Saved screen name" />
-        <button type="submit" className="apex-v3-icon-button" disabled={!saveDraft.trim()} aria-label="Confirm saved screen"><Save size={13} /></button>
-        <button type="button" className="apex-v3-icon-button" onClick={() => { setSaveOpen(false); setSaveDraft(''); }} aria-label="Cancel saved screen"><X size={13} /></button>
-      </form> : <button type="button" className="apex-v3-button secondary" onClick={() => setSaveOpen(true)}><Save size={13} /> Save screen</button>}
-      <button type="button" className="apex-v3-icon-button" onClick={deleteActiveScreen} disabled={!activeScreenId} aria-label="Delete selected saved screen"><Trash2 size={13} /></button>
-    </section>
+    </details>
 
     {stale && <p className="apex-screener-stale" role="status">
       <AlertTriangle size={14} /> The newest market observation is {age} old. Refresh before acting on these ranks.
@@ -1017,22 +1038,6 @@ export function ScreenerPage(props: ScreenerPageProps) {
         </select>
       </label>
 
-      <label className="apex-screener-field apex-screener-score-filter">
-        <span>Min score <b>{filters.minScore}</b></span>
-        {/* The track's filled portion is drawn in CSS from --slider-fill, which is
-            the same state this label prints, so the bar and the number cannot drift
-            apart. `accent-color` on its own left the unfilled track invisible. */}
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={5}
-          value={filters.minScore}
-          style={{ '--slider-fill': `${filters.minScore}%` } as React.CSSProperties}
-          onChange={(event) => setFilters((current) => ({ ...current, minScore: Number(event.target.value) }))}
-        />
-      </label>
-
       <label className="apex-screener-field">
         <span>Liquidity</span>
         <select
@@ -1043,15 +1048,8 @@ export function ScreenerPage(props: ScreenerPageProps) {
         </select>
       </label>
 
-      <label className="apex-screener-field">
-        <span>Performance</span>
-        <select value={filters.performance} onChange={(event) => setFilters((current) => ({ ...current, performance: event.target.value as ScreenerFilters['performance'] }))}>
-          <option value="ALL">All moves</option><option value="GAINERS">Gainers</option><option value="LOSERS">Losers</option><option value="MOVERS">±3% movers</option>
-        </select>
-      </label>
-
       <button type="button" className={`apex-v3-button secondary apex-screener-advanced-toggle ${advancedOpen ? 'active' : ''}`} onClick={() => setAdvancedOpen((open) => !open)} aria-expanded={advancedOpen} aria-controls="apex-screener-advanced-filters">
-        <SlidersHorizontal size={13} /> Advanced
+        <SlidersHorizontal size={13} /> More filters
       </button>
 
       <button
@@ -1063,6 +1061,19 @@ export function ScreenerPage(props: ScreenerPageProps) {
     </section>
 
     {advancedOpen && <section id="apex-screener-advanced-filters" className="apex-screener-advanced" aria-label="Advanced screener filters">
+      <label className="apex-screener-field apex-screener-score-filter">
+        <span>Min score <b>{filters.minScore}</b></span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={filters.minScore}
+          style={{ '--slider-fill': `${filters.minScore}%` } as React.CSSProperties}
+          onChange={(event) => setFilters((current) => ({ ...current, minScore: Number(event.target.value) }))}
+        />
+      </label>
+      <label className="apex-screener-field"><span>Performance</span><select value={filters.performance} onChange={(event) => setFilters((current) => ({ ...current, performance: event.target.value as ScreenerFilters['performance'] }))}><option value="ALL">All moves</option><option value="GAINERS">Gainers</option><option value="LOSERS">Losers</option><option value="MOVERS">±3% movers</option></select></label>
       <label className="apex-screener-field"><span>Risk guard</span><select value={filters.guard} onChange={(event) => setFilters((current) => ({ ...current, guard: event.target.value as ScreenerFilters['guard'] }))}><option value="ALL">All</option><option value="PASS">Pass only</option><option value="FLAGGED">Flagged only</option></select></label>
       <label className="apex-screener-field"><span>Timeframes</span><select value={filters.confluence} onChange={(event) => setFilters((current) => ({ ...current, confluence: event.target.value as ScreenerFilters['confluence'] }))}><option value="ALL">All</option><option value="ALIGNED">Aligned</option><option value="CONFLICTING">Conflicting</option></select></label>
       <label className="apex-screener-field"><span>Funding</span><select value={filters.funding} onChange={(event) => setFilters((current) => ({ ...current, funding: event.target.value as ScreenerFilters['funding'] }))}><option value="ALL">All</option><option value="AVAILABLE">Available</option><option value="POSITIVE">Positive</option><option value="NEGATIVE">Negative</option></select></label>
@@ -1127,12 +1138,22 @@ export function ScreenerPage(props: ScreenerPageProps) {
           </div>
         </div>
 
-        <ScoreArc
-          score={selected.score}
-          tier={selected.readinessTier}
-          guardPass={selected.guardPass}
-          coveragePct={selected.scoreCoveragePct}
-        />
+        <div className={`apex-screener-score-summary tone-${selected.readinessTier.toLowerCase()}`}>
+          <div>
+            <span>Scanner score</span>
+            <strong>{Math.round(selected.score)}</strong>
+            <small>/ 100</small>
+          </div>
+          <div className="apex-screener-score-summary-copy">
+            <strong>{TIER_LABELS[selected.readinessTier]}</strong>
+            <span>{selected.scoreCoveragePct == null ? 'Evidence coverage not reported' : `${Math.round(selected.scoreCoveragePct)}% evidence coverage`}</span>
+            <i aria-hidden="true"><b style={{ width: `${Math.max(0, Math.min(100, selected.scoreCoveragePct ?? 0))}%` }} /></i>
+          </div>
+          <span className={selected.guardPass ? 'pass' : 'fail'}>
+            {selected.guardPass ? <ShieldCheck size={14} /> : <AlertTriangle size={14} />}
+            {selected.guardPass ? 'Guard passed' : `${selected.warnings.length} risk flag${selected.warnings.length === 1 ? '' : 's'}`}
+          </span>
+        </div>
 
         {/* First block in the panel, above every explanation, because it is the
             reason a trader opens this panel at all. Every price here is the
@@ -1173,8 +1194,8 @@ export function ScreenerPage(props: ScreenerPageProps) {
           </details>
         </div>
 
-        <div className="apex-screener-block">
-          <h3><Activity size={11} /> Score architecture</h3>
+        <details className="apex-screener-block apex-screener-collapsible">
+          <summary><Activity size={11} /> Score architecture</summary>
           <FactorBreakdown row={selected} />
           <details className="apex-screener-explain">
             <summary>How this rank is decided</summary>
@@ -1185,28 +1206,26 @@ export function ScreenerPage(props: ScreenerPageProps) {
               marginally higher raw number.
             </p>
           </details>
-        </div>
+        </details>
 
-        <div className="apex-screener-block">
-          <h3><Sparkles size={11} /> Why it surfaced</h3>
+        <details className="apex-screener-block apex-screener-collapsible">
+          <summary><Sparkles size={11} /> Evidence &amp; risk</summary>
+          <h4>Why it surfaced</h4>
           {detailThesis && <p className="apex-screener-thesis">{detailThesis}</p>}
           {detailReasons.length > 0 && <ul className="apex-screener-reasons">
             {detailReasons.map((reason) => <li key={reason}>{reason}</li>)}
           </ul>}
           {!detailThesis && detailReasons.length === 0 && <p className="apex-screener-note">The scanner published no rationale beyond the sub-scores above.</p>}
-        </div>
-
-        <div className="apex-screener-block">
-          <h3><AlertTriangle size={11} /> Risk notes</h3>
+          <h4>Risk notes</h4>
           {detailWarnings.length
             ? <ul className="apex-screener-warnings">
               {detailWarnings.map((warning) => <li key={warning}><AlertTriangle size={13} /> {warning}</li>)}
             </ul>
             : <p className="apex-screener-note">The risk guard raised no objection against this candidate.</p>}
-        </div>
+        </details>
 
-        <div className="apex-screener-block">
-          <h3><Gauge size={11} /> Market texture</h3>
+        <details className="apex-screener-block apex-screener-collapsible">
+          <summary><Gauge size={11} /> Market data</summary>
           <KeyValueList rows={[
             { label: 'Price', value: Number.isFinite(selected.lastPrice) ? formatPrice(selected.lastPrice) : <span className="apex-screener-unavailable">Unavailable</span> },
             { label: '24h change', value: formatPercent(selected.priceChange24hPct), tone: changeTone(selected.priceChange24hPct) },
@@ -1218,7 +1237,7 @@ export function ScreenerPage(props: ScreenerPageProps) {
             { label: 'Spread / depth', value: <MetricValue metric={selected.spreadDepth} render={(value) => String(value)} /> },
             { label: 'Timeframes', value: selected.timeframeConfluenceState ?? (selected.timeframeConfluence ? 'ALIGNED' : 'NOT ALIGNED') },
           ]} />
-        </div>
+        </details>
 
         <div className="apex-screener-actions">
           <button type="button" className="apex-v3-button primary full" onClick={() => openInTrading(selected.symbol)}>

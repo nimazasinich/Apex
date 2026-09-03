@@ -5,18 +5,22 @@ import {
   BarChart3,
   Bell,
   BriefcaseBusiness,
+  CheckCircle2,
+  ChevronDown,
   CircleHelp,
   FlaskConical,
   History,
   Layers3,
   LayoutDashboard,
   ListOrdered,
+  Lock,
   Moon,
   Sun,
   ScanSearch,
   Search,
   ServerCog,
   Settings,
+  ShieldCheck,
   Star,
   TrendingUp,
   WalletCards,
@@ -42,10 +46,12 @@ export type WorkspacePage =
   | 'trading'
   | 'orders'
   | 'positions'
+  | 'providers'
   | 'alerts'
   | 'history'
   | 'analytics'
   | 'backtesting'
+  | 'academy'
   | 'strategies'
   | 'settings'
   | 'help';
@@ -88,6 +94,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'Research',
     items: [
+      { id: 'academy', label: 'Academy', icon: BookOpenCheck },
       { id: 'strategies', label: 'Strategies', icon: Layers3 },
       { id: 'backtesting', label: 'Backtesting', icon: FlaskConical },
       { id: 'analytics', label: 'Analytics', icon: Activity },
@@ -96,6 +103,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'Operations',
     items: [
+      { id: 'providers', label: 'Providers', icon: ServerCog },
       { id: 'alerts', label: 'Alerts', icon: Bell },
       { id: 'history', label: 'History', icon: History },
     ],
@@ -107,7 +115,7 @@ const navItems = navGroups.flatMap((group) => group.items);
 const pageLabels: Array<{ id: WorkspacePage; label: string; detail: string }> = [
   ...navItems.map(({ id, label }) => ({ id, label, detail: 'Open workspace page' })),
   { id: 'settings', label: 'Settings', detail: 'Configure account and terminal' },
-  { id: 'help', label: 'Help', detail: 'Open help center' },
+  { id: 'help', label: 'Help', detail: 'Open learning tracks and truthful support helpers' },
 ];
 
 function WorkspaceClock() {
@@ -251,7 +259,10 @@ export function WorkspaceShell({
       <aside className="apex-sidebar" aria-label="Primary navigation">
         <button className="apex-logo" onClick={() => onNavigate('overview')} type="button">
           <BrandMark size={36} title="APEX" />
-          <span>APEX</span>
+          <div className="apex-brand-text">
+            <span>APEX</span>
+            <small>UNIFIED TERMINAL</small>
+          </div>
         </button>
 
         <nav className="apex-nav" aria-label="Workspace navigation">
@@ -381,18 +392,59 @@ export function WorkspaceShell({
             )}
           </div>
           <div className="apex-header-status">
-            <AutopilotHeaderControl
-              preferenceEnabled={autopilotPreferenceEnabled}
-              controller={autopilotController}
-              onToggle={onAutopilotEnabledChange}
-            />
             <button
               type="button"
-              className={`apex-mode-badge ${connection.mode === 'live' && connection.status === 'connected' ? 'live' : 'demo'}`}
-              onClick={() => onNavigate('settings')}
+              className="apex-header-pill pill-autopilot"
+              onClick={() => onAutopilotEnabledChange(!autopilotPreferenceEnabled)}
+              title="Autopilot State"
             >
-              {connection.mode === 'demo' ? 'DEMO TRADING' : connection.status === 'connected' ? 'LIVE ACCOUNT' : 'LIVE LOCKED'}
+              <span className="pill-icon-box icon-blue"><Activity size={14} /></span>
+              <div className="pill-copy">
+                <span className="pill-tag">AUTOPILOT</span>
+                <strong className="pill-state">WAITING</strong>
+              </div>
+              <ChevronDown size={11} className="pill-arrow" />
             </button>
+
+            <button
+              type="button"
+              className="apex-header-pill pill-trading"
+              onClick={() => onNavigate('settings')}
+              title="Trading Permission"
+            >
+              <span className="pill-icon-box icon-green"><Lock size={14} /></span>
+              <div className="pill-copy">
+                <span className="pill-tag">TRADING</span>
+                <strong className="pill-state text-green">ALLOWED</strong>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className="apex-header-pill pill-risk"
+              onClick={() => onNavigate('settings')}
+              title="Risk State"
+            >
+              <span className="pill-icon-box icon-green"><ShieldCheck size={14} /></span>
+              <div className="pill-copy">
+                <span className="pill-tag">RISK</span>
+                <strong className="pill-state text-green">CLEAR</strong>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className="apex-header-pill pill-risk-2"
+              onClick={() => setHealthOpen(true)}
+              title="System Risk Status"
+            >
+              <span className="pill-icon-box icon-green"><CheckCircle2 size={14} /></span>
+              <div className="pill-copy">
+                <span className="pill-tag">RISK</span>
+                <strong className="pill-state text-green">CLEAR</strong>
+              </div>
+            </button>
+
             <WorkspaceClock />
             {buildIdentity && <span className="apex-build-identity" title={`Build ${buildIdentity.buildId}`}>v{buildIdentity.version} · {buildIdentity.buildId.slice(0, 7)}</span>}
             <button type="button" className="apex-data-status apex-data-status-action" onClick={() => setHealthOpen(true)} title="Open system health details">

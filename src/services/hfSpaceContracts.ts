@@ -2,14 +2,21 @@ export type ApprovedHfSpace = 'space2' | 'space4';
 export type ApprovedHfMethod = 'GET' | 'POST';
 
 const SPACE2_GET_PATHS: RegExp[] = [
+  /^\/api\/ohlcv$/,
+  /^\/api\/klines$/,
+  /^\/api\/history$/,
+  /^\/api\/crypto\/history\/[A-Za-z0-9_-]+$/,
   /^\/api\/new-sources\/status$/,
-  /^\/api\/news\/latest$/,
+  /^\/api\/apex\/news$/,
   /^\/api\/resources\/news\/latest$/,
+  /^\/api\/news\/latest$/,
   /^\/api\/sentiment\/global$/,
   /^\/api\/fear-greed$/,
+  /^\/api\/apex\/whale-flow$/,
   /^\/api\/service\/whales$/,
   /^\/api\/service\/rate$/,
   /^\/api\/market$/,
+  /^\/api\/coverage$/,
   /^\/api\/trading\/backtest\/historical\/[A-Za-z0-9_-]+$/,
   /^\/api\/defi\/protocols$/,
   /^\/api\/defi\/yields$/,
@@ -20,7 +27,12 @@ const SPACE2_POST_PATHS: RegExp[] = [
 ];
 
 const SPACE4_GET_PATHS: RegExp[] = [
+  /^\/api\/apex\/funding\/[A-Za-z0-9_-]+$/,
+  /^\/api\/apex\/open-interest\/[A-Za-z0-9_-]+$/,
+  /^\/api\/apex\/open-interest-archive\/[A-Za-z0-9_-]+$/,
+  /^\/api\/apex\/whale-flow$/,
   /^\/api\/health$/,
+  /^\/api\/apex\/news$/,
   /^\/api\/news\/latest$/,
   /^\/api\/sentiment\/global$/,
   /^\/api\/crypto\/whales\/transactions$/,

@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { CheckCircle2, ChevronLeft, ChevronRight, Layers3, LineChart, Loader2, Pencil, Radio, RefreshCw, RotateCcw, ShieldCheck, Sparkles, Target, Trash2, TrendingDown, TrendingUp, WifiOff } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, Layers3, LineChart, Loader2, Pencil, Radio, RefreshCw, RotateCcw, ShieldCheck, Sparkles, Target, Trash2, WifiOff } from 'lucide-react';
 import type { Candle, CandidateScore, ChartFeedStatus, DerivedLevels } from '../types';
 import { formatPrice } from '../lib/marketPresentation';
 import { buildChartStructureAnalysis, type AnalysisRiskProfile } from './priceChartAutoStructure';
 import { calculatePriceChartGeometry, DEFAULT_CHART_WIDTH } from './priceChartGeometry';
+import bullishIcon from '../assets/sentiment/bullish-icon.png';
+import bearishIcon from '../assets/sentiment/bearish-icon.png';
 import './PriceChartEnhancements.css';
 
 const TIMEFRAMES: Array<{ key: string; label: string }> = [
@@ -794,7 +796,7 @@ export function PriceChart({ candles, symbol, lastPrice, changePct, interval, on
                         {dockTab === 'setup' && (
                           <>
                             <div className="apex-chart-bias-card">
-                              <span className={`bias ${structureAnalysis.setupBias}`}>{structureAnalysis.setupBias === 'bullish' ? <TrendingUp size={14} /> : structureAnalysis.setupBias === 'bearish' ? <TrendingDown size={14} /> : <ShieldCheck size={14} />} {structureAnalysis.successLabel}</span>
+                              <span className={`bias ${structureAnalysis.setupBias}`}>{structureAnalysis.setupBias === 'bullish' ? <img src={bullishIcon} alt="Bullish" className="apex-chart-bias-icon" /> : structureAnalysis.setupBias === 'bearish' ? <img src={bearishIcon} alt="Bearish" className="apex-chart-bias-icon" /> : <ShieldCheck size={14} />} {structureAnalysis.successLabel}</span>
                               <strong>{structureAnalysis.calibratedProbability != null ? `${structureAnalysis.calibratedProbability.toFixed(1)}% model likelihood` : structureAnalysis.confidence != null ? `${structureAnalysis.confidence}/100 setup quality` : 'Quality unavailable'}</strong>
                               <small>{structureAnalysis.breakout.label} · breakout quality {structureAnalysis.breakout.score}/100</small>
                             </div>

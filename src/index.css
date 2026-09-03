@@ -433,6 +433,9 @@
 }
 
 .apex-logo span { font-weight: 800; letter-spacing: .18em; font-size: 19px; }
+.apex-logo .apex-brand-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.apex-logo .apex-brand-text span { font-weight: 800; letter-spacing: .16em; font-size: 18px; color: var(--apex-ink-900, #0f172a); }
+.apex-logo .apex-brand-text small { font-weight: 700; letter-spacing: .12em; font-size: 8px; color: var(--apex-ink-500, #64748b); text-transform: uppercase; margin-top: 2px; }
 .apex-nav { display: flex; flex-direction: column; gap: 4px; }
 .apex-nav button, .apex-sidebar-bottom > button {
   border: 1px solid transparent;
@@ -496,7 +499,66 @@
 .apex-search input { width: 100%; height: 38px; border: 1px solid var(--apex-border); border-radius: 9px; background: #fbfcfd; padding: 0 48px 0 39px; color: var(--apex-ink); outline: none; font-size: 12px; }
 .apex-search input:focus { border-color: #9edaa9; box-shadow: 0 0 0 3px rgba(35,185,63,.08); }
 .apex-search kbd { position: absolute; right: 10px; color: #98a2b3; font-size: 10px; background: #f0f2f5; padding: 2px 5px; border-radius: 4px; }
-.apex-header-status { display: flex; align-items: center; gap: 15px; color: #4b5565; font-size: 11px; white-space: nowrap; }
+.apex-header-status { display: flex; align-items: center; gap: 10px; color: #4b5565; font-size: 11px; white-space: nowrap; }
+.apex-header-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 3px 9px;
+  cursor: pointer;
+  height: 33px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+.apex-header-pill:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+.apex-header-pill .pill-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+.apex-header-pill .pill-icon-box.icon-blue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.apex-header-pill .pill-icon-box.icon-green {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+.apex-header-pill .pill-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+.apex-header-pill .pill-tag {
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+.apex-header-pill .pill-state {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+}
+.apex-header-pill .pill-state.text-green {
+  color: #16a34a;
+}
+.apex-header-pill .pill-arrow {
+  color: #94a3b8;
+  margin-left: 2px;
+}
 .apex-data-status { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
 .apex-clock { font-variant-numeric: tabular-nums; color: #667085; }
 .apex-mode-badge { border: 1px solid #9dcc9f; color: #218339; background: #f3fbf4; border-radius: 7px; padding: 6px 10px; font-size: 10px; font-weight: 800; letter-spacing: .04em; cursor: pointer; }

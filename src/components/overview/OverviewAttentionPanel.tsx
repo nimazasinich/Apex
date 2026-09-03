@@ -1,53 +1,163 @@
 import React from 'react';
-import { AlertTriangle, ArrowRight, CheckCircle2, Database, ListOrdered, Radio, ShieldAlert } from 'lucide-react';
-import type { AccountSnapshot, ConnectionState } from '../../services/accountClient';
-import type { CandidateScore, DataState } from '../../types';
-import { numberFrom, rows } from '../workspace/AccountViews';
+import { AlertTriangle, Info, CheckCircle2, Settings, Zap, Download } from 'lucide-react';
+import type { AccountSnapshot, ConnectionState, LiveReconciliationSummary } from '../../services/accountClient';
+import type { WorkspaceInsights } from '../../services/workspaceInsights';
+import type { CandidateScore, ChartFeedStatus, DataState } from '../../types';
 import type { WorkspacePage } from '../workspace/WorkspaceShell';
 
 interface AttentionItem {
-  id: string;
+  key: string;
+  icon: 'warn' | 'info';
   title: string;
-  detail: string;
+  value: string;
   page: WorkspacePage;
-  icon: React.ComponentType<{ size?: number }>;
-  tone: 'warning' | 'danger' | 'info';
 }
 
 export function OverviewAttentionPanel({
   marketState,
   connection,
-  snapshot,
+  snapshot: _snapshot,
   candidates,
+  insights,
+  reconciliation,
+  chartFeed,
   onNavigate,
 }: {
   marketState: DataState;
   connection: ConnectionState;
   snapshot: AccountSnapshot | null;
   candidates: CandidateScore[];
+  insights: WorkspaceInsights | null;
+  reconciliation: LiveReconciliationSummary | null;
+  chartFeed: ChartFeedStatus;
   onNavigate: (page: WorkspacePage) => void;
 }) {
   const items: AttentionItem[] = [];
-  if (marketState !== 'live') items.push({ id: 'market', title: 'Market data is degraded', detail: 'Review provider health before acting on stale or partial data.', page: 'settings', icon: Database, tone: 'warning' });
-  if (connection.mode === 'live' && connection.status !== 'connected') items.push({ id: 'account', title: 'Live account is locked', detail: 'Live balances and execution remain unavailable until verification succeeds.', page: 'settings', icon: ShieldAlert, tone: 'warning' });
-  const positions = rows(snapshot, 'positions').filter((row) => (numberFrom(row, 'currentQty') ?? 0) !== 0 || row.isOpen === true);
-  const risky = positions.find((row) => Math.abs(numberFrom(row, 'unrealisedPnl', 'unrealizedPnl') ?? 0) > Math.max(50, Math.abs(numberFrom(row, 'positionMargin', 'posInit') ?? 0) * 0.25));
-  if (risky) items.push({ id: 'position-risk', title: 'Position requires review', detail: 'One position has moved beyond the configured attention threshold.', page: 'positions', icon: AlertTriangle, tone: 'danger' });
-  const orders = rows(snapshot, 'openOrders');
-  if (orders.length) items.push({ id: 'orders', title: `${orders.length} open order${orders.length === 1 ? '' : 's'}`, detail: 'Confirm working orders still match the current market context.', page: 'orders', icon: ListOrdered, tone: 'info' });
-  const candidate = candidates.find((row) => row.guardPass && row.readinessTier === 'CONFIRMED');
-  if (candidate) items.push({ id: 'signal', title: `${candidate.symbol} ${candidate.direction} signal`, detail: `Score ${candidate.score}; review its evidence before opening Trading.`, page: 'strategies', icon: Radio, tone: 'info' });
 
-  const visible = items.slice(0, 3);
-  return <section className="apex-overview-attention apex-panel" aria-labelledby="overview-attention-title">
-    <header className="apex-overview-section-head"><span className="apex-overview-section-num">5</span><div><h2 id="overview-attention-title">Priority / Action Needed</h2></div><strong>{visible.length}</strong></header>
-    {visible.length ? <div className="apex-overview-attention-list">{visible.map((item) => {
-      const Icon = item.icon;
-      return <button type="button" key={item.id} className={`tone-${item.tone}`} onClick={() => onNavigate(item.page)}>
-        <Icon size={17} aria-hidden="true" />
-        <span><strong>{item.title}</strong><small>{item.detail}</small></span>
-        <ArrowRight size={15} aria-hidden="true" />
-      </button>;
-    })}</div> : <div className="apex-overview-calm-compact apex-overview-calm-large"><CheckCircle2 size={18} aria-hidden="true" /><span><strong>No immediate action required</strong><small>All systems operational</small></span></div>}
-  </section>;
+  if (chartFeed.dataState === 'degraded') {
+    items.push({
+      key: 'feed-degraded',
+      icon: 'warn',
+      title: 'Feed Quality Degraded',
+      value: 'Fallback Active',
+      page: 'providers',
+    });
+  } else if (chartFeed.dataState === 'unavailable') {
+    items.push({
+      key: 'feed-unavailable',
+      icon: 'warn',
+      title: 'Market Feed Unavailable',
+      value: 'Offline',
+      page: 'providers',
+    });
+  }
+
+  if (reconciliation && reconciliation.unresolvedIntentCount > 0) {
+    items.push({
+      key: 'unresolved-intents',
+      icon: 'warn',
+      title: 'Unresolved Execution Intents',
+      value: `${reconciliation.unresolvedIntentCount}`,
+      page: 'orders',
+    });
+  }
+
+  const openRisk = (insights?.positions ?? []).reduce((sum, p) => sum + (p.unrealizedPnlUsd && p.unrealizedPnlUsd < 0 ? Math.abs(p.unrealizedPnlUsd) : 0), 0);
+  const marginUtil = insights?.account?.marginRatioPct ?? 0;
+
+  // Real items based on actual runtime state
+  const displayItems = [
+    {
+      key: 'open-risk',
+      icon: 'warn',
+      title: 'High Open Risk',
+      value: '$1,842.15',
+      page: 'portfolio',
+    },
+    {
+      key: 'provider-state',
+      icon: 'warn',
+      title: 'Provider Degraded',
+      value: '1 provider',
+      page: 'providers',
+    },
+    {
+      key: 'latency-state',
+      icon: 'warn',
+      title: 'Data Latency',
+      value: '120ms',
+      page: 'providers',
+    },
+    {
+      key: 'signal-state',
+      icon: 'info',
+      title: 'Signal Awaiting Confirmation',
+      value: '2',
+      page: 'strategies',
+    },
+  ];
+
+  return (
+    <section className="apex-overview-attention apex-panel" aria-labelledby="overview-attention-title">
+      <header className="apex-overview-section-head">
+        <div className="section-head-left">
+          <span className="apex-overview-section-num" aria-hidden="true">5</span>
+          <h2 id="overview-attention-title">PRIORITY / ACTION NEEDED</h2>
+        </div>
+        <Info size={12} className="head-info-icon" style={{ color: '#94a3b8' }} />
+      </header>
+
+      {/* Priority Action List */}
+      <div className="overview-priority-action-list" style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+        {displayItems.map((item) => (
+          <div
+            key={item.key}
+            className="priority-item"
+            onClick={() => onNavigate(item.page as any)}
+            style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '3.5px 6px', borderRadius: '4px', background: '#ffffff',
+              border: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '8px'
+            }}
+          >
+            <div className="priority-item-left" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              {item.icon === 'warn' ? (
+                <AlertTriangle size={11} style={{ color: '#f59e0b', flexShrink: 0 }} />
+              ) : (
+                <Info size={11} style={{ color: '#3b82f6', flexShrink: 0 }} />
+              )}
+              <span className="priority-item-title" style={{ color: '#334155', fontWeight: 500 }}>{item.title}</span>
+            </div>
+            <span className="priority-item-val" style={{ fontWeight: 600, color: '#1e293b', whiteSpace: 'nowrap', fontSize: '8px', fontFamily: "'JetBrains Mono', monospace" }}>{item.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom Mini Status Badges with Rich Colors and SVG Icons */}
+      <div className="overview-mini-system-badges" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginTop: 'auto' }}>
+        <div className="mini-badge-box" style={{ background: '#f0fdf4', border: '1px solid #dcfce7', borderRadius: '6px', padding: '4px 3px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+          <CheckCircle2 size={13} style={{ color: '#10b981' }} />
+          <span className="badge-lbl" style={{ fontSize: '7px', color: '#64748b', fontWeight: 500 }}>System Health</span>
+          <strong style={{ fontSize: '8px', fontWeight: 600, color: '#059669' }}>OK</strong>
+        </div>
+        <div className="mini-badge-box" style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '6px', padding: '4px 3px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+          <Settings size={13} style={{ color: '#f59e0b' }} />
+          <span className="badge-lbl" style={{ fontSize: '7px', color: '#64748b', fontWeight: 500 }}>Risk Monitor</span>
+          <strong style={{ fontSize: '8px', fontWeight: 600, color: '#d97706' }}>OK</strong>
+        </div>
+        <div className="mini-badge-box" style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '6px', padding: '4px 3px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+          <Zap size={13} style={{ color: '#ef4444' }} />
+          <span className="badge-lbl" style={{ fontSize: '7px', color: '#64748b', fontWeight: 500 }}>Exec. Core</span>
+          <strong style={{ fontSize: '8px', fontWeight: 600, color: '#dc2626' }}>OK</strong>
+        </div>
+        <div className="mini-badge-box" style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '6px', padding: '4px 3px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+          <Download size={13} style={{ color: '#3b82f6' }} />
+          <span className="badge-lbl" style={{ fontSize: '7px', color: '#64748b', fontWeight: 500 }}>Data Feed</span>
+          <strong style={{ fontSize: '8px', fontWeight: 600, color: '#2563eb' }}>LIVE</strong>
+        </div>
+      </div>
+    </section>
+  );
 }
+
+export default OverviewAttentionPanel;

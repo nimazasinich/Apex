@@ -6,12 +6,14 @@
 // this file was originally written against) but are kept so this stays a
 // faithful copy rather than a divergent fork.
 import { MathEngine } from './mathEngine';
-import { buildCanonicalDecision } from './canonicalDecisionAdapter';
+import { buildCanonicalDecision, DECISION_ADAPTER_VERSION } from './canonicalDecisionAdapter';
 import { buildTradePlan } from './tradePlan';
 import { evaluateRiskGovernor, loadRiskGovernorPolicy } from './riskGovernor';
 import { normalizeEffectiveScannerConfig } from './scannerConfigPolicy';
-import { computeTransactionCostPct } from './transactionCosts';
+import { computeTransactionCostPct, type FundingCoverage, type FundingEvent } from './transactionCosts';
 import type { BinanceSentiment, Candle, Candlestick, DataState, DerivedLevels, ScannerConfig, ScoringWeights, SignalDecisionReasonCode, SmcAvailabilityState, SymbolTicker } from '../types';
+import type { NativeParliamentSnapshotV1 } from './strategyCommander/parliamentShadow';
+import type { ParliamentScannerMode } from './parliamentScannerContributor';
 
 export type BacktestInterval = '1m' | '3m' | '5m' | '15m' | '30m' | '1h' | '4h' | '1d';
 export type BacktestSourceProfileId = 'datasourceforcryptocurrency-4' | 'datasourceforcryptocurrency-2';
@@ -101,6 +103,10 @@ export interface BacktestTrade {
   tradePlanId?: string;
   riskDecision?: 'APPROVED' | 'APPROVED_REDUCED' | 'DEFERRED' | 'REJECTED';
   approvedQuantity?: number;
+  marketRegime?: 'TREND_UP' | 'TREND_DOWN' | 'RANGE' | 'HIGH_VOLATILITY' | 'TRANSITION' | 'UNKNOWN';
+  parliamentMode?: ParliamentScannerMode;
+  parliamentCategoryConfluence?: number;
+  parliamentEligibleIfPromoted?: boolean;
 }
 
 export interface BacktestSummary {
@@ -129,6 +135,9 @@ export interface BacktestSummary {
   downgradedBars?: number;
   tradePlanRejectedCandidates?: number;
   riskRejectedCandidates?: number;
+  parliamentEvaluatedBars?: number;
+  parliamentEligibleBars?: number;
+  parliamentMaterialVetoCount?: number;
   engineVersion?: string;
 }
 
@@ -391,6 +400,8 @@ export interface ProductionReplayBarInput {
   spread: number;
   microPrice: number;
   fundingRate: number;
+  /** Actual provider-recorded settlement event at this bar, when one occurred. */
+  fundingEvent?: FundingEvent;
   openInterestChangePct?: number | null;
   sentiment?: BinanceSentiment | null;
   candles1m?: BacktestCandle[];
@@ -398,11 +409,15 @@ export interface ProductionReplayBarInput {
   candles15m?: BacktestCandle[];
   candles4h?: BacktestCandle[];
   quality?: Partial<Record<'obi' | 'volumeDelta' | 'qStruct' | 'atr' | 'microPrice' | 'spread' | 'funding' | 'openInterest' | 'smc', 'VALID' | 'ESTIMATED' | 'MISSING' | 'STALE' | 'UNAVAILABLE'>>;
+  /** Timestamp-aligned 13-stream evidence captured at this bar. Never synthesized by the replay engine. */
+  parliamentSnapshot?: NativeParliamentSnapshotV1;
 }
 
 export interface ProductionReplayDataset {
   candles: BacktestCandle[];
   inputs: ProductionReplayBarInput[];
+  /** Explicit provider coverage for realized funding accounting across this dataset. */
+  fundingCoverage: FundingCoverage;
 }
 
 function toCoreCandle(c: BacktestCandle, timestamp = Date.parse(c.time)): Candle {
@@ -549,7 +564,7 @@ function proxyContext(precomputed: ReplayPrecomputation, i: number, symbol: stri
   };
 }
 
-function productionContext(precomputed: ReplayPrecomputation, i: number, symbol: string, cfg: ScannerConfig, direction: 'LONG' | 'SHORT', input: ProductionReplayBarInput | undefined) {
+function productionContext(precomputed: ReplayPrecomputation, i: number, symbol: string, cfg: ScannerConfig, direction: 'LONG' | 'SHORT', input: ProductionReplayBarInput | undefined, parliamentMode: ParliamentScannerMode = 'SHADOW') {
   const { clean, engineCandles, coreCandles } = precomputed;
   const historyStart = Math.max(0, i - 64);
   const c = clean[i];
@@ -588,6 +603,8 @@ function productionContext(precomputed: ReplayPrecomputation, i: number, symbol:
         oiTrend: (input.openInterestChangePct ?? 0) > 0.15 ? 'EXPANDING' as const : (input.openInterestChangePct ?? 0) < -0.15 ? 'CONTRACTING' as const : 'NEUTRAL' as const,
         quality: input.quality,
       } : { quality: { obi: 'MISSING' as const, volumeDelta: 'MISSING' as const, qStruct: 'MISSING' as const, atr: 'MISSING' as const, microPrice: 'MISSING' as const, spread: 'MISSING' as const, funding: 'MISSING' as const, openInterest: 'MISSING' as const, smc: 'MISSING' as const } },
+      parliamentSnapshot: input?.parliamentSnapshot,
+      parliamentMode,
     },
     spread: input?.spread ?? 0,
     spreadState: input?.quality?.spread ?? (input ? 'VALID' as const : 'MISSING' as const),
@@ -599,7 +616,21 @@ function productionContext(precomputed: ReplayPrecomputation, i: number, symbol:
 
 function runCanonicalReplay(
   candles: BacktestCandle[],
-  opts: { symbol: string; interval: BacktestInterval; scannerConfig: ScannerConfig; direction: 'LONG' | 'SHORT'; maxBars?: number; mode: 'replay_proxy' | 'replay_production'; inputs?: ProductionReplayBarInput[] },
+  opts: {
+    symbol: string;
+    interval: BacktestInterval;
+    scannerConfig: ScannerConfig;
+    direction: 'LONG' | 'SHORT';
+    maxBars?: number;
+    mode: 'replay_proxy' | 'replay_production';
+    inputs?: ProductionReplayBarInput[];
+    fundingCoverage?: FundingCoverage;
+    parliamentMode?: ParliamentScannerMode;
+    transactionCostMultiplier?: number;
+    strategyId?: string;
+    strategyVersion?: number;
+    academyEvaluationRole?: 'RESEARCH_EVALUATION' | 'PRODUCTION_REPLAY';
+  },
 ): BacktestRunResult {
   const precomputed = precomputeReplay(candles);
   const { clean } = precomputed;
@@ -614,6 +645,9 @@ function runCanonicalReplay(
   let downgradedBars = 0;
   let tradePlanRejectedCandidates = 0;
   let riskRejectedCandidates = 0;
+  let parliamentEvaluatedBars = 0;
+  let parliamentEligibleBars = 0;
+  let parliamentMaterialVetoCount = 0;
   let simulatedEquityUsd = 10_000;
   let equityPeakUsd = simulatedEquityUsd;
   let consecutiveLosses = 0;
@@ -625,8 +659,13 @@ function runCanonicalReplay(
     const c = clean[i];
     const prepared = opts.mode === 'replay_proxy'
       ? proxyContext(precomputed, i, opts.symbol, cfg, opts.direction)
-      : productionContext(precomputed, i, opts.symbol, cfg, opts.direction, inputByTimestamp.get(c.timestamp));
+      : productionContext(precomputed, i, opts.symbol, cfg, opts.direction, inputByTimestamp.get(c.timestamp), opts.parliamentMode ?? 'SHADOW');
     const snapshot = buildCanonicalDecision(prepared.context, opts.direction, { includeShadow: true, now: c.timestamp });
+    if (snapshot.parliamentContribution) {
+      parliamentEvaluatedBars += 1;
+      if (snapshot.parliamentContribution.eligibleIfPromoted) parliamentEligibleBars += 1;
+      parliamentMaterialVetoCount += snapshot.parliamentContribution.materialVetoes.length;
+    }
     if (snapshot.smcAvailability) smcAvailabilitySummary[snapshot.smcAvailability] = (smcAvailabilitySummary[snapshot.smcAvailability] ?? 0) + 1;
     const productionCriticalQuality = snapshot.shadow?.inputQuality;
     const productionCriticalKeys = ['obi', 'volumeDelta', 'qStruct', 'atr', 'microPrice', 'spread', 'funding', 'openInterest'];
@@ -675,6 +714,8 @@ function runCanonicalReplay(
     const plan = buildTradePlan({
       symbol: opts.symbol,
       direction: opts.direction,
+      strategyId: opts.strategyId ?? null,
+      strategyVersion: opts.strategyVersion ?? null,
       levels: derivedLevels,
       sizing: {
         accountBalanceUsd: simulatedEquityUsd,
@@ -685,7 +726,7 @@ function runCanonicalReplay(
         stopLossPrice: stop,
         takeProfitPrice: target,
         direction: opts.direction,
-        successProbModel: snapshot.calibratedProbability == null ? snapshot.rankingScore : snapshot.calibratedProbability * 100,
+        successProbModel: snapshot.calibratedProbability == null ? null : snapshot.calibratedProbability * 100,
         successProbUserOverride: null,
       },
       decisionRef: { score: snapshot.rankingScore, readinessTier: snapshot.baseline.readinessTier, engineVersion: snapshot.engineVersion, createdAt: snapshot.createdAt },
@@ -704,6 +745,16 @@ function runCanonicalReplay(
       continue;
     }
     const drawdownPct = equityPeakUsd > 0 ? Math.max(0, (equityPeakUsd - simulatedEquityUsd) / equityPeakUsd * 100) : 0;
+    const isResearchEval = opts.academyEvaluationRole === 'RESEARCH_EVALUATION' || opts.mode === 'replay_proxy';
+    const academyResolution = isResearchEval ? {
+      status: 'NOT_APPLICABLE' as const,
+      strategyId: opts.strategyId || 'canonical-replay',
+      strategyVersion: opts.strategyVersion || 1,
+      recordId: `${opts.strategyId || 'canonical-replay'}@${opts.strategyVersion || 1}`,
+      intelligence: null,
+      detail: 'RESEARCH_EVALUATION replay: evidence-producing run; Academy gate non-authorizing.',
+    } : undefined;
+
     const risk = evaluateRiskGovernor({
       order: {
         symbol: opts.symbol,
@@ -714,8 +765,11 @@ function runCanonicalReplay(
         leverage: plan.leverage,
         reduceOnly: false,
         exchange: opts.mode === 'replay_proxy' ? 'proxy-replay' : 'production-replay',
-        strategy: 'canonical-replay',
+        strategyId: opts.strategyId ?? null,
+        strategyVersion: opts.strategyVersion ?? null,
+        strategy: opts.strategyId ?? 'canonical-replay',
       },
+      academyResolution,
       account: { equityUsd: simulatedEquityUsd, availableMarginUsd: simulatedEquityUsd, timestamp: c.timestamp },
       portfolio: {
         openPositionCount: 0,
@@ -757,13 +811,25 @@ function runCanonicalReplay(
     }
 
     const grossPnlPct = opts.direction === 'SHORT' ? ((entry - exit) / entry) * 100 : ((exit - entry) / entry) * 100;
+    const transactionCostMultiplier = Number.isFinite(opts.transactionCostMultiplier) && Number(opts.transactionCostMultiplier) > 0
+      ? Number(opts.transactionCostMultiplier)
+      : 1;
+    const fundingEvents = opts.mode === 'replay_production'
+      ? (opts.inputs ?? []).slice(entryIndex, exitIndex + 1).flatMap((row) => row?.fundingEvent ? [row.fundingEvent] : [])
+      : [];
     const transactionCostPct = computeTransactionCostPct({
       entryPrice: entry,
-      holdingBars: exitIndex - entryIndex + 1,
-      feePct: 0.12,
-      spread: prepared.spread,
+      feePct: 0.12 * transactionCostMultiplier,
+      spread: prepared.spread * transactionCostMultiplier,
       fundingRate: prepared.fundingRate,
-      fundingIntervalBars: 8,
+      entryAt: clean[entryIndex].timestamp,
+      exitAt: clean[exitIndex].timestamp,
+      direction: opts.direction,
+      fundingEvents,
+      fundingCoverage: opts.fundingCoverage,
+      fundingAccountingMode: opts.mode === 'replay_production' ? 'REALIZED_EVENT_TIME' : 'CONSERVATIVE_EXPECTED',
+      fundingScheduleUtcHours: [0, 8, 16],
+      fundingPolicy: 'CONSERVATIVE_NO_CREDIT',
     });
     const pnlPct = grossPnlPct - transactionCostPct;
     trades.push({
@@ -773,10 +839,14 @@ function runCanonicalReplay(
       confidence: snapshot.confidence, rawScore: snapshot.rankingScore / 100,
       squeezeRiskScore: snapshot.shadow?.squeezeRiskScore ?? undefined,
       evidenceAgreementScore: snapshot.shadow?.evidenceAgreementScore ?? undefined,
-      entryReason: `Canonical baseline ${snapshot.baseline.readinessTier}; shadow ${snapshot.shadow?.status ?? 'not_run'} (${snapshot.shadow?.reasonCode ?? 'n/a'}).`,
+      entryReason: `Canonical ${snapshot.authority ?? 'BASELINE_PROXY'} decision ${snapshot.decisionReasonCode ?? 'n/a'}; baseline guard ${snapshot.baseline.readinessTier}; advanced ${snapshot.shadow?.status ?? 'not_run'}.`,
       engineVersion: snapshot.engineVersion, featureCompletenessPct: snapshot.featureCompletenessPct,
       grossPnlPct, transactionCostPct, inputAvailability: prepared.inputAvailability,
       tradePlanId: plan.id, riskDecision: risk.decision, approvedQuantity: risk.approvedQuantity,
+      marketRegime: snapshot.intelligence?.regime.regime,
+      parliamentMode: snapshot.parliamentContribution?.mode,
+      parliamentCategoryConfluence: snapshot.parliamentContribution?.categoryConfluence,
+      parliamentEligibleIfPromoted: snapshot.parliamentContribution?.eligibleIfPromoted,
     });
     const tradePnlUsd = simulatedEquityUsd * (pnlPct / 100);
     simulatedEquityUsd = Math.max(0.01, simulatedEquityUsd + tradePnlUsd);
@@ -800,7 +870,10 @@ function runCanonicalReplay(
       downgradedBars,
       tradePlanRejectedCandidates,
       riskRejectedCandidates,
-      engineVersion: 'canonical_v2',
+      parliamentEvaluatedBars,
+      parliamentEligibleBars,
+      parliamentMaterialVetoCount,
+      engineVersion: DECISION_ADAPTER_VERSION,
     },
   };
 }
@@ -814,14 +887,34 @@ export function runApexReplayBacktest(
 
 export function runApexReplayBacktestDirectional(
   candles: BacktestCandle[],
-  opts: { symbol: string; interval: BacktestInterval; scannerConfig: ScannerConfig; direction: 'LONG' | 'SHORT'; maxBars?: number },
+  opts: {
+    symbol: string;
+    interval: BacktestInterval;
+    scannerConfig: ScannerConfig;
+    direction: 'LONG' | 'SHORT';
+    maxBars?: number;
+    strategyId?: string;
+    strategyVersion?: number;
+    academyEvaluationRole?: 'RESEARCH_EVALUATION' | 'PRODUCTION_REPLAY';
+  },
 ): BacktestRunResult {
   return runCanonicalReplay(candles, { ...opts, mode: 'replay_proxy' });
 }
 
 export function runApexProductionInputReplay(
   dataset: ProductionReplayDataset,
-  opts: { symbol: string; interval: BacktestInterval; scannerConfig: ScannerConfig; direction: 'LONG' | 'SHORT'; maxBars?: number },
+  opts: {
+    symbol: string;
+    interval: BacktestInterval;
+    scannerConfig: ScannerConfig;
+    direction: 'LONG' | 'SHORT';
+    maxBars?: number;
+    parliamentMode?: ParliamentScannerMode;
+    transactionCostMultiplier?: number;
+    strategyId?: string;
+    strategyVersion?: number;
+    academyEvaluationRole?: 'RESEARCH_EVALUATION' | 'PRODUCTION_REPLAY';
+  },
 ): BacktestRunResult {
-  return runCanonicalReplay(dataset.candles, { ...opts, mode: 'replay_production', inputs: dataset.inputs });
+  return runCanonicalReplay(dataset.candles, { ...opts, mode: 'replay_production', inputs: dataset.inputs, fundingCoverage: dataset.fundingCoverage });
 }

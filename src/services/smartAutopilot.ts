@@ -1,15 +1,15 @@
-export const SMART_AUTOPILOT_VERSION = 'smart_autopilot_v1' as const;
+export const SMART_AUTOPILOT_VERSION = 'smart_autopilot_v2_development_then_final_validation' as const;
 
 export interface SmartAutopilotOptimizationReportLike {
   promotion: {
     eligible: boolean;
     blockers: string[];
-    holdoutImprovement: number;
+    developmentValidationImprovement: number;
     neighborPassRate: number;
     overfitGap: number;
   };
   budget: { maximumOverfitGap: number };
-  holdout: {
+  developmentValidation: {
     candidate: { metrics: { totalPnlPct: number; profitFactor: number | null; tradeCount: number } };
     costStress: { metrics: { totalPnlPct: number; profitFactor: number | null } };
   };
@@ -38,7 +38,7 @@ export interface SmartAutopilotPlan {
   contexts: SmartAutopilotContext[];
 }
 
-export type SmartAutopilotAgentId = 'EVIDENCE' | 'HOLDOUT' | 'COST_STRESS' | 'STABILITY' | 'OVERFIT_GUARD';
+export type SmartAutopilotAgentId = 'EVIDENCE' | 'DEVELOPMENT_VALIDATION' | 'COST_STRESS' | 'STABILITY' | 'OVERFIT_GUARD';
 export type SmartAutopilotDisposition = 'SUPPORT' | 'CAUTION' | 'VETO';
 
 export interface SmartAutopilotAgentAssessment {
@@ -49,13 +49,13 @@ export interface SmartAutopilotAgentAssessment {
 }
 
 export interface SmartAutopilotOptimizationCouncil {
-  version: 'smart_autopilot_optimization_council_v1';
+  version: 'smart_autopilot_optimization_council_v2';
   assessments: SmartAutopilotAgentAssessment[];
   supports: number;
   cautions: number;
   vetoes: number;
   consensusScore: number;
-  approvedForPromotion: boolean;
+  approvedForFinalValidation: boolean;
   blockers: string[];
 }
 
@@ -132,10 +132,10 @@ function assessment(
 }
 
 export function runSmartAutopilotOptimizationCouncil(report: SmartAutopilotOptimizationReportLike): SmartAutopilotOptimizationCouncil {
-  const candidate = report.holdout.candidate.metrics;
-  const stressed = report.holdout.costStress.metrics;
+  const candidate = report.developmentValidation.candidate.metrics;
+  const stressed = report.developmentValidation.costStress.metrics;
   const eligible = report.promotion.eligible === true;
-  const holdoutImprovement = finite(report.promotion.holdoutImprovement);
+  const developmentValidationImprovement = finite(report.promotion.developmentValidationImprovement);
   const neighborPassRate = clamp(finite(report.promotion.neighborPassRate), 0, 1);
   const overfitGap = Math.abs(finite(report.promotion.overfitGap));
   const maxOverfitGap = Math.max(0.000001, finite(report.budget.maximumOverfitGap, 0.32));
@@ -145,8 +145,8 @@ export function runSmartAutopilotOptimizationCouncil(report: SmartAutopilotOptim
     : assessment('EVIDENCE', 'VETO', 0, report.promotion.blockers.length ? report.promotion.blockers : ['optimizer_evidence_gate_failed']);
 
   const candidatePf = candidate.profitFactor === null ? 0 : finite(candidate.profitFactor);
-  const holdoutPass = candidate.totalPnlPct > 0 && candidatePf > 1 && candidate.tradeCount >= 4 && holdoutImprovement > 0;
-  const holdoutScore = clamp(
+  const developmentValidationPass = candidate.totalPnlPct > 0 && candidatePf > 1 && candidate.tradeCount >= 4 && developmentValidationImprovement > 0;
+  const developmentValidationScore = clamp(
     0.35
       + Math.min(0.3, Math.max(0, candidate.totalPnlPct) / 40)
       + Math.min(0.2, Math.max(0, candidatePf - 1) / 3)
@@ -154,13 +154,13 @@ export function runSmartAutopilotOptimizationCouncil(report: SmartAutopilotOptim
     0,
     1,
   );
-  const holdout = holdoutPass
-    ? assessment('HOLDOUT', 'SUPPORT', holdoutScore, ['positive_untouched_holdout', 'profit_factor_above_break_even', 'minimum_trade_sample_present'])
-    : assessment('HOLDOUT', 'VETO', holdoutScore * 0.35, [
-      ...(candidate.totalPnlPct <= 0 ? ['holdout_return_not_positive'] : []),
-      ...(candidatePf <= 1 ? ['holdout_profit_factor_not_above_one'] : []),
-      ...(candidate.tradeCount < 4 ? ['holdout_trade_sample_too_small'] : []),
-      ...(holdoutImprovement <= 0 ? ['holdout_utility_not_improved'] : []),
+  const developmentValidation = developmentValidationPass
+    ? assessment('DEVELOPMENT_VALIDATION', 'SUPPORT', developmentValidationScore, ['positive_development_validation', 'profit_factor_above_break_even', 'minimum_trade_sample_present'])
+    : assessment('DEVELOPMENT_VALIDATION', 'VETO', developmentValidationScore * 0.35, [
+      ...(candidate.totalPnlPct <= 0 ? ['development_validation_return_not_positive'] : []),
+      ...(candidatePf <= 1 ? ['development_validation_profit_factor_not_above_one'] : []),
+      ...(candidate.tradeCount < 4 ? ['development_validation_trade_sample_too_small'] : []),
+      ...(developmentValidationImprovement <= 0 ? ['development_validation_utility_not_improved'] : []),
     ]);
 
   const stressedPf = stressed.profitFactor === null ? 0 : finite(stressed.profitFactor);
@@ -183,24 +183,24 @@ export function runSmartAutopilotOptimizationCouncil(report: SmartAutopilotOptim
     ? assessment('OVERFIT_GUARD', 'SUPPORT', clamp(1 - overfitRatio * 0.6, 0, 1), ['overfit_gap_within_budget'])
     : assessment('OVERFIT_GUARD', 'VETO', 0, ['overfit_gap_exceeds_budget']);
 
-  const assessments = [evidence, holdout, costStress, stability, overfitGuard];
+  const assessments = [evidence, developmentValidation, costStress, stability, overfitGuard];
   const supports = assessments.filter((row) => row.disposition === 'SUPPORT').length;
   const cautions = assessments.filter((row) => row.disposition === 'CAUTION').length;
   const vetoes = assessments.filter((row) => row.disposition === 'VETO').length;
   const consensusScore = round(assessments.reduce((sum, row) => sum + row.score, 0) / assessments.length);
-  const approvedForPromotion = eligible && vetoes === 0 && supports >= 4 && consensusScore >= 0.62;
-  const blockers = approvedForPromotion
+  const approvedForFinalValidation = eligible && vetoes === 0 && supports >= 4 && consensusScore >= 0.62;
+  const blockers = approvedForFinalValidation
     ? []
     : [...new Set(assessments.filter((row) => row.disposition === 'VETO').flatMap((row) => row.reasons))];
 
   return {
-    version: 'smart_autopilot_optimization_council_v1',
+    version: 'smart_autopilot_optimization_council_v2',
     assessments,
     supports,
     cautions,
     vetoes,
     consensusScore,
-    approvedForPromotion,
+    approvedForFinalValidation,
     blockers,
   };
 }

@@ -3,6 +3,7 @@ import type { BacktestResult, TradeDirection } from '../../types';
 import type { BacktestInterval, BacktestRiskProfile } from './backtestingTypes';
 import { deletePreset, loadNotes, loadPresets, saveNote, savePreset } from './backtestPersistence';
 import type { BacktestNote, BacktestPresetConfig, BacktestSavedPreset } from './backtestPersistence';
+import { notifyWorkspace } from '../../lib/workspaceFeedback';
 import { INTERVAL_OPTIONS, STRATEGY_PRESETS, clampNumber, defaultParameters } from './backtestingPresets';
 
 interface UseBacktestingPresetsAndNotesOptions {
@@ -53,12 +54,22 @@ export function useBacktestingPresetsAndNotes({
       strategyId, symbol, direction, interval, bars, maxHoldBars, capital, riskProfile,
       commissionPct, slippagePct, fundingPct, parameters,
     };
-    setPresets((current) => savePreset(current, name, config));
-  }, [bars, capital, commissionPct, direction, fundingPct, interval, maxHoldBars, parameters, riskProfile, slippagePct, strategyId, symbol]);
+    try {
+      const next = savePreset(presets, name, config);
+      setPresets(next);
+      notifyWorkspace({ title: 'Backtest preset saved', detail: name.trim() || 'Preset', tone: 'success' });
+    } catch {
+      notifyWorkspace({ title: 'Preset not saved', detail: 'Browser persistence is unavailable.', tone: 'error' });
+    }
+  }, [bars, capital, commissionPct, direction, fundingPct, interval, maxHoldBars, parameters, presets, riskProfile, slippagePct, strategyId, symbol]);
 
   const handleDeletePreset = useCallback((id: string) => {
-    setPresets((current) => deletePreset(current, id));
-  }, []);
+    try {
+      setPresets(deletePreset(presets, id));
+    } catch {
+      notifyWorkspace({ title: 'Preset not removed', detail: 'Browser persistence is unavailable.', tone: 'error' });
+    }
+  }, [presets]);
 
   const handleApplyPreset = useCallback((preset: BacktestSavedPreset) => {
     if (loading) return;
@@ -88,19 +99,29 @@ export function useBacktestingPresetsAndNotes({
   const handleSaveNote = useCallback((text: string) => {
     const runId = result?.audit?.runId;
     if (!runId) return;
-    setNotes((current) => saveNote(current, runId, text, {
-      strategyId: completedConfig?.strategyId,
-      symbol: result?.symbol,
-      direction: result?.direction,
-      interval: result?.interval,
-    }));
-  }, [completedConfig, result]);
+    try {
+      const next = saveNote(notes, runId, text, {
+        strategyId: completedConfig?.strategyId,
+        symbol: result?.symbol,
+        direction: result?.direction,
+        interval: result?.interval,
+      });
+      setNotes(next);
+      notifyWorkspace({ title: 'Evidence note saved', detail: 'Saved in this browser.', tone: 'success' });
+    } catch {
+      notifyWorkspace({ title: 'Evidence note not saved', detail: 'Browser persistence is unavailable.', tone: 'error' });
+    }
+  }, [completedConfig, notes, result]);
 
   const handleClearNote = useCallback(() => {
     const runId = result?.audit?.runId;
     if (!runId) return;
-    setNotes((current) => saveNote(current, runId, ''));
-  }, [result]);
+    try {
+      setNotes(saveNote(notes, runId, ''));
+    } catch {
+      notifyWorkspace({ title: 'Evidence note not cleared', detail: 'Browser persistence is unavailable.', tone: 'error' });
+    }
+  }, [notes, result]);
 
   return {
     presets,

@@ -63,26 +63,9 @@ import { useDialogA11y } from '../../lib/useDialogA11y';
 import { TradingToolbox, type TradingToolboxState } from './TradingToolbox';
 import { StatusBadge, Tabs } from '../ui/WorkspacePrimitives';
 import './TradingSystemBridge.css';
-
-export function numberFrom(record: Record<string, unknown> | undefined, ...keys: string[]): number | null {
-  if (!record) return null;
-  for (const key of keys) {
-    const raw = record[key];
-    if (raw === null || raw === undefined || raw === '') continue;
-    const parsed = Number(raw);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-}
-
-export function stringFrom(record: Record<string, unknown> | undefined, ...keys: string[]): string {
-  if (!record) return '—';
-  for (const key of keys) {
-    const value = record[key];
-    if (value !== null && value !== undefined && String(value).trim()) return String(value);
-  }
-  return '—';
-}
+import { HonestEmpty, normalizeSymbol, numberFrom, rows, stringFrom } from './accountSnapshotHelpers';
+import { useTabdealAccount } from '../../hooks/useTabdealAccount';
+import { TabdealCapabilityMatrix } from '../account/TabdealAccountSurface';
 
 function money(value: number | null, currency = 'USDT'): string {
   if (value === null) return '—';
@@ -97,10 +80,6 @@ function decimal(value: number | null, digits = 4): string {
 function signedClass(value: number | null) {
   if (value === null || value === 0) return '';
   return value > 0 ? 'positive' : 'negative';
-}
-
-export function normalizeSymbol(symbol: string) {
-  return symbol.replace('XBTUSDTM', 'BTC-USDT').replace(/USDTM$/, '-USDT');
 }
 
 const LOCAL_PRICE_ALERTS_KEY = 'apex-local-price-alerts';
@@ -153,11 +132,6 @@ function readLocalPriceAlerts(storage: Storage | null | undefined = typeof windo
   } catch {
     return [];
   }
-}
-
-export function rows(snapshot: AccountSnapshot | null, key: keyof AccountSnapshot) {
-  const value = snapshot?.[key];
-  return Array.isArray(value) ? value as Array<Record<string, unknown>> : [];
 }
 
 function accountModeLabel(connection: ConnectionState) {
@@ -387,10 +361,6 @@ export function PortfolioView(props: AccountViewProps) {
       </div>
     </div>
   );
-}
-
-export function HonestEmpty({ label }: { label: string }) {
-  return <div className="apex-honest-empty"><CheckCircle2 size={18} /><span>{label}</span></div>;
 }
 
 export function PositionsTable({ positions }: { positions: Array<Record<string, unknown>> }) {
@@ -669,7 +639,7 @@ export interface OrderTicketPanelProps {
 
 export function OrderTicketPanel({ selectedTicker, connection, onConnect, onRefresh, onSelectSymbol, tradePlanLong, tradePlanShort, settings, accountEquityUsd, density = 'default', pricePrefill = null }: OrderTicketPanelProps) {
   const [draft, setDraft] = useState<LiveOrderDraft>({
-    symbol: selectedTicker?.symbol || 'BTC-USDT', side: 'buy', type: 'limit', quantity: 1,
+    symbol: selectedTicker?.symbol || '', side: 'buy', type: 'limit', quantity: 1,
     price: selectedTicker?.lastPrice || null, leverage: settings.defaultLeverage, marginMode: 'ISOLATED', timeInForce: 'GTC',
     reduceOnly: false, takeProfitPrice: null, stopLossPrice: null,
   });
@@ -704,7 +674,9 @@ export function OrderTicketPanel({ selectedTicker, connection, onConnect, onRefr
   const estimatedNotional = referencePrice && draft.quantity > 0 ? referencePrice * draft.quantity : null;
   const indicativeFee = estimatedNotional === null ? null : estimatedNotional * 0.0006;
   const estimatedInitialMargin = estimatedNotional === null ? null : estimatedNotional / Math.max(1, draft.leverage);
-  const orderBlockReason = !executionUnlocked
+  const orderBlockReason = !draft.symbol
+    ? 'Select a verified market before reviewing.'
+    : !executionUnlocked
     ? (connected ? 'Execution is read-only. Reconnect with live trading enabled before reviewing.' : 'Connect Demo or a verified KuCoin account before reviewing.')
     : draft.quantity <= 0
       ? 'Enter a size greater than zero before Review.'
@@ -1288,7 +1260,7 @@ interface SetupIntelligenceProps {
   levels: DerivedLevels | null;
   longScore: CandidateScore | null;
   shortScore: CandidateScore | null;
-  intelligenceDirection: 'LONG' | 'SHORT';
+  intelligenceDirection: 'LONG' | 'SHORT' | null;
   intelligencePlan: TradePlan | null;
   intelligenceCandidate: CandidateScore | null;
   currentPrice: number | null;
@@ -1332,7 +1304,7 @@ export function SetupIntelligencePanel({ symbol, levels, longScore, shortScore, 
         </div>
       </div>
 
-      {(levels || intelligencePlan) && <ExecutionIntelligence
+      {intelligenceDirection && (levels || intelligencePlan) && <ExecutionIntelligence
         direction={intelligenceDirection}
         levels={levels}
         plan={intelligencePlan}
@@ -1444,6 +1416,7 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
   const connected = Boolean(availableConnection);
   const isDemo = accountProps.connection.mode === 'demo';
   const executionUnlocked = connected && accountProps.connection.executionState === 'unlocked';
+  const tabdealAccount = useTabdealAccount(selectedTicker?.symbol);
   const routeRef = useRef<HTMLDivElement>(null);
   const [workspaceWidth, setWorkspaceWidth] = useState(() => typeof window === 'undefined' ? 1160 : Math.max(0, window.innerWidth - 184));
   const [closeToolRequest, setCloseToolRequest] = useState(0);
@@ -1487,26 +1460,40 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
   }, [activityOpen]);
 
   const openPositions = rows(accountProps.snapshot, 'positions').filter((row) => (numberFrom(row, 'currentQty') ?? 0) !== 0 || row.isOpen === true);
-  const openPositionsPnl = openPositions.reduce((sum, row) => sum + (numberFrom(row, 'unrealisedPnl', 'unrealizedPnl') || 0), 0);
-  const openPositionsMargin = openPositions.reduce((sum, row) => sum + (numberFrom(row, 'posInit', 'positionMargin') || 0), 0);
+  const observedPositionPnl = openPositions.map((row) => numberFrom(row, 'unrealisedPnl', 'unrealizedPnl')).filter((value): value is number => value !== null);
+  const observedPositionMargin = openPositions.map((row) => numberFrom(row, 'posInit', 'positionMargin')).filter((value): value is number => value !== null);
+  const openPositionsPnl = observedPositionPnl.length ? observedPositionPnl.reduce((sum, value) => sum + value, 0) : null;
+  const openPositionsMargin = observedPositionMargin.length ? observedPositionMargin.reduce((sum, value) => sum + value, 0) : null;
   const scores = useMemo(() => ({ long: longScore?.score ?? null, short: shortScore?.score ?? null }), [longScore, shortScore]);
-  const intelligenceDirection = (scores.long ?? -1) >= (scores.short ?? -1) ? 'LONG' as const : 'SHORT' as const;
-  const intelligenceCandidate = intelligenceDirection === 'LONG' ? longScore : shortScore;
-  const intelligencePlan = intelligenceDirection === 'LONG' ? tradePlanLong : tradePlanShort;
+  const intelligenceDirection: 'LONG' | 'SHORT' | null = scores.long === null && scores.short === null
+    ? null
+    : scores.long !== null && scores.short === null
+      ? 'LONG'
+      : scores.short !== null && scores.long === null
+        ? 'SHORT'
+        : scores.long! > scores.short!
+          ? 'LONG'
+          : scores.short! > scores.long!
+            ? 'SHORT'
+            : null;
+  const intelligenceCandidate = intelligenceDirection === 'LONG' ? longScore : intelligenceDirection === 'SHORT' ? shortScore : null;
+  const intelligencePlan = intelligenceDirection === 'LONG' ? tradePlanLong : intelligenceDirection === 'SHORT' ? tradePlanShort : null;
   const [systemContext, setSystemContext] = useState(() => readWorkspaceContext() ?? null);
   const accountEquityUsd = numberFrom(accountProps.snapshot?.account, 'accountEquity', 'equity');
 
   useEffect(() => {
+    const contextSymbol = selectedTicker?.symbol || systemContext?.symbol || undefined;
+    const preservedDirection = contextSymbol && systemContext?.symbol === contextSymbol ? systemContext?.direction : undefined;
     const next = writeWorkspaceContext({
       source: 'trading',
-      symbol: selectedTicker?.symbol || systemContext?.symbol || 'BTC-USDT',
-      direction: systemContext?.direction || ((scores.long ?? 0) >= (scores.short ?? 0) ? 'LONG' : 'SHORT'),
+      symbol: contextSymbol,
+      direction: preservedDirection || intelligenceDirection || undefined,
       interval: (['5m', '15m', '1h', '4h', '1d'].includes(chartInterval) ? chartInterval : '1h') as '5m' | '15m' | '1h' | '4h' | '1d',
       strategyId: systemContext?.strategyId,
       strategyName: systemContext?.strategyName,
     });
     setSystemContext(next);
-  }, [selectedTicker?.symbol, chartInterval, scores.long, scores.short]);
+  }, [selectedTicker?.symbol, chartInterval, intelligenceDirection]);
 
   const recentTrades = rows(accountProps.snapshot, 'recentTrades');
   const openOrders = rows(accountProps.snapshot, 'openOrders');
@@ -1517,12 +1504,12 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
   const activeEvidenceIdentity = {
     strategyId: systemContext?.strategyId,
     symbol: selectedTicker?.symbol || systemContext?.symbol,
-    direction: systemContext?.direction || ((scores.long ?? 0) >= (scores.short ?? 0) ? 'LONG' : 'SHORT'),
+    direction: systemContext?.direction || intelligenceDirection || undefined,
     interval: (['5m', '15m', '1h', '4h', '1d'].includes(chartInterval) ? chartInterval : undefined) as '5m' | '15m' | '1h' | '4h' | '1d' | undefined,
   };
   const systemLinkContext: SystemLinkContext = {
     strategyName: systemContext?.strategyName || undefined,
-    direction: activeEvidenceIdentity.direction,
+    direction: activeEvidenceIdentity.direction ?? 'UNKNOWN',
     interval: chartInterval,
     lastBacktest: matchesBacktestEvidence(systemContext, activeEvidenceIdentity)
       ? systemContext?.lastBacktest ?? null
@@ -1562,7 +1549,7 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
     <MarketDepthPanel
       orderBook={chartOrderBook}
       levels={chartOrderBookLevels}
-      symbol={selectedTicker?.symbol || 'BTC-USDT'}
+      symbol={selectedTicker?.symbol || 'UNAVAILABLE'}
       lastPrice={selectedTicker?.lastPrice ?? null}
       density={expandedTool === 'depth' ? 'expanded' : 'compact'}
       ageMs={chartFeed.ageMs}
@@ -1573,8 +1560,9 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
     <section className="apex-panel apex-risk-context-card">
       <div className="apex-panel-head"><div><span>Risk Overview</span><small>Current account capacity</small></div></div>
       {availableConnection ? <>
-        <ColoredGauge value={numberFrom(accountProps.snapshot?.account, 'positionMargin') && numberFrom(accountProps.snapshot?.account, 'accountEquity') ? Math.min(100, ((numberFrom(accountProps.snapshot?.account, 'positionMargin') || 0) / (numberFrom(accountProps.snapshot?.account, 'accountEquity') || 1)) * 100) : 0} inverse size={92} label="Risk capacity" />
-        <dl className="apex-definition-list"><div><dt>Available balance</dt><dd>{money(numberFrom(accountProps.snapshot?.account, 'availableBalance'))}</dd></div><div><dt>Max order notional</dt><dd>{money(availableConnection.maxOrderNotionalUsd)}</dd></div><div><dt>Open positions</dt><dd>{openPositions.length}</dd></div><div><dt>Execution state</dt><dd className={executionUnlocked ? 'positive' : 'negative'}>{isDemo ? 'Virtual execution' : executionUnlocked ? 'Unlocked' : 'Read only'}</dd></div></dl>
+        {numberFrom(accountProps.snapshot?.account, 'positionMargin') !== null && numberFrom(accountProps.snapshot?.account, 'accountEquity') !== null && (numberFrom(accountProps.snapshot?.account, 'accountEquity') ?? 0) > 0 ? <ColoredGauge value={Math.min(100, ((numberFrom(accountProps.snapshot?.account, 'positionMargin') ?? 0) / (numberFrom(accountProps.snapshot?.account, 'accountEquity') ?? 1)) * 100)} inverse size={92} label="Margin utilization" /> : <HonestEmpty label="Margin utilization unavailable — required account values are missing." />}
+        <dl className="apex-definition-list"><div><dt>Available balance</dt><dd>{money(numberFrom(accountProps.snapshot?.account, 'availableBalance'))}</dd></div><div><dt>Max order notional</dt><dd>{money(availableConnection.maxOrderNotionalUsd)}</dd></div><div><dt>Open positions</dt><dd>{openPositions.length}</dd></div><div><dt>Execution state</dt><dd className={executionUnlocked ? 'positive' : 'negative'}>{isDemo ? 'Virtual execution' : executionUnlocked ? 'Unlocked' : 'Read only'}</dd></div><div><dt>Tabdeal secondary</dt><dd>{tabdealAccount.connection.status.replaceAll('_', ' ')}</dd></div><div><dt>Tabdeal available</dt><dd>{money(tabdealAccount.insights?.account.availableBalanceUsd ?? null)}</dd></div></dl>
+        <TabdealCapabilityMatrix compact />
       </> : <div className="apex-mini-lock"><LockKeyhole size={20} /><span>Switch to Demo or connect a verified account to unlock the ticket.</span></div>}
     </section>
   );
@@ -1645,10 +1633,10 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
   >
     <div className="apex-page-stack apex-unified-page trading-page apex-trading-page-enhanced">
       {workspaceWidth >= 1180 && tradingHeaderSlot ? createPortal(marketStrip, tradingHeaderSlot) : marketStrip}
-      <InstrumentFacts ticker={selectedTicker} symbol={selectedTicker?.symbol || 'BTC-USDT'} feed={chartFeed} orderBook={chartOrderBookLevels} tradingMode={executionUnlocked ? (isDemo ? 'DEMO' : 'LIVE') : 'READ ONLY'} strategySummary={systemContext?.strategyName || null} />
+      <InstrumentFacts ticker={selectedTicker} symbol={selectedTicker?.symbol || 'UNAVAILABLE'} feed={chartFeed} orderBook={chartOrderBookLevels} tradingMode={executionUnlocked ? (isDemo ? 'DEMO' : 'LIVE') : 'READ ONLY'} strategySummary={systemContext?.strategyName || null} />
       <div className="apex-trading-cockpit">
         <div className="apex-trading-chart-column">
-          <PriceChart candles={chartCandles} symbol={selectedTicker?.symbol || 'BTC-USDT'} lastPrice={selectedTicker?.lastPrice || 0} changePct={selectedTicker?.priceChange24hPct || 0} interval={chartInterval} feed={chartFeed} onRetry={onRetryChart} analysis={{ levels, longScore, shortScore }} onIntervalChange={(interval) => onChartIntervalChange(interval as '1m' | '5m' | '15m' | '1h' | '4h' | '1d')} />
+          {selectedTicker ? <PriceChart candles={chartCandles} symbol={selectedTicker.symbol} lastPrice={selectedTicker.lastPrice} changePct={selectedTicker.priceChange24hPct} interval={chartInterval} feed={chartFeed} onRetry={onRetryChart} analysis={{ levels, longScore, shortScore }} onIntervalChange={(interval) => onChartIntervalChange(interval as '1m' | '5m' | '15m' | '1h' | '4h' | '1d')} /> : <HonestEmpty label="Select a verified market to load a chart." />}
         </div>
         <div className="apex-trading-order-column">
           {orderTicket}
@@ -1670,7 +1658,7 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
       workspaceActions={{ settings: () => navigateWorkspace('settings') }}
       drawers={{
         order: <div className="apex-trading-order-drawer-stack">{orderTicket}{riskPanel}</div>,
-        depth: <MarketDepthPanel orderBook={chartOrderBook} levels={chartOrderBookLevels} symbol={selectedTicker?.symbol || 'BTC-USDT'} lastPrice={selectedTicker?.lastPrice ?? null} density="expanded" ageMs={chartFeed.ageMs} onPickPrice={pickDepthPrice} />,
+        depth: <MarketDepthPanel orderBook={chartOrderBook} levels={chartOrderBookLevels} symbol={selectedTicker?.symbol || 'UNAVAILABLE'} lastPrice={selectedTicker?.lastPrice ?? null} density="expanded" ageMs={chartFeed.ageMs} onPickPrice={pickDepthPrice} />,
         orders: <div className="apex-trading-subpanel-drawer">
           <div className="apex-trading-drawer-kpis"><div><span>Open orders</span><strong>{openOrders.length}</strong></div><div><span>Environment</span><strong>{accountProps.connection.mode.toUpperCase()}</strong></div></div>
           <section className="apex-panel apex-open-orders-card"><div className="apex-panel-head"><div><span>Working Orders</span><small>Current account snapshot</small></div><ListOrdered size={17} /></div>{openOrders.length ? <ActivityTable activity={openOrders.slice(0, 12)} /> : <HonestEmpty label="No open orders in this account." />}</section>
@@ -1692,4 +1680,3 @@ function TradingViewCore({ settings, tickers = [], selectedTicker, onSelectSymbo
 export function TradingView(props: TradingViewProps) {
   return <TradingViewCore {...props} />;
 }
-

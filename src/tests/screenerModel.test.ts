@@ -272,7 +272,18 @@ describe('screener model', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].direction).toBe('SHORT');
     expect(rows[0].score).toBe(81);
-    expect(rows[0].warnings).toContain('The scanner published both a long and a short thesis for this symbol; the higher-scoring one is shown.');
+    expect(rows[0].warnings).toContain('The scanner published both directions; the server-authoritative higher-qualification thesis is shown.');
+  });
+
+  it('uses the server decision state before raw score when directions conflict', () => {
+    const rows = buildScreenerRows([
+      candidate({ symbol: 'EDGE-USDT', direction: 'LONG', score: 96, decisionState: 'REJECTED', canonicalRankScore: 196 }),
+      candidate({ symbol: 'EDGE-USDT', direction: 'SHORT', score: 71, decisionState: 'QUALIFIED_SETUP', canonicalRankScore: 471 }),
+    ], [ticker({ symbol: 'EDGE-USDT' })]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].direction).toBe('SHORT');
+    expect(rows[0].decisionState).toBe('QUALIFIED_SETUP');
+    expect(rows[0].score).toBe(71);
   });
 
   it('warns on degraded data and incomplete scoring evidence', () => {

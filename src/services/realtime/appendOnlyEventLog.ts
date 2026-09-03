@@ -15,6 +15,8 @@ export interface AppendOnlyEventLogOptions {
   maxSegmentBytes?: number;
   maxSegments?: number;
   fsync?: boolean;
+  /** Content-addressed immutable archive used before rolling segments prune. */
+  researchArchiveDir?: string;
 }
 
 export interface EventLogReadResult {
@@ -39,12 +41,14 @@ const WRITER_SOURCE = String.raw`
 const { parentPort, workerData } = require('node:worker_threads');
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const filePath = workerData.filePath;
 const maxSegmentBytes = workerData.maxSegmentBytes;
 const maxSegments = workerData.maxSegments;
 const fsyncEnabled = workerData.fsyncEnabled;
+const researchArchiveDir = workerData.researchArchiveDir;
 let rotationCounter = 0;
 
 function restrictToOwner(target) {
@@ -69,7 +73,20 @@ function pruneSegments() {
     .filter((name) => name.startsWith(base + '.') && name.endsWith('.jsonl'))
     .sort((a, b) => b.localeCompare(a))
     .map((name) => path.join(dir, name));
-  for (const stale of segments.slice(maxSegments)) fs.unlinkSync(stale);
+  for (const stale of segments.slice(maxSegments)) {
+    const payload = fs.readFileSync(stale);
+    const digest = crypto.createHash('sha256').update(payload).digest('hex');
+    fs.mkdirSync(researchArchiveDir, { recursive: true, mode: 0o700 });
+    const archived = path.join(researchArchiveDir, digest + '.jsonl');
+    if (!fs.existsSync(archived)) {
+      fs.writeFileSync(archived, payload, { mode: 0o600, flag: 'wx' });
+      restrictToOwner(archived);
+    }
+    const manifest = path.join(researchArchiveDir, 'manifest.jsonl');
+    fs.appendFileSync(manifest, JSON.stringify({ version: 1, sha256: digest, bytes: payload.length, archivedAt: Date.now(), sourceName: path.basename(stale) }) + '\n', { mode: 0o600, flag: 'a' });
+    restrictToOwner(manifest);
+    fs.unlinkSync(stale);
+  }
 }
 
 function rotate() {
@@ -120,6 +137,7 @@ export class AppendOnlyEventLog {
   private readonly maxSegmentBytes: number;
   private readonly maxSegments: number;
   private readonly fsyncEnabled: boolean;
+  private readonly researchArchiveDir: string;
   private readonly worker: Worker;
   private readonly pending = new Map<number, PendingWrite>();
   private readonly idleWaiters = new Set<() => void>();
@@ -135,6 +153,7 @@ export class AppendOnlyEventLog {
     this.maxSegmentBytes = options.maxSegmentBytes ?? 16 * 1024 * 1024;
     this.maxSegments = options.maxSegments ?? 8;
     this.fsyncEnabled = options.fsync ?? true;
+    this.researchArchiveDir = path.resolve(options.researchArchiveDir ?? `${this.filePath}.research-archive`);
     if (!Number.isSafeInteger(this.maxSegmentBytes) || this.maxSegmentBytes < 64 * 1024) {
       throw new Error('invalid_event_log_segment_size');
     }
@@ -149,6 +168,7 @@ export class AppendOnlyEventLog {
         maxSegmentBytes: this.maxSegmentBytes,
         maxSegments: this.maxSegments,
         fsyncEnabled: this.fsyncEnabled,
+        researchArchiveDir: this.researchArchiveDir,
       },
     });
     this.worker.on('message', (message: { type?: string; id?: number; error?: string }) => {

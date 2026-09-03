@@ -6,6 +6,11 @@ import type { CandidateScore, SentimentComposite, SymbolTicker, SystemHealthRepo
 export interface ScanMeta {
   scannedCount: number;
   activeCandidateCount: number;
+  qualifiedSetupCount?: number;
+  watchCandidateCount?: number;
+  abstainedCandidateCount?: number;
+  universeCount?: number;
+  eligibleUniverseCount?: number;
   scanTimestamp: number | null;
 }
 
@@ -28,7 +33,9 @@ const TIER_ORDER: Record<CandidateScore['readinessTier'], number> = { CONFIRMED:
 
 export function buildSignalFunnel(candidates: CandidateScore[], scanMeta: ScanMeta | null): SignalFunnel {
   const ranked = [...candidates].sort((a, b) => b.score - a.score || TIER_ORDER[a.readinessTier] - TIER_ORDER[b.readinessTier]);
-  const qualified = ranked.filter((c) => c.guardPass && c.readinessTier !== 'BLOCKED');
+  const qualified = ranked.filter((c) => c.decisionState
+    ? c.decisionState === 'SIGNAL' || c.decisionState === 'QUALIFIED_SETUP'
+    : c.guardPass && c.readinessTier !== 'BLOCKED');
   const confirmed = ranked.filter((c) => c.readinessTier === 'CONFIRMED' && c.guardPass);
   const rejected = ranked.filter((c) => !c.guardPass || c.readinessTier === 'BLOCKED');
   const rejectionCounts = new Map<string, number>();
@@ -84,7 +91,9 @@ export function liquidityLabel(turnover24h: number): string {
  * showed the same implausible figure (~5,601,384ms == ~93 minutes since the last sweep).
  */
 export function providerCheckAgeMs(row: OperationsProviderRow, now = Date.now()): number | null {
-  if (row.lastCheckTime == null) return null;
+  // ProviderHealth uses 0 as the fail-closed NEVER_PROBED sentinel. Treat non-finite
+  // or non-positive values as no observation so the UI never renders epoch-sized ages.
+  if (row.lastCheckTime == null || !Number.isFinite(row.lastCheckTime) || row.lastCheckTime <= 0) return null;
   return Math.max(0, now - row.lastCheckTime);
 }
 
@@ -114,27 +123,9 @@ export function providerRowState(row: OperationsProviderRow): string {
   return row.status.replace(/_/g, ' ');
 }
 
-export function dailyPnlFromInsights(insights: WorkspaceInsights | null): { usd: number | null; pct: number | null } {
-  if (!insights) return { usd: null, pct: null };
-  const equity = insights.account.equityUsd;
-  const total = insights.analytics.totalPnlUsd;
-  if (!Number.isFinite(total)) return { usd: null, pct: null };
-  const base = equity - total;
-  const pct = base > 0 ? (total / base) * 100 : null;
-  return { usd: total, pct };
-}
-
-export function openRiskUsd(insights: WorkspaceInsights | null): number | null {
-  if (!insights) return null;
-  const margin = insights.account.marginUsedUsd;
-  if (Number.isFinite(margin) && margin > 0) return margin;
-  const exposure = insights.positions.reduce((sum, p) => sum + Math.abs(p.unrealizedPnlUsd), 0);
-  return exposure > 0 ? exposure : null;
-}
-
 export function averageOrderFillPct(insights: WorkspaceInsights | null): number | null {
   if (!insights?.orders.length) return null;
-  const rates = insights.orders.map((order) => order.fillPct).filter(Number.isFinite);
+  const rates = insights.orders.map((order) => order.fillPct).filter((rate): rate is number => rate != null && Number.isFinite(rate));
   if (!rates.length) return null;
   return rates.reduce((sum, rate) => sum + rate, 0) / rates.length;
 }
@@ -144,10 +135,12 @@ export interface ExecutionSnapshotView {
   fillRatePct: number | null;
   slippagePct: number | null;
   timeouts1h: number;
+  timeoutsAvailable: boolean;
   latencyLabel: string;
   fillLabel: string;
   slippageLabel: string;
   timeoutLabel: string;
+  instrumentedMetricCount: number;
 }
 
 export function buildExecutionSnapshot(
@@ -166,15 +159,19 @@ export function buildExecutionSnapshot(
   const fillRatePct = orderFillRatePct;
   const slippagePct = null;
   const timeouts1h = reconciliation?.unresolvedIntentCount ?? 0;
+  const instrumentedMetricCount = [avgLatencyMs, fillRatePct, slippagePct, reconciliation == null ? null : timeouts1h]
+    .filter((value) => value != null && Number.isFinite(value)).length;
   return {
     avgLatencyMs,
     fillRatePct,
     slippagePct,
     timeouts1h,
+    timeoutsAvailable: reconciliation != null,
     latencyLabel: avgLatencyMs == null ? '—' : avgLatencyMs < 100 ? 'Good' : avgLatencyMs < 300 ? 'Fair' : 'Slow',
     fillLabel: fillRatePct == null ? '—' : fillRatePct >= 95 ? 'Excellent' : fillRatePct >= 80 ? 'Good' : 'Fair',
     slippageLabel: '—',
-    timeoutLabel: timeouts1h === 0 ? 'Excellent' : timeouts1h <= 2 ? 'Fair' : 'Attention',
+    timeoutLabel: reconciliation == null ? '—' : timeouts1h === 0 ? 'Clear' : timeouts1h <= 2 ? 'Review' : 'Attention',
+    instrumentedMetricCount,
   };
 }
 

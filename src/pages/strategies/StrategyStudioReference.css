@@ -3011,3 +3011,34 @@ html[data-apex-theme-resolved='dark'] .strategy-studio {
   }
 }
 
+
+/* Interaction polish: preserve the reference composition while making the studio feel softer and less abrupt. */
+.strategy-studio { scroll-behavior: smooth; }
+.strategy-library-card,
+.strategy-identity-card,
+.strategy-configuration-panel,
+.strategy-fusion-panel,
+.strategy-explanation,
+.strategy-evidence-card,
+.strategy-model-actions button,
+.strategy-validation-button,
+.strategy-filter-icon,
+.strategy-filter-grid select,
+.strategy-parameter-grid input {
+  transition: border-color .16s ease, background-color .16s ease, color .16s ease, box-shadow .16s ease, transform .16s ease, opacity .16s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .strategy-library-card:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15,33,58,.06); }
+  .strategy-evidence-card:hover,
+  .strategy-identity-card:hover,
+  .strategy-configuration-panel:hover { border-color: #D5E0E8; box-shadow: 0 5px 16px rgba(15,33,58,.04); }
+  .strategy-model-actions button:hover,
+  .strategy-validation-button:hover { transform: translateY(-1px); }
+}
+.strategy-model-workspace,
+.strategy-evidence-rail,
+.strategy-model-list { overscroll-behavior: contain; }
+@media (prefers-reduced-motion: reduce) {
+  .strategy-studio { scroll-behavior: auto; }
+  .strategy-studio * { transition-duration: 0s !important; }
+}

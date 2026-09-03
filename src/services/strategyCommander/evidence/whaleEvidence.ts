@@ -1,7 +1,7 @@
 import type { CommanderEvidenceV1 } from '../../../contracts/commander/commanderEvidence';
 import type { SupplementalBundle } from '../../providers/supplementalTypes';
 import { directionFromSignedScore, makeCommanderEvidence, type CommanderEvidenceAdapterBaseInput, unavailableCommanderEvidence } from './evidenceAdapterUtils';
-import { exactSupplementalSymbol, supplementalExpiry, supplementalQuality } from './supplementalEvidenceUtils';
+import { exactSupplementalSymbol, supplementalExpiry, supplementalObservedAt, supplementalQuality } from './supplementalEvidenceUtils';
 
 export interface WhaleEvidenceInput extends CommanderEvidenceAdapterBaseInput {
   supplementalBundle?: SupplementalBundle;
@@ -11,7 +11,7 @@ export function buildWhaleEvidence(input: WhaleEvidenceInput): CommanderEvidence
   const onchain = input.supplementalBundle?.onchain;
   if (!onchain) return unavailableCommanderEvidence(input, 'WHALE', 'whale_cache_missing');
   if (!exactSupplementalSymbol(input.symbol, onchain.symbol)) return unavailableCommanderEvidence(input, 'WHALE', 'whale_symbol_identity_mismatch', 'INVALID');
-  const quality = supplementalQuality(onchain.source, onchain.updatedAt, input.receivedAt);
+  const quality = supplementalQuality(onchain, input.receivedAt);
   if (quality === 'INVALID') return unavailableCommanderEvidence(input, 'WHALE', 'whale_timestamp_or_source_invalid', 'INVALID');
   if (quality === 'NOT_CONFIGURED' || quality === 'MISSING') {
     return unavailableCommanderEvidence(input, 'WHALE', onchain.reason ?? `whale_${onchain.source}`, quality);
@@ -26,8 +26,8 @@ export function buildWhaleEvidence(input: WhaleEvidenceInput): CommanderEvidence
   const confidence = Math.min(0.8, eligible.length / 5);
   return makeCommanderEvidence({
     ...input,
-    observedAt: onchain.updatedAt,
-    expiresAt: supplementalExpiry(onchain.updatedAt),
+    observedAt: supplementalObservedAt(onchain)!,
+    expiresAt: supplementalExpiry(onchain),
     source: onchain.provider,
   }, 'WHALE', {
     direction: directionFromSignedScore(score),

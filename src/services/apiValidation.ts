@@ -247,10 +247,18 @@ export interface ProductionReplayRequestInput {
   maxHoldBars: number;
   candles: Array<Record<string, unknown>>;
   inputs: Array<Record<string, unknown>>;
+  fundingCoverage: {
+    state: 'COMPLETE' | 'PARTIAL' | 'UNAVAILABLE';
+    coveredFrom: number | null;
+    coveredTo: number | null;
+    provider: string | null;
+    provenance: string | null;
+    fingerprint: string | null;
+  };
 }
 
 const PRODUCTION_REPLAY_INTERVALS = new Set<ProductionReplayInterval>(['1m', '3m', '5m', '15m', '30m', '1h', '4h', '1d']);
-const PRODUCTION_REPLAY_ALLOWED_FIELDS = new Set(['candles', 'inputs', 'symbol', 'direction', 'interval', 'maxBars']);
+const PRODUCTION_REPLAY_ALLOWED_FIELDS = new Set(['candles', 'inputs', 'fundingCoverage', 'symbol', 'direction', 'interval', 'maxBars']);
 const MAX_PRODUCTION_REPLAY_ROWS = 5_000;
 const MAX_PRODUCTION_REPLAY_ISSUES = 50;
 
@@ -334,7 +342,65 @@ function validateProductionBarInput(row: unknown, index: number, issues: Validat
   if (row.openInterestChangePct !== undefined && row.openInterestChangePct !== null && !isFiniteNumber(row.openInterestChangePct)) {
     addIssue(issues, { field: `${field}.openInterestChangePct`, code: 'invalid_type', message: `${field}.openInterestChangePct must be finite when provided.` });
   }
+  if (row.fundingEvent !== undefined && row.fundingEvent !== null) {
+    if (!isRecord(row.fundingEvent)) {
+      addIssue(issues, { field: `${field}.fundingEvent`, code: 'invalid_type', message: `${field}.fundingEvent must be an object when provided.` });
+    } else {
+      if (!isFiniteNumber(row.fundingEvent.timestamp) || row.fundingEvent.timestamp <= 0) {
+        addIssue(issues, { field: `${field}.fundingEvent.timestamp`, code: 'invalid_type', message: `${field}.fundingEvent.timestamp must be a positive finite epoch value.` });
+      }
+      if (!isFiniteNumber(row.fundingEvent.rate)) {
+        addIssue(issues, { field: `${field}.fundingEvent.rate`, code: 'invalid_type', message: `${field}.fundingEvent.rate must be finite.` });
+      }
+      for (const name of ['provider', 'provenance'] as const) {
+        const value = row.fundingEvent[name];
+        if (value !== undefined && value !== null && (typeof value !== 'string' || !value.trim())) {
+          addIssue(issues, { field: `${field}.fundingEvent.${name}`, code: 'invalid_type', message: `${field}.fundingEvent.${name} must be a non-empty string when provided.` });
+        }
+      }
+    }
+  }
   return true;
+}
+
+function validateFundingCoverage(value: unknown, issues: ValidationIssue[]): ProductionReplayRequestInput['fundingCoverage'] {
+  const fallback: ProductionReplayRequestInput['fundingCoverage'] = {
+    state: 'UNAVAILABLE', coveredFrom: null, coveredTo: null, provider: null, provenance: null, fingerprint: null,
+  };
+  if (!isRecord(value)) {
+    addIssue(issues, { field: 'fundingCoverage', code: 'required', message: 'fundingCoverage is required for production-input replay.' });
+    return fallback;
+  }
+  const state = value.state;
+  if (state !== 'COMPLETE' && state !== 'PARTIAL' && state !== 'UNAVAILABLE') {
+    addIssue(issues, { field: 'fundingCoverage.state', code: 'invalid_enum', message: 'fundingCoverage.state must be COMPLETE, PARTIAL, or UNAVAILABLE.' });
+  }
+  const coveredFrom = value.coveredFrom === null ? null : Number(value.coveredFrom);
+  const coveredTo = value.coveredTo === null ? null : Number(value.coveredTo);
+  if (state === 'COMPLETE') {
+    if (!Number.isFinite(coveredFrom)) addIssue(issues, { field: 'fundingCoverage.coveredFrom', code: 'required', message: 'Complete funding coverage requires a finite coveredFrom epoch.' });
+    if (!Number.isFinite(coveredTo)) addIssue(issues, { field: 'fundingCoverage.coveredTo', code: 'required', message: 'Complete funding coverage requires a finite coveredTo epoch.' });
+    if (Number.isFinite(coveredFrom) && Number.isFinite(coveredTo) && Number(coveredFrom) > Number(coveredTo)) {
+      addIssue(issues, { field: 'fundingCoverage', code: 'invalid_format', message: 'fundingCoverage.coveredFrom must not be later than coveredTo.' });
+    }
+  }
+  const nullableString = (name: 'provider' | 'provenance' | 'fingerprint'): string | null => {
+    const raw = value[name];
+    if (raw === null || raw === undefined) return null;
+    if (typeof raw !== 'string' || !raw.trim()) {
+      addIssue(issues, { field: `fundingCoverage.${name}`, code: 'invalid_type', message: `fundingCoverage.${name} must be a non-empty string when provided.` });
+      return null;
+    }
+    return raw.trim();
+  };
+  return {
+    state: state === 'COMPLETE' || state === 'PARTIAL' ? state : 'UNAVAILABLE',
+    coveredFrom: Number.isFinite(coveredFrom) ? Number(coveredFrom) : null,
+    coveredTo: Number.isFinite(coveredTo) ? Number(coveredTo) : null,
+    provider: nullableString('provider'),
+    provenance: nullableString('provenance'),
+    fingerprint: nullableString('fingerprint'),
+  };
 }
 
 export function validateProductionReplayRequest(input: unknown): ValidationResult<ProductionReplayRequestInput> {
@@ -353,6 +419,7 @@ export function validateProductionReplayRequest(input: unknown): ValidationResul
   const rawInputs = input.inputs;
   const candles = Array.isArray(rawCandles) ? rawCandles : [];
   const replayInputs = Array.isArray(rawInputs) ? rawInputs : [];
+  const fundingCoverage = validateFundingCoverage(input.fundingCoverage, issues);
 
   if (!Array.isArray(rawCandles)) {
     addIssue(issues, { field: 'candles', code: 'invalid_type', message: 'candles must be an array.' });
@@ -399,6 +466,7 @@ export function validateProductionReplayRequest(input: unknown): ValidationResul
       maxHoldBars,
       candles: candles as Array<Record<string, unknown>>,
       inputs: replayInputs as Array<Record<string, unknown>>,
+      fundingCoverage,
     },
   };
 }

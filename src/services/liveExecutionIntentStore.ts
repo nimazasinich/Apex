@@ -27,6 +27,39 @@ export interface LiveExecutionFillRecord {
   timestamp: number | null;
 }
 
+export interface ExecutionTelemetry {
+  version: 'execution_telemetry_v1';
+  source: 'KUCOIN_OPERATOR_CONTROLLED_LIVE';
+  decisionAt: number | null;
+  orderSubmittedAt: number | null;
+  ackAt: number | null;
+  firstFillAt: number | null;
+  completedAt: number | null;
+  midAtDecision: number | null;
+  expectedEntry: number | null;
+  actualVWAP: number | null;
+  slippageBps: number | null;
+  spreadAtDecisionBps: number | null;
+  depthAtDecisionUsd: number | null;
+  partialFillObserved: boolean;
+  venue: 'KUCOIN';
+  instrument: string;
+  dataQuality: 'PARTIAL' | 'COMPLETE';
+  provenance: string[];
+}
+
+export interface ExecutionCalibrationSnapshot {
+  version: 'execution_calibration_v1';
+  source: 'KUCOIN_OPERATOR_CONTROLLED_LIVE';
+  status: 'INSUFFICIENT_EVIDENCE' | 'CALIBRATED';
+  minimumSamples: number;
+  completeSamples: number;
+  slippageBps: { median: number; p90: number; mean: number } | null;
+  submitToAckMs: { median: number; p90: number; mean: number } | null;
+  decisionToFirstFillMs: { median: number; p90: number; mean: number } | null;
+  calibrationVersion: string | null;
+}
+
 export type ProtectiveOrderStatus = 'NOT_REQUESTED' | 'REQUESTED' | 'ATTACHED_UNVERIFIED' | 'ACTIVE_VERIFIED' | 'FAILED';
 
 export interface LiveExecutionIntentRecord {
@@ -42,6 +75,7 @@ export interface LiveExecutionIntentRecord {
   executedQuantity: number;
   averageFillPrice: number | null;
   fills: LiveExecutionFillRecord[];
+  executionTelemetry: ExecutionTelemetry;
   protectiveOrderStatus: ProtectiveOrderStatus;
   exchangeResponse: unknown;
   lastError: string | null;
@@ -63,6 +97,67 @@ const OPEN_STATUSES = new Set<LiveExecutionIntentStatus>([
 ]);
 const TERMINAL_STATUSES = new Set<LiveExecutionIntentStatus>(['FILLED', 'CANCELLED', 'REJECTED']);
 const MAX_RECORDS = 50_000;
+
+function finiteOrNull(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function baseExecutionTelemetry(order: KuCoinLiveOrderInput): ExecutionTelemetry {
+  return {
+    version: 'execution_telemetry_v1',
+    source: 'KUCOIN_OPERATOR_CONTROLLED_LIVE',
+    decisionAt: null, orderSubmittedAt: null, ackAt: null, firstFillAt: null, completedAt: null,
+    midAtDecision: null, expectedEntry: null, actualVWAP: null, slippageBps: null,
+    spreadAtDecisionBps: null, depthAtDecisionUsd: null, partialFillObserved: false,
+    venue: 'KUCOIN', instrument: order.symbol, dataQuality: 'PARTIAL', provenance: [],
+  };
+}
+
+function deriveExecutionTelemetry(record: Pick<LiveExecutionIntentRecord, 'order' | 'status' | 'fills' | 'averageFillPrice'>, current?: Partial<ExecutionTelemetry> | null): ExecutionTelemetry {
+  const base = { ...baseExecutionTelemetry(record.order), ...(current ?? {}) };
+  const fills = Array.isArray(record.fills) ? record.fills : [];
+  const timestamped = fills.map((fill) => finiteOrNull(fill.timestamp)).filter((value): value is number => value != null && value > 0);
+  const fillQuantity = fills.reduce((sum, fill) => sum + (Number.isFinite(fill.quantity) ? fill.quantity : 0), 0);
+  const fillNotional = fills.reduce((sum, fill) => sum + (Number.isFinite(fill.quantity) && Number.isFinite(fill.price) ? fill.quantity * fill.price : 0), 0);
+  const actualVWAP = fillQuantity > 0 ? fillNotional / fillQuantity : finiteOrNull(record.averageFillPrice);
+  const expectedEntry = finiteOrNull(base.expectedEntry);
+  const slippageBps = expectedEntry != null && expectedEntry > 0 && actualVWAP != null
+    ? ((actualVWAP - expectedEntry) / expectedEntry) * 10_000 * (record.order.side === 'buy' ? 1 : -1)
+    : null;
+  const firstFillAt = timestamped.length ? Math.min(...timestamped) : finiteOrNull(base.firstFillAt);
+  const completedAt = record.status === 'FILLED' && timestamped.length ? Math.max(...timestamped) : finiteOrNull(base.completedAt);
+  const next: ExecutionTelemetry = {
+    ...base,
+    decisionAt: finiteOrNull(base.decisionAt),
+    orderSubmittedAt: finiteOrNull(base.orderSubmittedAt),
+    ackAt: finiteOrNull(base.ackAt),
+    firstFillAt,
+    completedAt,
+    midAtDecision: finiteOrNull(base.midAtDecision),
+    expectedEntry,
+    actualVWAP,
+    slippageBps: Number.isFinite(slippageBps) ? slippageBps : null,
+    spreadAtDecisionBps: finiteOrNull(base.spreadAtDecisionBps),
+    depthAtDecisionUsd: finiteOrNull(base.depthAtDecisionUsd),
+    partialFillObserved: Boolean(base.partialFillObserved || record.status === 'PARTIALLY_FILLED'),
+    venue: 'KUCOIN',
+    instrument: record.order.symbol,
+    provenance: [...new Set(Array.isArray(base.provenance) ? base.provenance.filter((item): item is string => typeof item === 'string' && item.length > 0) : [])],
+    dataQuality: 'PARTIAL',
+  };
+  next.dataQuality = next.decisionAt != null && next.orderSubmittedAt != null && next.ackAt != null
+    && next.firstFillAt != null && next.completedAt != null && next.expectedEntry != null && next.actualVWAP != null
+    ? 'COMPLETE' : 'PARTIAL';
+  return next;
+}
+
+function metricSummary(values: number[]): { median: number; p90: number; mean: number } | null {
+  const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!clean.length) return null;
+  const pick = (q: number) => clean[Math.min(clean.length - 1, Math.max(0, Math.ceil(clean.length * q) - 1))];
+  return { median: pick(0.5), p90: pick(0.9), mean: clean.reduce((sum, value) => sum + value, 0) / clean.length };
+}
 
 function validRecord(value: unknown): value is LiveExecutionIntentRecord {
   if (!value || typeof value !== 'object') return false;
@@ -87,14 +182,21 @@ export class LiveExecutionIntentStore {
       const parsed = readDurableJsonFileSync(this.storePath);
       const rows = Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' && Array.isArray((parsed as { rows?: unknown }).rows) ? (parsed as { rows: unknown[] }).rows : null);
       if (!rows || !rows.every(validRecord)) throw new Error('invalid_live_execution_store');
-      return rows.map((record) => ({
-        ...record,
-        fills: Array.isArray(record.fills) ? record.fills : [],
-        // Legacy ACTIVE had no independently verified protection lifecycle. Never trust it on reload.
-        protectiveOrderStatus: (record as { protectiveOrderStatus?: string }).protectiveOrderStatus === 'ACTIVE'
-          ? 'ATTACHED_UNVERIFIED'
-          : record.protectiveOrderStatus ?? (record.order.takeProfitPrice || record.order.stopLossPrice ? 'ATTACHED_UNVERIFIED' : 'NOT_REQUESTED'),
-      })) as LiveExecutionIntentRecord[];
+      return rows.map((record) => {
+        const fills = Array.isArray(record.fills) ? record.fills : [];
+        const normalized = {
+          ...record,
+          fills,
+          // Legacy ACTIVE had no independently verified protection lifecycle. Never trust it on reload.
+          protectiveOrderStatus: (record as { protectiveOrderStatus?: string }).protectiveOrderStatus === 'ACTIVE'
+            ? 'ATTACHED_UNVERIFIED'
+            : record.protectiveOrderStatus ?? (record.order.takeProfitPrice || record.order.stopLossPrice ? 'ATTACHED_UNVERIFIED' : 'NOT_REQUESTED'),
+        } as LiveExecutionIntentRecord;
+        normalized.executionTelemetry = deriveExecutionTelemetry(normalized, (record as { executionTelemetry?: Partial<ExecutionTelemetry> }).executionTelemetry ?? {
+          provenance: ['legacy_execution_record_no_timing_claims'],
+        });
+        return normalized;
+      });
     } catch {
       throw new Error('live_execution_store_corrupt');
     }
@@ -113,6 +215,7 @@ export class LiveExecutionIntentStore {
     order: KuCoinLiveOrderInput;
     plan?: TradePlan | null;
     risk: RiskGovernorResult;
+    telemetrySeed?: Partial<ExecutionTelemetry>;
   }): LiveExecutionIntentRecord {
     if (this.findByClientOid(args.order.clientOid)) throw new Error('duplicate_client_order_id');
     const now = new Date().toISOString();
@@ -129,6 +232,7 @@ export class LiveExecutionIntentStore {
       executedQuantity: 0,
       averageFillPrice: null,
       fills: [],
+      executionTelemetry: deriveExecutionTelemetry({ order: args.order, status: 'SUBMITTING', fills: [], averageFillPrice: null }, args.telemetrySeed),
       protectiveOrderStatus: args.order.takeProfitPrice || args.order.stopLossPrice ? 'REQUESTED' : 'NOT_REQUESTED',
       exchangeResponse: null,
       lastError: null,
@@ -166,7 +270,7 @@ export class LiveExecutionIntentStore {
     };
   }
 
-  update(id: string, patch: Partial<LiveExecutionIntentRecord>): LiveExecutionIntentRecord | null {
+  update(id: string, patch: Partial<Omit<LiveExecutionIntentRecord, 'executionTelemetry'>> & { executionTelemetry?: Partial<ExecutionTelemetry> }): LiveExecutionIntentRecord | null {
     const record = this.records.find((candidate) => candidate.id === id);
     if (!record) return null;
     if (TERMINAL_STATUSES.has(record.status) && patch.status && patch.status !== record.status) {
@@ -175,9 +279,37 @@ export class LiveExecutionIntentStore {
     if (patch.executedQuantity != null && (patch.executedQuantity < 0 || patch.executedQuantity > record.order.quantity)) {
       throw new Error('invalid_live_executed_quantity');
     }
-    Object.assign(record, patch, { updatedAt: new Date().toISOString() });
+    const telemetryPatch = patch.executionTelemetry;
+    const { executionTelemetry: _ignored, ...recordPatch } = patch;
+    Object.assign(record, recordPatch, { updatedAt: new Date().toISOString() });
+    record.executionTelemetry = deriveExecutionTelemetry(record, { ...record.executionTelemetry, ...(telemetryPatch ?? {}) });
     this.save();
     return record;
+  }
+
+  executionCalibrationSnapshotForApiKey(apiKeyHint: string, minimumSamples = 30): ExecutionCalibrationSnapshot {
+    const complete = this.records
+      .filter((record) => record.apiKeyHint === apiKeyHint && record.executionTelemetry?.dataQuality === 'COMPLETE')
+      .map((record) => record.executionTelemetry);
+    const slippage = complete.map((row) => row.slippageBps).filter((value): value is number => value != null && Number.isFinite(value));
+    const ackLatency = complete
+      .map((row) => row.orderSubmittedAt != null && row.ackAt != null ? row.ackAt - row.orderSubmittedAt : null)
+      .filter((value): value is number => value != null && value >= 0);
+    const firstFillLatency = complete
+      .map((row) => row.decisionAt != null && row.firstFillAt != null ? row.firstFillAt - row.decisionAt : null)
+      .filter((value): value is number => value != null && value >= 0);
+    const calibrated = complete.length >= minimumSamples;
+    return {
+      version: 'execution_calibration_v1',
+      source: 'KUCOIN_OPERATOR_CONTROLLED_LIVE',
+      status: calibrated ? 'CALIBRATED' : 'INSUFFICIENT_EVIDENCE',
+      minimumSamples,
+      completeSamples: complete.length,
+      slippageBps: metricSummary(slippage),
+      submitToAckMs: metricSummary(ackLatency),
+      decisionToFirstFillMs: metricSummary(firstFillLatency),
+      calibrationVersion: calibrated ? `kucoin_execution_calibration_v1_n${complete.length}` : null,
+    };
   }
 
   all(): LiveExecutionIntentRecord[] {

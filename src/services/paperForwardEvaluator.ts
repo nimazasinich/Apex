@@ -5,7 +5,7 @@
  * WHY THIS EXISTS
  *
  * `researchOutcomeFeedback` closed the *replay* half of the loop: it compares
- * the optimizer's holdout expectation against a replay of the promoted profile.
+ * the optimizer's development-validation expectation against a replay of the promoted profile.
  * Both numbers come from history that already existed when the decision was
  * made, so a profile that is merely curve-fit can still look excellent there.
  *
@@ -244,7 +244,7 @@ export function openForwardPosition(seed: ForwardPositionSeed): ForwardPosition 
   };
 }
 
-function applyCosts(position: ForwardPosition, exitPrice: number, barsHeld: number): {
+function applyCosts(position: ForwardPosition, exitPrice: number, barsHeld: number, exitAt: number): {
   grossPnlPct: number;
   costPct: number;
   netPnlPct: number;
@@ -257,7 +257,12 @@ function applyCosts(position: ForwardPosition, exitPrice: number, barsHeld: numb
   // percentage by the shared replay formula. The fill prices above are the raw
   // stop/target/close levels precisely so this is not double counted.
   const costPct = computeTransactionCostPct(
-    transactionCostInputsFromModel(position.costModel, position.entryPrice, Math.max(1, barsHeld)),
+    transactionCostInputsFromModel(position.costModel, position.entryPrice, {
+      entryAt: position.entryBarTimestamp,
+      exitAt,
+      direction: position.direction,
+      fundingEvents: position.costModel.fundingEvents ?? [],
+    }),
   );
   const netPnlPct = gross - costPct;
   return {
@@ -322,7 +327,7 @@ export function markForwardPosition(
         exitReason,
         exitPrice: round(exitPrice, 8),
         closedAt: bar.timestamp,
-        ...applyCosts(position, exitPrice, barsHeld),
+        ...applyCosts(position, exitPrice, barsHeld, bar.timestamp),
       };
     }
   }
@@ -337,7 +342,7 @@ export function markForwardPosition(
     barsHeld,
     markPrice: round(last.close, 8),
     markedAt: Math.floor(now),
-    ...applyCosts(position, last.close, barsHeld),
+    ...applyCosts(position, last.close, barsHeld, last.timestamp),
   };
 }
 

@@ -6,6 +6,8 @@ import type {
 } from '../types';
 import type { NewsResult, OnChainResult, SentimentResult } from './providers/supplementalTypes';
 import { deriveSmartMoneyContext } from './smartMoneyContextEngine';
+import type { EvidenceDependencyFamily, ObservationMetadataV1 } from '../contracts/evidence/observationMetadata';
+import type { AuthorityStage } from '../contracts/evidence/evidenceGraph';
 
 export type StrategyFusionQuality = 'LIVE' | 'HISTORICAL' | 'PROXY' | 'MISSING' | 'STALE';
 
@@ -16,6 +18,8 @@ export interface StrategyFusionFeature {
   available: boolean;
   observedAt?: string;
   reason: string;
+  dependencyFamily: EvidenceDependencyFamily;
+  lineageIds: string[];
 }
 
 export interface StrategyFusionComponentResult extends StrategyFusionFeature {
@@ -41,8 +45,11 @@ export interface StrategyFusionSnapshot {
   completeness: number;
   agreement: number;
   qualityMultiplier: number;
+  /** Fusion is preview/shadow evidence only; `actionable` means internally aligned, not live-authoritative. */
   actionable: boolean;
   state: 'ACTIONABLE' | 'CONFLICTED' | 'INCOMPLETE' | 'BLOCKED';
+  authorityStage: AuthorityStage;
+  liveAuthoritative: false;
   components: StrategyFusionComponentResult[];
   missingRequired: StrategyFusionComponentKey[];
   warnings: string[];
@@ -55,8 +62,13 @@ export interface StrategyFusionInput {
   interval: string;
   direction: 'LONG' | 'SHORT';
   candles?: BacktestCandle[];
+  candles5m?: BacktestCandle[];
+  candles15m?: BacktestCandle[];
+  candles4h?: BacktestCandle[];
   fundingDirectional?: number | null;
+  fundingMetadata?: ObservationMetadataV1 | null;
   openInterestDirectional?: number | null;
+  openInterestMetadata?: ObservationMetadataV1 | null;
   news?: NewsResult | null;
   sentiment?: SentimentResult | null;
   onchain?: OnChainResult | null;
@@ -74,6 +86,52 @@ function sortedCandles(candles: BacktestCandle[] | undefined): BacktestCandle[] 
     .sort((left, right) => Date.parse(left.time) - Date.parse(right.time));
 }
 
+const INTERVAL_MS: Record<'5m' | '15m' | '4h', number> = { '5m': 300_000, '15m': 900_000, '4h': 14_400_000 };
+
+function cadenceMatches(rows: BacktestCandle[], intervalMs: number): boolean {
+  if (rows.length < 3) return false;
+  const times = rows.map((row) => Date.parse(row.time));
+  return times.every(Number.isFinite) && times.slice(1).every((time, index) => time - times[index] === intervalMs);
+}
+
+export function resampleClosedCandles(rowsInput: BacktestCandle[], sourceIntervalMs: number, targetIntervalMs: number): BacktestCandle[] {
+  if (targetIntervalMs < sourceIntervalMs || targetIntervalMs % sourceIntervalMs !== 0) return [];
+  const rows = sortedCandles(rowsInput);
+  if (!cadenceMatches(rows, sourceIntervalMs)) return [];
+  const required = targetIntervalMs / sourceIntervalMs;
+  const buckets = new Map<number, BacktestCandle[]>();
+  for (const row of rows) {
+    const timestamp = Date.parse(row.time);
+    const bucket = Math.floor(timestamp / targetIntervalMs) * targetIntervalMs;
+    const list = buckets.get(bucket) ?? [];
+    list.push(row);
+    buckets.set(bucket, list);
+  }
+  return [...buckets.entries()].sort((a, b) => a[0] - b[0]).flatMap(([bucket, group]) => {
+    if (group.length !== required || Date.parse(group[0].time) !== bucket) return [];
+    return [{
+      time: new Date(bucket).toISOString(),
+      open: group[0].open,
+      high: Math.max(...group.map((row) => row.high)),
+      low: Math.min(...group.map((row) => row.low)),
+      close: group.at(-1)!.close,
+      volume: group.reduce((sum, row) => sum + row.volume, 0),
+    }];
+  });
+}
+
+function smartMoneyTimeframes(input: Pick<StrategyFusionInput, 'interval' | 'candles' | 'candles5m' | 'candles15m' | 'candles4h'>): { five: BacktestCandle[]; fifteen: BacktestCandle[]; fourHour: BacktestCandle[] } | null {
+  // Smart-money confluence is allowed only when callers provide three actual,
+  // independently identified timeframe series. Generic `candles` and
+  // synthesized/resampled series are never relabelled as 5m/15m/4h evidence.
+  if (!input.candles5m || !input.candles15m || !input.candles4h) return null;
+  const five = sortedCandles(input.candles5m);
+  const fifteen = sortedCandles(input.candles15m);
+  const fourHour = sortedCandles(input.candles4h);
+  if (!cadenceMatches(five, INTERVAL_MS['5m']) || !cadenceMatches(fifteen, INTERVAL_MS['15m']) || !cadenceMatches(fourHour, INTERVAL_MS['4h'])) return null;
+  return { five, fifteen, fourHour };
+}
+
 function ema(values: number[], length: number): number | null {
   if (values.length < length) return null;
   const alpha = 2 / (length + 1);
@@ -82,8 +140,9 @@ function ema(values: number[], length: number): number | null {
   return current;
 }
 
-function candleFeatures(candlesInput: BacktestCandle[] | undefined, direction: 'LONG' | 'SHORT'): StrategyFusionFeature[] {
-  const candles = sortedCandles(candlesInput);
+function candleFeatures(input: StrategyFusionInput): StrategyFusionFeature[] {
+  const candles = sortedCandles(input.candles);
+  const direction = input.direction;
   if (candles.length < 60) {
     return (['technical', 'smartMoney', 'orderFlow', 'liquidity', 'regime'] as StrategyFusionComponentKey[]).map((key) => ({
       key,
@@ -91,6 +150,8 @@ function candleFeatures(candlesInput: BacktestCandle[] | undefined, direction: '
       quality: 'MISSING',
       available: false,
       reason: `At least 60 closed candles are required for ${key}.`,
+      dependencyFamily: 'PRICE_CANDLES',
+      lineageIds: [],
     }));
   }
   const closes = candles.map((row) => row.close);
@@ -128,30 +189,27 @@ function candleFeatures(candlesInput: BacktestCandle[] | undefined, direction: '
   const liquidityQuality = clamp01(0.75 - Math.min(0.55, volumeCv * 0.22) + bodyEfficiency * 0.25);
   const regime = clamp(((e50 - e200) / Math.max(last, Number.EPSILON)) * 120 + momentum * 10);
 
-  const converted = recent.map((row) => ({
-    time: row.time,
-    open: row.open,
-    high: row.high,
-    low: row.low,
-    close: row.close,
-    volume: row.volume,
-  }));
+  const timeframes = smartMoneyTimeframes(input);
   let smartMoney = 0;
-  let smartMoneyReason = 'Smart-money context could not be derived.';
-  try {
-    const context = deriveSmartMoneyContext({ candles5m: converted, candles15m: converted, candles4h: converted, direction });
-    smartMoney = context.smcDirectionalScore;
-    smartMoneyReason = context.reasons.join(' ');
-  } catch {
-    smartMoney = 0;
+  let smartMoneyReason = 'Independent closed 5m, 15m, and 4h series are unavailable; no timeframe is relabeled.';
+  if (timeframes) {
+    try {
+      const context = deriveSmartMoneyContext({ candles5m: timeframes.five, candles15m: timeframes.fifteen, candles4h: timeframes.fourHour, direction });
+      smartMoney = context.smcDirectionalScore;
+      smartMoneyReason = context.reasons.join(' ');
+    } catch {
+      smartMoney = 0;
+    }
   }
 
+  const candleLineage = [`candles:${input.symbol}:${input.interval}:${candles[0].time}-${candles.at(-1)!.time}`];
+
   return [
-    { key: 'technical', value: technical, quality: 'HISTORICAL', available: true, reason: 'EMA alignment and bounded momentum from verified closed candles.' },
-    { key: 'smartMoney', value: smartMoney, quality: 'PROXY', available: true, reason: smartMoneyReason },
-    { key: 'orderFlow', value: orderFlow, quality: 'PROXY', available: true, reason: 'Candle-body signed-volume proxy; not a replacement for L2 trade flow.' },
-    { key: 'liquidity', value: liquidityQuality, quality: 'PROXY', available: true, reason: 'Candle volume stability and body/range efficiency proxy.' },
-    { key: 'regime', value: regime, quality: 'HISTORICAL', available: true, reason: 'Long/medium trend spread and momentum regime.' },
+    { key: 'technical', value: technical, quality: 'HISTORICAL', available: true, reason: 'EMA alignment and bounded momentum from verified closed candles.', dependencyFamily: 'PRICE_CANDLES', lineageIds: candleLineage },
+    { key: 'smartMoney', value: smartMoney, quality: timeframes ? 'HISTORICAL' : 'MISSING', available: Boolean(timeframes), reason: smartMoneyReason, dependencyFamily: 'PRICE_CANDLES', lineageIds: timeframes ? candleLineage : [] },
+    { key: 'orderFlow', value: orderFlow, quality: 'PROXY', available: true, reason: 'Candle-body signed-volume proxy; not a replacement for L2 trade flow.', dependencyFamily: 'PRICE_CANDLES', lineageIds: candleLineage },
+    { key: 'liquidity', value: liquidityQuality, quality: 'PROXY', available: true, reason: 'Candle volume stability and body/range efficiency proxy.', dependencyFamily: 'PRICE_CANDLES', lineageIds: candleLineage },
+    { key: 'regime', value: regime, quality: 'HISTORICAL', available: true, reason: 'Long/medium trend spread and momentum regime.', dependencyFamily: 'PRICE_CANDLES', lineageIds: candleLineage },
   ];
 }
 
@@ -163,7 +221,7 @@ function sourceQuality(source: string | undefined): StrategyFusionQuality {
 
 function newsFeature(news: NewsResult | null | undefined): StrategyFusionFeature {
   if (!news || news.source === 'not_configured' || news.source === 'unavailable' || !news.data.length) {
-    return { key: 'news', value: 0, quality: 'MISSING', available: false, reason: news?.reason || 'No current news evidence is configured.' };
+    return { key: 'news', value: 0, quality: 'MISSING', available: false, reason: news?.reason || 'No current news evidence is configured.', dependencyFamily: 'NEWS_TEXT', lineageIds: [] };
   }
   let weighted = 0;
   let weight = 0;
@@ -175,35 +233,43 @@ function newsFeature(news: NewsResult | null | undefined): StrategyFusionFeature
     weighted += score * recency;
     weight += recency;
   }
-  const quality = sourceQuality(news.source);
+  const observedAtMs = news.metadata?.sourceObservedAt
+    ?? Math.min(...news.data.map((article) => Date.parse(article.publishedAt)).filter(Number.isFinite));
+  const stale = !Number.isFinite(observedAtMs) || now - observedAtMs > 5 * 60_000;
+  const quality = stale ? 'STALE' : sourceQuality(news.source);
   return {
     key: 'news',
     value: weight > 0 ? clamp(weighted / weight) : 0,
     quality,
-    available: quality === 'LIVE',
-    observedAt: news.updatedAt,
+    available: quality === 'LIVE' && (news.metadata?.decisionEligible ?? true),
+    observedAt: Number.isFinite(observedAtMs) ? new Date(observedAtMs).toISOString() : undefined,
     reason: `${news.data.length} current article(s) aggregated with recency weighting.`,
+    dependencyFamily: 'NEWS_TEXT',
+    lineageIds: news.metadata ? [news.metadata.lineageId] : news.data.map((article) => `news:${article.url}`),
   };
 }
 
 function sentimentFeature(sentiment: SentimentResult | null | undefined): StrategyFusionFeature {
   if (!sentiment || sentiment.valid !== true || !sentiment.data || sentiment.source === 'not_configured' || sentiment.source === 'unavailable') {
-    return { key: 'sentiment', value: 0, quality: 'MISSING', available: false, reason: sentiment?.reason || 'No current sentiment evidence is configured.' };
+    return { key: 'sentiment', value: 0, quality: 'MISSING', available: false, reason: sentiment?.reason || 'No current sentiment evidence is configured.', dependencyFamily: 'NEWS_TEXT', lineageIds: [] };
   }
-  const quality = sourceQuality(sentiment.source);
+  const observedAtMs = sentiment.metadata?.sourceObservedAt ?? NaN;
+  const quality = !Number.isFinite(observedAtMs) || Date.now() - observedAtMs > 5 * 60_000 ? 'STALE' : sourceQuality(sentiment.source);
   return {
     key: 'sentiment',
     value: clamp(finite(sentiment.data.value) * clamp01(finite(sentiment.data.confidence, 0.5))),
     quality,
-    available: quality === 'LIVE',
-    observedAt: sentiment.updatedAt,
+    available: quality === 'LIVE' && sentiment.metadata?.decisionEligible === true,
+    observedAt: Number.isFinite(observedAtMs) ? new Date(observedAtMs).toISOString() : undefined,
     reason: `${sentiment.provider} ${sentiment.data.label.toLowerCase()} sentiment with ${(sentiment.data.confidence * 100).toFixed(0)}% model confidence.`,
+    dependencyFamily: sentiment.metadata?.dependencyFamily ?? 'NEWS_TEXT',
+    lineageIds: sentiment.metadata ? [sentiment.metadata.lineageId, ...sentiment.metadata.parentLineageIds] : [],
   };
 }
 
 function whaleFeature(onchain: OnChainResult | null | undefined): StrategyFusionFeature {
   if (!onchain || onchain.source === 'not_configured' || onchain.source === 'unavailable' || !onchain.data.length) {
-    return { key: 'whaleFlow', value: 0, quality: 'MISSING', available: false, reason: onchain?.reason || 'No current on-chain whale-flow evidence is configured.' };
+    return { key: 'whaleFlow', value: 0, quality: 'MISSING', available: false, reason: onchain?.reason || 'No current on-chain whale-flow evidence is configured.', dependencyFamily: 'ONCHAIN_FLOW', lineageIds: [] };
   }
   let directional = 0;
   let scale = 0;
@@ -220,21 +286,46 @@ function whaleFeature(onchain: OnChainResult | null | undefined): StrategyFusion
       classified += 1;
     }
   }
+  const observedAtMs = onchain.metadata?.sourceObservedAt
+    ?? Math.min(...onchain.data.map((signal) => Date.parse(signal.timestamp)).filter(Number.isFinite));
+  const stale = !Number.isFinite(observedAtMs) || Date.now() - observedAtMs > 5 * 60_000;
   return {
     key: 'whaleFlow',
     value: scale > 0 ? clamp(directional / scale) : 0,
-    quality: sourceQuality(onchain.source),
-    available: classified > 0 && onchain.source === 'live',
-    observedAt: onchain.updatedAt,
+    quality: stale ? 'STALE' : sourceQuality(onchain.source),
+    available: classified > 0 && onchain.source === 'live' && !stale && (onchain.metadata?.decisionEligible ?? true),
+    observedAt: Number.isFinite(observedAtMs) ? new Date(observedAtMs).toISOString() : undefined,
     reason: classified > 0
       ? `${classified} exchange-classified whale flow(s); deposits are sell-pressure risk and withdrawals are accumulation evidence.`
       : 'On-chain transfers exist, but none are classified as exchange deposits or withdrawals.',
+    dependencyFamily: 'ONCHAIN_FLOW',
+    lineageIds: [onchain.metadata?.lineageId ?? `onchain:${onchain.provider}:${onchain.symbol}:${observedAtMs}`],
   };
 }
 
-function directFeature(key: 'funding' | 'openInterest', value: number | null | undefined): StrategyFusionFeature {
-  if (!Number.isFinite(value)) return { key, value: 0, quality: 'MISSING', available: false, reason: `No verified ${key} directional feature was supplied.` };
-  return { key, value: clamp(Number(value)), quality: 'LIVE', available: true, reason: `Verified ${key} directional feature supplied by the market-data path.` };
+function directFeature(
+  key: 'funding' | 'openInterest',
+  value: number | null | undefined,
+  metadata: ObservationMetadataV1 | null | undefined,
+): StrategyFusionFeature {
+  const dependencyFamily: EvidenceDependencyFamily = key === 'funding' ? 'FUNDING' : 'DERIVATIVES_POSITIONING';
+  const validObservation = metadata?.sourceObservedAt != null
+    && metadata.decisionEligible === true
+    && metadata.qualityState === 'VALID';
+  if (!Number.isFinite(value) || !validObservation) {
+    return {
+      key, value: 0, quality: 'MISSING', available: false,
+      reason: `No decision-eligible observed ${key} feature with event-time provenance was supplied.`,
+      dependencyFamily, lineageIds: [],
+    };
+  }
+  return {
+    key, value: clamp(Number(value)), quality: 'LIVE', available: true,
+    observedAt: new Date(metadata.sourceObservedAt!).toISOString(),
+    reason: `Observed ${key} directional feature from ${metadata.provider}.`,
+    dependencyFamily: metadata.dependencyFamily === 'UNKNOWN' ? dependencyFamily : metadata.dependencyFamily,
+    lineageIds: [metadata.lineageId],
+  };
 }
 
 function effectiveWeight(component: StrategyFusionComponentDefinition, parameters: Record<string, number | string> | undefined): number {
@@ -263,6 +354,8 @@ export function evaluateStrategyFusion(input: StrategyFusionInput): StrategyFusi
       qualityMultiplier: 0,
       actionable: false,
       state: 'BLOCKED',
+      authorityStage: 'SHADOW',
+      liveAuthoritative: false,
       components: [],
       missingRequired: [],
       warnings: ['This registry definition has no strategy-fusion blueprint.'],
@@ -271,15 +364,15 @@ export function evaluateStrategyFusion(input: StrategyFusionInput): StrategyFusi
   }
 
   const features = new Map<StrategyFusionComponentKey, StrategyFusionFeature>();
-  for (const feature of candleFeatures(input.candles, input.direction)) features.set(feature.key, feature);
-  features.set('funding', directFeature('funding', input.fundingDirectional));
-  features.set('openInterest', directFeature('openInterest', input.openInterestDirectional));
+  for (const feature of candleFeatures(input)) features.set(feature.key, feature);
+  features.set('funding', directFeature('funding', input.fundingDirectional, input.fundingMetadata));
+  features.set('openInterest', directFeature('openInterest', input.openInterestDirectional, input.openInterestMetadata));
   features.set('news', newsFeature(input.news));
   features.set('sentiment', sentimentFeature(input.sentiment));
   features.set('whaleFlow', whaleFeature(input.onchain));
 
-  const components: StrategyFusionComponentResult[] = blueprint.components.map((component) => {
-    const feature = features.get(component.key) || { key: component.key, value: 0, quality: 'MISSING' as const, available: false, reason: 'Feature unavailable.' };
+  let components: StrategyFusionComponentResult[] = blueprint.components.map((component) => {
+    const feature = features.get(component.key) || { key: component.key, value: 0, quality: 'MISSING' as const, available: false, reason: 'Feature unavailable.', dependencyFamily: 'UNKNOWN' as const, lineageIds: [] };
     const weight = effectiveWeight(component, input.parameters);
     return {
       ...feature,
@@ -289,6 +382,28 @@ export function evaluateStrategyFusion(input: StrategyFusionInput): StrategyFusi
       effectiveWeight: weight,
       required: component.required,
       contribution: feature.available && component.role === 'DIRECTIONAL' ? clamp(feature.value) * weight : 0,
+    };
+  });
+
+  // Correlated transformations share a weight budget. Model/component names do
+  // not manufacture independence: the total effective weight of one upstream
+  // family is capped at the largest configured member weight in that family.
+  const byDependency = new Map<EvidenceDependencyFamily, StrategyFusionComponentResult[]>();
+  for (const component of components) {
+    const rows = byDependency.get(component.dependencyFamily) ?? [];
+    rows.push(component);
+    byDependency.set(component.dependencyFamily, rows);
+  }
+  components = components.map((component) => {
+    const siblings = byDependency.get(component.dependencyFamily) ?? [component];
+    const configuredTotal = siblings.reduce((sum, row) => sum + Math.max(0, row.effectiveWeight), 0);
+    const familyBudget = Math.max(...siblings.map((row) => Math.max(0, row.effectiveWeight)));
+    const scale = configuredTotal > familyBudget && configuredTotal > 0 ? familyBudget / configuredTotal : 1;
+    const adjustedWeight = component.effectiveWeight * scale;
+    return {
+      ...component,
+      effectiveWeight: adjustedWeight,
+      contribution: component.available && component.role === 'DIRECTIONAL' ? clamp(component.value) * adjustedWeight : 0,
     };
   });
 
@@ -355,6 +470,8 @@ export function evaluateStrategyFusion(input: StrategyFusionInput): StrategyFusi
     qualityMultiplier: Number(qualityMultiplier.toFixed(6)),
     actionable,
     state,
+    authorityStage: 'SHADOW',
+    liveAuthoritative: false,
     components,
     missingRequired,
     warnings,

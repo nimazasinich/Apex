@@ -77,11 +77,10 @@ export interface BacktestingPageProps {
   onSelectSymbol: (symbol: string) => void;
   dataState: DataState;
   autopilotEnabled?: boolean;
-  onAutopilotEnabledChange?: (enabled: boolean) => void;
   autopilotController?: AutopilotControllerView;
 }
 
-export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataState, autopilotEnabled, onAutopilotEnabledChange, autopilotController }: BacktestingPageProps) {
+export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataState, autopilotEnabled, autopilotController }: BacktestingPageProps) {
   const [initialContext] = useState(() => readWorkspaceContext());
   const initialStrategyId = initialContext?.strategyId && STRATEGY_PRESETS.some((preset) => preset.id === initialContext.strategyId && !preset.disabled)
     ? initialContext.strategyId
@@ -124,6 +123,10 @@ export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataS
   const [multiResearchOpen, setMultiResearchOpen] = useState(false);
   const [liquidityHunterOpen, setLiquidityHunterOpen] = useState(false);
   const [studioMode, setStudioMode] = useState<BacktestStudioMode>('smart');
+
+  useEffect(() => {
+    if (autopilotEnabled && studioMode !== 'smart') setStudioMode('smart');
+  }, [autopilotEnabled, studioMode]);
 
   const abortRef = useRef<AbortController | null>(null);
   const requestGateRef = useRef(new LatestRequestGate());
@@ -203,8 +206,6 @@ export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataS
   }, [symbol, tickers]);
 
   const {
-    autopilotStatus,
-    autopilotRunning,
     optimizationRunning,
     optimizationReport,
     optimizationMessage,
@@ -221,11 +222,6 @@ export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataS
     commissionPct,
     slippagePct,
     fundingPct,
-    capital,
-    riskPct,
-    marketOptions,
-    autopilotEnabled: Boolean(autopilotEnabled),
-    serverDriven: autopilotController?.serverBackgroundLoop === true,
     parameterOverrideRef,
     setParameters,
   });
@@ -469,6 +465,7 @@ export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataS
       <BacktestingTopBar
         studioMode={studioMode}
         onStudioModeChange={setStudioMode}
+        manualDisabled={Boolean(autopilotEnabled)}
         onOpenMultiResearch={() => setMultiResearchOpen(true)}
         onOpenLiquidityHunter={() => setLiquidityHunterOpen(true)}
       />
@@ -477,7 +474,6 @@ export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataS
       <div className="apex-bt-layout apex-bt-layout-modernized">
         <BacktestRunBuilder
           studioMode={studioMode}
-          onStudioModeChange={setStudioMode}
           smartCheckpoint={smartCheckpoint}
           smartRunning={smartRunning}
           smartStopping={smartStopping}
@@ -540,17 +536,14 @@ export function BacktestingPage({ tickers, selectedSymbol, onSelectSymbol, dataS
           optimizationMessage={optimizationMessage}
           optimizationEligible={Boolean(optimizationReport?.promotion.eligible)}
           optimizationPromoted={Boolean(activeOptimizationProfile && optimizationReport && activeOptimizationProfile.sourceReportAt === optimizationReport.generatedAt)}
-          optimizationHoldoutPnlPct={optimizationReport?.holdout.candidate.metrics.totalPnlPct ?? null}
-          optimizationHoldoutImprovement={optimizationReport?.promotion.holdoutImprovement ?? null}
+          optimizationDevelopmentPnlPct={optimizationReport?.developmentValidation.candidate.metrics.totalPnlPct ?? null}
+          optimizationDevelopmentImprovement={optimizationReport?.promotion.developmentValidationImprovement ?? null}
           optimizationNeighborPassRate={optimizationReport?.promotion.neighborPassRate ?? null}
           activeOptimizationRevision={activeOptimizationProfile?.revision ?? null}
           autopilotEnabled={autopilotEnabled}
-          autopilotRunning={autopilotRunning}
           autopilotPhase={autopilotController?.phase ?? null}
           autopilotPhaseText={autopilotController?.phaseText ?? null}
           autopilotDisconnected={Boolean(autopilotController?.transportError)}
-          autopilotMessage={autopilotStatus ? `${autopilotStatus.message} Last run ${new Date(autopilotStatus.at).toLocaleTimeString()}.` : null}
-          onAutopilotToggle={onAutopilotEnabledChange}
           onRunOptimization={() => void runSmartOptimization()}
           onPromoteOptimization={() => void promoteSmartOptimization()}
         />

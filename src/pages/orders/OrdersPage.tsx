@@ -17,11 +17,12 @@ import {
 } from 'lucide-react';
 import { cancelLiveOrder } from '../../services/accountClient';
 import type { WorkspaceOrder } from '../../services/workspaceInsights';
-import { buildOrderDraftTransfer, ORDER_DRAFT_STORAGE_KEY, paginate } from '../../lib/workspaceUi';
+import { buildOrderDraftTransfer, orderDraftBlocker, ORDER_DRAFT_STORAGE_KEY, paginate } from '../../lib/workspaceUi';
 import { CoinIcon } from '../../components/CoinIcon';
 import { notifyWorkspace } from '../../lib/workspaceFeedback';
 import type { AccountWorkspaceProps } from '../pageTypes';
 import { AccountFreshnessChip } from '../../components/ui/AccountFreshnessChip';
+import { TabdealAccountSurface } from '../../components/account/TabdealAccountSurface';
 import {
   assetFrom,
   fmtCompact,
@@ -54,13 +55,17 @@ const ASSISTANT_MODE_COPY: Record<AssistantMode, { title: string; detail: string
 function orderExecutionQuality(order: WorkspaceOrder): { improvementPerUnit: number | null; adverseSlippagePct: number | null } {
   const limit = order.price;
   const fill = order.averageFillPrice;
-  if (limit == null || fill == null || !Number.isFinite(limit) || !Number.isFinite(fill) || limit <= 0 || order.filled <= 0) {
+  if (limit == null || fill == null || !Number.isFinite(limit) || !Number.isFinite(fill) || limit <= 0 || order.filled == null || order.filled <= 0 || (order.side !== 'buy' && order.side !== 'sell')) {
     return { improvementPerUnit: null, adverseSlippagePct: null };
   }
   const improvementPerUnit = order.side === 'buy' ? limit - fill : fill - limit;
   const adverseMove = order.side === 'buy' ? fill - limit : limit - fill;
   return { improvementPerUnit, adverseSlippagePct: (adverseMove / limit) * 100 };
 }
+
+const quantityLabel = (value: number | null): string => value == null || !Number.isFinite(value) ? '—' : value.toLocaleString();
+
+const orderSideLabel = (side: WorkspaceOrder['side']): string => side === 'buy' ? 'Buy' : side === 'sell' ? 'Sell' : 'Unknown';
 
 function OrderMetricCard({
   label,
@@ -181,7 +186,13 @@ export function OrdersPage(props: AccountWorkspaceProps) {
   const selected = selectedId ? filteredOrders.find((order) => order.id === selectedId) || null : null;
   const selectedExecutionQuality = selected ? orderExecutionQuality(selected) : null;
   const count = (status: WorkspaceOrder['status']) => orders.filter((order) => order.status === status).length;
-  const totalNotional = orders.reduce((sum, order) => sum + (order.price || order.averageFillPrice || 0) * order.size, 0);
+  const observedNotionals = orders.map((order) => {
+    const price = order.price ?? order.averageFillPrice;
+    return price != null && order.size != null ? price * order.size : null;
+  });
+  const totalNotional = observedNotionals.length && observedNotionals.every((value): value is number => value != null && Number.isFinite(value))
+    ? observedNotionals.reduce((sum, value) => sum + value, 0)
+    : null;
 
   const cancel = async () => {
     if (!selected || (selected.status !== 'open' && selected.status !== 'partially_filled')) return;
@@ -207,9 +218,15 @@ export function OrdersPage(props: AccountWorkspaceProps) {
   const prepareDraft = (order: WorkspaceOrder, intent: 'duplicate' | 'replace') => {
     if (typeof window === 'undefined') return;
     const transfer = buildOrderDraftTransfer(order, intent);
+    if (!transfer) {
+      const detail = orderDraftBlocker(order, intent) || 'This order does not contain enough verified data to prepare a draft.';
+      setMessageNote(detail);
+      notifyWorkspace({ title: 'Draft unavailable', detail, tone: 'warning' });
+      return;
+    }
     window.sessionStorage.setItem(ORDER_DRAFT_STORAGE_KEY, JSON.stringify(transfer));
     const detail = intent === 'replace'
-      ? `Replacement draft prepared for the remaining ${transfer.draft.quantity.toLocaleString()} ${assetFrom(order.symbol)}. Review it in Trading before cancelling the original order.`
+      ? `Replacement draft prepared for the remaining ${transfer.draft.quantity.toLocaleString()} ${assetFrom(order.symbol ?? '')}. Review it in Trading before cancelling the original order.`
       : `Duplicate draft prepared for ${order.symbol}. Review all fields before submission.`;
     setMessageNote(detail);
     notifyWorkspace({
@@ -217,7 +234,7 @@ export function OrdersPage(props: AccountWorkspaceProps) {
       detail,
       tone: 'success',
       actionLabel: props.onOpenTrading ? 'Open Trading' : undefined,
-      onAction: props.onOpenTrading ? () => props.onOpenTrading?.(order.symbol) : undefined,
+      onAction: props.onOpenTrading ? () => props.onOpenTrading?.(order.symbol ?? undefined) : undefined,
     });
   };
 
@@ -271,9 +288,11 @@ export function OrdersPage(props: AccountWorkspaceProps) {
         : orders.length
           ? 'Try a different status, side, type, or search term.'
           : 'Place an order in Demo or connect a verified Live account.';
+  const hasReconciliationWarning = props.connection.mode === 'live'
+    && Boolean(props.reconciliation && props.reconciliation.unresolvedIntentCount > 0);
 
   return (
-    <div className="v20-reference-page v20-orders-page">
+    <div className={`v20-reference-page v20-orders-page${hasReconciliationWarning ? ' has-reconciliation-warning' : ''}`}>
       <div className="v20-main-column">
         <div className="orders-hero">
           <div className="orders-hero-copy">
@@ -297,7 +316,7 @@ export function OrdersPage(props: AccountWorkspaceProps) {
           <OrderMetricCard label="Partially Filled" value={count('partially_filled')} detail="Working orders" icon={Activity} tone="amber" />
           <OrderMetricCard label="Filled" value={count('filled')} detail="Completed orders" icon={CheckCircle2} tone="violet" />
           <OrderMetricCard label="Cancelled" value={count('cancelled')} detail="Cancelled orders" icon={X} tone="red" />
-          <OrderMetricCard label="Total Notional" value={<>{fmtCompact(totalNotional)} <span className="orders-kpi-unit">USDT</span></>} detail="Visible order history" icon={WalletCards} tone="blue" />
+          <OrderMetricCard label="Total Notional" value={<>{totalNotional == null ? '—' : fmtCompact(totalNotional)} {totalNotional != null && <span className="orders-kpi-unit">USDT</span>}</>} detail={totalNotional == null && orders.length ? 'Incomplete order price or size' : 'Visible order history'} icon={WalletCards} tone="blue" />
         </div>
 
         <section className="v20-table-card v20-orders-table">
@@ -325,7 +344,8 @@ export function OrdersPage(props: AccountWorkspaceProps) {
               // is the one cell whose content width scales with the magnitude of the
               // data, so a seven-digit pair truncates visually. The unrounded value
               // stays available here rather than being abbreviated in the table.
-              const fillLabel = `${order.filled.toLocaleString()} / ${order.size.toLocaleString()}`;
+              const fillLabel = `${quantityLabel(order.filled)} / ${quantityLabel(order.size)}`;
+              const duplicateBlocker = orderDraftBlocker(order, 'duplicate');
               return (
               <tr
                 key={order.id}
@@ -336,14 +356,14 @@ export function OrdersPage(props: AccountWorkspaceProps) {
               >
                 <td><span className="v20-radio" /></td>
                 <td>{order.id.slice(0, 12)}</td>
-                <td><CoinIcon symbol={order.symbol} size={20} /><strong title={order.symbol}>{order.symbol}</strong></td>
-                <td><span className={`v20-pill ${order.side === 'buy' ? 'success' : 'danger'}`}>{order.side === 'buy' ? 'Buy' : 'Sell'}</span></td>
+                <td><CoinIcon symbol={order.symbol ?? ''} size={20} /><strong title={order.symbol ?? undefined}>{order.symbol ?? '—'}</strong></td>
+                <td><span className={`v20-pill ${order.side === 'buy' ? 'success' : order.side === 'sell' ? 'danger' : 'muted'}`}>{orderSideLabel(order.side)}</span></td>
                 <td title={order.type}>{order.type}</td>
-                <td title={fillLabel}><span>{fillLabel}</span><div className="v20-progress"><i style={{ width: `${order.fillPct}%` }} /></div></td>
+                <td title={fillLabel}><span>{fillLabel}</span><div className="v20-progress" aria-label={order.fillPct == null ? 'Fill progress unavailable' : `${order.fillPct.toFixed(1)} percent filled`}><i style={{ width: `${order.fillPct ?? 0}%` }} /></div></td>
                 <td>{fmtPrice(order.averageFillPrice || order.price)}</td>
                 <td><span className={`v20-pill ${order.status}`}>{order.status.replace('_', ' ')}</span></td>
                 <td>{timestamp(order.updatedAt || order.createdAt)}</td>
-                <td><button type="button" className="v20-icon-button" onClick={(event) => { event.stopPropagation(); prepareDraft(order, 'duplicate'); }} aria-label="Duplicate order"><FileText size={14} /></button></td>
+                <td><button type="button" className="v20-icon-button" disabled={Boolean(duplicateBlocker)} title={duplicateBlocker ?? 'Prepare a review-only duplicate draft'} onClick={(event) => { event.stopPropagation(); prepareDraft(order, 'duplicate'); }} aria-label="Duplicate order"><FileText size={14} /></button></td>
               </tr>
               );
             })}</tbody>
@@ -352,6 +372,7 @@ export function OrdersPage(props: AccountWorkspaceProps) {
           <PaginationControls {...pageData} onPageChange={setPage} />
           {messageNote && <div className="v20-message" role="status"><span>{messageNote}</span><button type="button" aria-label="Dismiss order message" onClick={() => setMessageNote(null)}><X size={13} /></button></div>}
         </section>
+        <TabdealAccountSurface mode="orders" />
       </div>
 
       <aside className="v20-context-sidebar">
@@ -360,27 +381,27 @@ export function OrdersPage(props: AccountWorkspaceProps) {
           <>
             <div className="v20-context-section">
               <div className="v20-selected-asset">
-                <CoinIcon symbol={selected.symbol} size={26} />
-                <span><strong>{selected.symbol}</strong><small>{selected.side === 'buy' ? 'Buy' : 'Sell'} · {selected.type}</small></span>
+                <CoinIcon symbol={selected.symbol ?? ''} size={26} />
+                <span><strong>{selected.symbol ?? '—'}</strong><small>{orderSideLabel(selected.side)} · {selected.type}</small></span>
                 <span className={`v20-pill ${selected.status}`}>{selected.status.replace('_', ' ')}</span>
               </div>
               <div className="v20-order-id-row"><h2>{selected.id.slice(0, 14)}</h2><button type="button" className="v20-icon-button" aria-label="Copy full order ID" title="Copy full order ID" onClick={() => void copyOrderId(selected.id)}><Copy size={14} /></button></div>
               <dl className="v20-detail-list">
                 <div><dt>Order Type</dt><dd>{selected.type}</dd></div>
                 <div><dt>Limit Price</dt><dd>{fmtPrice(selected.price)}</dd></div>
-                <div><dt>Order Size</dt><dd>{selected.size.toLocaleString()} {assetFrom(selected.symbol)}</dd></div>
-                <div><dt>Filled</dt><dd>{selected.filled.toLocaleString()}</dd></div>
-                <div><dt>Remaining</dt><dd>{Math.max(0, selected.size - selected.filled).toLocaleString()}</dd></div>
+                <div><dt>Order Size</dt><dd>{quantityLabel(selected.size)} {selected.symbol ? assetFrom(selected.symbol) : ''}</dd></div>
+                <div><dt>Filled</dt><dd>{quantityLabel(selected.filled)}</dd></div>
+                <div><dt>Remaining</dt><dd>{selected.size == null || selected.filled == null ? '—' : Math.max(0, selected.size - selected.filled).toLocaleString()}</dd></div>
                 <div><dt>Time</dt><dd>{timestamp(selected.createdAt)}</dd></div>
               </dl>
             </div>
             <div className="v20-context-section">
               <strong>Fill Progress</strong>
-              <HalfGauge value={selected.fillPct} label="Filled" centerText={`${Math.round(selected.fillPct)}%`} />
-              <div className="orders-fill-meter" aria-label={`Order is ${selected.fillPct.toFixed(1)} percent filled`}><i style={{ width: `${selected.fillPct}%` }} /></div>
+              <HalfGauge value={selected.fillPct ?? 0} label={selected.fillPct == null ? 'Unavailable' : 'Filled'} centerText={selected.fillPct == null ? '—' : `${Math.round(selected.fillPct)}%`} />
+              <div className="orders-fill-meter" aria-label={selected.fillPct == null ? 'Fill progress unavailable' : `Order is ${selected.fillPct.toFixed(1)} percent filled`}><i style={{ width: `${selected.fillPct ?? 0}%` }} /></div>
               <div className="v20-side-values">
-                <span><b>{selected.filled.toLocaleString()}</b> Filled</span>
-                <span><b>{selected.size.toLocaleString()}</b> Total Size</span>
+                <span><b>{quantityLabel(selected.filled)}</b> Filled</span>
+                <span><b>{quantityLabel(selected.size)}</b> Total Size</span>
               </div>
             </div>
             <div className="v20-context-section">
@@ -390,15 +411,15 @@ export function OrdersPage(props: AccountWorkspaceProps) {
                 <div><dt>Price Improvement</dt><dd className={(selectedExecutionQuality?.improvementPerUnit ?? 0) >= 0 ? 'positive' : 'negative'}>{selectedExecutionQuality?.improvementPerUnit == null ? '—' : `${selectedExecutionQuality.improvementPerUnit >= 0 ? '+' : ''}${fmtPrice(selectedExecutionQuality.improvementPerUnit)}`}</dd></div>
                 <div><dt>Slippage</dt><dd className={(selectedExecutionQuality?.adverseSlippagePct ?? 0) <= 0 ? 'positive' : 'negative'}>{selectedExecutionQuality?.adverseSlippagePct == null ? '—' : `${selectedExecutionQuality.adverseSlippagePct.toFixed(3)}%`}</dd></div>
                 <div><dt>Current Status</dt><dd>{selected.status.replace('_', ' ')}</dd></div>
-                <div><dt>Fill Rate</dt><dd className="positive">{selected.fillPct.toFixed(1)}%</dd></div>
+                <div><dt>Fill Rate</dt><dd className={selected.fillPct == null ? '' : 'positive'}>{selected.fillPct == null ? '—' : `${selected.fillPct.toFixed(1)}%`}</dd></div>
               </dl>
               <div className="orders-safety-strip"><ShieldCheck size={13} /><span>Draft actions require review in Trading.</span></div>
             </div>
             <div className="v20-context-section v20-quick-actions">
               <strong>Quick Actions</strong>
-              <button type="button" onClick={() => prepareDraft(selected, 'replace')} disabled={selected.status !== 'open' && selected.status !== 'partially_filled'} title="Creates a replacement draft for the remaining quantity; it does not silently cancel the original order"><Pencil size={15} /> Prepare Replacement</button>
+              <button type="button" onClick={() => prepareDraft(selected, 'replace')} disabled={(selected.status !== 'open' && selected.status !== 'partially_filled') || Boolean(orderDraftBlocker(selected, 'replace'))} title={orderDraftBlocker(selected, 'replace') ?? 'Creates a replacement draft for the remaining quantity; it does not silently cancel the original order'}><Pencil size={15} /> Prepare Replacement</button>
               <button type="button" className="danger" onClick={() => void cancel()} disabled={working || (selected.status !== 'open' && selected.status !== 'partially_filled')}><Trash2 size={15} /> Cancel Order</button>
-              <button type="button" onClick={() => prepareDraft(selected, 'duplicate')}><FileText size={15} /> Duplicate Order</button>
+              <button type="button" onClick={() => prepareDraft(selected, 'duplicate')} disabled={Boolean(orderDraftBlocker(selected, 'duplicate'))} title={orderDraftBlocker(selected, 'duplicate') ?? 'Prepare a review-only duplicate draft'}><FileText size={15} /> Duplicate Order</button>
             </div>
           </>
         ) : <OrderAssistantEmpty mode={assistantMode} onModeChange={setAssistantMode} />}

@@ -5,7 +5,7 @@ import { buildNewsDataIoRequestUrl } from '../services/providers/newsApiRequest'
 import { formatNewsApiTransportError, mapNewsDataIoArticle } from '../services/providers/newsApiServerFetch';
 
 describe('Newsdata.io provider migration', () => {
-  it('uses the Newsdata.io news endpoint and query-parameter authentication', () => {
+  it('uses the attached Newsdata.io latest endpoint and query-parameter authentication', () => {
     const url = buildNewsDataIoRequestUrl('secret-key', 'BTCUSDT', {
       language: 'en',
       pageSize: 7,
@@ -13,7 +13,7 @@ describe('Newsdata.io provider migration', () => {
       excludeDomains: 'noise.example',
     });
     expect(url.origin).toBe('https://newsdata.io');
-    expect(url.pathname).toBe('/api/1/news');
+    expect(url.pathname).toBe('/api/1/latest');
     expect(url.searchParams.get('apikey')).toBe('secret-key');
     expect(url.searchParams.get('q')).toContain('Bitcoin');
     expect(url.searchParams.get('size')).toBe('7');
@@ -63,7 +63,7 @@ describe('Newsdata.io provider migration', () => {
     expect(feed).toContain("binanceTicker('BTCUSDT')");
     expect(feed).toContain("kucoinTicker('BTC-USDT')");
     expect(feed).toContain('fetchHfSpaceMarketPrices()');
-    expect(feed).toContain("fetchCoinMarketCapQuotes(coinMarketCapKey, ['BTC', 'ETH'], TIMEOUT_MS)");
+    expect(feed).toContain("fetchCoinMarketCapQuotes(coinMarketCapKeys[index], ['BTC', 'ETH'], TIMEOUT_MS)");
     expect(market).toContain("source: 'binance'");
     expect(market).toContain("source: 'kucoin'");
     expect(market).toContain("source: 'hf_space_4'");
@@ -74,20 +74,24 @@ describe('Newsdata.io provider migration', () => {
     expect(env).not.toContain('COINMARKETCAP_KEY=');
   });
 
-  it('keeps CoinMarketCap operator-managed in Settings rather than environment initialization', () => {
+  it('loads the attached private provider pack server-side without returning secrets to browser code', () => {
     const source = readFileSync(join(process.cwd(), 'server.ts'), 'utf8');
-    const initialization = source.match(/let supplementalKeys:[\s\S]*?\.\.\.savedSupplementalKeys,/u)?.[0] ?? '';
-    expect(initialization).toContain('coinMarketCapKey: DEFAULT_SUPPLEMENTAL_KEYS.coinMarketCapKey');
-    expect(initialization).not.toContain('process.env.COINMARKETCAP');
-    expect(initialization).not.toContain('process.env.CRYPTOCOMPARE');
+    const clientSettings = readFileSync(join(process.cwd(), 'src/services/supplementalSettings.ts'), 'utf8');
+    expect(source).toContain('loadBundledPrivateApiSeed()');
+    expect(source).toContain('coinMarketCapKeys: [supplementalKeys.coinMarketCapKey, ...supplementalReserveKeys.coinMarketCapKey]');
+    expect(source).toContain('process.env.COINMARKETCAP_KEY || process.env.CMC_API_KEY || DEFAULT_SUPPLEMENTAL_KEYS.coinMarketCapKey');
+    expect(clientSettings).not.toMatch(/hf_[A-Za-z0-9]{20,}/);
+    expect(clientSettings).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   });
 
-  it('routes news/on-chain/sentiment through owner-managed HF Spaces before configured key providers', () => {
+  it('routes supplemental intelligence through HF first, then attached public/keyed fallbacks', () => {
     const orchestrator = readFileSync(join(process.cwd(), 'src/services/supplementalOrchestrator.ts'), 'utf8');
     expect(orchestrator.indexOf('new HfSpacesNewsProvider()')).toBeLessThan(orchestrator.indexOf('new NewsAPIProvider'));
-    expect(orchestrator.indexOf('new HfSpacesSentimentProvider()')).toBeLessThan(orchestrator.indexOf('new HuggingFaceSentimentProvider'));
+    expect(orchestrator.indexOf('new HfSpacesSentimentProvider()')).toBeLessThan(orchestrator.indexOf('new AlternativeMeSentimentProvider'));
+    expect(orchestrator.indexOf('new AlternativeMeSentimentProvider')).toBeLessThan(orchestrator.indexOf('new HuggingFaceSentimentProvider'));
     expect(orchestrator.indexOf('new HfSpacesOnChainProvider()')).toBeLessThan(orchestrator.indexOf('new EtherscanProvider'));
-    expect(orchestrator).not.toContain('new AlternativeMeSentimentProvider');
-    expect(orchestrator).not.toContain('new ClankAppProvider');
+    expect(orchestrator.indexOf('new EtherscanProvider')).toBeLessThan(orchestrator.indexOf('new ClankAppProvider'));
+    expect(orchestrator).toContain('HuggingFace Reserve');
+    expect(orchestrator).toContain('BscScan Reserve');
   });
 });

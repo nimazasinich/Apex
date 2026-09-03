@@ -23,6 +23,7 @@
  */
 
 export const AUTOPILOT_CONTROLLER_VERSION = 'autopilot_controller_v1';
+export type AutopilotSystemMode = 'MANUAL' | 'AUTO_RESEARCH';
 
 /**
  * Phases the operator sees. `RESEARCHING` and `VALIDATING` are the two halves
@@ -228,6 +229,7 @@ export function describeAutopilotPhase(state: AutopilotControllerState): string 
 export function publicAutopilotControllerState(state: AutopilotControllerState) {
   return {
     version: state.version,
+    systemMode: (state.enabled ? 'AUTO_RESEARCH' : 'MANUAL') as AutopilotSystemMode,
     enabled: state.enabled,
     phase: state.phase,
     phaseReason: state.phaseReason,

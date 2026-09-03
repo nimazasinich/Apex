@@ -210,7 +210,7 @@ export function runMultiAgentResearchCouncil(report: MultiStrategyResearchReport
   const maxDirectionalWeight = boundedNumber(options.maxDirectionalWeight, 0.7, 0.1, 1);
   const maxDrawdownPct = boundedNumber(options.maxDrawdownPct, 20, 1, 80);
   const minProfitFactor = boundedNumber(options.minProfitFactor, 1, 0, 5);
-  const minTrades = Math.floor(boundedNumber(options.minTrades, 8, 1, 1_000));
+  const minTrades = Math.floor(boundedNumber(options.minTrades, 6, 1, 1_000));
   const rows = completedRows(report);
   const assessments: ResearchAgentAssessment[] = [];
   for (const row of rows) assessments.push(

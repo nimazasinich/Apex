@@ -183,11 +183,73 @@
   .apex-mkt2-sidebar > .apex-panel { border-radius: 12px !important; padding: 9px 10px !important; }
   .apex-mkt2-watchlist-card { min-height: 112px !important; }
   .apex-mkt2-sentiment-card { min-height: 0 !important; }
-  .apex-mkt2-gauge-wrap { height: 104px; overflow: hidden; }
-  .apex-mkt2-gauge-wrap svg { width: 156px !important; height: 96px !important; }
-  .apex-mkt2-gauge-center { bottom: 0; }
+  /* svg viewBox is 200x112 (ratio 1.786). height must match that ratio for
+     the given width or the browser's default preserveAspectRatio scales the
+     gauge down further and centers it inside the box, leaving dead space
+     that pushes the numeric readout below the arc's real bottom edge.
+     156 / (112/200) = 87.4, so 87px keeps the arc filling its box exactly. */
+  .apex-mkt2-gauge-wrap { height: 87px; overflow: hidden; }
+  .apex-mkt2-gauge-wrap svg { width: 156px !important; height: 87px !important; }
+  .apex-mkt2-gauge-center { bottom: 3px; }
   .apex-mkt2-gauge-center strong { font-size: 18px !important; }
   .apex-mkt2-sentiment-legend { margin-top: 3px !important; }
   .apex-mkt2-tabs button { padding: 7px 10px !important; font-size: 10.5px !important; }
   .apex-mkt2-filter-row { gap: 6px !important; }
 }
+
+
+/* 2026-08-30 operator visual pass: dense tables without scrollbars and without thermometer-like range gradients. */
+.apex-mkt2-table-scroll { overflow: hidden !important; scrollbar-width: none !important; }
+.apex-mkt2-table-scroll::-webkit-scrollbar, .apex-mkt2-sidebar::-webkit-scrollbar { display: none !important; }
+.apex-mkt2-sidebar { overflow: hidden !important; scrollbar-width: none !important; }
+.apex-mkt2-table thead th {
+  color: #53637a;
+  background: #f7faf8;
+  border-bottom-color: #d9e3dd;
+  opacity: 1;
+}
+.apex-mkt2-table tbody tr { background: #ffffff; }
+.apex-mkt2-table tbody tr:nth-child(even) { background: #fbfdfc; }
+.apex-mkt2-table tbody tr:hover { background: #f3faf5; }
+.apex-mkt2-table tbody tr.selected { background: #eaf8ee; box-shadow: inset 3px 0 0 #2fba4f; }
+.apex-mkt2-table td { border-bottom-color: #e0e7e3 !important; color: #34445c; opacity: 1; }
+.apex-mkt2-table th, .apex-mkt2-table td { padding-top: 5px; padding-bottom: 5px; }
+.apex-mkt2-range-cell-values, .apex-mkt2-stat-range-values { color: #62738a !important; font-weight: 600; opacity: 1 !important; }
+.apex-mkt2-range-cell-track, .apex-mkt2-stat-range-track {
+  position: relative;
+  height: 4px;
+  overflow: visible;
+  border-radius: 999px;
+  background: #dfe7e3 !important;
+  opacity: 1 !important;
+}
+.apex-mkt2-range-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--range-position, 0%);
+  border-radius: inherit;
+  background: #4ebc6a;
+}
+.apex-mkt2-range-cell-dot, .apex-mkt2-stat-range-dot {
+  width: 8px !important;
+  height: 8px !important;
+  background: #ffffff !important;
+  border: 2px solid #278f46 !important;
+  box-shadow: 0 0 0 1px rgba(39,143,70,.18) !important;
+}
+.apex-mkt2-panel-provenance { color: #a4670b !important; }
+.apex-mkt2-panel-provenance .apex-provenance-chip {
+  max-width: 142px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #9a640d !important;
+  font-family: inherit;
+  font-size: 8.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.apex-mkt2-panel-provenance .apex-provenance-source { opacity: .72; }
+
+.apex-mkt2-sentiment-card .apex-mkt2-panel-provenance .apex-provenance-source { display: none; }

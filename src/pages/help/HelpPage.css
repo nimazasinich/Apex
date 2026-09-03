@@ -6,7 +6,7 @@
 
 .apex-v3-help-main {
   display: grid;
-  grid-template-rows: 48px 40px 144px 184px minmax(0, 1fr);
+  grid-template-rows: 48px 40px 144px 118px 184px minmax(0, 1fr);
   gap: 8px;
   height: 100%;
   min-height: 0;
@@ -36,12 +36,36 @@
 .apex-v3-help-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--apex-ink-900); font-size: 9px; }
 
 .apex-v3-topics-card,
+.apex-v3-academy-card,
 .apex-v3-faq-card,
 .apex-v3-tutorials-card {
   display: grid;
   grid-template-rows: 34px minmax(0, 1fr);
   min-height: 0;
 }
+
+.apex-v3-academy-grid {
+  padding: 7px 8px 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  overflow: auto;
+}
+.apex-v3-academy-grid article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 7px;
+  border: 1px solid var(--apex-divider);
+  border-radius: 8px;
+  background: var(--apex-surface);
+}
+.apex-v3-academy-grid article > span { color: var(--apex-green-700); }
+.apex-v3-academy-grid strong { display: block; font-size: 7.8px; }
+.apex-v3-academy-grid p { margin: 2px 0 0; color: var(--apex-muted-600); font-size: 6.2px; line-height: 1.3; }
+.apex-v3-academy-grid button { display: inline-flex; align-items: center; gap: 3px; border: 0; background: transparent; color: var(--apex-green-700); font-size: 6.4px; font-weight: 750; cursor: pointer; }
 
 .apex-v3-help-topics {
   padding: 7px 8px 8px;
@@ -129,11 +153,12 @@
   .apex-v3-help-page { grid-template-columns: 1fr; }
   .apex-v3-help-main {
     height: auto;
-    grid-template-rows: auto auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto auto;
   }
   .help-context { grid-template-rows: auto auto auto; }
   .apex-v3-help-topics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .apex-v3-tutorial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .apex-v3-academy-grid { grid-template-columns: 1fr; }
 }
 
 /* Functional support interactions. */

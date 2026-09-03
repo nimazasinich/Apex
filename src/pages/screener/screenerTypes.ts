@@ -56,6 +56,10 @@ export interface ScreenerRow {
    * 82.
    */
   signalStrength: number;
+  /** Canonical server lifecycle; older saved fixtures may omit it. */
+  decisionState?: NonNullable<import('../../types').CandidateScore['decisionState']>;
+  /** Canonical server ordering key; used directly when present. */
+  canonicalRankScore?: number;
   symbol: string;
   baseAsset: string;
   direction: TradeDirection;

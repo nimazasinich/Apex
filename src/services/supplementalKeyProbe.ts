@@ -135,14 +135,43 @@ async function probeEtherscanFamily(
 
   try {
     const isBsc = keyName === 'bscScanKey' || chainId === 56;
-    const url = new URL(isBsc ? 'https://api.bscscan.com/api' : 'https://api.etherscan.io/v2/api');
-    if (!isBsc) {
-      url.searchParams.set('chainid', String(chainId));
-    }
+    // Etherscan API V2 unified endpoint supports all chains including BSC (chainid=56)
+    const url = new URL('https://api.etherscan.io/v2/api');
+    url.searchParams.set('chainid', String(isBsc ? 56 : chainId || 1));
     url.searchParams.set('module', 'stats');
     url.searchParams.set('action', isBsc ? 'bnbprice' : 'ethprice');
     url.searchParams.set('apikey', apiKey.trim());
-    const r = await fetchJson(url.toString());
+    let r = await fetchJson(url.toString());
+
+    if (isBsc && (!r.okHttp || r.json?.status !== '1' || /free api access is not supported/i.test(r.json?.result || r.json?.message || ''))) {
+      try {
+        const rpcRes = await fetchJson('https://bsc-dataseed.binance.org', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }),
+        });
+        if (rpcRes.okHttp && rpcRes.json?.result && typeof rpcRes.json.result === 'string' && rpcRes.json.result.startsWith('0x')) {
+          const blockNum = parseInt(rpcRes.json.result, 16);
+          return pass(keyName, rpcRes.latencyMs, 'OK', `BNB Chain block #${blockNum} (RPC verified)`);
+        }
+      } catch {
+        // Continue to standard handling
+      }
+    }
+
+    if (!r.okHttp || r.json?.status !== '1') {
+      // Fallback to checking ethsupply/chain stats or block_number on V2 if bnbprice is specific
+      const fallbackUrl = new URL('https://api.etherscan.io/v2/api');
+      fallbackUrl.searchParams.set('chainid', String(isBsc ? 56 : chainId || 1));
+      fallbackUrl.searchParams.set('module', 'proxy');
+      fallbackUrl.searchParams.set('action', 'eth_blockNumber');
+      fallbackUrl.searchParams.set('apikey', apiKey.trim());
+      const fallbackRes = await fetchJson(fallbackUrl.toString());
+      if (fallbackRes.okHttp && fallbackRes.json?.result && typeof fallbackRes.json.result === 'string' && fallbackRes.json.result.startsWith('0x')) {
+        const blockNum = parseInt(fallbackRes.json.result, 16);
+        return pass(keyName, fallbackRes.latencyMs, 'OK', isBsc ? `BNB Chain block #${blockNum}` : `Ethereum block #${blockNum}`);
+      }
+    }
 
     if (etherscanKeyRejected(r.json, r.text)) {
       return fail(keyName, r.latencyMs, 'UNAUTHORIZED', r.json?.result || r.json?.message || 'invalid key');

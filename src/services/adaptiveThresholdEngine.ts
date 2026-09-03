@@ -151,6 +151,16 @@ function orderedRecentRows(logs: SignalDecisionLog[], limit = MAX_PROFILE_ROWS):
 
 function classifyRegime(rows: SignalDecisionLog[]): AdaptiveMarketRegime {
   if (!rows.length) return 'UNKNOWN';
+  const explicit = rows.map((row) => row.marketRegime).filter(Boolean);
+  if (explicit.length >= Math.max(5, Math.ceil(rows.length * 0.25))) {
+    const counts = new Map<string, number>();
+    for (const value of explicit) counts.set(String(value), (counts.get(String(value)) ?? 0) + 1);
+    const dominant = [...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0];
+    if (dominant === 'TREND_UP' || dominant === 'TREND_DOWN') return dominant;
+    if (dominant === 'RANGE') return 'CHOP';
+    if (dominant === 'HIGH_VOLATILITY') return 'SQUEEZE_RISK';
+    if (dominant === 'TRANSITION') return 'MIXED';
+  }
   const squeeze = mean(rows.map((row) => row.squeezeRiskScore));
   const liquidity = mean(rows.map((row) => row.liquidityQualityScore));
   const evidence = mean(rows.map((row) => row.evidenceAgreementScore));

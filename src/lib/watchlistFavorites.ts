@@ -18,23 +18,27 @@ export function readWatchlistFavorites(): Set<string> {
   }
 }
 
-export function writeWatchlistFavorites(favorites: Iterable<string>): Set<string> {
-  const normalized = new Set(normalizeSymbols([...favorites]));
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.setItem(WATCHLIST_FAVORITES_KEY, JSON.stringify([...normalized]));
-      window.dispatchEvent(new CustomEvent(WATCHLIST_CHANGE_EVENT, { detail: [...normalized] }));
-    } catch {
-      // The in-memory value remains usable if storage is unavailable.
-    }
-  }
-  return normalized;
+export interface WatchlistPersistenceResult {
+  favorites: Set<string>;
+  persisted: boolean;
 }
 
-export function toggleWatchlistFavorite(favorites: ReadonlySet<string>, symbol: string): Set<string> {
+export function writeWatchlistFavorites(favorites: Iterable<string>): WatchlistPersistenceResult {
+  const normalized = new Set(normalizeSymbols([...favorites]));
+  if (typeof window === 'undefined') return { favorites: normalized, persisted: false };
+  try {
+    window.localStorage.setItem(WATCHLIST_FAVORITES_KEY, JSON.stringify([...normalized]));
+    window.dispatchEvent(new CustomEvent(WATCHLIST_CHANGE_EVENT, { detail: [...normalized] }));
+    return { favorites: normalized, persisted: true };
+  } catch {
+    return { favorites: normalized, persisted: false };
+  }
+}
+
+export function toggleWatchlistFavorite(favorites: ReadonlySet<string>, symbol: string): WatchlistPersistenceResult {
   const normalized = String(symbol || '').trim().toUpperCase();
   const next = new Set(favorites);
-  if (!normalized) return next;
+  if (!normalized) return { favorites: next, persisted: false };
   if (next.has(normalized)) next.delete(normalized);
   else next.add(normalized);
   return writeWatchlistFavorites(next);

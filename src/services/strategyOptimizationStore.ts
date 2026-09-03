@@ -2,7 +2,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { readDurableJsonFileSync, writeDurableJsonFileSync } from './durableJsonFile';
 import type { ScannerConfig } from '../types';
-import type { StrategyOptimizationReport } from './strategyOptimization';
+import { STRATEGY_OPTIMIZER_VERSION, type StrategyOptimizationReport } from './strategyOptimization';
+import type { AuthorityStage } from '../contracts/evidence/evidenceGraph';
 
 export const STRATEGY_OPTIMIZATION_STORE_VERSION = 'strategy_optimization_store_v1';
 
@@ -36,6 +37,7 @@ export interface StrategyOptimizationProfile extends StrategyOptimizationContext
   restoredRevision?: number;
   source: 'MANUAL_PROMOTION' | 'AUTOMATIC_PROMOTION' | 'LEGACY_AUTOMATIC_OPTIMIZER' | 'ROLLBACK';
   active: boolean;
+  authorityStage?: AuthorityStage;
 }
 
 interface StrategyOptimizationState {
@@ -66,6 +68,9 @@ function cloneProfile(profile: StrategyOptimizationProfile): StrategyOptimizatio
     parameters: { ...profile.parameters },
     scannerConfig: cloneScannerConfig(profile.scannerConfig),
     scannerConfigDeltas: { ...(profile.scannerConfigDeltas || {}) },
+    authorityStage: profile.authorityStage ?? (
+      profile.source === 'LEGACY_AUTOMATIC_OPTIMIZER' ? 'RESEARCH' : 'LIVE_CONFIG_APPROVED'
+    ),
   };
 }
 
@@ -92,7 +97,11 @@ function cleanState(value: unknown): StrategyOptimizationState {
     : [];
   const reports = Array.isArray(raw.reports)
     ? raw.reports.filter((report): report is StrategyOptimizationReport => Boolean(
-      report && typeof report === 'object' && typeof (report as StrategyOptimizationReport).strategyId === 'string',
+      report && typeof report === 'object'
+      && (report as StrategyOptimizationReport).version === STRATEGY_OPTIMIZER_VERSION
+      && typeof (report as StrategyOptimizationReport).strategyId === 'string'
+      && Boolean((report as StrategyOptimizationReport).developmentValidation)
+      && (report as StrategyOptimizationReport).finalHoldoutStatus === 'SEALED_NOT_OPENED_DURING_OPTIMIZATION',
     ))
     : [];
   return {
@@ -236,6 +245,7 @@ export class StrategyOptimizationStore {
       previousRevision: current?.revision,
       source,
       active: true,
+      authorityStage: 'LIVE_CONFIG_APPROVED',
     };
     this.state.profiles.push(profile);
     this.state.profiles = this.state.profiles.slice(-300);
@@ -273,6 +283,7 @@ export class StrategyOptimizationStore {
       restoredRevision: target.revision,
       source: 'ROLLBACK',
       active: true,
+      authorityStage: 'LIVE_CONFIG_APPROVED',
     };
     this.state.profiles.push(rollbackProfile);
     this.state.profiles = this.state.profiles.slice(-300);

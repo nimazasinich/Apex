@@ -44,18 +44,43 @@ function normalizeOrderType(type: string): LiveOrderDraft['type'] {
   return type.toLowerCase().includes('market') ? 'market' : 'limit';
 }
 
-export function buildOrderDraftTransfer(order: WorkspaceOrder, intent: OrderDraftIntent): OrderDraftTransfer {
+export function orderDraftBlocker(order: WorkspaceOrder, intent: OrderDraftIntent): string | null {
+  if (!order.symbol?.trim()) return 'The exchange did not report a market symbol.';
+  if (order.side !== 'buy' && order.side !== 'sell') return 'The exchange did not report a valid order side.';
+  if (order.size == null || !Number.isFinite(order.size) || order.size <= 0) return 'The exchange did not report a positive order size.';
+  if (intent === 'replace') {
+    if (order.filled == null || !Number.isFinite(order.filled)) return 'The exchange did not report fill progress, so the remaining size is unknown.';
+    if (order.filled >= order.size) return 'This order has no remaining quantity to replace.';
+  }
+  return null;
+}
+
+/**
+ * Converts an observed order into a review-only Trading draft. Required
+ * exchange fields fail closed: an unknown side must never become BUY, a
+ * missing quantity must never become 1, and a replacement cannot guess how
+ * much remains when the exchange omitted fill progress.
+ */
+export function buildOrderDraftTransfer(order: WorkspaceOrder, intent: OrderDraftIntent): OrderDraftTransfer | null {
   const type = normalizeOrderType(order.type);
+  if (orderDraftBlocker(order, intent)) return null;
+  const symbol = order.symbol?.trim().toUpperCase() || null;
+  const side = order.side === 'buy' || order.side === 'sell' ? order.side : null;
+  const size = order.size;
+  const filled = order.filled;
+  if (!symbol || !side || size == null) return null;
+  const quantity = intent === 'replace' ? Math.max(0, size - Number(filled)) : size;
+  if (!(quantity > 0)) return null;
   return {
     version: 2,
     intent,
     sourceOrderId: order.id,
     createdAt: Date.now(),
     draft: {
-      symbol: order.symbol,
-      side: order.side,
+      symbol,
+      side,
       type,
-      quantity: Math.max(0, order.size - (intent === 'replace' ? order.filled : 0)) || order.size || 1,
+      quantity,
       price: type === 'limit' ? (order.price ?? order.averageFillPrice) : null,
       leverage: 1,
       marginMode: 'ISOLATED',
@@ -82,14 +107,18 @@ export function parseOrderDraftTransfer(raw: string | null): OrderDraftTransfer 
       : parsed;
     const symbol = String(envelopeDraft.symbol || '').trim().toUpperCase();
     if (!symbol) return null;
-    const side: LiveOrderDraft['side'] = envelopeDraft.side === 'sell' ? 'sell' : 'buy';
-    const type: LiveOrderDraft['type'] = envelopeDraft.type === 'market' ? 'market' : 'limit';
+    if (envelopeDraft.side !== 'buy' && envelopeDraft.side !== 'sell') return null;
+    if (envelopeDraft.type !== 'market' && envelopeDraft.type !== 'limit') return null;
+    const side: LiveOrderDraft['side'] = envelopeDraft.side;
+    const type: LiveOrderDraft['type'] = envelopeDraft.type;
+    const quantityValue = Number(envelopeDraft.quantity ?? envelopeDraft.size);
+    if (!Number.isFinite(quantityValue) || quantityValue <= 0) return null;
     const priceValue = Number(envelopeDraft.price);
     const draft: LiveOrderDraft = {
       symbol,
       side,
       type,
-      quantity: finitePositive(envelopeDraft.quantity ?? envelopeDraft.size, 1),
+      quantity: quantityValue,
       price: type === 'limit' && Number.isFinite(priceValue) && priceValue > 0 ? priceValue : null,
       leverage: Math.min(100, Math.max(1, Math.round(finitePositive(envelopeDraft.leverage, 1)))),
       marginMode: envelopeDraft.marginMode === 'CROSS' ? 'CROSS' : 'ISOLATED',

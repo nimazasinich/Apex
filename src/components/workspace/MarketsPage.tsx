@@ -27,6 +27,9 @@ import {
 } from '../../lib/watchlistFavorites';
 import { CoinIcon } from '../CoinIcon';
 import { MiniSparkline } from '../MiniSparkline';
+import { ProvenanceChip } from '../ui/ProvenanceChip';
+import { describeProvenance } from '../../lib/dataProvenance';
+import { notifyWorkspace } from '../../lib/workspaceFeedback';
 
 interface MarketsPageProps {
   tickers: SymbolTicker[];
@@ -110,7 +113,7 @@ function RangeStat({ low, high, last }: { low: number; high: number; last: numbe
   return (
     <div className="apex-mkt2-stat-range">
       <div className="apex-mkt2-stat-range-values"><span>{formatPrice(low)}</span><span>{formatPrice(high)}</span></div>
-      <div className="apex-mkt2-stat-range-track"><span className="apex-mkt2-stat-range-dot" style={{ left: `${position}%` }} /></div>
+      <div className="apex-mkt2-stat-range-track" style={{ '--range-position': `${position}%` } as React.CSSProperties}><span className="apex-mkt2-range-fill" /><span className="apex-mkt2-stat-range-dot" style={{ left: `${position}%` }} /></div>
     </div>
   );
 }
@@ -184,7 +187,7 @@ function MarketsStatBar({ selected, breadth }: { selected: SymbolTicker | undefi
 
 /* ------------------------------ Table + filters ------------------------------ */
 
-type TabFilter = 'all' | 'favorites' | 'gainers' | 'losers' | 'new';
+type TabFilter = 'all' | 'favorites' | 'gainers' | 'losers';
 type ContractFilter = 'all' | 'spot' | 'perpetual' | 'futures';
 type MarketViewMode = 'table' | 'grid';
 type OptionalColumn = 'funding' | 'openInterest' | 'range' | 'status';
@@ -194,7 +197,6 @@ const TABS: Array<{ id: TabFilter; label: string }> = [
   { id: 'favorites', label: 'Favorites' },
   { id: 'gainers', label: 'Top Gainers' },
   { id: 'losers', label: 'Top Losers' },
-  { id: 'new', label: 'New Listings' },
 ];
 
 const CONTRACT_FILTERS: Array<{ id: ContractFilter; label: string }> = [
@@ -215,7 +217,8 @@ function RangeBarCell({ low, high, last }: { low: number; high: number; last: nu
         <span>{formatPrice(low)}</span>
         <span>{formatPrice(high)}</span>
       </div>
-      <div className="apex-mkt2-range-cell-track">
+      <div className="apex-mkt2-range-cell-track" style={{ '--range-position': `${position}%` } as React.CSSProperties}>
+        <span className="apex-mkt2-range-fill" />
         <span className="apex-mkt2-range-cell-dot" style={{ left: `${position}%` }} />
       </div>
     </div>
@@ -255,8 +258,6 @@ function MarketsTablePanel({
     // APEX streams KuCoin Futures perpetual contracts only — Spot / Futures
     // tabs are kept for layout parity but honestly report no coverage yet.
     if (contractFilter === 'spot' || contractFilter === 'futures') return [];
-    // "New Listings" needs a real listing-date feed we don't have wired up yet.
-    if (tab === 'new') return [];
 
     let list = tickers;
     const normalized = query.trim().toUpperCase();
@@ -299,7 +300,7 @@ function MarketsTablePanel({
     <section className="apex-panel apex-mkt2-table-panel">
       <div className="apex-mkt2-tabs" role="tablist" aria-label="Market list filter">
         {TABS.map((item) => (
-          <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'active' : ''} disabled={item.id === 'new'} title={item.id === 'new' ? 'Listing-date feed is not connected yet' : undefined} onClick={() => setTab(item.id)}>
+          <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'active' : ''} onClick={() => setTab(item.id)}>
             {item.label}
           </button>
         ))}
@@ -360,13 +361,11 @@ function MarketsTablePanel({
             {!pageRows.length && (
               <tr className="apex-mkt2-empty-row">
                 <td colSpan={7 + visibleColumns.size}>
-                  {tab === 'new'
-                    ? 'New-listing detection isn’t wired to a data feed yet.'
-                    : contractFilter === 'spot' || contractFilter === 'futures'
-                      ? 'APEX currently streams KuCoin Futures Perpetual contracts only.'
-                      : tab === 'favorites'
-                        ? 'No favorites yet — use the star to pin a market.'
-                        : 'No markets match this filter.'}
+                  {contractFilter === 'spot' || contractFilter === 'futures'
+                    ? 'APEX currently streams KuCoin Futures Perpetual contracts only.'
+                    : tab === 'favorites'
+                      ? 'No favorites yet — use the star to pin a market.'
+                      : 'No markets match this filter.'}
                 </td>
               </tr>
             )}
@@ -439,9 +438,15 @@ function SemiGauge({ value, size = 168 }: { value: number | null; size?: number 
 function SentimentCard({ sentiment, breadth }: { sentiment: SentimentComposite | null; breadth: ReturnType<typeof useBreadth> }) {
   const score = sentiment?.score ?? null;
   const label = sentiment?.zone ? sentiment.zone[0].toUpperCase() + sentiment.zone.slice(1).toLowerCase() : 'Unavailable';
+  const provenance = describeProvenance({
+    dataState: sentiment?.dataState ?? 'unavailable',
+    timestamp: sentiment?.timestamp ?? null,
+    source: sentiment?.source ?? null,
+    staleAfterMs: 60_000,
+  });
   return (
     <section className="apex-panel apex-mkt2-sentiment-card">
-      <div className="apex-panel-head"><span>Market Sentiment</span><ChevronRight size={14} /></div>
+      <div className="apex-panel-head"><span>Market Sentiment</span><span className="apex-mkt2-panel-provenance"><ProvenanceChip meta={provenance} /></span></div>
       <div className="apex-mkt2-gauge-wrap">
         <SemiGauge value={score} />
         <div className="apex-mkt2-gauge-center">
@@ -609,7 +614,14 @@ export function MarketsPage(props: MarketsPageProps) {
       window.removeEventListener('storage', sync);
     };
   }, []);
-  const toggleFavorite = (symbol: string) => setFavorites((previous) => toggleWatchlistFavorite(previous, symbol));
+  const toggleFavorite = (symbol: string) => setFavorites((previous) => {
+    const result = toggleWatchlistFavorite(previous, symbol);
+    if (!result.persisted) {
+      notifyWorkspace({ title: 'Watchlist not saved', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return previous;
+    }
+    return result.favorites;
+  });
 
   return (
     <div className="apex-page-stack apex-unified-page apex-mkt2">

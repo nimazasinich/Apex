@@ -6,12 +6,12 @@ function report(overrides: Partial<SmartAutopilotOptimizationReportLike> = {}): 
     promotion: {
       eligible: true,
       blockers: [],
-      holdoutImprovement: 0.18,
+      developmentValidationImprovement: 0.18,
       neighborPassRate: 0.9,
       overfitGap: 0.12,
     },
     budget: { maximumOverfitGap: 0.32 },
-    holdout: {
+    developmentValidation: {
       candidate: { metrics: { totalPnlPct: 8.4, profitFactor: 1.7, tradeCount: 18 } },
       costStress: { metrics: { totalPnlPct: 5.6, profitFactor: 1.4 } },
     },
@@ -21,9 +21,9 @@ function report(overrides: Partial<SmartAutopilotOptimizationReportLike> = {}): 
     ...overrides,
     promotion: { ...base.promotion, ...(overrides.promotion || {}) },
     budget: { ...base.budget, ...(overrides.budget || {}) },
-    holdout: {
-      candidate: { metrics: { ...base.holdout.candidate.metrics, ...(overrides.holdout?.candidate?.metrics || {}) } },
-      costStress: { metrics: { ...base.holdout.costStress.metrics, ...(overrides.holdout?.costStress?.metrics || {}) } },
+    developmentValidation: {
+      candidate: { metrics: { ...base.developmentValidation.candidate.metrics, ...(overrides.developmentValidation?.candidate?.metrics || {}) } },
+      costStress: { metrics: { ...base.developmentValidation.costStress.metrics, ...(overrides.developmentValidation?.costStress?.metrics || {}) } },
     },
   };
 }
@@ -44,26 +44,26 @@ describe('Smart Autopilot planner and optimization council', () => {
     expect(new Set([...first.contexts, ...second.contexts].map((row) => row.id)).size).toBeGreaterThan(4);
   });
 
-  it('approves only robust positive holdout + cost-stress candidates with stable neighbors', () => {
+  it('approves final validation only after robust positive development evidence and cost stress', () => {
     const council = runSmartAutopilotOptimizationCouncil(report());
     expect(council.vetoes).toBe(0);
     expect(council.supports).toBe(5);
-    expect(council.approvedForPromotion).toBe(true);
+    expect(council.approvedForFinalValidation).toBe(true);
   });
 
   it('vetoes negative or overfit candidates even when another metric looks good', () => {
     const negative = runSmartAutopilotOptimizationCouncil(report({
-      holdout: {
+      developmentValidation: {
         candidate: { metrics: { totalPnlPct: -1.2, profitFactor: 1.8, tradeCount: 20 } },
         costStress: { metrics: { totalPnlPct: -2.5, profitFactor: 0.8 } },
       },
     }));
-    expect(negative.approvedForPromotion).toBe(false);
-    expect(negative.blockers).toContain('holdout_return_not_positive');
+    expect(negative.approvedForFinalValidation).toBe(false);
+    expect(negative.blockers).toContain('development_validation_return_not_positive');
     expect(negative.blockers).toContain('cost_stress_return_not_positive');
 
-    const overfit = runSmartAutopilotOptimizationCouncil(report({ promotion: { eligible: true, blockers: [], holdoutImprovement: 0.2, neighborPassRate: 0.9, overfitGap: 0.5 } }));
-    expect(overfit.approvedForPromotion).toBe(false);
+    const overfit = runSmartAutopilotOptimizationCouncil(report({ promotion: { eligible: true, blockers: [], developmentValidationImprovement: 0.2, neighborPassRate: 0.9, overfitGap: 0.5 } }));
+    expect(overfit.approvedForFinalValidation).toBe(false);
     expect(overfit.blockers).toContain('overfit_gap_exceeds_budget');
   });
 });

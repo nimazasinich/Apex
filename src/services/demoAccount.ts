@@ -258,6 +258,8 @@ export class DemoAccountManager {
       positionHistory: session.positionHistory.slice(0, 100),
       serverTime: Date.now(),
       syncedAt: new Date().toISOString(),
+      venue: 'demo',
+      observationMetadata: { sourceObservedAt: Date.now(), providerReadAt: Date.now(), provenance: 'demo_execution_state' },
     };
   }
 
@@ -318,7 +320,9 @@ export class DemoAccountManager {
         leverage: draft.leverage,
         reduceOnly: draft.reduceOnly,
         exchange: 'demo-kucoin',
-        strategy: tradePlan?.decisionRef?.engineVersion ?? null,
+        strategyId: tradePlan?.strategyId ?? null,
+        strategyVersion: tradePlan?.strategyVersion ?? null,
+        strategy: tradePlan?.strategyId ?? null,
       },
       account: { equityUsd: equity, availableMarginUsd: available, timestamp: now },
       portfolio: {
@@ -334,6 +338,7 @@ export class DemoAccountManager {
       market: { dataState: 'live', ageMs: 0, exchangeDegraded: false, reconciliationHealthy: true },
       executionMode: 'MANUAL',
       plan: tradePlan,
+      academyIntelligence: tradePlan?.academyIntelligence ?? null,
       policy: loadRiskGovernorPolicy(),
       now,
     });
@@ -348,12 +353,15 @@ export class DemoAccountManager {
         order: {
           symbol: draft.symbol, direction: draft.side === 'buy' ? 'LONG' : 'SHORT', quantity: draft.quantity,
           entryPrice: referencePrice, notionalUsd: notional, contractMultiplier: quote.multiplier, leverage: draft.leverage, reduceOnly: draft.reduceOnly,
-          exchange: 'demo-kucoin', strategy: tradePlan?.decisionRef?.engineVersion ?? null,
+          exchange: 'demo-kucoin',
+          strategyId: tradePlan?.strategyId ?? null,
+          strategyVersion: tradePlan?.strategyVersion ?? null,
+          strategy: tradePlan?.strategyId ?? null,
         },
         account: { equityUsd: equity, availableMarginUsd: available, timestamp: now },
         portfolio: { openPositionCount: currentPositions.length, totalOpenRiskUsd, symbolExposureUsd, correlatedExposureUsd: totalExposureUsd, dailyPnlUsd: realized(dayAgo), weeklyPnlUsd: realized(weekAgo), drawdownPct: session.startingBalanceUsd > 0 ? Math.max(0, (session.startingBalanceUsd - equity) / session.startingBalanceUsd * 100) : null, consecutiveLosses },
         market: { dataState: 'live', ageMs: 0, exchangeDegraded: false, reconciliationHealthy: true },
-        executionMode: 'MANUAL', plan: tradePlan, policy: loadRiskGovernorPolicy(), now,
+        executionMode: 'MANUAL', plan: tradePlan, academyIntelligence: tradePlan?.academyIntelligence ?? null, policy: loadRiskGovernorPolicy(), now,
       });
       if (riskDecision.decision === 'REJECTED' || riskDecision.decision === 'DEFERRED') throw new Error('risk_governor_recheck_failed');
     }

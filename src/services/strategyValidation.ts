@@ -1,4 +1,5 @@
 import type { BacktestResult, StrategyValidationReport } from '../types';
+import { distinctSelectionHypothesisFingerprints, validateReturnEvidence } from './statisticalValidation';
 
 export interface ValidationInputs {
   strategyId: string;
@@ -13,6 +14,9 @@ export interface ValidationInputs {
   regimeStatus?: StrategyValidationReport['regimeStatus'];
   regimeReason?: string;
   ablationResults?: StrategyValidationReport['ablationResults'];
+  /** Distinct selection-eligible hypotheses that could influence winner selection. */
+  selectionHypothesisFingerprints?: string[];
+  /** Legacy compatibility for persisted callers; production routes pass explicit fingerprints. */
   triedVariants?: number;
   reproducible?: boolean;
   /**
@@ -25,18 +29,21 @@ export interface ValidationInputs {
   baseline?: StrategyValidationReport['baseline'];
   validationScope?: NonNullable<StrategyValidationReport['validationScope']>;
   validationLimitations?: string[];
+  holdoutProtocol?: StrategyValidationReport['holdoutProtocol'];
 }
 
+export const MIN_REQUIRED_TRADES = 30;
+
 export function gateData(result: BacktestResult): boolean {
-  return result.dataState !== 'unavailable' && result.candlesUsed >= 200;
+  return result.dataState === 'live' && result.candlesUsed >= 200;
 }
 
 export function gateSample(result: BacktestResult): boolean {
-  return result.timeline.length >= 30;
+  return result.timeline.length >= MIN_REQUIRED_TRADES;
 }
 
 export function gateOutOfSample(result: BacktestResult): boolean {
-  return result.totalPnlPct > 0 && (result.profitFactor ?? 0) >= 1;
+  return result.totalPnlPct > 0 && (result.profitFactor ?? 0) >= 1.1;
 }
 
 export function gateDrawdown(result: BacktestResult, limitPct = 20): boolean {
@@ -51,7 +58,7 @@ export function gateStability(neighborRuns: Array<{ totalPnlPct: number }>, hold
 }
 
 export function gateCostResilience(result: BacktestResult): boolean {
-  return result.totalPnlPct > 0 && (result.profitFactor ?? 0) >= 1;
+  return result.totalPnlPct > 0 && (result.profitFactor ?? 0) >= 1.1;
 }
 
 export function gateRegime(regimeResults?: Record<string, BacktestResult>): boolean {
@@ -67,10 +74,22 @@ export function gateRegime(regimeResults?: Record<string, BacktestResult>): bool
     timeline: result.timeline.map((trade) => [trade.timestamp, trade.entry, trade.exit, trade.barsHeld]),
   }));
   if (new Set(identities).size !== identities.length) return false;
-  return entries.some((result) => result.totalPnlPct > 0) && entries.every((result) => Math.abs(result.maxDrawdownPct) <= 30);
+  const profitableCount = entries.filter((result) => result.totalPnlPct > 0).length;
+  return profitableCount >= 2 && entries.every((result) => Math.abs(result.maxDrawdownPct) <= 30);
 }
 
 export function buildStrategyValidationReport(inputs: ValidationInputs): StrategyValidationReport {
+  const explicitHypotheses = distinctSelectionHypothesisFingerprints(inputs.selectionHypothesisFingerprints);
+  const selectionHypothesisFingerprints = explicitHypotheses.length
+    ? explicitHypotheses
+    : inputs.triedVariants && inputs.triedVariants > 1
+      ? Array.from({ length: Math.floor(inputs.triedVariants) }, (_, index) => `legacy-selection-hypothesis:${index + 1}`)
+      : [inputs.subject?.fingerprint || `fixed-validation-subject:${inputs.strategyId}:${inputs.strategyVersion}`];
+  const triedVariants = selectionHypothesisFingerprints.length;
+  const statisticalEvidence = validateReturnEvidence(
+    inputs.holdout.result.timeline.map((trade) => Number(trade.pnlPct)).filter(Number.isFinite),
+    { selectionHypothesisFingerprints },
+  );
   const stabilityPassed = gateStability(inputs.neighborRuns, inputs.holdout.result.totalPnlPct);
   const gates = {
     data: gateData(inputs.holdout.result),
@@ -81,6 +100,7 @@ export function buildStrategyValidationReport(inputs: ValidationInputs): Strateg
     costResilience: gateCostResilience(inputs.costStressResult),
     regime: gateRegime(inputs.regimeResults),
     reproducibility: inputs.reproducible === true,
+    statisticalEvidence: statisticalEvidence.passed,
   };
 
   const passedAllGates = Object.values(gates).every(Boolean);
@@ -103,7 +123,10 @@ export function buildStrategyValidationReport(inputs: ValidationInputs): Strateg
     regimeStatus: inputs.regimeStatus ?? (inputs.regimeResults ? 'available' : 'insufficient_data'),
     regimeReason: inputs.regimeReason,
     ablationResults: inputs.ablationResults,
-    triedVariants: inputs.triedVariants ?? inputs.neighborRuns.length + inputs.windows.length + 2,
+    triedVariants,
+    selectionHypothesisFingerprints,
+    statisticalEvidence,
+    holdoutProtocol: inputs.holdoutProtocol,
     subject: inputs.subject,
     validationScope,
     validationLimitations: inputs.validationLimitations ?? [],

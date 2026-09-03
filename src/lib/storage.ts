@@ -15,12 +15,14 @@ import {
 const JOURNAL_KEY = 'apex_next_decision_journal_v1';
 const ALERTS_KEY = 'apex_next_alerts_v1';
 const SETTINGS_KEY = 'apex_next_settings_v1';
+const AUTOPILOT_SAFE_DEFAULT_MIGRATION_KEY = 'apex_autopilot_v201_safe_default_applied';
 
 export const DEFAULT_SETTINGS: TerminalSettings = {
   minLiquidityUsd: 10000000, // $10M turnover floor
   defaultAccountBalanceUsd: 100000,
   defaultRiskPct: 1.0,
   defaultLeverage: 5,
+  // Fail-closed: research Autopilot requires explicit operator opt-in.
   autopilotEnabled: false,
   soundAlertsEnabled: true,
   maxLiveOrderNotionalUsd: 2500,
@@ -52,18 +54,29 @@ export function getSettings(): TerminalSettings {
   if (typeof window === 'undefined') return DEFAULT_SETTINGS;
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
+    if (!raw) {
+      localStorage.setItem(AUTOPILOT_SAFE_DEFAULT_MIGRATION_KEY, '1');
+      return DEFAULT_SETTINGS;
+    }
     const parsed = JSON.parse(raw) as Record<string, unknown>;
     // Credentials existed in v1 settings. Remove them during migration so an
     // old browser cannot keep exchange secrets in persistent LocalStorage.
     delete parsed.apiKey;
     delete parsed.apiSecret;
     delete parsed.apiPassphrase;
+    const needsSafeDefaultMigration = localStorage.getItem(AUTOPILOT_SAFE_DEFAULT_MIGRATION_KEY) !== '1';
     const sanitized = {
       ...DEFAULT_SETTINGS,
       ...parsed,
-      autopilotEnabled: parsed.autopilotEnabled === true,
+      // One-time v2.0.1 safety migration: reset legacy default-on state.
+      // Subsequent explicit operator opt-in is preserved.
+      autopilotEnabled: needsSafeDefaultMigration
+        ? false
+        : typeof parsed.autopilotEnabled === 'boolean'
+          ? parsed.autopilotEnabled
+          : DEFAULT_SETTINGS.autopilotEnabled,
     } as TerminalSettings;
+    localStorage.setItem(AUTOPILOT_SAFE_DEFAULT_MIGRATION_KEY, '1');
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(sanitized));
     return sanitized;
   } catch {
@@ -71,17 +84,20 @@ export function getSettings(): TerminalSettings {
   }
 }
 
-export function saveSettings(settings: TerminalSettings): void {
-  if (typeof window === 'undefined') return;
+export function saveSettings(settings: TerminalSettings): boolean {
+  if (typeof window === 'undefined') return false;
   try {
     const sanitized = { ...settings } as TerminalSettings & Record<string, unknown>;
     sanitized.autopilotEnabled = settings.autopilotEnabled === true;
     delete sanitized.apiKey;
     delete sanitized.apiSecret;
     delete sanitized.apiPassphrase;
+    localStorage.setItem(AUTOPILOT_SAFE_DEFAULT_MIGRATION_KEY, '1');
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(sanitized));
+    return true;
   } catch (e) {
     console.error('Failed to save settings:', e);
+    return false;
   }
 }
 
@@ -174,21 +190,23 @@ export function computeCalibrationReport(entries: DecisionJournalEntry[]): Calib
 }
 
 export function getAlertRules(): AlertRule[] {
-  if (typeof window === 'undefined') return DEFAULT_ALERT_RULES;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(ALERTS_KEY);
-    if (!raw) return DEFAULT_ALERT_RULES;
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch {
-    return DEFAULT_ALERT_RULES;
+    return [];
   }
 }
 
-export function saveAlertRules(rules: AlertRule[]): void {
-  if (typeof window === 'undefined') return;
+export function saveAlertRules(rules: AlertRule[]): boolean {
+  if (typeof window === 'undefined') return false;
   try {
     localStorage.setItem(ALERTS_KEY, JSON.stringify(rules));
+    return true;
   } catch (e) {
     console.error('Failed to save alerts:', e);
+    return false;
   }
 }

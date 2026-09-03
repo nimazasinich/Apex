@@ -99,8 +99,12 @@ export function WatchlistPage(props: WatchlistPageProps) {
 
   const toggleFavorite = (symbol: string) => {
     const existed = favorites.has(symbol);
-    const next = toggleWatchlistFavorite(favorites, symbol);
-    setFavorites(next);
+    const result = toggleWatchlistFavorite(favorites, symbol);
+    if (!result.persisted) {
+      notifyWorkspace({ title: 'Watchlist not saved', detail: 'Browser persistence is unavailable.', tone: 'error' });
+      return;
+    }
+    setFavorites(result.favorites);
     notifyWorkspace({ title: existed ? 'Removed from watchlist' : 'Added to watchlist', detail: symbol, tone: 'success' });
   };
 
@@ -123,7 +127,11 @@ export function WatchlistPage(props: WatchlistPageProps) {
       if (sortMode === 'volume') return b.turnover24h - a.turnover24h;
       if (sortMode === 'change') return b.priceChange24hPct - a.priceChange24hPct;
       if (sortMode === 'price') return b.lastPrice - a.lastPrice;
-      return (marketCap(b) ?? b.turnover24h) - (marketCap(a) ?? a.turnover24h);
+      const capA = marketCap(a); const capB = marketCap(b);
+      if (capA === null && capB === null) return a.symbol.localeCompare(b.symbol);
+      if (capA === null) return 1;
+      if (capB === null) return -1;
+      return capB - capA;
     });
   }, [candidates, category, majorSymbols, props.tickers, query, scope, sortMode, watchlist]);
 
@@ -132,7 +140,7 @@ export function WatchlistPage(props: WatchlistPageProps) {
   const topGainer = props.tickers.length ? [...props.tickers].sort((a, b) => b.priceChange24hPct - a.priceChange24hPct)[0] : null;
   const topLoser = props.tickers.length ? [...props.tickers].sort((a, b) => a.priceChange24hPct - b.priceChange24hPct)[0] : null;
   const mostActive = props.tickers.length ? [...props.tickers].sort((a, b) => b.turnover24h - a.turnover24h)[0] : null;
-  const performanceSource = watchlist.length ? watchlist : props.tickers;
+  const performanceSource = watchlist;
   const avgChange = performanceSource.length ? performanceSource.reduce((sum, ticker) => sum + ticker.priceChange24hPct, 0) / performanceSource.length : null;
   const performanceSeries = useMemo(() => aggregateSeries(performanceSource), [performanceSource]);
 
@@ -144,7 +152,7 @@ export function WatchlistPage(props: WatchlistPageProps) {
   const main = <div className="apex-v3-watchlist-main">
     <h1 className="sr-only">Watchlist</h1>
     <div className="watchlist-summary">
-      <WatchlistSummaryCard label="Watchlist Performance" value={avgChange == null ? '—' : formatPercent(avgChange)} detail={watchlist.length ? 'Saved markets today' : 'Market universe today'} values={performanceSeries} tone={avgChange == null ? 'neutral' : toneFor(avgChange)} icon={<Activity size={15} />} />
+      <WatchlistSummaryCard label="Watchlist Performance" value={avgChange == null ? '—' : formatPercent(avgChange)} detail={watchlist.length ? 'Saved markets today' : 'No saved markets'} values={performanceSeries} tone={avgChange == null ? 'neutral' : toneFor(avgChange)} icon={<Activity size={15} />} />
       <WatchlistSummaryCard label="Top Gainer" ticker={topGainer} value={topGainer ? formatPercent(topGainer.priceChange24hPct) : '—'} detail={topGainer ? formatPrice(topGainer.lastPrice) : 'No market data'} tone="positive" icon={<ArrowUpRight size={15} />} />
       <WatchlistSummaryCard label="Top Loser" ticker={topLoser} value={topLoser ? formatPercent(topLoser.priceChange24hPct) : '—'} detail={topLoser ? formatPrice(topLoser.lastPrice) : 'No market data'} tone="negative" icon={<Activity size={15} />} />
       <WatchlistSummaryCard label="Most Active" ticker={mostActive} value={mostActive ? usdCompact(mostActive.turnover24h) : '—'} detail="24h turnover" tone="violet" icon={<Gauge size={15} />} />

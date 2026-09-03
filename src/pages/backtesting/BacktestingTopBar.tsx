@@ -8,6 +8,7 @@ interface BacktestingTopBarProps {
   onStudioModeChange: (mode: BacktestStudioMode) => void;
   onOpenMultiResearch: () => void;
   onOpenLiquidityHunter: () => void;
+  manualDisabled?: boolean;
 }
 
 export function BacktestingTopBar({
@@ -15,6 +16,7 @@ export function BacktestingTopBar({
   onStudioModeChange,
   onOpenMultiResearch,
   onOpenLiquidityHunter,
+  manualDisabled = false,
 }: BacktestingTopBarProps) {
   return (
     <header className="apex-bt-topbar">
@@ -37,9 +39,11 @@ export function BacktestingTopBar({
           type="button"
           aria-pressed={studioMode === 'manual'}
           className={studioMode === 'manual' ? 'active' : ''}
+          disabled={manualDisabled}
+          title={manualDisabled ? 'Manual mode is unavailable while global Autopilot is active.' : 'Open Manual / Expert mode'}
           onClick={() => onStudioModeChange('manual')}
         >
-          Manual <small>Expert</small>
+          Manual <small>{manualDisabled ? 'Autopilot active' : 'Expert'}</small>
         </button>
       </div>
       <div className="apex-bt-topbar-actions">

@@ -1,6 +1,7 @@
 /* Copied from apex-trading-engine/src/services/providers/supplementalTypes.ts */
 
 import type { NewsApiQueryOptions } from './newsApiTypes';
+import type { ObservationMetadataV1 } from '../../contracts/evidence/observationMetadata';
 
 export type SupplementalDataSource = 'live' | 'degraded' | 'unavailable' | 'not_configured';
 
@@ -61,6 +62,8 @@ export interface NewsResult {
   reason?: string;
   latencyMs: number;
   updatedAt: string;
+  /** `updatedAt` is compatibility-only provider read time. Evidence freshness uses metadata.sourceObservedAt. */
+  metadata?: ObservationMetadataV1;
   /** Additive diagnostics; absent for providers that do not report them. */
   diagnostics?: SupplementalDiagnostics;
 }
@@ -81,11 +84,14 @@ export interface SentimentResult {
   /** Null unless valid=true; prevents unavailable neutral sentinels from becoming fusion evidence. */
   data: SentimentScore | null;
   newsContext?: string[]; // article titles used for sentiment calc
+  /** Underlying headline identities/times when sentiment is derived from news. */
+  sourceArticleRefs?: Array<{ id: string; publishedAt: string }>;
   source: SupplementalDataSource;
   status: string;
   reason?: string;
   latencyMs: number;
   updatedAt: string;
+  metadata?: ObservationMetadataV1;
   /** Additive diagnostics; absent for providers that do not report them. */
   diagnostics?: SupplementalDiagnostics;
 }
@@ -117,6 +123,7 @@ export interface OnChainResult {
   reason?: string;
   latencyMs: number;
   updatedAt: string;
+  metadata?: ObservationMetadataV1;
   /**
    * Additive diagnostics. `rawObservationCount` records valid whale rows the
    * upstream returned even when none carried an explicit direction, so raw
@@ -159,6 +166,7 @@ export interface ShadowSupplementalEvidence {
 
 export type ProviderHealthReasonCode =
   | 'HEALTHY'
+  | 'NEVER_PROBED'
   | 'NOT_CONFIGURED'
   | 'DISABLED'
   | 'DNS_NETWORK_UNAVAILABLE'
@@ -183,6 +191,7 @@ export interface ProviderHealth {
   reason?: string;
   /** Machine-readable operations reason. `reason` remains safe human diagnostics. */
   reasonCode?: ProviderHealthReasonCode;
+  latencyMs?: number;
 }
 
 export interface ProviderConfig {
@@ -196,6 +205,7 @@ export interface ProviderConfig {
 
 export interface SupplementalFetchContext {
   headlines?: string[];
+  headlineObservations?: Array<{ id: string; title: string; publishedAt: string }>;
 }
 
 export interface SupplementalProvider {

@@ -11,6 +11,7 @@ import {
 
 const order = {
   id: 'order-123',
+  venue: 'kucoin' as const,
   symbol: 'BTC-USDT',
   side: 'buy' as const,
   type: 'limit',
@@ -22,6 +23,13 @@ const order = {
   status: 'partially_filled' as const,
   createdAt: 1_700_000_000_000,
   updatedAt: 1_700_000_010_000,
+  dataState: {
+    symbol: 'VALID' as const,
+    side: 'VALID' as const,
+    size: 'VALID' as const,
+    filled: 'VALID' as const,
+    price: 'VALID' as const,
+  },
 };
 
 describe('integrated workspace helpers', () => {
@@ -37,10 +45,18 @@ describe('integrated workspace helpers', () => {
   it('creates distinct duplicate and replacement transfers', () => {
     const duplicate = buildOrderDraftTransfer(order, 'duplicate');
     const replacement = buildOrderDraftTransfer(order, 'replace');
-    expect(duplicate.draft.quantity).toBe(3);
-    expect(replacement.draft.quantity).toBe(2);
-    expect(replacement.intent).toBe('replace');
+    expect(duplicate?.draft.quantity).toBe(3);
+    expect(replacement?.draft.quantity).toBe(2);
+    expect(replacement?.intent).toBe('replace');
     expect(parseOrderDraftTransfer(JSON.stringify(replacement))).toEqual(replacement);
+  });
+
+  it('fails closed instead of inventing an order side, symbol, size, or remaining fill', () => {
+    expect(buildOrderDraftTransfer({ ...order, side: 'unknown' }, 'duplicate')).toBeNull();
+    expect(buildOrderDraftTransfer({ ...order, symbol: null }, 'duplicate')).toBeNull();
+    expect(buildOrderDraftTransfer({ ...order, size: null }, 'duplicate')).toBeNull();
+    expect(buildOrderDraftTransfer({ ...order, filled: null }, 'replace')).toBeNull();
+    expect(buildOrderDraftTransfer({ ...order, filled: 3 }, 'replace')).toBeNull();
   });
 
   it('migrates the legacy flat order draft without inventing unsafe values', () => {
@@ -52,6 +68,8 @@ describe('integrated workspace helpers', () => {
     expect(parsed?.draft.symbol).toBe('ETH-USDT');
     expect(parsed?.draft.quantity).toBe(4);
     expect(parsed?.draft.leverage).toBe(1);
+    expect(parseOrderDraftTransfer(JSON.stringify({ symbol: 'BTC-USDT', type: 'limit', size: 1 }))).toBeNull();
+    expect(parseOrderDraftTransfer(JSON.stringify({ symbol: 'BTC-USDT', side: 'buy', type: 'limit' }))).toBeNull();
   });
 
   it('validates terminal risk and execution limits before persistence', () => {
@@ -96,5 +114,44 @@ describe('integrated workspace helpers', () => {
     expect(insights.activities.find((activity) => activity.id === 't1')?.realizedPnlUsd).toBe(25);
     expect(insights.activities.find((activity) => activity.id === 't2')?.realizedPnlUsd).toBeNull();
     expect(insights.activities.find((activity) => activity.reference === 'p1')?.realizedPnlUsd).toBe(-10);
+  });
+});
+
+describe('workspace truthfulness normalization', () => {
+  it('keeps missing account values missing instead of converting them to zero', () => {
+    const snapshot = {
+      account: {}, positions: [], openOrders: [], recentOrders: [], recentTrades: [], positionHistory: [], serverTime: null, syncedAt: '2026-08-30T00:00:00.000Z',
+    } as AccountSnapshot;
+    const insights = buildWorkspaceInsights(snapshot);
+    expect(insights.account.equityUsd).toBeNull();
+    expect(insights.account.availableBalanceUsd).toBeNull();
+    expect(insights.account.realizedPnlUsd).toBeNull();
+    expect(insights.account.marginRatioPct).toBeNull();
+    expect(insights.account.riskScore).toBeNull();
+    expect(insights.account.dataState.equityUsd).toBe('MISSING');
+  });
+
+  it('does not invent a symbol, direction, mark price, or timestamp', () => {
+    const snapshot = {
+      account: { accountEquity: 10_000 },
+      positions: [{ currentQty: null, entryPrice: 100 }],
+      openOrders: [{ id: 'o1' }],
+      recentOrders: [],
+      recentTrades: [{ id: 't1', price: 100, size: 1 }],
+      positionHistory: [],
+      serverTime: null,
+      syncedAt: '2026-08-30T00:00:00.000Z',
+    } as AccountSnapshot;
+    const insights = buildWorkspaceInsights(snapshot);
+    expect(insights.positions[0]).toMatchObject({ symbol: null, side: 'UNKNOWN', markPrice: null });
+    expect(insights.orders[0]).toMatchObject({ symbol: null, side: 'unknown' });
+    expect(insights.activities.find((activity) => activity.id === 't1')).toMatchObject({ timestamp: null, symbol: null });
+  });
+
+  it('does not fabricate an analytics timestamp when no realized history exists', () => {
+    const snapshot = {
+      account: { accountEquity: 10_000 }, positions: [], openOrders: [], recentOrders: [], recentTrades: [], positionHistory: [], serverTime: null, syncedAt: '2026-08-30T00:00:00.000Z',
+    } as AccountSnapshot;
+    expect(buildWorkspaceInsights(snapshot).analytics.cumulativePnl).toEqual([]);
   });
 });

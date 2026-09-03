@@ -16,6 +16,7 @@ import type {
 import { strategyDefinitions } from '../../services/strategyRegistry';
 import { buildStrategyParameterValues, normalizeStrategyParameterAliases } from '../../services/strategyParameters';
 import { apiMutate } from '../../services/apiMutate';
+import { fetchJsonWithTimeout } from '../../services/apiQuery';
 import { buildStrategyEvidenceSnapshot } from '../../services/strategyEvidence';
 import { navigateWorkspace, readWorkspaceContext, writeWorkspaceContext } from '../../lib/workspaceContext';
 import type { AutopilotControllerView } from '../../lib/useAutopilotController';
@@ -29,7 +30,6 @@ import { hasBoundEvidence, strategyDisplayStatus, supportedDirections } from './
 import { interpretLiquidityHunterReadPlaneMessage } from '../../services/liquidityHunterReadPlaneClient';
 
 const BOOKMARKS_KEY = 'apex:saved-strategies';
-const SMART_AUTOPILOT_CYCLE_KEY = 'apex:smart-autopilot-cycle:v1';
 const STRATEGY_LIBRARY_VIEW_MODE_KEY = 'apex:strategy-library-view-mode:v1';
 const WORKSPACE_INTERVALS: StrategyWorkspaceInterval[] = ['5m', '15m', '1h', '4h', '1d'];
 
@@ -52,26 +52,34 @@ function readBookmarks(): Set<string> {
   }
 }
 
-function writeBookmarks(bookmarks: Set<string>): void {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(BOOKMARKS_KEY, JSON.stringify([...bookmarks]));
+function writeBookmarks(bookmarks: Set<string>): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    window.localStorage.setItem(BOOKMARKS_KEY, JSON.stringify([...bookmarks]));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 
 function readStrategyLibraryViewMode(): StrategyLibraryViewMode {
   if (typeof window === 'undefined') return 'cards';
-  return window.localStorage.getItem(STRATEGY_LIBRARY_VIEW_MODE_KEY) === 'list' ? 'list' : 'cards';
+  try {
+    return window.localStorage.getItem(STRATEGY_LIBRARY_VIEW_MODE_KEY) === 'list' ? 'list' : 'cards';
+  } catch {
+    return 'cards';
+  }
 }
 
-function writeStrategyLibraryViewMode(mode: StrategyLibraryViewMode): void {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STRATEGY_LIBRARY_VIEW_MODE_KEY, mode);
-}
-
-function readSmartAutopilotCycleIndex(): number {
-  if (typeof window === 'undefined') return 0;
-  const value = Number(window.localStorage.getItem(SMART_AUTOPILOT_CYCLE_KEY) || 0);
-  return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+function writeStrategyLibraryViewMode(mode: StrategyLibraryViewMode): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    window.localStorage.setItem(STRATEGY_LIBRARY_VIEW_MODE_KEY, mode);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function defaultParameters(strategy: StrategyDefinition, values?: Record<string, number | string>): Record<string, number | string> {
@@ -90,7 +98,6 @@ interface StrategyPageProps {
   selectedSymbol?: string;
   onSelectSymbol?: (symbol: string) => void;
   autopilotEnabled?: boolean;
-  onAutopilotEnabledChange?: (enabled: boolean) => void;
   /** Live binding to the one server-side Autopilot controller. */
   autopilotController?: AutopilotControllerView;
 }
@@ -115,10 +122,8 @@ export function StrategyPage({
   selectedSymbol = 'BTC-USDT',
   onSelectSymbol,
   autopilotEnabled = false,
-  onAutopilotEnabledChange = () => {},
   autopilotController,
 }: StrategyPageProps = {}) {
-  const autopilotServerDriven = autopilotController?.serverBackgroundLoop === true;
   const [initialContext] = useState(() => readWorkspaceContext());
   const initialStrategyId = initialContext?.strategyId && strategyDefinitions.some((strategy) => strategy.strategyId === initialContext.strategyId)
     ? initialContext.strategyId
@@ -167,7 +172,6 @@ export function StrategyPage({
   const optimizationRequestRef = useRef(0);
   const optimizationAbortRef = useRef<AbortController | null>(null);
   const optimizationInFlightRef = useRef(false);
-  const optimizationAutoRef = useRef(false);
   const profileRequestRef = useRef(0);
   const fusionRequestRef = useRef(0);
   const fusionAbortRef = useRef<AbortController | null>(null);
@@ -193,26 +197,25 @@ export function StrategyPage({
   };
 
   const setLibraryViewMode = (mode: StrategyLibraryViewMode) => {
+    if (!writeStrategyLibraryViewMode(mode)) {
+      setToast('Strategy view preference was not saved because browser persistence is unavailable.');
+      return;
+    }
     setLibraryViewModeState(mode);
-    writeStrategyLibraryViewMode(mode);
   };
 
   const refreshLiquidityHunterManualTestnetPlans = useCallback(async () => {
-    const response = await fetch('/api/liquidity-hunter/manual-testnet/plans', { headers: { Accept: 'application/json' } });
-    const payload = await response.json().catch(() => ({})) as { plans?: LiquidityHunterManualTestnetPlan[]; safety?: LiquidityHunterManualTestnetSafety };
-    if (!response.ok) throw new Error('Manual testnet plans are unavailable.');
+    const payload = await fetchJsonWithTimeout<{ plans?: LiquidityHunterManualTestnetPlan[]; safety?: LiquidityHunterManualTestnetSafety }>(
+      '/api/liquidity-hunter/manual-testnet/plans',
+      { timeoutMs: 12_000 },
+    );
     setLiquidityHunterManualTestnetPlans(Array.isArray(payload.plans) ? payload.plans : []);
     setLiquidityHunterManualTestnetSafety(payload.safety ?? null);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/strategies', { headers: { Accept: 'application/json' } })
-      .then(async (response) => {
-        const payload = await response.json().catch(() => ({})) as { strategies?: StrategyDefinition[]; message?: string };
-        if (!response.ok) throw new Error(payload.message || `Strategy library failed (${response.status}).`);
-        return payload;
-      })
+    fetchJsonWithTimeout<{ strategies?: StrategyDefinition[]; message?: string }>('/api/strategies', { timeoutMs: 12_000 })
       .then((payload) => {
         if (!cancelled && payload.strategies?.length) {
           setStrategies(payload.strategies);
@@ -264,7 +267,6 @@ export function StrategyPage({
     optimizationRequestRef.current += 1;
     optimizationAbortRef.current?.abort();
     optimizationInFlightRef.current = false;
-    optimizationAutoRef.current = false;
     setOptimizationRunning(false);
     validationRequestRef.current += 1;
     validationAbortRef.current?.abort();
@@ -288,18 +290,11 @@ export function StrategyPage({
     if (!selected) return;
     const requestId = ++profileRequestRef.current;
     const query = new URLSearchParams({ symbol, interval, direction });
-    fetch(`/api/strategies/${encodeURIComponent(selected.strategyId)}/optimization?${query.toString()}`, {
-      headers: { Accept: 'application/json' },
-    })
-      .then(async (response) => {
-        const payload = await response.json().catch(() => ({})) as {
-          activeProfile?: StrategyOptimizationProfile | null;
-          latestReport?: StrategyOptimizationReport | null;
-          message?: string;
-        };
-        if (!response.ok) throw new Error(payload.message || `Optimization profile failed (${response.status}).`);
-        return payload;
-      })
+    fetchJsonWithTimeout<{
+      activeProfile?: StrategyOptimizationProfile | null;
+      latestReport?: StrategyOptimizationReport | null;
+      message?: string;
+    }>(`/api/strategies/${encodeURIComponent(selected.strategyId)}/optimization?${query.toString()}`, { timeoutMs: 12_000 })
       .then((payload) => {
         if (requestId !== profileRequestRef.current) return;
         setActiveOptimizationProfile(payload.activeProfile ?? null);
@@ -359,14 +354,14 @@ export function StrategyPage({
 
   useEffect(() => {
     if (!liquidityHunterEvaluation) return;
-    Promise.all([
-      fetch('/api/liquidity-hunter/edge-thresholds').then((response) => response.ok ? response.json() : null),
-      fetch('/api/liquidity-hunter/replay-datasets').then((response) => response.ok ? response.json() : null),
-      refreshLiquidityHunterManualTestnetPlans().then(() => true).catch(() => false),
+    Promise.allSettled([
+      fetchJsonWithTimeout<{ governance?: unknown }>('/api/liquidity-hunter/edge-thresholds', { timeoutMs: 12_000 }),
+      fetchJsonWithTimeout<{ datasets?: unknown[] }>('/api/liquidity-hunter/replay-datasets', { timeoutMs: 12_000 }),
+      refreshLiquidityHunterManualTestnetPlans(),
     ]).then(([thresholds, datasets]) => {
-      setLiquidityHunterGovernance(thresholds?.governance ?? null);
-      setLiquidityHunterDatasets(Array.isArray(datasets?.datasets) ? datasets.datasets : []);
-    }).catch(() => undefined);
+      if (thresholds.status === 'fulfilled') setLiquidityHunterGovernance(thresholds.value.governance ?? null);
+      if (datasets.status === 'fulfilled') setLiquidityHunterDatasets(Array.isArray(datasets.value.datasets) ? datasets.value.datasets : []);
+    });
   }, [liquidityHunterEvaluation?.evaluationId, refreshLiquidityHunterManualTestnetPlans]);
 
   if (!selected) return null;
@@ -375,14 +370,13 @@ export function StrategyPage({
     const target = strategies.find((strategy) => strategy.strategyId === strategyId) ?? selected;
     setBookmarks((current) => {
       const next = new Set(current);
-      if (next.has(strategyId)) {
-        next.delete(strategyId);
-        setToast(`${target.name} removed from browser bookmarks`);
-      } else {
-        next.add(strategyId);
-        setToast(`${target.name} bookmarked in this browser`);
+      const removing = next.has(strategyId);
+      if (removing) next.delete(strategyId); else next.add(strategyId);
+      if (!writeBookmarks(next)) {
+        setToast('Bookmark was not saved because browser persistence is unavailable.');
+        return current;
       }
-      writeBookmarks(next);
+      setToast(removing ? `${target.name} removed from browser bookmarks` : `${target.name} bookmarked in this browser`);
       return next;
     });
   };
@@ -451,78 +445,24 @@ export function StrategyPage({
   };
 
 
-  const runOptimization = async (auto = false) => {
+  const runOptimization = async () => {
     if (selected.status === 'blocked') {
       setOptimizationMessage(selected.blockedReason || 'This strategy is blocked.');
       return;
     }
     if (optimizationInFlightRef.current) {
-      if (!auto) setOptimizationMessage('An optimization is already running for this workspace.');
+      setOptimizationMessage('An optimization is already running for this workspace.');
       return;
     }
     const controller = new AbortController();
     optimizationAbortRef.current = controller;
     optimizationInFlightRef.current = true;
-    optimizationAutoRef.current = auto;
     const requestId = ++optimizationRequestRef.current;
     const identity = { strategyId: selected.strategyId, name: selected.name, direction, symbol, interval };
     setOptimizationRunning(true);
-    setOptimizationMessage(auto ? 'Smart Autopilot is running a bounded multi-context tuning cycle…' : null);
+    setOptimizationMessage(null);
 
     try {
-      if (auto && autopilotEnabled) {
-        const cycleIndex = readSmartAutopilotCycleIndex();
-        const response = await apiMutate('/api/strategies/autopilot/cycle', {
-          method: 'POST',
-          body: JSON.stringify({
-            cycleIndex,
-            symbol: identity.symbol,
-            symbols: marketOptions.slice(0, 4),
-            preferredInterval: identity.interval,
-            maxContexts: 6,
-            bars: 3000,
-            maxHoldBars: 72,
-            optimizerConcurrency: 2,
-            coarseCandidates: 20,
-            refinementCandidates: 8,
-          }),
-          signal: controller.signal,
-        });
-        const payload = await response.json().catch(() => ({})) as {
-          cycle?: {
-            cycleIndex: number;
-            plan: { contexts: unknown[] };
-            optimization: { completed: number; failed: number; promoted: number };
-            multiAgent?: { council?: { approvedJobs?: number } } | null;
-          };
-          message?: string;
-          error?: string;
-        };
-        if (!response.ok || !payload.cycle) throw new Error(payload.message || payload.error || `Smart Autopilot failed (${response.status}).`);
-        if (requestId !== optimizationRequestRef.current) return;
-        if (typeof window !== 'undefined') window.localStorage.setItem(SMART_AUTOPILOT_CYCLE_KEY, String(payload.cycle.cycleIndex + 1));
-
-        const query = new URLSearchParams({ symbol: identity.symbol, interval: identity.interval, direction: identity.direction });
-        const stateResponse = await fetch(`/api/strategies/${encodeURIComponent(identity.strategyId)}/optimization?${query.toString()}`, { signal: controller.signal });
-        if (stateResponse.ok) {
-          const statePayload = await stateResponse.json().catch(() => ({})) as {
-            activeProfile?: StrategyOptimizationProfile | null;
-            latestReport?: StrategyOptimizationReport | null;
-          };
-          if (requestId !== optimizationRequestRef.current) return;
-          if (statePayload.latestReport) setOptimizationReport(statePayload.latestReport);
-          setActiveOptimizationProfile(statePayload.activeProfile ?? null);
-          if (statePayload.activeProfile?.parameters) {
-            setParameters((current) => normalizeStrategyParameterAliases(selected, { ...current, ...statePayload.activeProfile?.parameters }));
-          }
-        }
-
-        const approved = payload.cycle.multiAgent?.council?.approvedJobs ?? 0;
-        setOptimizationMessage(`Smart cycle ${payload.cycle.cycleIndex + 1}: tuned ${payload.cycle.optimization.completed}/${payload.cycle.plan.contexts.length} contexts, promoted ${payload.cycle.optimization.promoted}, ${approved} paper candidate${approved === 1 ? '' : 's'} survived the multi-agent council.`);
-        setToast(`Smart Autopilot cycle completed · ${payload.cycle.optimization.promoted} promoted`);
-        return;
-      }
-
       const response = await apiMutate(`/api/strategies/${encodeURIComponent(identity.strategyId)}/optimize`, {
         method: 'POST',
         body: JSON.stringify({
@@ -554,9 +494,9 @@ export function StrategyPage({
       if (payload.activeProfile?.parameters) {
         setParameters((current) => normalizeStrategyParameterAliases(selected, { ...current, ...payload.activeProfile?.parameters }));
       }
-      const improvement = payload.report.promotion.holdoutImprovement.toFixed(3);
+      const improvement = payload.report.promotion.developmentValidationImprovement.toFixed(3);
       setOptimizationMessage(payload.report.promotion.eligible
-        ? `Optimization candidate is eligible for review · holdout utility delta ${Number(improvement) >= 0 ? '+' : ''}${improvement}. Active thresholds were not changed.`
+        ? `Optimization candidate is eligible for review · development-validation utility delta ${Number(improvement) >= 0 ? '+' : ''}${improvement}. Active thresholds were not changed.`
         : `Optimization completed without promotion · ${payload.report.promotion.blockers.join(', ') || 'no safe improvement'}.`);
       setToast(`Optimization completed for ${identity.name}`);
     } catch (error) {
@@ -567,30 +507,9 @@ export function StrategyPage({
       if (optimizationAbortRef.current === controller) {
         optimizationAbortRef.current = null;
         optimizationInFlightRef.current = false;
-        optimizationAutoRef.current = false;
       }
     }
   };
-
-  useEffect(() => {
-    if (!autopilotEnabled || selected.status === 'blocked') return undefined;
-    // The server scheduler owns the cadence once its background loop is armed;
-    // a second client timer would double-drive the same controller.
-    if (autopilotServerDriven) return undefined;
-    void runOptimization(true);
-    const timer = window.setInterval(() => void runOptimization(true), 5 * 60_000);
-    return () => {
-      window.clearInterval(timer);
-      if (optimizationAutoRef.current) {
-        optimizationRequestRef.current += 1;
-        optimizationAbortRef.current?.abort();
-        optimizationAbortRef.current = null;
-        optimizationInFlightRef.current = false;
-        optimizationAutoRef.current = false;
-        setOptimizationRunning(false);
-      }
-    };
-  }, [autopilotEnabled, autopilotServerDriven, direction, interval, selected.strategyId, symbol]);
 
 
   const refreshFusionPreview = async () => {
@@ -849,11 +768,9 @@ export function StrategyPage({
         onSubmitLiquidityHunterManualTestnet={submitLiquidityHunterManualTestnet}
         onRunLiquidityHunter={() => void runLiquidityHunterShadow()}
         autopilotEnabled={autopilotEnabled}
-        autopilotRunning={autopilotEnabled && optimizationRunning}
         autopilotPhase={autopilotController?.phase ?? null}
         autopilotPhaseText={autopilotController?.phaseText ?? null}
         autopilotDisconnected={Boolean(autopilotController?.transportError)}
-        onAutopilotEnabledChange={onAutopilotEnabledChange}
       />
 
       {libraryError && (

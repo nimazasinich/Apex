@@ -400,7 +400,14 @@ export function simulateBracketTrade(args: {
 
   const grossPnlPct = direction === 'LONG' ? ((exit - entry) / entry) * 100 : ((entry - exit) / entry) * 100;
   const barsHeld = Math.max(1, exitIndex - entryIndex + 1);
-  const transactionCostPct = computeTransactionCostPct(transactionCostInputsFromModel(transactionCostModel, entry, barsHeld));
+  const entryAt = Date.parse(entryBar.time);
+  const exitAt = Date.parse(candles[exitIndex].time);
+  const transactionCostPct = computeTransactionCostPct(transactionCostInputsFromModel(transactionCostModel, entry, {
+    entryAt,
+    exitAt,
+    direction,
+    fundingEvents: [], // historical funding requires a bound event dataset; never inferred from bars
+  }));
   return {
     entryTime: entryBar.time,
     exitTime: candles[exitIndex].time,

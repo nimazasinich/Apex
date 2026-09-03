@@ -159,11 +159,14 @@ describe('registry invariants the presentation depends on — GAP UI-03', () => 
     }
   });
 
-  // scannerCore is shadow-only by design; a silent promotion is a safety change.
-  it('keeps the advanced scanner shadow-only', () => {
-    const scanner = listModuleCapabilities().find((s) => s.module === 'src/services/scannerCore.ts');
-    expect(scanner?.isShadow).toBe(true);
-    expect(scanner?.isActive).toBe(false);
+  // The advanced scanner is the signal authority; execution safety remains owned downstream.
+  it('reports the advanced scanner as live signal authority without displacing Risk Governor authority', () => {
+    const statuses = listModuleCapabilities();
+    const scanner = statuses.find((s) => s.module === 'src/services/scannerCore.ts');
+    const risk = statuses.find((s) => s.module === 'src/services/riskGovernor.ts');
+    expect(scanner?.isActive).toBe(true);
+    expect(scanner?.isLiveAuthority).toBe(true);
+    expect(risk?.isLiveAuthority).toBe(true);
   });
 
   it('exposes no module that is simultaneously planned and active', () => {

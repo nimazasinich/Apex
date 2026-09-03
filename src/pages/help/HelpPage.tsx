@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './HelpPage.css';
 import {
   ArrowUpRight,
+  BookOpenCheck,
   CreditCard,
   MessageSquareText,
   Search,
@@ -21,6 +22,22 @@ import type { SystemHealthReport } from '../../types';
 import { fetchJsonWithTimeout } from '../../services/apiQuery';
 import { notifyWorkspace } from '../../lib/workspaceFeedback';
 import { useDialogA11y } from '../../lib/useDialogA11y';
+import { navigateWorkspace, type NavigableWorkspacePage } from '../../lib/workspaceContext';
+
+const ACADEMY_OPENED_KEY = 'apex_academy_opened_v3';
+
+const ACADEMY_TRACKS: Array<{
+  id: string;
+  title: string;
+  outcome: string;
+  page: NavigableWorkspacePage;
+  action: string;
+}> = [
+  { id: 'scanner', title: 'Scanner → Evidence', outcome: 'Learn why a candidate is a signal, setup, watch, or abstain.', page: 'screener', action: 'Open Screener' },
+  { id: 'backtest', title: 'Evidence → Backtest', outcome: 'Replay the exact strategy, dataset fingerprint, and cost model.', page: 'backtesting', action: 'Open Backtesting' },
+  { id: 'strategy', title: 'Backtest → Strategy', outcome: 'Review robustness gates and promote only the exact research profile.', page: 'strategies', action: 'Open Strategies' },
+  { id: 'safety', title: 'Research → Safe Operation', outcome: 'Verify provider health, Demo/Live boundaries, and execution controls.', page: 'settings', action: 'Open Settings' },
+];
 
 type TopicId = 'getting-started' | 'account-profile' | 'deposits-withdrawals' | 'trading-guide' | 'security';
 
@@ -71,13 +88,13 @@ const TOPICS: Array<{
 const FAQS: Array<{ question: string; answer: string; topic: TopicId }> = [
   {
     topic: 'getting-started',
-    question: 'How do I create an account on APEX?',
-    answer: 'Open Getting Started, complete the onboarding checklist, and verify the account profile before switching to live trading.',
+    question: 'Does APEX create or custody an exchange account?',
+    answer: 'No. APEX is a research and trading workspace. Account creation, identity verification, custody, deposits, and withdrawals stay with the connected exchange or broker.',
   },
   {
     topic: 'deposits-withdrawals',
     question: 'How do I deposit funds into my account?',
-    answer: 'Use the wallet funding route exposed by your connected exchange. Demo balances remain virtual and can be reset from Settings.',
+    answer: 'Fund the account through the connected exchange or broker. APEX does not accept deposits. Demo balances are virtual and can be reset from Settings.',
   },
   {
     topic: 'trading-guide',
@@ -91,8 +108,8 @@ const FAQS: Array<{ question: string; answer: string; topic: TopicId }> = [
   },
   {
     topic: 'security',
-    question: 'How do I enable two-factor authentication?',
-    answer: 'Open Security and follow the protected verification flow. Credentials stay server-side and are never exposed in the browser.',
+    question: 'Where do I enable two-factor authentication?',
+    answer: 'Enable 2FA on the connected exchange or identity provider. APEX keeps supported API credentials server-side and never presents itself as the exchange security authority.',
   },
 ];
 
@@ -160,6 +177,11 @@ export function HelpPage() {
   const [health, setHealth] = useState<SystemHealthReport | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
   const [healthLoading, setHealthLoading] = useState(false);
+  const [academyOpened, setAcademyOpened] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return {};
+    try { return JSON.parse(window.localStorage.getItem(ACADEMY_OPENED_KEY) || '{}') as Record<string, boolean>; }
+    catch { return {}; }
+  });
   const tutorialCloseRef = useRef<HTMLButtonElement>(null);
   const supportCloseRef = useRef<HTMLButtonElement>(null);
   const closeTutorial = useCallback(() => setActiveTutorial(null), []);
@@ -231,12 +253,25 @@ export function HelpPage() {
     }
   }
 
+  function openAcademyTrack(track: (typeof ACADEMY_TRACKS)[number]) {
+    const next = { ...academyOpened, [track.id]: true };
+    try {
+      window.localStorage.setItem(ACADEMY_OPENED_KEY, JSON.stringify(next));
+    } catch {
+      notifyWorkspace({ title: 'Academy state not saved', detail: 'Browser persistence is unavailable; the track was not marked as opened.', tone: 'error' });
+      return;
+    }
+    setAcademyOpened(next);
+    notifyWorkspace({ title: `${track.title} opened`, detail: 'This track was marked as opened locally; opening it does not count as completion or progress.', tone: 'info' });
+    navigateWorkspace(track.page);
+  }
+
   const main = (
     <div className="apex-v3-help-main">
       <header className="apex-v3-help-title">
-        <span>Help center</span>
-        <h1>Hi there! How can we help you?</h1>
-        <p>Find answers, learn the platform, and get the most out of APEX.</p>
+        <span>Academy & Help</span>
+        <h1>Academy & Help</h1>
+        <p>Learn the evidence path, open the real workspace, and verify what every control does.</p>
       </header>
 
       <label className="apex-v3-help-search">
@@ -268,6 +303,19 @@ export function HelpPage() {
               </button>
             );
           })}
+        </div>
+      </Panel>
+
+      <Panel className="apex-v3-academy-card">
+        <PanelHeader title="Academy Learning Tracks" subtitle="Every lesson opens a working product surface" />
+        <div className="apex-v3-academy-grid">
+          {ACADEMY_TRACKS.map((track) => (
+            <article key={track.id}>
+              <span aria-hidden="true">{academyOpened[track.id] ? <CheckCircle2 size={15} /> : <BookOpenCheck size={15} />}</span>
+              <div><strong>{track.title}</strong><p>{track.outcome}</p></div>
+              <button type="button" onClick={() => openAcademyTrack(track)}>{track.action}<ArrowUpRight size={12} /></button>
+            </article>
+          ))}
         </div>
       </Panel>
 
@@ -315,12 +363,12 @@ export function HelpPage() {
   const context = (
     <div className="apex-v3-context-stack help-context">
       <Panel className="contact-support-card">
-        <PanelHeader title="Contact Support" subtitle="Deployment support handoff" />
+        <PanelHeader title="Support Handoff" subtitle="Copy-only diagnostic helpers" />
         <div className="apex-v3-contact-list">
           {[
-            { title: 'Live Chat', detail: 'Prepare a real-time diagnostic request' },
-            { title: 'Email Support', detail: 'Copy a complete support template' },
-            { title: 'Submit a Ticket', detail: 'Create a traceable request template' },
+            { title: 'Chat message', detail: 'Copy a diagnostic message for your support channel' },
+            { title: 'Email message', detail: 'Copy a complete support email template' },
+            { title: 'Ticket message', detail: 'Copy a traceable issue template' },
           ].map((item) => (
             <button type="button" key={item.title} onClick={() => { setSupportMode(item.title); setCopied(false); notifyWorkspace({ title: `${item.title} prepared`, detail: 'A deployment-ready diagnostic template is ready to review.', tone: 'info' }); }}>
               <MessageSquareText size={15} />
@@ -378,7 +426,7 @@ export function HelpPage() {
         <div className="apex-help-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) closeSupport(); }}>
           <section ref={supportDialogRef} className="apex-help-modal support" role="dialog" aria-modal="true" aria-labelledby="help-support-title">
             <header>
-              <div><small>Deployment-ready support handoff</small><h2 id="help-support-title">{supportMode}</h2><p>Copy the diagnostic template and send it through the support channel configured for your deployment.</p></div>
+              <div><small>Copy-only support handoff</small><h2 id="help-support-title">{supportMode}</h2><p>This button does not contact support. Copy the diagnostic template and send it through the channel configured for your deployment.</p></div>
               <button ref={supportCloseRef} type="button" aria-label="Close support panel" onClick={closeSupport}><X size={18} /></button>
             </header>
             <pre>{supportTemplate}</pre>

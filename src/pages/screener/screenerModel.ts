@@ -1,5 +1,6 @@
 import { baseAssetFromMarket } from '../../lib/marketPresentation';
 import type { CandidateScore, FeatureQualityState, FeatureQualityMeta, ReadinessTier, SymbolTicker } from '../../types';
+import { compareCanonicalCandidates } from '../../services/canonicalCandidateDecision';
 import {
   DEFAULT_SCREENER_FILTERS,
   type ScreenerFactor,
@@ -168,7 +169,7 @@ function warningsFor(
   if (ticker?.fundingQuality === 'ESTIMATED') warnings.push('The funding reading is estimated rather than settled.');
 
   if (contestedDirection) {
-    warnings.push('The scanner published both a long and a short thesis for this symbol; the higher-scoring one is shown.');
+    warnings.push('The scanner published both directions; the server-authoritative higher-qualification thesis is shown.');
   }
 
   return warnings;
@@ -257,6 +258,7 @@ const TIER_STRENGTH_BONUS: Record<ReadinessTier, number> = {
  * `readinessTier`, which term 3 already carries.
  */
 function signalStrengthOf(row: Omit<ScreenerRow, 'rank' | 'signalStrength'>): number {
+  if (row.canonicalRankScore != null && Number.isFinite(row.canonicalRankScore)) return row.canonicalRankScore;
   const base = Number.isFinite(row.score) ? row.score : 0;
   const guard = row.guardPass ? 0 : -12;
   const tier = TIER_STRENGTH_BONUS[row.readinessTier];
@@ -281,6 +283,8 @@ function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, con
 
   return {
     symbol: candidate.symbol,
+    decisionState: candidate.decisionState,
+    canonicalRankScore: candidate.canonicalRankScore,
     baseAsset: baseAssetFromMarket(candidate.symbol),
     direction: candidate.direction,
     score: candidate.score,
@@ -341,9 +345,8 @@ function rowFor(candidate: CandidateScore, ticker: SymbolTicker | undefined, con
  * Project scanner candidates into ranked screener rows.
  *
  * One row per symbol. When the scanner publishes both a long and a short thesis
- * for the same symbol the higher-scoring one wins — matching how the Watchlist
- * page already picks a candidate — and the loser is recorded as a contested
- * direction warning rather than dropped silently.
+ * for the same symbol the server-owned qualification/rank authority wins. A
+ * blocked high raw score can never replace a qualified opposite direction.
  *
  * Rows are ordered by `signalStrengthOf`, not by raw score. See that function for
  * what "strength" means and why the raw number alone was the wrong order.
@@ -360,7 +363,7 @@ export function buildScreenerRows(candidates: CandidateScore[], tickers: SymbolT
   }
 
   const rows = [...bySymbol.entries()].map(([symbol, group]) => {
-    const ordered = [...group].sort((left, right) => right.score - left.score || left.direction.localeCompare(right.direction));
+    const ordered = [...group].sort(compareCanonicalCandidates);
     const contested = new Set(group.map((item) => item.direction)).size > 1;
     return rowFor(ordered[0], tickerBySymbol.get(symbol), contested);
   });
@@ -460,7 +463,9 @@ export function sortScreenerRows(rows: ScreenerRow[], sort: ScreenerSort): Scree
 export function screenerSummary(rows: ScreenerRow[], visible: ScreenerRow[]): ScreenerSummary {
   return {
     scanned: rows.length,
-    opportunities: rows.filter((row) => row.guardPass && (row.readinessTier === 'CONFIRMED' || row.readinessTier === 'WATCHLIST')).length,
+    opportunities: rows.filter((row) => row.decisionState
+      ? row.decisionState === 'SIGNAL' || row.decisionState === 'QUALIFIED_SETUP'
+      : row.guardPass && (row.readinessTier === 'CONFIRMED' || row.readinessTier === 'WATCHLIST')).length,
     matched: visible.length,
     flagged: rows.filter((row) => row.warnings.length > 0).length,
     partial: rows.filter((row) => row.factors.some((factor) => factor.metric.state === 'UNAVAILABLE')).length,

@@ -41,9 +41,9 @@ export function loadScreenerWorkspace(storage: Pick<Storage, 'getItem'> | null =
   catch { return normalizeWorkspace(null); }
 }
 
-export function saveScreenerWorkspace(workspace: ScreenerWorkspaceState, storage: Pick<Storage, 'setItem'> | null = storageOrNull()): void {
-  if (!storage) return;
-  try { storage.setItem(WORKSPACE_KEY, JSON.stringify(normalizeWorkspace(workspace))); } catch { /* in-memory state remains usable */ }
+export function saveScreenerWorkspace(workspace: ScreenerWorkspaceState, storage: Pick<Storage, 'setItem'> | null = storageOrNull()): boolean {
+  if (!storage) return false;
+  try { storage.setItem(WORKSPACE_KEY, JSON.stringify(normalizeWorkspace(workspace))); return true; } catch { return false; }
 }
 
 export function loadSavedScreenerScreens(storage: Pick<Storage, 'getItem'> | null = storageOrNull()): SavedScreenerScreen[] {
@@ -66,7 +66,7 @@ export function loadSavedScreenerScreens(storage: Pick<Storage, 'getItem'> | nul
   } catch { return []; }
 }
 
-export function saveSavedScreenerScreens(screens: SavedScreenerScreen[], storage: Pick<Storage, 'setItem'> | null = storageOrNull()): void {
-  if (!storage) return;
-  try { storage.setItem(SCREENS_KEY, JSON.stringify(screens.slice(0, 12))); } catch { /* in-memory state remains usable */ }
+export function saveSavedScreenerScreens(screens: SavedScreenerScreen[], storage: Pick<Storage, 'setItem'> | null = storageOrNull()): boolean {
+  if (!storage) return false;
+  try { storage.setItem(SCREENS_KEY, JSON.stringify(screens.slice(0, 12))); return true; } catch { return false; }
 }

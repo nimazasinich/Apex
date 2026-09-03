@@ -1,971 +1,1449 @@
-/* Overview command centre — status cards, upper 3-col grid, lower 3-col grid.
-   Fixed stage at 1368 x 753; page never scrolls; panels clip internally. */
+/* Overview Command Centre — Seamless Unified White Canvas with Ultra-Thin Borders */
+
 .apex-overview-v2 {
+  box-sizing: border-box;
+  width: 100%;
   height: 100%;
+  min-width: 0;
   min-height: 0;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
-  gap: 7px;
-  overflow: hidden;
+  padding: 8px 12px 8px;
+  background-color: #ffffff !important;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-rows: 64px minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
+  gap: 8px !important;
 }
 
-/* Row 1 — six status cards */
-.apex-overview-status-cards {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 6px;
-  min-width: 0;
-  overflow: hidden;
+.apex-overview-v2 *,
+.apex-overview-v2 *::before,
+.apex-overview-v2 *::after {
+  box-sizing: border-box;
 }
-.apex-overview-status-card {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 1px 6px;
+
+/* Panel Generic Style — Seamless and ultra-thin */
+.apex-overview-v2 .apex-panel {
+  background: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 8px !important;
   padding: 7px 9px;
-  border: 1px solid var(--apex-border);
-  border-radius: 10px;
-  background: var(--apex-surface);
-  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset;
-  overflow: hidden;
-  align-content: center;
-}
-.apex-overview-status-icon {
-  grid-row: 1 / span 2;
-  display: grid;
-  place-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: var(--apex-surface-soft);
-  color: var(--apex-muted-600);
-}
-.apex-overview-status-card.tone-ok .apex-overview-status-icon { color: var(--apex-positive); background: color-mix(in srgb, var(--apex-positive) 12%, transparent); }
-.apex-overview-status-card.tone-warn .apex-overview-status-icon { color: var(--apex-orange-500); background: color-mix(in srgb, var(--apex-orange-500) 12%, transparent); }
-.apex-overview-status-card.tone-danger .apex-overview-status-icon { color: var(--apex-negative); background: color-mix(in srgb, var(--apex-negative) 12%, transparent); }
-.apex-overview-status-card.tone-info .apex-overview-status-icon { color: var(--apex-blue-500); background: color-mix(in srgb, var(--apex-blue-500) 12%, transparent); }
-.apex-overview-status-card .apex-status-dot {
-  display: none;
-}
-.apex-overview-status-card b {
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--apex-muted-600);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.apex-overview-status-card em {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: 700 12px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace);
-  color: var(--apex-ink-950);
-}
-.apex-overview-status-card.tone-ok em { color: var(--apex-green-700); }
-.apex-overview-status-card.tone-warn em { color: var(--apex-orange-500); }
-.apex-overview-status-card.tone-danger em { color: var(--apex-negative); }
-.apex-overview-status-card.tone-info em { color: var(--apex-blue-500); }
-.apex-overview-status-card.tone-muted em { color: var(--apex-muted-600); }
-
-/* Upper grid: Account ~30% | Market ~42% | Signals+Autopilot ~28% */
-.apex-overview-upper-grid {
-  display: grid;
-  grid-template-columns: 30fr 42fr 28fr;
-  gap: 7px;
-  min-height: 0;
-  min-width: 0;
-}
-.apex-overview-upper-right {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, auto);
-  gap: 6px;
-  min-width: 0;
-  min-height: 0;
-}
-
-/* Lower grid: Action | Activity | Data+System health */
-.apex-overview-lower-grid {
-  display: grid;
-  grid-template-columns: 30fr 42fr 28fr;
-  gap: 7px;
-  min-height: 0;
-  min-width: 0;
-}
-.apex-overview-lower-right {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, auto);
-  gap: 6px;
-  min-width: 0;
-  min-height: 0;
-}
-
-/* Account / Portfolio summary card */
-.apex-overview-account {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 6px;
-  padding: 7px 9px 8px;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-.apex-overview-account > header {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
-.apex-overview-account h2 {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--apex-ink-950);
-}
-.apex-overview-account > header em {
-  font-style: normal;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .04em;
-}
+
 .apex-overview-section-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 0;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 18px;
+  margin-bottom: 2px;
 }
-.apex-overview-section-head > div { min-width: 0; display: grid; gap: 1px; }
+
+.section-head-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .apex-overview-section-num {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  display: grid;
-  place-content: center;
-  border-radius: 999px;
-  background: var(--apex-green-600);
-  color: #fff;
-  font: 700 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 9px;
+  font-weight: 800;
 }
+
 .apex-overview-section-head h2 {
   margin: 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .02em;
-  color: var(--apex-ink-950);
+  font-size: 10px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
-.apex-overview-section-head small { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-section-head em {
-  margin-left: auto;
-  font-style: normal;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .04em;
+
+.head-chevron,
+.head-info-icon,
+.head-icon-right {
+  color: #94a3b8;
 }
 
-.apex-overview-account-rows { display: grid; gap: 5px; min-height: 0; overflow: hidden; }
-.apex-overview-account-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
-.apex-overview-account-cell {
-  min-width: 0;
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface-soft);
-  padding: 5px 7px;
-  display: grid;
-  gap: 1px;
-  text-align: left;
-  box-shadow: none;
-}
-.apex-overview-account-cell:hover { background: var(--apex-surface); }
-.apex-overview-account-cell > span { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-account-cell > strong { font: 700 12px/1.15 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-account-cell > strong.positive { color: var(--apex-positive); }
-.apex-overview-account-cell > strong.negative { color: var(--apex-negative); }
-.apex-overview-account-cell > small { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-account-cell > small.positive { color: var(--apex-positive); }
-.apex-overview-account-cell > small.negative { color: var(--apex-negative); }
-.apex-overview-margin-bar {
-  margin-top: 2px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--apex-divider);
-  overflow: hidden;
-}
-.apex-overview-margin-bar > i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--apex-green-600), var(--apex-blue-500));
+/* ==========================================================================
+   1. TOP 6 STATUS CARDS
+   ========================================================================== */
+.apex-overview-status-cards {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 7px !important;
+  height: 76px !important;
+  min-height: 76px !important;
+  max-height: 76px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
 }
 
-.apex-overview-summary, .apex-overview-attention, .apex-overview-activity,
-.apex-overview-signals, .apex-overview-autopilot, .apex-overview-providers,
-.apex-overview-execution, .apex-overview-account { min-width: 0; min-height: 0; overflow: hidden; }
+.apex-overview-status-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 7px 9px 5px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 76px !important;
+  min-height: 76px !important;
+  overflow: hidden !important;
+}
 
-/* Market intelligence with compact tiles */
-/* Row 3 is the selected-market chart; `1fr` lets it claim the panel's leftover
-   height so the chart is as tall as the panel honestly allows (was minmax(0, auto),
-   which left the chart at content height and stranded the slack). */
-.apex-overview-summary { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto; gap: 5px; padding: 7px 9px 8px; }
-.apex-overview-summary header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; min-width: 0; }
-.apex-overview-summary header > div { min-width: 0; display: grid; gap: 1px; }
-.apex-overview-summary .apex-eyebrow { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--apex-muted-600); }
-.apex-overview-summary header h2 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 700; color: var(--apex-ink-950); }
-.apex-overview-summary header h2 svg { color: var(--apex-blue-500); }
+.apex-overview-status-card.status-autopilot {
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 140%) !important;
+  border-color: #bfdbfe !important;
+}
 
-.apex-overview-market-tiles {
+.apex-overview-status-card.status-trading {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 140%) !important;
+  border-color: #bbf7d0 !important;
+}
+
+.apex-overview-status-card.status-risk {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 140%) !important;
+  border-color: #bbf7d0 !important;
+}
+
+.apex-overview-status-card.status-providers {
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 140%) !important;
+  border-color: #e9d5ff !important;
+}
+
+.apex-overview-status-card.status-execution {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 140%) !important;
+  border-color: #bbf7d0 !important;
+}
+
+.apex-overview-status-card.status-freshness {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 140%) !important;
+  border-color: #bbf7d0 !important;
+}
+
+.card-top-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 7px !important;
+}
+
+.status-card-icon {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 7px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.icon-blue {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+.icon-green {
+  background: #ecfdf5 !important;
+  color: #10b981 !important;
+}
+
+.icon-purple {
+  background: #f5f3ff !important;
+  color: #8b5cf6 !important;
+}
+
+.apex-overview-status-main {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.status-card-lbl {
+  font-size: 7.5px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+
+.status-card-val {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.15 !important;
+  font-family: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, monospace !important;
+  letter-spacing: -0.01em !important;
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.status-card-val.positive {
+  color: #10b981 !important;
+}
+
+.status-pill-badge {
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  padding: 1.5px 5px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+}
+
+.pill-green {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.pill-purple {
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+}
+
+.pill-gray {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.apex-overview-status-meta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 8px !important;
+  color: #64748b !important;
+  margin-top: 2px !important;
+}
+
+.status-subtext {
+  font-size: 8px !important;
+  color: #64748b !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.dot {
+  font-size: 8px !important;
+}
+
+.dot-blue { color: #2563eb !important; }
+.dot-green { color: #10b981 !important; }
+.dot-orange { color: #ea580c !important; }
+
+.purple-spark-bars,
+.green-spark-bars,
+.apex-overview-status-bars {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 1.5px !important;
+  height: 10px !important;
+}
+
+.purple-spark-bars span,
+.apex-overview-status-bars span {
+  width: 2px !important;
+  background: #8b5cf6 !important;
+  border-radius: 1px !important;
+}
+
+.green-spark-bars span {
+  width: 2px !important;
+  background: #10b981 !important;
+  border-radius: 1px !important;
+}
+
+.sparkline-wave-svg {
+  display: block !important;
+}
+
+/* ==========================================================================
+   2. UPPER GRID (Panels 1, 2, 3, 4)
+   ========================================================================== */
+.apex-overview-upper-grid {
+  display: grid !important;
+  grid-template-columns: 31fr 43fr 26fr !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.apex-overview-upper-right {
+  display: grid !important;
+  grid-template-rows: minmax(0, 0.94fr) minmax(0, 1.06fr) !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Panel 1: Account / Portfolio Summary */
+.apex-overview-account {
   display: flex;
-  gap: 4px;
-  min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
+  flex-direction: column;
+  gap: 6px;
 }
-.apex-overview-market-tiles > button {
-  flex: 1 1 0;
-  min-width: 88px;
-  max-width: 120px;
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  grid-template-rows: auto auto auto;
-  grid-template-areas: "icon sym" "icon pct" "spark spark";
-  align-items: center;
-  gap: 0 5px;
-  padding: 5px 6px;
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface-soft);
-  text-align: left;
-  box-shadow: none;
-}
-.apex-overview-market-tiles > button.active { border-color: var(--apex-blue-500); background: var(--apex-surface); }
-.apex-overview-market-tiles > button:hover { background: var(--apex-surface); }
-/* FIX 1A: the CoinIcon wrapper <span class="apex-coin-icon"> is the real grid item.
-   The <img> inside it is a grandchild, so `grid-area` on the <img> was inert and the
-   16px icon column stayed empty. Size/centring/radius already arrive as inline styles
-   from CoinIcon, so placement is the only thing that belongs in this stylesheet. */
-.apex-overview-market-tiles > button > .apex-coin-icon { grid-area: icon; }
-/* Must exclude .apex-coin-icon, or the icon wrapper and the label span both resolve to
-   `sym`, stack in one cell under align-items:center, and get clipped by overflow:hidden. */
-.apex-overview-market-tiles > button > span:not(.apex-coin-icon) { grid-area: sym; min-width: 0; overflow: hidden; }
-.apex-overview-market-tiles strong { display: block; font-size: 10px; font-weight: 700; color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-market-tiles small { display: block; font: 600 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-market-tiles em { grid-area: pct; font: 700 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace); font-style: normal; }
-.apex-overview-market-tiles em.positive { color: var(--apex-positive); }
-.apex-overview-market-tiles em.negative { color: var(--apex-negative); }
-.apex-overview-market-tiles .apex-mini-sparkline { display: none; }
 
-.apex-overview-summary-body { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 8px; align-items: center; min-height: 0; }
-.apex-overview-summary-price { min-width: 0; display: grid; gap: 1px; }
-.apex-overview-summary-price strong { font: 700 16px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-summary-price span { font-size: 10px; font-weight: 600; }
-.apex-overview-summary-price span.positive { color: var(--apex-positive); }
-.apex-overview-summary-price span.negative { color: var(--apex-negative); }
-.apex-overview-summary-price small { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-summary-chart { min-width: 0; min-height: 48px; max-height: 72px; height: 100%; overflow: hidden; border-radius: 6px; }
-.apex-overview-summary-chart > * { height: 100%; }
-.apex-overview-summary-chart .apex-mini-sparkline { width: 100%; height: 100%; }
-.apex-overview-summary-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--apex-divider); padding-top: 5px; }
-.apex-overview-summary-stats > div { min-width: 0; display: grid; gap: 0; padding: 0 6px; border-right: 1px solid var(--apex-divider); }
-.apex-overview-summary-stats > div:first-child { padding-left: 0; }
-.apex-overview-summary-stats > div:last-child { border-right: 0; padding-right: 0; }
-.apex-overview-summary-stats dt { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-summary-stats dd { margin: 0; font: 600 10px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-summary-stats dd.positive { color: var(--apex-positive); }
-.apex-overview-summary-stats dd.negative { color: var(--apex-negative); }
-
-/* FIX 1D: the JSX emits `apex-overview-summary-stats apex-overview-summary-stats-4`.
-   Without a rule the 4th cell wrapped inside the base repeat(3, ...) grid. Same
-   specificity as the base rule (0,1,0), so this MUST stay after it to win. */
-.apex-overview-summary-stats-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-
-/* FIX 1B: the JSX emits `apex-overview-summary-chart-wide`, which had no rule at all,
-   so the sparkline collapsed to the global 58x24 thumbnail in index.css. The tuned
-   `.apex-overview-summary-chart` rule above is an orphan (no JSX match) and is left
-   in place untouched per instruction. */
-/* Panel 2 is height-constrained by the Overview page grid (measured 309px at
-   1368x753). A hard `height: 160px` here overflowed its grid row and painted the
-   sparkline on top of the stats and breadth rows. Row 3 therefore absorbs the
-   panel's leftover space instead, and the chart fills that row. */
-.apex-overview-summary-chart-wide {
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  min-height: 56px;
-  overflow: hidden;
-  border-radius: 6px;
-}
-.apex-overview-summary-chart-wide > * { width: 100%; height: 100%; }
-.apex-overview-summary-chart-wide .apex-mini-sparkline { width: 100%; height: 100%; }
-
-/* FIX 1C: `.apex-overview-breadth` and `-bar` had no rules. The three <i> segments are
-   inline by default, so their inline `width: N%` was ignored and the bar measured 0px
-   tall. Modelled on the working .apex-mkt2-breadth-bar (reference-ui.css:1982).
-   Segments are selected by their JSX class names rather than :nth-child so the mapping
-   survives any future reordering. */
-.apex-overview-breadth {
+.apex-overview-account-rows {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0;
 }
-.apex-overview-breadth > span { font-size: 10px; font-weight: 600; }
-.apex-overview-breadth > span.bullish { color: var(--apex-positive); }
-.apex-overview-breadth > span.bearish { color: var(--apex-negative); }
-.apex-overview-breadth-bar {
-  display: flex;
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--apex-surface-soft);
-}
-.apex-overview-breadth-bar > i { display: block; height: 100%; min-width: 0; }
-.apex-overview-breadth-bar > i.bullish { background: var(--apex-positive); }
-.apex-overview-breadth-bar > i.neutral { background: var(--apex-muted-600); }
-.apex-overview-breadth-bar > i.bearish { background: var(--apex-negative); }
-.apex-overview-summary footer { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
-.apex-overview-summary footer button { padding: 3px 8px; font-size: 10px; }
-.apex-overview-summary-empty { display: grid; place-content: center; min-height: 0; padding: 5px; border: 1px dashed var(--apex-border); border-radius: 6px; font-size: 10px; color: var(--apex-muted-600); text-align: center; }
 
-.apex-overview-calm-compact { display: flex; align-items: center; gap: 6px; min-height: 0; padding: 5px 7px; border: 1px solid var(--apex-divider); border-radius: 6px; background: var(--apex-surface-soft); }
-.apex-overview-calm-compact svg { flex: 0 0 auto; color: var(--apex-positive); }
-.apex-overview-calm-compact strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 600; color: var(--apex-muted-700); }
-.apex-overview-calm-large {
-  min-height: 88px;
+.apex-overview-account-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.apex-overview-account-cell {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.apex-overview-account-cell:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.apex-overview-account-cell span {
+  font-size: 8px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apex-overview-account-cell strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.apex-overview-account-cell strong i {
+  font-style: normal;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 2px;
+  font-family: -apple-system, sans-serif;
+}
+
+.apex-overview-account-cell small {
+  font-size: 8px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.muted-text {
+  color: #94a3b8;
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+.apex-overview-account-insights {
+  display: grid;
+  grid-template-columns: 52fr 48fr;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: auto;
+}
+
+.subpanel-title {
+  display: block;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.apex-overview-allocation-body,
+.apex-overview-health-body {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.donut-chart-container {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+}
+
+.donut-center-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  gap: 4px;
+  pointer-events: none;
 }
-.apex-overview-calm-large span { display: grid; gap: 2px; }
-.apex-overview-calm-large small { font-size: 10px; font-weight: 500; color: var(--apex-muted-600); }
 
-.apex-overview-funnel {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
+.donut-center-text b {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
 }
-.apex-overview-funnel > div {
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface-soft);
-  padding: 4px 6px;
-  display: grid;
-  gap: 1px;
-}
-.apex-overview-funnel span { font-size: 10px; color: var(--apex-muted-600); text-transform: uppercase; letter-spacing: .04em; }
-.apex-overview-funnel strong { font: 700 13px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
-.apex-overview-funnel strong.tone-ok { color: var(--apex-positive); }
-.apex-overview-funnel strong.tone-warn { color: var(--apex-orange-500); }
 
-.apex-overview-signal-highlight {
-  display: grid;
-  grid-template-columns: minmax(0, 92px) minmax(0, 1fr);
-  gap: 6px;
-  align-items: stretch;
+.donut-center-text small {
+  font-size: 10px;
+  color: #64748b;
 }
-.apex-overview-signal-highlight > div:first-child {
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface-soft);
-  padding: 5px 6px;
-  display: grid;
-  gap: 1px;
-  align-content: center;
-}
-.apex-overview-signal-highlight > div:first-child span { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-signal-highlight > div:first-child strong { font: 700 16px/1 var(--apex-font-mono, "JetBrains Mono", monospace); }
-.apex-overview-signal-top { display: grid; gap: 2px; min-width: 0; }
-.apex-overview-signal-top > span { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-signal-top > button {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 7px;
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface);
-  text-align: left;
-}
-.apex-overview-signal-top > button strong { font-size: 10px; }
-.apex-overview-signal-top > button em { font: 700 11px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-blue-500); font-style: normal; }
-.apex-overview-signal-top > button b { font-size: 10px; font-weight: 700; color: var(--apex-blue-500); }
-.apex-overview-rejection { margin: 0; font-size: 10px; color: var(--apex-muted-600); }
 
-.apex-overview-decision-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+.allocation-legend-list {
+  list-style: none;
   margin: 0;
-}
-.apex-overview-decision-list > div {
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface-soft);
-  padding: 4px 6px;
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-}
-.apex-overview-decision-list dt { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-decision-list dd {
-  margin: 0;
-  font: 700 10px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace);
-  color: var(--apex-ink-950);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.apex-overview-provider-table { display: grid; gap: 2px; min-height: 0; overflow: auto; font-size: 10px; }
-.apex-overview-provider-table .head,
-.apex-overview-provider-table .row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr) .7fr .6fr .55fr;
-  gap: 4px;
-  align-items: center;
-  padding: 2px 4px;
-}
-.apex-overview-provider-table .head { color: var(--apex-muted-600); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.apex-overview-provider-table .row { border-radius: 4px; background: var(--apex-surface-soft); }
-.apex-overview-provider-table .row strong { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-provider-table .status-ok { color: var(--apex-positive); font-weight: 700; }
-.apex-overview-provider-table .status-degraded,
-.apex-overview-provider-table .status-schema { color: var(--apex-orange-500); font-weight: 700; }
-.apex-overview-provider-table .status-not-set { color: var(--apex-muted-600); }
-
-.apex-overview-execution-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-}
-.apex-overview-execution-grid > div {
-  border: 1px solid var(--apex-divider);
-  border-radius: 8px;
-  background: var(--apex-surface-soft);
-  padding: 4px 6px;
-  display: grid;
-  gap: 1px;
-}
-.apex-overview-execution-grid span { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-execution-grid strong { font: 700 11px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace); }
-.apex-overview-execution-grid em { font-size: 10px; font-style: normal; color: var(--apex-positive); font-weight: 600; }
-.apex-overview-execution footer { margin-top: 2px; }
-.apex-overview-execution footer small { font-size: 10px; color: var(--apex-muted-600); }
-
-.apex-overview-signals > header, .apex-overview-attention > header,
-.apex-overview-activity > header, .apex-overview-autopilot > header,
-.apex-overview-datahealth > header, .apex-overview-systemhealth > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
-.apex-overview-signals h2, .apex-overview-attention h2, .apex-overview-activity h2,
-.apex-overview-autopilot h2, .apex-overview-datahealth h2, .apex-overview-systemhealth h2 { display: flex; align-items: center; gap: 5px; margin: 0; font-size: 12px; font-weight: 700; color: var(--apex-ink-950); }
-.apex-overview-signals > header > strong, .apex-overview-attention > header > strong { font: 700 14px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
-.apex-overview-signals > header em, .apex-overview-autopilot > header em,
-.apex-overview-datahealth > header em { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .04em; }
-.apex-overview-activity > header button { padding: 3px 7px; font-size: 10px; }
-
-.apex-overview-signals { display: grid; grid-template-rows: auto auto auto auto auto; gap: 5px; padding: 7px 9px 8px; align-content: start; }
-.apex-overview-signals footer,
-.apex-overview-autopilot footer { display: flex; justify-content: flex-end; }
-.apex-overview-autopilot { display: grid; grid-template-rows: auto auto auto auto; gap: 4px; padding: 7px 9px 8px; align-content: start; }
-.apex-overview-providers,
-.apex-overview-execution { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 7px 9px 8px; align-content: start; }
-.apex-overview-signals-meta { margin: 0; font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-signal-list { display: grid; grid-auto-rows: 36px; gap: 3px; min-height: 0; overflow-y: auto; align-content: start; }
-.apex-overview-signal-list > button { --signal-tone: var(--apex-muted-500); position: relative; min-width: 0; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; grid-template-rows: auto auto; grid-template-areas: "icon name score" "icon detail score"; align-items: center; gap: 0 6px; padding: 3px 6px 3px 8px; border: 1px solid var(--apex-divider); border-radius: 6px; background: var(--apex-surface); text-align: left; box-shadow: none; }
-.apex-overview-signal-list > button::before { content: ''; position: absolute; inset: 4px auto 4px 0; width: 2px; border-radius: 2px; background: var(--signal-tone); }
-.apex-overview-signal-list > button:hover { background: var(--apex-surface-soft); }
-.apex-overview-signal-list > button.dir-long { --signal-tone: var(--apex-positive); }
-.apex-overview-signal-list > button.dir-short { --signal-tone: var(--apex-negative); }
-.apex-overview-signal-list > button.tier-blocked { --signal-tone: var(--apex-muted-500); opacity: .82; }
-.apex-overview-signal-list > button.tier-caution { --signal-tone: var(--apex-orange-500); }
-.apex-overview-signal-list svg, .apex-overview-signal-list img { grid-area: icon; }
-.apex-overview-signal-list > button > strong { grid-area: name; min-width: 0; display: flex; align-items: baseline; gap: 4px; overflow: hidden; font-size: 10px; font-weight: 700; color: var(--apex-ink-950); }
-.apex-overview-signal-list > button > strong em { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .05em; color: var(--signal-tone); }
-.apex-overview-signal-list > button > b { grid-area: score; font: 700 12px/1 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); }
-.apex-overview-signal-list > button > small { grid-area: detail; min-width: 0; display: flex; align-items: baseline; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-signal-list > button > small i { flex: 0 0 auto; font-style: normal; font-weight: 700; color: var(--signal-tone); }
-
-.apex-overview-attention { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 5px; padding: 7px 9px 8px; }
-.apex-overview-attention-list { display: grid; grid-auto-rows: 36px; gap: 3px; min-height: 0; overflow-y: auto; align-content: start; }
-.apex-overview-attention-list > button { --attn-tone: var(--apex-blue-500); min-width: 0; display: grid; grid-template-columns: 15px minmax(0, 1fr) 14px; align-items: center; gap: 6px; padding: 3px 6px; border: 1px solid var(--apex-divider); border-left: 2px solid var(--attn-tone); border-radius: 6px; background: var(--apex-surface); text-align: left; box-shadow: none; }
-.apex-overview-attention-list > button:hover { background: var(--apex-surface-soft); }
-.apex-overview-attention-list > button.tone-warning { --attn-tone: var(--apex-orange-500); }
-.apex-overview-attention-list > button.tone-danger { --attn-tone: var(--apex-negative); }
-.apex-overview-attention-list svg { color: var(--attn-tone); }
-.apex-overview-attention-list span { min-width: 0; display: grid; gap: 0; }
-.apex-overview-attention-list strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 600; color: var(--apex-ink-950); }
-.apex-overview-attention-list small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-600); }
-
-.apex-overview-autopilot { display: grid; grid-template-rows: auto auto; gap: 4px; padding: 7px 9px 8px; align-content: start; }
-.apex-overview-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; margin: 0; }
-.apex-overview-kv > div { min-width: 0; display: grid; gap: 0; padding: 2px 5px; border: 1px solid var(--apex-divider); border-radius: 5px; background: var(--apex-surface-soft); }
-.apex-overview-kv dt { font-size: 10px; color: var(--apex-muted-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-kv dd { margin: 0; font: 700 10px/1.25 var(--apex-font-mono, "JetBrains Mono", monospace); color: var(--apex-ink-950); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.apex-overview-panel-error { display: flex; align-items: center; gap: 4px; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-negative); }
-.apex-overview-panel-error svg { flex: 0 0 auto; }
-
-.apex-overview-datahealth, .apex-overview-systemhealth { display: grid; grid-template-rows: auto auto; gap: 4px; padding: 7px 9px 8px; align-content: start; }
-.apex-overview-health-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.apex-overview-health-list > li { --health-tone: var(--apex-muted-500); min-width: 0; display: grid; grid-template-columns: minmax(0, 72px) minmax(0, 1fr) auto; align-items: baseline; gap: 5px; padding: 2px 5px 2px 7px; border-left: 2px solid var(--health-tone); border-radius: 4px; background: var(--apex-surface-soft); }
-.apex-overview-health-list span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-700); }
-.apex-overview-health-list small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-health-list b { font: 700 10px/1.4 var(--apex-font-mono, "JetBrains Mono", monospace); letter-spacing: .03em; color: var(--health-tone); }
-
-.apex-overview-kv > div.tone-ok dd, .apex-overview-health-list > li.tone-ok, .apex-overview-datahealth em.tone-ok, .apex-overview-autopilot em.tone-ok, .apex-overview-account > header em.tone-ok { --health-tone: var(--apex-positive); color: var(--apex-positive); }
-.apex-overview-kv > div.tone-warn dd, .apex-overview-health-list > li.tone-warn, .apex-overview-datahealth em.tone-warn { --health-tone: var(--apex-orange-500); color: var(--apex-orange-500); }
-.apex-overview-kv > div.tone-danger dd, .apex-overview-health-list > li.tone-danger, .apex-overview-datahealth em.tone-danger { --health-tone: var(--apex-negative); color: var(--apex-negative); }
-.apex-overview-kv > div.tone-info dd, .apex-overview-health-list > li.tone-info, .apex-overview-datahealth em.tone-info { --health-tone: var(--apex-blue-500); color: var(--apex-blue-500); }
-.apex-overview-kv > div.tone-muted dd, .apex-overview-health-list > li.tone-muted, .apex-overview-datahealth em.tone-muted, .apex-overview-autopilot em.tone-muted, .apex-overview-account > header em.tone-muted { --health-tone: var(--apex-muted-500); color: var(--apex-muted-600); }
-
-.apex-overview-activity { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 7px 9px 8px; }
-.apex-overview-activity .apex-tabs { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 3px; min-height: 0; }
-.apex-overview-activity .apex-tabs-panel { min-height: 0; overflow: auto; }
-.apex-overview-activity table { font-size: 10px; }
-.apex-overview-activity th, .apex-overview-activity td { padding: 2px 5px; }
-.apex-overview-activity .apex-honest-empty { min-height: 0; padding: 5px 7px; font-size: 10px; }
-.apex-overview-activity .apex-honest-empty svg { display: none; }
-
-@container workspace-region (max-width: 900px) {
-  .apex-overview-v2 { height: auto; overflow: visible; grid-template-rows: auto; }
-  .apex-overview-status-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .apex-overview-upper-grid, .apex-overview-lower-grid { grid-template-columns: 1fr; }
-  .apex-overview-upper-right, .apex-overview-lower-right { grid-template-rows: auto; }
-  .apex-overview-summary-body { grid-template-columns: 1fr; }
-  .apex-overview-summary-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .apex-overview-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .apex-overview-account-row { grid-template-columns: 1fr; }
-  .apex-overview-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .apex-overview-execution-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .apex-overview-signal-highlight { grid-template-columns: 1fr; }
-}
-
-/* Panel 6 — Recent Activity table.
-   The table frame stays mounted when a tab has no rows, so the empty state is a row inside
-   the table rather than a replacement for it. Colours come from --apex-* tokens only, so the
-   panel follows the resolved app theme instead of pinning its own palette. */
-.apex-overview-activity-table { min-height: 0; overflow: auto; }
-.apex-overview-activity-table table { width: 100%; border-collapse: collapse; font-size: 10px; }
-.apex-overview-activity-table th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--apex-surface);
-  color: var(--apex-muted-600);
-  font-weight: 600;
-  text-align: left;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--apex-border);
-}
-.apex-overview-activity-table td {
-  color: var(--apex-text);
-  white-space: nowrap;
-  border-bottom: 1px solid var(--apex-border);
-}
-.apex-overview-activity-table tbody tr:last-child td { border-bottom: none; }
-.apex-overview-activity-table .apex-status-pill { padding: 0 4px; font-size: 10px; line-height: 14px; }
-.apex-overview-activity-empty td { padding: 10px 5px; color: var(--apex-muted-600); text-align: center; }
-
-/* ==========================================================================
-   Light-reference alignment (2026-08-24)
-
-   Appended on purpose. Most rules below re-declare properties set earlier in
-   this file at IDENTICAL specificity, so source order is the only thing that
-   makes them win — do not hoist this block, and do not "tidy" it by merging it
-   into the base rules (that reintroduces the -stats-4 ordering trap).
-   Tokens only, no literal hex, so both data-apex-theme-resolved values keep
-   working. The reference is the light theme.
-   ========================================================================== */
-
-/* --- Panel numbers: filled green badge -> plain "5." -----------------------
-   The reference prints the ordinal as text, not a pill. All seven panel headers
-   emit a bare digit, so the period comes from ::after and no TSX changes.
-   `flex: none` is inherited from the base rule; a flex item is blockified, so
-   dropping `display: grid` is safe and `width/height: auto` shrink-wraps. */
-.apex-overview-section-num {
-  width: auto;
-  height: auto;
-  display: inline;
-  background: none;
-  border-radius: 0;
-  color: var(--apex-muted-600);
-  font: 700 11px/1.1 var(--apex-font-mono, "JetBrains Mono", monospace);
-}
-.apex-overview-section-num::after { content: "."; }
-.apex-overview-section-head { gap: 6px; }
-
-/* --- Density: the reference fits more rows per panel ----------------------- */
-.apex-overview-v2 { gap: 6px; }
-.apex-overview-status-cards { gap: 5px; }
-.apex-overview-status-card { padding: 6px 8px; }
-.apex-overview-summary { gap: 4px; padding: 6px 8px 6px; }
-.apex-overview-autopilot,
-.apex-overview-providers,
-.apex-overview-execution { padding: 6px 8px 6px; }
-.apex-overview-funnel { gap: 3px; }
-.apex-overview-funnel > div { padding: 3px 5px; }
-.apex-overview-funnel strong { font-size: 12px; }
-.apex-overview-decision-list > div { padding: 3px 5px; }
-.apex-overview-execution-grid > div { padding: 3px 5px; }
-.apex-overview-signal-highlight > div:first-child { padding: 4px 5px; }
-.apex-overview-signal-highlight > div:first-child strong { font-size: 14px; }
-.apex-overview-signal-top > button { padding: 4px 6px; }
-
-/* --- Panel 3: stop clipping `Top rejection` and the `View scanner` footer ---
-   Both are already in OverviewSignalsPanel.tsx and were never missing markup —
-   they fell outside the fixed 1368x753 stage. Five `auto` rows plus
-   `align-content: start` let the panel's content total exceed its grid area,
-   and every panel carries `overflow: hidden`, so the overflow was silently
-   cropped instead of scrolling. Making the highlight row the flexible one caps
-   the total at the panel height and pushes the shrink onto the row that can
-   afford it, rather than onto the last two children. */
-.apex-overview-signals {
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
-  gap: 4px;
-  padding: 6px 8px 6px;
-  align-content: stretch;
-}
-.apex-overview-signal-highlight { min-height: 0; overflow: hidden; }
-
-/* --- Panel 2: big selected-market price, stats stacked beside it -----------
-   Replaces the 4-across `.apex-overview-summary-stats-4` row. That rule and the
-   orphaned `.apex-overview-summary-body` / `-summary-price` / `-summary-chart`
-   rules above are now unreferenced by the JSX; they are left in place because
-   the file already documents them as deliberate orphans. New class names are
-   used here so none of those orphan declarations leak into this layout.
-
-   No fixed height anywhere below: a hard height on `-chart-wide` previously
-   overflowed the panel row and painted the sparkline over the stats and breadth
-   rows. Row 3 of `.apex-overview-summary` still owns the slack; the hero column
-   passes it to the chart via `minmax(0, 1fr)`. */
-.apex-overview-summary-focus {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 172px);
-  gap: 8px;
-  min-width: 0;
-  min-height: 0;
-}
-.apex-overview-summary-hero {
-  display: grid;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr);
-  gap: 2px;
-  min-width: 0;
-  min-height: 0;
-}
-.apex-overview-summary-hero-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.apex-overview-summary-hero-head strong {
-  font: 700 11px/1 var(--apex-font-mono, "JetBrains Mono", monospace);
-  color: var(--apex-ink-950);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.apex-overview-summary-hero > b {
-  font: 700 22px/1.05 var(--apex-font-mono, "JetBrains Mono", monospace);
-  color: var(--apex-ink-950);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.apex-overview-summary-hero > em {
-  justify-self: start;
-  font: 700 10px/1 var(--apex-font-mono, "JetBrains Mono", monospace);
-  font-style: normal;
-  padding: 2px 5px;
-  border: 1px solid var(--apex-divider);
-  border-radius: 999px;
-}
-.apex-overview-summary-hero > em.positive { color: var(--apex-positive); }
-.apex-overview-summary-hero > em.negative { color: var(--apex-negative); }
-
-.apex-overview-summary-statlist {
-  display: grid;
-  grid-auto-rows: auto;
-  align-content: start;
-  gap: 3px;
-  margin: 0;
-  min-width: 0;
-  min-height: 0;
-}
-.apex-overview-summary-statlist > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px;
-  min-width: 0;
-  padding: 3px 6px;
-  border: 1px solid var(--apex-divider);
-  border-radius: 6px;
-  background: var(--apex-surface-soft);
-}
-.apex-overview-summary-statlist dt { font-size: 10px; color: var(--apex-muted-600); white-space: nowrap; }
-.apex-overview-summary-statlist dd {
-  margin: 0;
-  font: 700 10px/1.2 var(--apex-font-mono, "JetBrains Mono", monospace);
-  color: var(--apex-ink-950);
-  text-align: right;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Narrow-container fallback. The pre-existing @container block above still
-   targets `.apex-overview-summary-body` / `-summary-stats`, which the panel-2
-   JSX no longer emits, so the new two-column focus block needs its own collapse
-   rule. Placed after that block so it wins on source order at equal specificity. */
-@container workspace-region (max-width: 900px) {
-  .apex-overview-summary-focus { grid-template-columns: 1fr; }
-}
-
-
-/* ==========================================================================
-   REFERENCE ALIGNMENT PASS 2 — appended deliberately (2026-08-24)
-   Many rules below re-declare properties that earlier blocks in THIS file set
-   at the same specificity. Source order is the mechanism. Do not hoist, sort
-   or merge this block into the sections above; doing so silently reverts it.
-   Scope is the Overview panels only — sidebar and top header are untouched.
-   ========================================================================== */
-
-/* Panel headers: reference keeps "N. TITLE" together at the left edge.
-   `.apex-overview-account > header` and the `.apex-overview-signals > header`
-   group both set justify-content: space-between at (0,1,1), which beat the
-   plain `.apex-overview-section-head` class (0,1,0) and pushed every title to
-   the right. `header.apex-overview-section-head` matches at (0,1,1) and wins
-   on order. Trailing counts/badges/links are pushed right individually. */
-header.apex-overview-section-head { justify-content: flex-start; gap: 5px; }
-header.apex-overview-section-head > strong,
-header.apex-overview-section-head > em,
-header.apex-overview-section-head > button { margin-left: auto; }
-
-.apex-overview-head-link {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
   padding: 0;
-  border: 0;
-  border-radius: 4px;
-  background: none;
-  box-shadow: none;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--apex-blue-500);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+  flex: 1;
 }
-.apex-overview-head-link:hover:not(:disabled) { background: none; color: var(--apex-blue-600, var(--apex-blue-500)); text-decoration: underline; }
-.apex-overview-head-link:disabled { color: var(--apex-muted-500); text-decoration: none; }
 
-/* Status strip: reference puts a tinted rounded-square icon at the left,
-   spanning a Title Case label over the value. Labels already ship in Title
-   Case from OverviewStatusCards.tsx — the shouting came from the
-   text-transform below, not from the data. */
-.apex-overview-status-card {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  grid-template-areas: "icon label" "icon value";
+.allocation-legend-list li {
+  display: flex;
   align-items: center;
-  gap: 0 8px;
-  padding: 5px 9px;
-}
-.apex-overview-status-card .apex-overview-status-icon {
-  grid-area: icon;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  display: grid;
-  place-content: center;
-}
-.apex-overview-status-card b {
-  grid-area: label;
-  align-self: end;
+  gap: 3px;
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--apex-muted-600);
 }
-.apex-overview-status-card em {
-  grid-area: value;
-  align-self: start;
-  font-family: inherit;
+
+.allocation-legend-list .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.allocation-legend-list .name {
+  color: #475569;
+  flex: 1;
+}
+
+.allocation-legend-list .pct {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.health-gauge-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.health-gauge-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-gauge-text b {
   font-size: 13px;
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -.005em;
+  color: #0f172a;
 }
 
-/* Panel 1: reference separates the nine cells with hairlines instead of
-   wrapping each one in a filled, rounded box. Numerals are proportional and
-   larger; the currency suffix peeled off by splitUnit() renders muted. */
-.apex-overview-account-rows { gap: 0; }
-.apex-overview-account-row { gap: 0; }
-.apex-overview-account-row + .apex-overview-account-row { border-top: 1px solid var(--apex-divider); }
-.apex-overview-account-cell {
-  border: 0;
-  border-radius: 0;
-  background: none;
-  padding: 7px 10px 7px 0;
+.health-gauge-text small {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.health-stats-col {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
-  align-content: start;
+  flex: 1;
 }
-.apex-overview-account-cell + .apex-overview-account-cell {
-  border-left: 1px solid var(--apex-divider);
-  padding-left: 10px;
+
+.h-stat-row {
+  display: flex;
+  flex-direction: column;
 }
-.apex-overview-account-cell:hover { background: color-mix(in srgb, var(--apex-ink-950) 4%, transparent); }
-.apex-overview-account-cell > strong {
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -.01em;
+
+.h-label {
+  font-size: 10px;
+  color: #64748b;
 }
-.apex-overview-account-cell > strong > i {
-  margin-left: 4px;
-  font-style: normal;
+
+.h-val {
   font-size: 10px;
   font-weight: 600;
-  color: var(--apex-muted-600);
-}
-.apex-overview-margin-bar { margin-top: 4px; height: 3px; }
-
-/* Panel 2 tiles: the reference shows a trend line inside every market tile and
-   rings the selected one in green. The sparkline was explicitly hidden earlier
-   in this file; re-enable it at a height the tile can afford. */
-.apex-overview-market-tiles .apex-mini-sparkline { display: block; height: 13px; }
-.apex-overview-market-tiles > button { max-width: none; padding: 5px 7px; }
-.apex-overview-market-tiles > button.selected,
-.apex-overview-market-tiles > button.active,
-.apex-overview-market-tiles > button[data-selected="true"],
-.apex-overview-market-tiles > button[aria-pressed="true"] {
-  border-color: var(--apex-green-600);
-  box-shadow: inset 0 0 0 1px var(--apex-green-600);
-  background: color-mix(in srgb, var(--apex-green-600) 7%, var(--apex-surface));
+  color: #0f172a;
 }
 
-/* Panel 2 stats: hairline rows, not boxes. */
-.apex-overview-summary-statlist { gap: 0; }
-.apex-overview-summary-statlist > div {
-  border: 0;
-  border-radius: 0;
-  background: none;
-  padding: 4px 0;
+/* Panel 2: Market Intelligence Snapshot */
+.apex-overview-summary {
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  gap: 6px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  position: relative;
 }
-.apex-overview-summary-statlist > div + div { border-top: 1px solid var(--apex-divider); }
-.apex-overview-summary-statlist dt { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-summary-statlist dd { margin: 0; font-size: 11px; font-weight: 700; color: var(--apex-ink-950); }
-.apex-overview-summary footer { justify-content: flex-end; gap: 8px; margin-top: 1px; }
 
-/* Panel 2 breadth: reference stacks an uppercase caption above the bar, with
-   the bullish/bearish readouts flanking it. The caption is a static label, not
-   data — the section keeps its own aria-label for assistive tech. */
-.apex-overview-breadth {
+.apex-overview-summary-focus {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.overview-market-mini-cards {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "label label label" "bull bar bear";
-  align-items: center;
-  gap: 3px 7px;
-}
-.apex-overview-breadth::before {
-  content: "Market Breadth (24h)";
-  grid-area: label;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--apex-muted-600);
-}
-.apex-overview-breadth > .bullish { grid-area: bull; }
-.apex-overview-breadth > .bearish { grid-area: bear; }
-.apex-overview-breadth-bar { grid-area: bar; }
-
-/* Panel 3: the "View scanner" footer moved into the header, so the panel is
-   four rows again. The earlier pass gave the highlight row minmax(0,1fr) plus
-   overflow:hidden, which let it collapse to zero height and swallow "Current
-   Candidates / Highest Confidence" whole — the slack now lands on the trailing
-   rejection block, which can shrink without losing a whole sub-panel. */
-.apex-overview-signals {
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
-  align-content: stretch;
+  min-height: 0;
 }
-.apex-overview-signal-highlight { min-height: 0; overflow: visible; }
-.apex-overview-funnel { gap: 0; }
-.apex-overview-funnel > div {
-  border: 0;
-  border-radius: 0;
-  background: none;
-  padding: 2px 8px;
-}
-.apex-overview-funnel > div + div { border-left: 1px solid var(--apex-divider); }
-.apex-overview-funnel span { font-size: 10px; letter-spacing: .03em; text-transform: uppercase; color: var(--apex-muted-600); }
-.apex-overview-funnel strong { font-family: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; }
-.apex-overview-rejection-block {
+
+.market-mini-card {
+  position: relative;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 5px 6px 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 70px;
   min-width: 0;
-  display: grid;
-  align-content: start;
-  gap: 2px;
-  padding-top: 5px;
-  border-top: 1px solid var(--apex-divider);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.market-mini-card.active {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.1);
+}
+
+.mini-card-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coin-name {
+  font-size: 8.5px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+}
+
+.mini-price {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.mini-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.mini-vol {
+  font-size: 7.5px;
+  color: #64748b;
+  font-family: -apple-system, sans-serif;
+}
+
+.mini-card-spark {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  opacity: 0.85;
+}
+
+.overview-market-main-chart-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chart-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chart-selected-symbol {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.selected-symbol-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.selected-price {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.selected-change {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.chart-stats-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.stat-val {
+  font-size: 10px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.chart-svg-container {
+  width: 100%;
+  height: 105px;
+}
+
+.overview-market-breadth-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 3px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.breadth-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.breadth-track {
+  flex: 1;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  display: flex;
   overflow: hidden;
 }
-.apex-overview-rejection-block > span { font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--apex-muted-600); }
-.apex-overview-rejection { font-size: 10px; line-height: 1.35; color: var(--apex-ink-950); overflow: hidden; }
 
-/* Panel 4: reference lists the decision fields as full-width label/value rows
-   separated by hairlines, with a full-width action at the bottom. */
-.apex-overview-autopilot { grid-template-rows: auto auto auto auto; align-content: start; gap: 5px; }
-.apex-overview-decision-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 0; }
-.apex-overview-decision-list > div {
-  min-width: 0;
+.breadth-segment {
+  height: 100%;
+}
+
+.segment-bullish { background: #10b981; }
+.segment-neutral { background: #64748b; }
+.segment-bearish { background: #ef4444; }
+
+.breadth-legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+}
+
+.btn-more-markets {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Panel 3: Signal / Opportunity Summary */
+.apex-overview-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.overview-signals-funnel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+
+.signal-funnel-card {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 4px;
+  padding: 3px 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.funnel-label {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.funnel-val-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
-  padding: 5px 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
 }
-.apex-overview-decision-list > div + div { border-top: 1px solid var(--apex-divider); }
-.apex-overview-decision-list dt { flex: 0 0 auto; font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-decision-list dd {
-  margin: 0;
-  min-width: 0;
-  text-align: right;
+
+.funnel-val {
   font-size: 11px;
   font-weight: 700;
-  color: var(--apex-ink-950);
+  color: #0f172a;
+}
+
+.funnel-delta {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.overview-opportunity-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 5px;
+}
+
+.opportunity-main-box,
+.opportunity-conviction-bar-box,
+.opportunity-conviction-dots-box {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 4px;
+  padding: 3px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+}
+
+.sub-tag {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.opp-info-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+}
+
+.opp-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.opp-score {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.btn-view-opp {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #334155;
+  padding: 1px 3px;
+  cursor: pointer;
+}
+
+.conviction-pct,
+.conviction-level {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.conviction-bar-track {
+  width: 100%;
+  height: 3.5px;
+  background: #e2e8f0;
+  border-radius: 2px;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.conviction-bar-fill {
+  height: 100%;
+  background: #10b981;
+}
+
+.conviction-dots-row {
+  display: flex;
+  align-items: center;
+  gap: 2.5px;
+}
+
+.conviction-dots-row .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e2e8f0;
+}
+
+.conviction-dots-row .dot.active {
+  background: #10b981;
+}
+
+.overview-top-reason-card {
+  background: #faf5ff;
+  border: 1px solid #f3e8ff;
+  border-radius: 4px;
+  padding: 3px 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.reason-icon-box {
+  color: #8b5cf6;
+}
+
+.reason-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.reason-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7e22ce;
+}
+
+.reason-text {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Panel 4: Autopilot Decision Summary */
+.apex-overview-autopilot {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.autopilot-stage-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 3px;
+  padding: 1px 5px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.apex-overview-autopilot-body {
+  display: grid;
+  grid-template-columns: 1fr 65px;
+  gap: 5px;
+  align-items: center;
+}
+
+.decision-kv-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+}
+
+.kv-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  font-size: 10px;
+}
+
+.kv-key {
+  color: #64748b;
+}
+
+.kv-val {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.purple-text {
+  color: #7e22ce;
+}
+
+.autopilot-crystal-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crystal-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.autopilot-card-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-view-details {
+  width: 100%;
+  height: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.btn-view-details:hover {
+  background: #f8fafc;
+}
+
+/* ==========================================================================
+   3. LOWER GRID (Panels 5, 6, 7, 8)
+   ========================================================================== */
+.apex-overview-lower-grid {
+  display: grid !important;
+  grid-template-columns: minmax(180px, 0.78fr) minmax(300px, 1.38fr) minmax(235px, 1.02fr) minmax(285px, 1.28fr) !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Panel 5: Priority / Action Needed */
+.apex-overview-attention {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.overview-priority-action-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.priority-item {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 5px !important;
+  padding: 3.5px 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+}
+
+.priority-item:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+.priority-item-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.priority-warn-icon {
+  color: #ea580c;
+}
+
+.priority-info-icon {
+  color: #3b82f6;
+}
+
+.priority-item-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.priority-item-val {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.overview-mini-system-badges {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding-top: 3px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mini-badge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+}
+
+.badge-icon-green { color: #10b981; }
+.badge-icon-orange { color: #ea580c; }
+.badge-icon-red { color: #ef4444; }
+.badge-icon-blue { color: #3b82f6; }
+
+.badge-lbl {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.badge-status-green { font-size: 10px; color: #10b981; font-weight: 700; }
+.badge-status-orange { font-size: 10px; color: #ea580c; font-weight: 700; }
+.badge-status-red { font-size: 10px; color: #ef4444; font-weight: 700; }
+.badge-status-blue { font-size: 10px; color: #3b82f6; font-weight: 700; }
+
+/* Panel 6: Recent Activity */
+.apex-overview-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.overview-activity-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 2px;
+}
+
+.activity-tab {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  padding: 1px 0 2px;
+  position: relative;
+}
+
+.activity-tab.active {
+  color: #10b981;
+}
+
+.activity-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #10b981;
+}
+
+.overview-activity-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.overview-activity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.overview-activity-table th {
+  color: #64748b;
+  font-weight: 600;
+  text-align: left;
+  padding: 2.5px 3px;
+  border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
-.apex-overview-autopilot footer { display: grid; margin-top: 2px; }
-.apex-overview-autopilot footer > button { width: 100%; justify-content: center; padding: 5px 8px; font-size: 10px; }
 
-/* Panel 8: reference is a 2x2 of hairline-separated cells, not a 4-across row. */
-.apex-overview-execution-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
-.apex-overview-execution-grid > div {
-  border: 0;
-  border-radius: 0;
-  background: none;
-  padding: 6px 10px 6px 0;
+.overview-activity-table td {
+  padding: 2.5px 3px;
+  border-bottom: 1px solid #f8fafc;
+  color: #334155;
+  white-space: nowrap;
 }
-.apex-overview-execution-grid > div:nth-child(2n) { border-left: 1px solid var(--apex-divider); padding-left: 10px; padding-right: 0; }
-.apex-overview-execution-grid > div:nth-child(n + 3) { border-top: 1px solid var(--apex-divider); }
-.apex-overview-execution-grid span { font-size: 10px; color: var(--apex-muted-600); }
-.apex-overview-execution-grid strong { font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1.2; }
 
-/* Panel 7: keep the header row (assistive-tech affordance the reference drops)
-   but quiet it down, and let the status tag read as a pill like the reference. */
-.apex-overview-provider-table .head { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--apex-muted-500); }
-.apex-overview-provider-table .row { padding-top: 3px; padding-bottom: 3px; }
+.bold-market {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.side-long {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.status-open,
+.status-filled,
+.status-confirmed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-taken {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.status-info {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.overview-activity-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 1px;
+}
+
+.btn-view-all-activity {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Panel 7: Provider / Data Health */
+.apex-overview-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.overview-providers-table-container,
+.apex-overview-provider-table-container {
+  width: 100%;
+  overflow: auto; scrollbar-gutter: stable;
+}
+
+.overview-providers-table,
+.apex-overview-provider-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.overview-providers-table th {
+  color: #64748b;
+  font-weight: 600;
+  text-align: left;
+  padding: 2.5px 3px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.overview-providers-table td {
+  padding: 2.5px 3px;
+  border-bottom: 1px solid #f8fafc;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.provider-cell {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.p-dot {
+  font-size: 10px;
+}
+
+.dot-blue { color: #2563eb; }
+.dot-black { color: #0f172a; }
+.dot-purple { color: #8b5cf6; }
+
+.p-warn-triangle {
+  color: #ea580c;
+  font-size: 10px;
+}
+
+.p-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.status-cell {
+  font-weight: 700;
+}
+
+.orange-text {
+  color: #ea580c;
+}
+
+.spark-health-svg {
+  display: block;
+}
+
+.overview-providers-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 1px;
+}
+
+.btn-view-providers {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Panel 8: Execution Snapshot */
+.apex-overview-execution {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.overview-execution-gauges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+
+.exec-gauge-card {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 4px;
+  padding: 3px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gauge-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.gauge-val {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.gauge-grade {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.gauge-spark-svg {
+  margin-top: 1px;
+}
+
+.gauge-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 10px;
+  margin-top: 1px;
+}
+
+.gauge-bar-chart span {
+  width: 2px;
+  background: #3b82f6;
+  border-radius: 1px;
+}
+
+.overview-execution-quality-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.quality-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quality-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.quality-score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.score-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.score-denom {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.score-label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.quality-gradient-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+}
+
+.quality-marker {
+  position: absolute;
+  top: -2px;
+  transform: translateX(-50%);
+}
+
+.marker-pin {
+  width: 3.5px;
+  height: 8px;
+  background: #0f172a;
+  border-radius: 1.5px;
+}
+
+.overview-execution-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.overview-execution-footer small {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.auto-refresh-dot {
+  color: #10b981;
+}
+
+.btn-refresh-exec {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+}

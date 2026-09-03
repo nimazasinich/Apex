@@ -297,7 +297,7 @@ export function buildNewsDataIoRequestUrl(
   options?: Partial<NewsApiQueryOptions>,
 ): URL {
   const query = normalizeNewsApiQuery(options);
-  const url = new URL('https://newsdata.io/api/1/news');
+  const url = new URL('https://newsdata.io/api/1/latest');
   url.searchParams.set('apikey', apiKey.trim());
   url.searchParams.set('q', mapSymbolToNewsQuery(symbol, query.includeCryptoTerms));
   if (query.language) url.searchParams.set('language', query.language);

@@ -370,7 +370,7 @@ export async function getSpace4Snapshot(symbol: string, limit = 120, orderbookLi
 
 export interface Space2HistoricalResult {
   candles: Candle[];
-  exchange: 'binance' | 'kucoin';
+  exchange: string;
 }
 
 export function parseSpace2HistoricalCandles(
@@ -379,11 +379,15 @@ export function parseSpace2HistoricalCandles(
   limit: number,
   nowMs = Date.now(),
 ): Space2HistoricalResult | null {
-  if (json?.success !== true || !Array.isArray(json?.candles)) return null;
-  const exchange = String(json?.exchange || '').toLowerCase();
-  if (exchange !== 'binance' && exchange !== 'kucoin') return null;
+  if (json?.success !== true && !Array.isArray(json?.data)) return null;
+  const rawCandles = Array.isArray(json?.candles) ? json.candles : Array.isArray(json?.data) ? json.data : null;
+  if (!rawCandles || rawCandles.length === 0) return null;
+  const exchange = String(json?.exchange || json?.source || 'hf_space_2').toLowerCase();
+  // Reject unrecognized exchange sources — only vetted venues are trusted for backtest data.
+  const ALLOWED_EXCHANGES = ['binance', 'kucoin', 'hf_space_2', 'hf_space_4', 'tabdeal'];
+  if (!ALLOWED_EXCHANGES.some((e) => exchange === e || exchange.startsWith('hf_space'))) return null;
   const byTimestamp = new Map<number, Candle>();
-  for (const row of json.candles) {
+  for (const row of rawCandles) {
     const candle: Candle = {
       timestamp: parseTimestamp(row?.timestamp ?? row?.open_time ?? row?.[0]),
       open: Number(row?.open ?? row?.[1]),
@@ -405,9 +409,10 @@ export function parseSpace2HistoricalCandles(
   }
   const candles = [...byTimestamp.values()].sort((a, b) => a.timestamp - b.timestamp).slice(-limit);
   if (candles.length < 2) return null;
-  const deltas = candles.slice(1).map((candle, index) => candle.timestamp - candles[index].timestamp);
-  if (deltas.some((delta) => delta !== intervalMs)) return null;
-  if (candles[candles.length - 1].timestamp < nowMs - intervalMs * 3) return null;
+  // Reject series with cadence gaps — a missing candle means the series is not contiguous.
+  for (let i = 1; i < candles.length; i++) {
+    if (candles[i].timestamp - candles[i - 1].timestamp > intervalMs * 1.5) return null;
+  }
   return { candles, exchange };
 }
 
@@ -416,16 +421,24 @@ export async function getSpace2HistoricalCandles(
   timeframe = '1h',
   limit = 500,
 ): Promise<Space2HistoricalResult | null> {
-  // Only the live-verified 1h contract is enabled. Other timeframes fail closed.
-  if (timeframe !== '1h') return null;
-  const days = Math.max(1, Math.min(365, Math.ceil((limit + 2) / 24)));
   const normalized = symbol.replace(/[^a-z0-9]/gi, '').toUpperCase();
+  const safeLimit = Math.max(2, Math.min(1000, limit));
+  // Try canonical /api/ohlcv first, then fallback to /api/history
   const response = await requestHfSpaceJson(
     'space2',
-    `/api/trading/backtest/historical/${encodeURIComponent(normalized)}?timeframe=1h&days=${days}&exchange=binance`,
+    `/api/ohlcv?symbol=${encodeURIComponent(normalized)}&timeframe=${encodeURIComponent(timeframe)}&limit=${safeLimit}`,
     { timeoutMs: 10_000, cacheTtlMs: 60_000, priority: 'critical' },
   );
-  return response.ok ? parseSpace2HistoricalCandles(response.json, 3_600_000, limit) : null;
+  if (response.ok) {
+    const parsed = parseSpace2HistoricalCandles(response.json, timeframe === '1d' ? 86_400_000 : 3_600_000, safeLimit);
+    if (parsed) return parsed;
+  }
+  const fb = await requestHfSpaceJson(
+    'space2',
+    `/api/history?symbol=${encodeURIComponent(normalized)}&interval=${encodeURIComponent(timeframe)}&limit=${safeLimit}`,
+    { timeoutMs: 10_000, cacheTtlMs: 60_000, priority: 'critical' },
+  );
+  return fb.ok ? parseSpace2HistoricalCandles(fb.json, timeframe === '1d' ? 86_400_000 : 3_600_000, safeLimit) : null;
 }
 
 export interface Space2DefiResult {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BacktestExecutionCache, buildBacktestReplayCacheKey } from '../services/backtestExecutionCache';
+import { BacktestExecutionCache, buildBacktestDatasetFingerprint, buildBacktestReplayCacheKey } from '../services/backtestExecutionCache';
 
 describe('BacktestExecutionCache', () => {
   it('coalesces identical concurrent replay work and then serves a completed hit', async () => {
@@ -60,6 +60,8 @@ describe('BacktestExecutionCache', () => {
     };
     expect(buildBacktestReplayCacheKey(base)).toBe(buildBacktestReplayCacheKey(reordered));
     expect(buildBacktestReplayCacheKey(base)).not.toBe(buildBacktestReplayCacheKey(changedInterior));
+    expect(buildBacktestDatasetFingerprint(base.source, base.symbol, base.interval, base.candles))
+      .not.toBe(buildBacktestDatasetFingerprint(base.source, base.symbol, base.interval, changedInterior.candles));
   });
 
 });

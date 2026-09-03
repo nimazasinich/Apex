@@ -5,6 +5,7 @@
 import type { ScanGateSnapshot } from './contracts/scanner/scanContracts';
 import type { EdgeId } from './contracts/realtime/edgeEvidence';
 import type { StrategyValidationSubjectIdentity } from './services/strategyValidationContracts';
+import type { ObservationMetadataV1 } from './contracts/evidence/observationMetadata';
 
 export type DataState = 'live' | 'degraded' | 'not_configured' | 'unavailable';
 
@@ -104,6 +105,7 @@ export interface SymbolTicker {
   openInterest: number; // USD Open Interest
   dataState: DataState;
   timestamp: number;
+  observationMetadata?: ObservationMetadataV1;
   sparkline1h?: number[]; // 1-hour price momentum trend points
 }
 
@@ -247,10 +249,14 @@ export interface CandidateScore {
   featureCompletenessPct?: number;
   /** Versioned real-MACD shadow feature; never silently replaces legacy ROC. */
   momentumShadow?: { roc: MomentumSignal; macdV1: MomentumSignal; agreement: boolean; version: 'macd_12_26_9_v1' };
-  /** Advanced engine shadow evaluation — not authoritative for live ranking. */
+  /** Advanced OBI/QStruct/SMC evaluation. Authoritative for live and production-input replay. */
   shadowDecision?: ShadowDecisionSummary;
-  /** Canonical adapter metadata kept separate from ranking score. */
-  canonicalDecision?: { confidence: number; calibratedProbability: number | null; expectedNetEdge: number | null; modelUncertainty: number | null; featureCompletenessPct: number; engineVersion: string; createdAt: number; expiresAt: number };
+  /** Canonical adapter metadata, including the engine that actually authorized/blocked the signal. */
+  canonicalDecision?: { confidence: number; calibratedProbability: number | null; expectedNetEdge: number | null; modelUncertainty: number | null; featureCompletenessPct: number; engineVersion: string; createdAt: number; expiresAt: number; authority?: 'REGIME_ENSEMBLE' | 'REGIME_ENSEMBLE_PARLIAMENT' | 'ADVANCED' | 'BASELINE_PROXY'; reasonCode?: string; reasonText?: string; marketRegime?: 'TREND_UP' | 'TREND_DOWN' | 'RANGE' | 'HIGH_VOLATILITY' | 'TRANSITION' | 'UNKNOWN'; modelAgreement?: number; calibrationSampleSize?: number; calibrationScope?: string; parliamentMode?: 'SHADOW' | 'PAPER_PROMOTED' | 'SIGNAL_PROMOTED'; parliamentCategoryConfluence?: number; parliamentEligibleIfPromoted?: boolean; parliamentContributionEnabled?: boolean; parliamentReasonCode?: string };
+  /** Server-owned lifecycle classification. A setup is not called a signal until calibrated net edge exists. */
+  decisionState?: 'SIGNAL' | 'QUALIFIED_SETUP' | 'WATCH' | 'ABSTAIN' | 'REJECTED';
+  /** Server-owned deterministic ordering key. The browser must not invent a second score. */
+  canonicalRankScore?: number;
   /** Stable identity assigned by the client lifecycle adapter for this active thesis. */
   signalId?: string;
   /** Independently computed multi-timeframe classification; shadow-only. */
@@ -302,7 +308,7 @@ export interface SizingConfig {
   stopLossPrice: number;
   takeProfitPrice: number;
   direction: TradeDirection;
-  successProbModel: number; // 0 to 100
+  successProbModel: number | null; // calibrated empirical probability 0..100; null when insufficient real outcome evidence
   successProbUserOverride: number | null; // null if not overridden
 }
 
@@ -362,20 +368,32 @@ export interface AlertRule {
 }
 
 export interface SystemHealthReport {
+  /** Timestamp of the real provider probe represented by this report. */
+  checkedAt?: number;
   kucoinStatus: DataState;
   binanceStatus: DataState;
+  kucoinLatencyMs?: number | null;
+  binanceLatencyMs?: number | null;
+  kucoinRoute?: string | null;
+  binanceRoute?: string | null;
   sentimentStatus: DataState;
-  cacheHitRatePct: number;
-  cacheTotalQueries: number;
-  cacheHits: number;
+  cacheHitRatePct: number | null;
+  cacheTotalQueries: number | null;
+  cacheHits: number | null;
+  telemetryState?: {
+    cache: 'AVAILABLE' | 'NOT_INSTRUMENTED' | 'UNAVAILABLE';
+    candidates: 'AVAILABLE' | 'NOT_INSTRUMENTED' | 'UNAVAILABLE';
+    scans: 'AVAILABLE' | 'NOT_INSTRUMENTED' | 'UNAVAILABLE';
+  };
+  providerCapabilities?: import('./contracts/providerCapabilityHealth').RuntimeProviderCapabilityHealth[];
   uptimeSeconds: number;
   lastErrorLog: Array<{
     timestamp: number;
     source: string;
     message: string;
   }>;
-  activeCandidateCount: number;
-  lastScanTimestamp: number;
+  activeCandidateCount: number | null;
+  lastScanTimestamp: number | null;
 }
 
 /**
@@ -439,6 +457,9 @@ export interface BacktestResult {
     fillPolicy: 'NEXT_BAR_OR_BRACKET';
     deterministic: boolean;
     configFingerprint: string;
+    datasetFingerprint?: string;
+    dataSource?: string;
+    costModelVersion?: string;
     optimizationRevision?: number;
     optimizationSourceReportAt?: number;
   };
@@ -696,6 +717,19 @@ export interface SignalDecisionLog {
   gatesSnapshot?: ScanGateSnapshot;
   configSnapshot?: ScannerConfig;
   marketSnapshotSummary?: Record<string, unknown>;
+  /** Causal regime label used by the live intelligence ensemble at decision time. */
+  marketRegime?: 'TREND_UP' | 'TREND_DOWN' | 'RANGE' | 'HIGH_VOLATILITY' | 'TRANSITION' | 'UNKNOWN';
+  /** Evidence-strength score from the regime-aware ensemble; not a win probability. */
+  ensembleScore?: number;
+  /** Share of decisive models supporting the selected direction. */
+  ensembleModelAgreement?: number;
+  /** Parliament mode and evidence state captured at decision time for forward evaluation. */
+  parliamentMode?: 'SHADOW' | 'PAPER_PROMOTED' | 'SIGNAL_PROMOTED';
+  parliamentEligibleIfPromoted?: boolean;
+  parliamentCategoryConfluence?: number;
+  parliamentScore?: number;
+  parliamentConfidence?: number;
+  parliamentReasonCode?: string;
   /** Decision-time market geometry used by counterfactual replay. */
   price?: number;
   atr?: number;
@@ -749,6 +783,12 @@ export type SignalDecisionReasonCode =
   | 'GATE_QSTRUCT_FAILED'
   | 'GATES_FAILED'
   | 'NO_DIRECTION_FOR_BIAS'
+  | 'ENSEMBLE_ACCEPTED'
+  | 'ENSEMBLE_RESCUE_ACCEPTED'
+  | 'ENSEMBLE_CONFLICT'
+  | 'ADVANCED_HARD_REJECT'
+  | 'PARLIAMENT_CONFLUENCE_BLOCKED'
+  | 'PARLIAMENT_CONTRIBUTOR_ACCEPTED'
   | 'NO_STRUCTURE_DATA'
   | 'SNAPSHOT_UNAVAILABLE'
   | 'EVALUATION_ERROR'
@@ -761,7 +801,8 @@ export type SignalDecisionReasonCode =
   | 'SMC_CONTEXT_AGAINST_LONG'
   | 'NO_SMC_CONFIRMATION'
   | 'ALREADY_ACTIVE'
-  | 'DATA_NOT_READY';
+  | 'DATA_NOT_READY'
+  | 'ACADEMY_INTELLIGENCE_BLOCKED';
 
 export interface RankedContract {
   ticker: string;
@@ -894,11 +935,18 @@ export interface StrategyDefinition {
   /** Shadow-only Liquidity Hunter context bindings; metadata only, never order authority. */
   liquidityHunterEdges?: StrategyLiquidityHunterEdgeBinding[];
   latestSnapshot?: {
-    score: number;
+    /**
+     * Comparable rank score, or null when the run carried no ranking. Never
+     * defaulted to 0: a missing score and a measured score of zero are
+     * different claims, and collapsing them presents absent evidence as a
+     * measurement.
+     */
+    score: number | null;
     winRatePct: number;
     netReturnPct: number;
     maxDrawdownPct: number;
-    profitFactor: number;
+    /** Null when the replay produced no finite profit factor. Never defaulted to 0. */
+    profitFactor: number | null;
     lastBacktestAt?: number;
     costStressPassed?: boolean;
     source?: 'validation' | 'backtest' | 'paper' | 'live';
@@ -918,6 +966,63 @@ export interface StrategyDefinition {
     fullStrategyValidated?: boolean;
     dataState?: DataState;
     warnings?: string[];
+    /**
+     * Per-gate outcomes exactly as computed by `strategyValidation.ts`. Carried
+     * verbatim so a client can name the specific failing gate instead of
+     * reducing every failure to "not validated". Absent when the producing run
+     * predates gate propagation.
+     */
+    gates?: {
+      data: boolean;
+      sample: boolean;
+      outOfSample: boolean;
+      drawdown: boolean;
+      stability: boolean;
+      costResilience: boolean;
+      regime: boolean;
+      reproducibility: boolean;
+      statisticalEvidence: boolean;
+    };
+    passedAllGates?: boolean;
+    /** Explicit reasons a gate-passing replay is not full-strategy evidence. */
+    validationLimitations?: string[];
+    regimeStatus?: 'available' | 'insufficient_data';
+    regimeReason?: string;
+    /** Regime labels the run actually measured. Never inferred. */
+    regimesMeasured?: string[];
+    /** Subset of `regimesMeasured` that was profitable in the run. */
+    regimesProfitable?: string[];
+    /** Cost-stressed replay outcome, so cost resilience is inspectable, not just pass/fail. */
+    costStress?: {
+      feeMultiplier: number;
+      slippageMultiplier: number;
+      passed: boolean;
+      totalPnlPct: number;
+      profitFactor: number | null;
+      maxDrawdownPct: number;
+    };
+    /**
+     * Multiplicity-corrected return evidence from `statisticalValidation.ts`.
+     * Deflated Sharpe probability and the selection-hypothesis count are the
+     * only selection-bias evidence APEX actually computes; no probability of
+     * backtest overfitting is derived, so none is reported.
+     */
+    statistical?: {
+      passed: boolean;
+      observations: number;
+      effectiveSampleSize: number;
+      meanReturnPct: number;
+      lowerConfidenceBoundPct: number | null;
+      probabilityPositiveMean: number | null;
+      deflatedSharpeRatioProbability: number | null;
+      selectionHypotheses: number;
+      familyWiseAlpha: number;
+      correctedAlpha: number;
+      blockers: string[];
+    };
+    /** Sealed-holdout dataset identity, for provenance drill-down. */
+    datasetFingerprint?: string;
+    holdoutProtocolStatus?: 'PASSED' | 'FAILED_RETIRED';
   };
   blockedReason?: string;
   executionCapability?: StrategyExecutionCapability;
@@ -1019,6 +1124,18 @@ export interface StrategyValidationReport {
   regimeReason?: string;
   ablationResults?: Array<{ component: string; scoreDelta: number }>;
   triedVariants?: number;
+  selectionHypothesisFingerprints?: string[];
+  statisticalEvidence?: import('./services/statisticalValidation').StatisticalValidationResult;
+  holdoutProtocol?: {
+    candidateFingerprint: string;
+    datasetFingerprint: string;
+    openedAt: number;
+    completedAt: number | null;
+    status: 'PASSED' | 'FAILED_RETIRED';
+    developmentDatasetFingerprint?: string;
+    validationPolicyFingerprint?: string;
+    searchObjectiveFingerprint?: string;
+  };
   /**
    * Identity of what this run actually measured — candidate, active profile, or
    * definition defaults — with a fingerprint over the exact parameters and
@@ -1031,13 +1148,11 @@ export interface StrategyValidationReport {
   subject?: StrategyValidationSubjectIdentity;
   /**
    * Optional comparison run of another identity — normally the previously active
-   * profile — over the SAME holdout candles. It exists so an operator can see
-   * whether the candidate actually beat what is already promoted.
+   * profile — over the pre-holdout DEVELOPMENT_VALIDATION_SLICE. It exists for
+   * context without spending a second look at the sealed final holdout.
    *
-   * It is deliberately NOT a second full gate suite: only the holdout slice is
-   * replayed, and only the gates computable from that one slice are reported.
-   * Nothing here contributes to `gates` or `passedAllGates`, and the promotion
-   * gate never reads it.
+   * It is deliberately NOT a second full gate suite and never contributes to
+   * `gates` or `passedAllGates`; the promotion gate never reads it.
    */
   /** Scope the validation evidence actually covers. */
   validationScope?: 'BASE_REPLAY' | 'FULL_STRATEGY';
@@ -1047,7 +1162,7 @@ export interface StrategyValidationReport {
   fullStrategyValidated?: boolean;
   baseline?: {
     subject: StrategyValidationSubjectIdentity;
-    comparedOn: 'HOLDOUT_SLICE';
+    comparedOn: 'HOLDOUT_SLICE' | 'DEVELOPMENT_VALIDATION_SLICE';
     holdoutTotalPnlPct: number;
     holdoutMaxDrawdownPct: number;
     holdoutGates: {
@@ -1066,6 +1181,7 @@ export interface StrategyValidationReport {
     costResilience: boolean;
     regime: boolean;
     reproducibility: boolean;
+    statisticalEvidence: boolean;
   };
   passedAllGates: boolean;
 }

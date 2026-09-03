@@ -60,7 +60,7 @@ function snapshotFromCandidate(candidate: CandidateScore, scanTimestamp: number)
     supportingSignals: [],
     conflictingSignals: candidate.guardReasons,
     dataQuality: candidate.dataState,
-    engineVersion: candidate.canonicalDecision?.engineVersion ?? candidate.shadowDecision?.engineVersion ?? 'canonical_v2',
+    engineVersion: candidate.canonicalDecision?.engineVersion ?? candidate.shadowDecision?.engineVersion ?? 'canonical_v5_parliament_confluence',
     createdAt: candidate.canonicalDecision?.createdAt ?? scanTimestamp,
     expiresAt: candidate.canonicalDecision?.expiresAt ?? scanTimestamp + 90_000,
     baseline: candidate,
@@ -68,6 +68,9 @@ function snapshotFromCandidate(candidate: CandidateScore, scanTimestamp: number)
     smcAvailability: candidate.shadowDecision?.smcAvailability,
     smartMoneyContext: null,
     mode: 'live',
+    authority: candidate.canonicalDecision?.authority ?? 'BASELINE_PROXY',
+    decisionReasonCode: (candidate.canonicalDecision?.reasonCode as DecisionSnapshot['decisionReasonCode']) ?? (candidate.guardPass ? 'ACCEPTED_BEST_CANDIDATE' : 'BASELINE_GUARD_BLOCKED'),
+    decisionReasonText: candidate.canonicalDecision?.reasonText ?? (candidate.guardReasons.join(' ') || `Candidate ${candidate.readinessTier}`),
   };
 }
 

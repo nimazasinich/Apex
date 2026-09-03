@@ -37,7 +37,7 @@ import { OrdersPage } from './pages/orders/OrdersPage';
 import { PositionsPage } from './pages/positions/PositionsPage';
 import { AlertsPage } from './pages/alerts/AlertsPage';
 import { HistoryPage } from './pages/history/HistoryPage';
-import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
+import { AnalyticsPage } from './pages/analytics/AnalyticsCommandPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { HelpPage } from './pages/help/HelpPage';
 import type { ScanMeta } from './components/overview/overviewModel';
@@ -47,11 +47,14 @@ import { playAlertTone, showBrowserNotification } from './lib/notifications';
 import { RouteErrorBoundary } from './components/ui/RouteErrorBoundary';
 import { ServiceWorkerUpdateBanner } from './components/ui/ServiceWorkerUpdateBanner';
 import { RouteSkeleton } from './components/ui/RouteSkeleton';
+import { sanitizeTickerUniverse } from './lib/tickerUniverse';
 import type { OpportunityShortlistComparisonV1 } from './services/strategyCommander/opportunity/opportunityTypes';
 import type { ParliamentScanShadowV1 } from './services/strategyCommander/parliamentShadow';
 const TradingView = lazy(() => import('./components/workspace/AccountViews').then((module) => ({ default: module.TradingView })));
 const BacktestingPage = lazy(() => import('./pages/backtesting/BacktestingPage').then((module) => ({ default: module.BacktestingPage })));
 const StrategyPage = lazy(() => import('./pages/strategies/StrategyPage').then((module) => ({ default: module.StrategyPage })));
+const AcademyPage = lazy(() => import('./pages/academy/AcademyPage').then((module) => ({ default: module.AcademyPage })));
+const ProvidersPage = lazy(() => import('./pages/providers/ProvidersPage').then((module) => ({ default: module.ProvidersPage })));
 
 const INITIAL_CONNECTION: ConnectionState = {
   status: 'not_connected',
@@ -73,13 +76,14 @@ const INITIAL_CHART_FEED: ChartFeedStatus = {
 
 const WORKSPACE_PAGES = new Set<WorkspacePage>([
   'overview', 'markets', 'watchlist', 'screener', 'portfolio', 'trading', 'orders', 'positions',
-  'alerts', 'history', 'analytics', 'backtesting', 'strategies', 'settings', 'help',
+  'providers', 'alerts', 'history', 'analytics', 'backtesting', 'academy', 'strategies', 'settings', 'help',
 ]);
 
 interface TopVolumePayload {
   symbols?: SymbolTicker[];
   dataState?: DataState;
   source?: string;
+  timestamp?: number;
 }
 
 interface CandidatesPayload {
@@ -88,6 +92,11 @@ interface CandidatesPayload {
   scanTimestamp?: number;
   scannedCount?: number;
   activeCandidateCount?: number;
+  qualifiedSetupCount?: number;
+  watchCandidateCount?: number;
+  abstainedCandidateCount?: number;
+  universeCount?: number;
+  eligibleUniverseCount?: number;
   shadowMode?: boolean;
   directionShadowMode?: boolean;
   dataState?: DataState;
@@ -156,6 +165,8 @@ export default function App() {
   const [shortCandidates, setShortCandidates] = useState<CandidateScore[]>([]);
   const [scanMeta, setScanMeta] = useState<ScanMeta | null>(null);
   const [marketLoading, setMarketLoading] = useState(true);
+  const [marketProvider, setMarketProvider] = useState<string | null>(null);
+  const [marketObservedAt, setMarketObservedAt] = useState<number | null>(null);
 
   const [selectedSymbol, setSelectedSymbol] = useState('BTC-USDT');
   const [detailLevels, setDetailLevels] = useState<DerivedLevels | null>(null);
@@ -169,6 +180,7 @@ export default function App() {
   const [chartInterval, setChartInterval] = useState<'1m' | '5m' | '15m' | '1h' | '4h' | '1d'>('1h');
   const [chartFeed, setChartFeed] = useState<ChartFeedStatus>(INITIAL_CHART_FEED);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
+  const lastGoodSymbolDetailRef = useRef(new Map<string, { payload: SymbolDetailPayload; observedAt: number }>());
 
   const [connection, setConnection] = useState<ConnectionState>(INITIAL_CONNECTION);
   const [snapshot, setSnapshot] = useState<AccountSnapshot | null>(null);
@@ -229,6 +241,8 @@ export default function App() {
       const matchingCandidates = allCandidates
         .filter((candidate) => !rule.symbolFilter || rule.symbolFilter === candidate.symbol)
         .filter((candidate) => rule.direction === 'BOTH' || rule.direction === candidate.direction)
+        .filter((candidate) => candidate.guardPass)
+        .filter((candidate) => !candidate.decisionState || candidate.decisionState === 'SIGNAL' || candidate.decisionState === 'QUALIFIED_SETUP')
         .filter((candidate) => candidate.score >= rule.minScore)
         .filter((candidate) => readinessRank[candidate.readinessTier] >= readinessRank[rule.minReadiness])
         .sort((left, right) => right.score - left.score);
@@ -267,8 +281,14 @@ export default function App() {
     setMarketLoading(true);
     try {
       const topData = await fetchJsonWithTimeout<TopVolumePayload | null>('/api/market/top-volume?limit=120', { timeoutMs: 22_000 });
-      const nextTickers = Array.isArray(topData?.symbols) ? topData.symbols : [];
+      const nextTickers = sanitizeTickerUniverse(Array.isArray(topData?.symbols) ? topData.symbols : []);
       setTickers(nextTickers);
+      setMarketProvider(typeof topData?.source === 'string' && topData.source !== 'none' ? topData.source : null);
+      setMarketObservedAt(nextTickers.reduce<number | null>((latest, ticker) => {
+        const observedAt = Number(ticker.timestamp);
+        if (!Number.isFinite(observedAt) || observedAt <= 0) return latest;
+        return latest === null ? observedAt : Math.max(latest, observedAt);
+      }, null));
       setDataState(topData?.dataState || (nextTickers.length ? 'live' : 'unavailable'));
       if (nextTickers.length) {
         setSelectedSymbol((current) => nextTickers.some((ticker) => ticker.symbol === current) ? current : nextTickers[0].symbol);
@@ -289,12 +309,13 @@ export default function App() {
       const [sentimentResult, candidatesResult] = await Promise.allSettled([
         fetchJsonWithTimeout<SentimentComposite>('/api/market/sentiment', { timeoutMs: 10_000 }),
         fetchJsonWithTimeout<CandidatesPayload>(
-          `/api/market/candidates?limit=16&includeShadow=0&includeDirection=1&minLiquidity=${encodeURIComponent(String(settings.minLiquidityUsd))}`,
-          { timeoutMs: 26_000 },
+          `/api/market/candidates?limit=24&includeShadow=0&includeDirection=1&minLiquidity=${encodeURIComponent(String(settings.minLiquidityUsd))}`,
+          { timeoutMs: 20_000 },
         ),
       ]);
 
       if (sentimentResult.status === 'fulfilled') setSentiment(sentimentResult.value);
+      else setDataState((current) => current === 'live' ? 'degraded' : current);
       if (candidatesResult.status === 'fulfilled') {
         const payload = candidatesResult.value;
         const rawLong = Array.isArray(payload?.longCandidates) ? payload.longCandidates : [];
@@ -307,6 +328,11 @@ export default function App() {
         setScanMeta({
           scannedCount: payload?.scannedCount ?? rawLong.length,
           activeCandidateCount: payload?.activeCandidateCount ?? 0,
+          qualifiedSetupCount: payload?.qualifiedSetupCount ?? 0,
+          watchCandidateCount: payload?.watchCandidateCount ?? 0,
+          abstainedCandidateCount: payload?.abstainedCandidateCount ?? 0,
+          universeCount: payload?.universeCount ?? payload?.scannedCount ?? rawLong.length,
+          eligibleUniverseCount: payload?.eligibleUniverseCount ?? payload?.scannedCount ?? rawLong.length,
           scanTimestamp: payload?.scanTimestamp ?? null,
         });
         void persistCandidateShadowLogs({
@@ -326,6 +352,11 @@ export default function App() {
           .catch((error) => console.warn('telegram_candidate_dispatch_failed', error));
         void dispatchLifecycleTelegramTransitions(lifecycle.transitions)
           .catch((error) => console.warn('telegram_lifecycle_dispatch_failed', error));
+        if (payload?.dataState) {
+          setDataState((current) => payload.dataState === 'unavailable'
+            ? (current === 'live' ? 'degraded' : current)
+            : payload.dataState === 'degraded' && current === 'live' ? 'degraded' : current);
+        }
         if (payload?.dataState && payload.dataState !== 'live') {
           void dispatchDataDegradedTelegramAlert({
             state: payload.dataState,
@@ -333,9 +364,12 @@ export default function App() {
             detail: 'Candidate scan completed with incomplete or non-live market evidence.',
           }).catch((error) => console.warn('telegram_data_degraded_dispatch_failed', error));
         }
+      } else {
+        setDataState((current) => current === 'live' ? 'degraded' : current);
       }
     } catch (error) {
       console.warn('market_intelligence_sync_failed', error);
+      setDataState((current) => current === 'live' ? 'degraded' : current);
     } finally {
       intelligenceRequestInFlight.current = false;
     }
@@ -346,19 +380,29 @@ export default function App() {
   }, [fetchMarketIntelligence, fetchTickerUniverse]);
 
   const refreshAccount = useCallback(async (options: { silent?: boolean } = {}) => {
-    const currentConnection = connectionRef.current;
-    if (!accountIsAvailable(currentConnection)) {
-      setSnapshot(null);
-      setInsights(null);
-      setReconciliation(null);
-      if (!options.silent) setAccountLoading(false);
-      return;
-    }
     if (accountRequestInFlight.current) return;
     accountRequestInFlight.current = true;
     if (!options.silent) setAccountLoading(true);
     setAccountError(null);
     try {
+      let currentConnection = connectionRef.current;
+      // A failed first bootstrap used to strand the whole account side of the
+      // app in `not_connected`: the polling effect was disabled and refreshAccount
+      // returned before probing the server again. Re-probe connection state here
+      // so Portfolio / Orders / Positions / History self-heal after server startup
+      // races or a transient browser-network error.
+      if (!accountIsAvailable(currentConnection)) {
+        const probed = (await getConnection({ signal: AbortSignal.timeout(8_000) })) ?? INITIAL_CONNECTION;
+        connectionRef.current = probed;
+        setConnection(probed);
+        currentConnection = probed;
+      }
+      if (!accountIsAvailable(currentConnection)) {
+        setSnapshot(null);
+        setInsights(null);
+        setReconciliation(null);
+        return;
+      }
       const result = await getWorkspaceData({ signal: AbortSignal.timeout(12_000) });
       const nextConnection = result.connection ?? INITIAL_CONNECTION;
       connectionRef.current = nextConnection;
@@ -427,45 +471,72 @@ export default function App() {
   }, [evaluateAlertTriggers, longCandidates, shortCandidates, tickers]);
 
   useEffect(() => {
-    if (!accountIsAvailable(connection)) return;
-    const id = window.setInterval(() => void refreshAccount({ silent: true }), 8_000);
+    // Always keep a lightweight recovery probe alive. When account state is
+    // available this refreshes the workspace; when bootstrap failed it first
+    // re-reads /api/account/connection and can recover without a page reload.
+    const id = window.setInterval(() => void refreshAccount({ silent: true }), accountIsAvailable(connection) ? 8_000 : 12_000);
     return () => window.clearInterval(id);
   }, [connection?.status, connection?.mode, refreshAccount]);
 
   useEffect(() => {
-    if (page !== 'overview' && page !== 'trading') return undefined;
+    // Analytics consumes the selected market candle/feed contract too. Keeping
+    // detail loading limited to Overview/Trading left Analytics with an empty
+    // chart even while the same symbol was healthy elsewhere. Fetch detail for
+    // every route that actually renders that contract; do not fan out to pages
+    // that only need the ticker universe.
+    if (page !== 'overview' && page !== 'trading' && page !== 'analytics') return undefined;
     const controller = new AbortController();
+    const includeMicrostructure = page === 'trading';
+    // Overview and Analytics request the same non-microstructure detail contract,
+    // so they must share the same last-good cache. Keying by page discarded a
+    // perfectly valid Overview snapshot when the user navigated to Analytics.
+    const detailCacheKey = `${selectedSymbol}:${chartInterval}:${includeMicrostructure ? 'micro' : 'base'}`;
+    const cachedDetail = lastGoodSymbolDetailRef.current.get(detailCacheKey);
     setChartFeed((current) => ({ ...current, loading: true, error: null }));
-    setChartCandles([]);
-    setChartOrderBook(null);
-    setChartOrderBookLevels(null);
+    if (!cachedDetail) {
+      setChartCandles([]);
+      setChartOrderBook(null);
+      setChartOrderBookLevels(null);
+    }
+
+    const applyPayload = (payload: SymbolDetailPayload, staleOverride = false, staleReason: string | null = null) => {
+      const candles = Array.isArray(payload.candles) ? payload.candles : [];
+      const feed = payload.candleFeed || {};
+      setDetailLevels(payload.levels || null);
+      setDetailLongScore(payload.scoreLong || null);
+      setDetailShortScore(payload.scoreShort || null);
+      setDetailTradePlanLong(payload.tradePlanLong || null);
+      setDetailTradePlanShort(payload.tradePlanShort || null);
+      setChartCandles(candles);
+      setChartOrderBook(payload.orderBook || null);
+      setChartOrderBookLevels(payload.orderBookLevels || null);
+      setChartFeed({
+        loading: false,
+        dataState: staleOverride ? 'degraded' : (feed.dataState || payload.dataState || (candles.length ? 'degraded' : 'unavailable')),
+        source: feed.source || payload.source || null,
+        stale: staleOverride || feed.stale === true,
+        ageMs: staleOverride && cachedDetail ? Math.max(0, Date.now() - cachedDetail.observedAt) : Number(feed.ageMs || 0),
+        error: staleReason || (candles.length ? null : String(feed.error || 'verified_candles_unavailable')),
+      });
+    };
 
     const loadDetail = async () => {
       try {
         const payload = await fetchJsonWithTimeout<SymbolDetailPayload>(
-          `/api/market/symbol/${encodeURIComponent(selectedSymbol)}?interval=${chartInterval}&limit=120&includeMicrostructure=${page === 'trading' ? '1' : '0'}&includeDirection=1&accountBalance=${encodeURIComponent(String(settings.defaultAccountBalanceUsd))}&riskPct=${encodeURIComponent(String(settings.defaultRiskPct))}&leverage=${encodeURIComponent(String(settings.defaultLeverage))}`,
-          { timeoutMs: page === 'trading' ? 26_000 : 20_000, signal: controller.signal },
+          `/api/market/symbol/${encodeURIComponent(selectedSymbol)}?interval=${chartInterval}&limit=120&includeMicrostructure=${includeMicrostructure ? '1' : '0'}&includeDirection=1&accountBalance=${encodeURIComponent(String(settings.defaultAccountBalanceUsd))}&riskPct=${encodeURIComponent(String(settings.defaultRiskPct))}&leverage=${encodeURIComponent(String(settings.defaultLeverage))}`,
+          { timeoutMs: includeMicrostructure ? 26_000 : 20_000, signal: controller.signal },
         );
         const candles = Array.isArray(payload.candles) ? payload.candles : [];
-        const feed = payload.candleFeed || {};
-        setDetailLevels(payload.levels || null);
-        setDetailLongScore(payload.scoreLong || null);
-        setDetailShortScore(payload.scoreShort || null);
-        setDetailTradePlanLong(payload.tradePlanLong || null);
-        setDetailTradePlanShort(payload.tradePlanShort || null);
-        setChartCandles(candles);
-        setChartOrderBook(payload.orderBook || null);
-        setChartOrderBookLevels(payload.orderBookLevels || null);
-        setChartFeed({
-          loading: false,
-          dataState: feed.dataState || payload.dataState || (candles.length ? 'degraded' : 'unavailable'),
-          source: feed.source || payload.source || null,
-          stale: feed.stale === true,
-          ageMs: Number(feed.ageMs || 0),
-          error: candles.length ? null : String(feed.error || 'verified_candles_unavailable'),
-        });
+        if (candles.length) lastGoodSymbolDetailRef.current.set(detailCacheKey, { payload, observedAt: Date.now() });
+        applyPayload(payload);
       } catch (error) {
         if (controller.signal.aborted) return;
+        const failure = error instanceof Error ? error.message : 'market_detail_sync_failed';
+        const lastGood = lastGoodSymbolDetailRef.current.get(detailCacheKey);
+        if (lastGood && Date.now() - lastGood.observedAt <= 15 * 60_000) {
+          applyPayload(lastGood.payload, true, `live_refresh_failed:${failure}`);
+          return;
+        }
         setDetailLevels(null);
         setDetailLongScore(null);
         setDetailShortScore(null);
@@ -480,7 +551,7 @@ export default function App() {
           source: null,
           stale: false,
           ageMs: 0,
-          error: error instanceof Error ? error.message : 'market_detail_sync_failed',
+          error: failure,
         });
       }
     };
@@ -523,6 +594,8 @@ export default function App() {
     dataState,
     loading: marketLoading,
     selectedSymbol,
+    candles: chartCandles,
+    chartFeed,
     onSelectSymbol: setSelectedSymbol,
     onRefresh: () => void refreshMarketData(),
     onViewAssetDetails: () => navigate('markets'),
@@ -578,11 +651,13 @@ export default function App() {
     case 'trading': content = <TradingView {...accountProps} settings={settings} tickers={tickers} selectedTicker={selectedTicker} onSelectSymbol={setSelectedSymbol} levels={detailLevels} longScore={effectiveLongScore} shortScore={effectiveShortScore} tradePlanLong={detailTradePlanLong} tradePlanShort={detailTradePlanShort} chartCandles={chartCandles} chartOrderBook={chartOrderBook} chartOrderBookLevels={chartOrderBookLevels} chartInterval={chartInterval} chartFeed={chartFeed} onRetryChart={retrySelectedMarket} onChartIntervalChange={setChartInterval} />; break;
     case 'orders': content = <OrdersPage {...accountProps} />; break;
     case 'positions': content = <PositionsPage {...accountProps} />; break;
-    case 'alerts': content = <AlertsPage rules={alertRules} activeAlerts={activeAlerts} tickers={tickers} candidates={[...longCandidates, ...shortCandidates]} onRulesChange={(nextRules) => { setAlertRules(nextRules); saveAlertRules(nextRules); }} />; break;
+    case 'providers': content = <ProvidersPage onNavigate={(destination) => navigate(destination)} />; break;
+    case 'alerts': content = <AlertsPage rules={alertRules} activeAlerts={activeAlerts} tickers={tickers} candidates={[...longCandidates, ...shortCandidates]} onRulesChange={(nextRules) => { if (!saveAlertRules(nextRules)) return false; setAlertRules(nextRules); return true; }} />; break;
     case 'history': content = <HistoryPage {...accountProps} />; break;
     case 'analytics': content = <AnalyticsPage account={accountProps} market={marketProps} />; break;
-    case 'backtesting': content = <BacktestingPage tickers={tickers} selectedSymbol={selectedSymbol} onSelectSymbol={setSelectedSymbol} dataState={dataState} autopilotEnabled={effectiveAutopilotEnabled} onAutopilotEnabledChange={setAutopilotEnabled} autopilotController={autopilotController} />; break;
-    case 'strategies': content = <StrategyPage tickers={tickers} selectedSymbol={selectedSymbol} onSelectSymbol={setSelectedSymbol} autopilotEnabled={effectiveAutopilotEnabled} onAutopilotEnabledChange={setAutopilotEnabled} autopilotController={autopilotController} />; break;
+    case 'backtesting': content = <BacktestingPage tickers={tickers} selectedSymbol={selectedSymbol} onSelectSymbol={setSelectedSymbol} dataState={dataState} autopilotEnabled={effectiveAutopilotEnabled} autopilotController={autopilotController} />; break;
+    case 'academy': content = <AcademyPage onNavigate={(destination) => navigate(destination)} autopilotController={autopilotController} />; break;
+    case 'strategies': content = <StrategyPage tickers={tickers} selectedSymbol={selectedSymbol} onSelectSymbol={setSelectedSymbol} autopilotEnabled={effectiveAutopilotEnabled} autopilotController={autopilotController} />; break;
     case 'settings': content = <SettingsPage connection={connection} settings={settings} onSettingsChange={applySettings} onConnectionChange={onConnectionChange} />; break;
     case 'help': content = <HelpPage />; break;
     default: content = (
@@ -603,6 +678,8 @@ export default function App() {
         tradePlanLong={detailTradePlanLong}
         tradePlanShort={detailTradePlanShort}
         scanMeta={scanMeta}
+        marketProvider={marketProvider}
+        marketObservedAt={marketObservedAt}
         onRetryChart={retrySelectedMarket}
         onChartIntervalChange={setChartInterval}
         onNavigate={(destination) => navigate(destination)}

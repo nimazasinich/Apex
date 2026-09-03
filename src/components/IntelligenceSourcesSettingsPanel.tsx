@@ -29,6 +29,7 @@ import {
   type ExternalApiSource,
 } from '../services/externalApiSources';
 import {
+  applySupplementalDefaults,
   fetchSupplementalConfigStatus,
   probeSupplementalKeys,
   saveSupplementalConfig,
@@ -40,6 +41,8 @@ import {
   type SupplementalVerifiedStatus,
 } from '../services/supplementalSettings';
 import { Panel, PanelHeader, StatusBadge } from './ui/WorkspacePrimitives';
+import { fetchJsonWithTimeout } from '../services/apiQuery';
+import type { IntegrationHealthEntry } from '../services/integrationHealthHistory';
 
 const EMPTY_STATUS: SupplementalConfigStatus = {
   newsApiKey: false,
@@ -62,7 +65,7 @@ const KEY_ROWS: Array<{
   { key: 'huggingFaceToken', label: 'Hugging Face', detail: 'Private Space access', placeholder: 'Write-only access token', icon: Sparkles },
   { key: 'etherscanKey', label: 'Etherscan', detail: 'Ethereum on-chain data', placeholder: 'Write-only Etherscan key', icon: ShieldCheck },
   { key: 'tronScanKey', label: 'TronScan', detail: 'TRON on-chain data', placeholder: 'Write-only TronScan key', icon: WalletCards },
-  { key: 'bscScanKey', label: 'BscScan', detail: 'BNB Chain on-chain data', placeholder: 'Write-only BscScan key', icon: ServerCog },
+  { key: 'bscScanKey', label: 'BscScan (BNB Chain)', detail: 'On-chain wallet/whale data for BNB Smart Chain — not the Binance exchange. Uses Etherscan V2 (chain 56).', placeholder: 'Write-only BscScan key', icon: ServerCog },
 ];
 
 const STORED_SECRET_MARKER = 'Stored server-side';
@@ -77,7 +80,12 @@ function formatProbeTooltip(result: SupplementalProbeResult): string {
 
 interface FeedHealth {
   ok: boolean;
-  timestamp?: number;
+  fetchedAt?: string;
+  fearGreed?: { ok: boolean; status: string; detail?: string };
+  market?: { ok: boolean; status: string; source?: string; detail?: string };
+  ethOracle?: { ok: boolean; status: string; detail?: string };
+  news?: { ok: boolean; status: string; source?: string; headlines?: unknown[]; detail?: string };
+  whales?: { ok: boolean; status: string; source?: string; count?: number; detail?: string };
   [key: string]: unknown;
 }
 
@@ -103,6 +111,9 @@ function hasLivePass(verified: boolean | undefined, result?: SupplementalProbeRe
 export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (message: string) => void }) {
   const [configured, setConfigured] = useState<SupplementalConfigStatus>(EMPTY_STATUS);
   const [verified, setVerified] = useState<SupplementalVerifiedStatus>(EMPTY_STATUS);
+  const [keyCounts, setKeyCounts] = useState<Partial<Record<SupplementalProbeKey, number>>>({});
+  const [defaultPackLoaded, setDefaultPackLoaded] = useState(false);
+  const [defaultPackSource, setDefaultPackSource] = useState<string | null>(null);
   const [secrets, setSecrets] = useState<SupplementalConfigInput>({});
   const [newsApiQuery, setNewsApiQuery] = useState<NewsApiQueryOptions>({});
   const [probeResults, setProbeResults] = useState<Partial<Record<SupplementalProbeKey, SupplementalProbeResult>>>({});
@@ -111,6 +122,7 @@ export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (m
   const [customProfilesOpen, setCustomProfilesOpen] = useState(false);
   const [sourceTests, setSourceTests] = useState<Record<string, { ok: boolean; status?: number; latencyMs?: number; error?: string }>>({});
   const [feedHealth, setFeedHealth] = useState<FeedHealth | null>(null);
+  const [probeHistory, setProbeHistory] = useState<IntegrationHealthEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingKeys, setSavingKeys] = useState(false);
   const [probingKey, setProbingKey] = useState<SupplementalProbeKey | 'all' | null>(null);
@@ -125,12 +137,15 @@ export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (m
       .then((status) => {
         setConfigured(status.configured);
         setVerified(status.verified);
+        setKeyCounts(status.keyCounts);
+        setDefaultPackLoaded(status.defaultPackLoaded);
+        setDefaultPackSource(status.defaultPackSource);
         setNewsApiQuery(status.newsApiQuery);
         setProbeResults(status.lastProbe);
+        setProbeHistory(status.probeHistory);
       });
     const sourcesTask = fetchExternalApiSources().then(setSources);
-    const feedTask = fetch('/api/intelligence/feeds', { credentials: 'same-origin' })
-      .then(async (response) => response.ok ? await response.json() as FeedHealth : ({ ok: false } as FeedHealth))
+    const feedTask = fetchJsonWithTimeout<FeedHealth>('/api/intelligence/feeds', { timeoutMs: 10_000 })
       .then(setFeedHealth)
       .catch(() => setFeedHealth({ ok: false }));
     await Promise.allSettled([statusTask, sourcesTask, feedTask]);
@@ -142,6 +157,25 @@ export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (m
   const configuredCount = useMemo(() => Object.values(configured).filter(Boolean).length, [configured]);
   const verifiedCount = useMemo(() => Object.values(verified).filter(Boolean).length, [verified]);
   const activeSources = useMemo(() => sources.filter((source) => source.enabled).length, [sources]);
+  const totalStoredKeys = useMemo(() => Object.values(keyCounts).reduce((sum, value) => sum + (Number(value) || 0), 0), [keyCounts]);
+
+  const restoreAttachedPack = async () => {
+    setSavingKeys(true);
+    const [keysResult, sourcesResult] = await Promise.all([
+      applySupplementalDefaults(),
+      applyExternalApiDefaults(),
+    ]);
+    setSavingKeys(false);
+    if (!keysResult.ok) {
+      emit(`Attached API pack could not be restored: ${keysResult.error || 'request failed'}.`);
+      return;
+    }
+    setConfigured(keysResult.configured);
+    setVerified(keysResult.verified);
+    if (sourcesResult.ok) setSources(sourcesResult.sources);
+    await refresh();
+    emit('Attached API pack restored server-side. Smart routing will use primary and reserve credentials without exposing secrets to the browser.');
+  };
 
   const saveKeys = async () => {
     setSavingKeys(true);
@@ -177,6 +211,7 @@ export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (m
     }
     setVerified(nextVerified);
     setProbeResults((current) => ({ ...current, ...result.results }));
+    if (result.history?.length) setProbeHistory(result.history);
     const passes = Object.values(result.results).filter((row) => row?.ok).length;
     emit(`${passes} intelligence provider${passes === 1 ? '' : 's'} verified against live upstream endpoints.`);
   };
@@ -247,16 +282,59 @@ export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (m
       <Panel className="settings-integration-card intelligence-overview-card">
         <PanelHeader
           title="Intelligence sources"
-          subtitle="Server-side news, sentiment, on-chain and model-provider configuration"
-          action={<StatusBadge tone={feedHealth?.ok ? 'positive' : 'warning'}>{feedHealth?.ok ? 'Feeds reachable' : loading ? 'Checking' : 'Feed check unavailable'}</StatusBadge>}
+          subtitle="Server-side smart provider routing for market context, news, sentiment and on-chain evidence"
+          action={(
+            <div className="apex-v3-profile-panel-actions">
+              <StatusBadge tone={defaultPackLoaded ? 'positive' : 'warning'}>{defaultPackLoaded ? 'Attached pack loaded' : 'Private pack missing'}</StatusBadge>
+              <button type="button" className="apex-v3-button secondary compact" disabled={savingKeys} onClick={() => void restoreAttachedPack()}><RotateCcw size={13} /> Restore API pack</button>
+            </div>
+          )}
         />
+        {!defaultPackLoaded && (
+          <div className="apex-v3-security-banner" style={{ background: 'color-mix(in srgb, var(--apex-orange-500, #f59e0b) 12%, var(--apex-surface, #fff))', borderColor: 'color-mix(in srgb, var(--apex-orange-500, #f59e0b) 35%, var(--apex-border))', marginBottom: '12px' }}>
+            <CircleAlert size={18} style={{ color: 'var(--apex-orange-500, #f59e0b)', flexShrink: 0 }} />
+            <span>
+              <strong>No private API seed found</strong>
+              <small>All supplemental providers will show Not configured until <code>.apex-private-seed/api-provider-seed.json</code> is populated or keys are configured.</small>
+            </span>
+          </div>
+        )}
         <div className="apex-v3-integration-summary">
-          <div><KeyRound size={17} /><span><strong>{configuredCount}/6</strong><small>Keys stored</small></span></div>
+          <div><KeyRound size={17} /><span><strong>{configuredCount}/6</strong><small>Provider families configured</small></span></div>
           <div><CheckCircle2 size={17} /><span><strong>{verifiedCount}/6</strong><small>Live verified</small></span></div>
-          <div><ServerCog size={17} /><span><strong>{activeSources}</strong><small>Active profiles</small></span></div>
-          <div><Activity size={17} /><span><strong>{feedHealth?.ok ? 'Online' : 'Unknown'}</strong><small>Feed snapshot</small></span></div>
+          <div><ServerCog size={17} /><span><strong>{totalStoredKeys}</strong><small>Primary + reserve keys</small></span></div>
+          <div><Activity size={17} /><span><strong>{activeSources}</strong><small>Active public profiles</small></span></div>
         </div>
-        <p className="apex-v3-form-note">Provider credentials are write-only. APEX displays only configured and verification states; secret values are never returned to the browser.</p>
+        <p className="apex-v3-form-note">{defaultPackLoaded ? `Default pack: ${defaultPackSource || 'attached configuration'} · ` : ''}Secrets remain server-side/write-only. Smart routing tries direct providers first, then bounded provider/key fallbacks; stored values are never returned to the browser.</p>
+      </Panel>
+
+      <Panel className="settings-integration-card apex-v3-feed-runtime-card">
+        <PanelHeader
+          title="Live intelligence feed health"
+          subtitle="Actual routed output consumed by market context, news, sentiment and on-chain surfaces"
+          action={<button type="button" className="apex-v3-button secondary compact" disabled={loading} onClick={() => void refresh()}>{loading ? <Loader2 className="spin" size={13} /> : <Activity size={13} />} Refresh live feeds</button>}
+        />
+        {loading && !feedHealth ? <div className="apex-v3-feed-health-skeleton"><i /><i /><i /><i /><i /></div> : <div className="apex-v3-feed-health-grid">
+          {([
+            ['Market', feedHealth?.market],
+            ['Fear & Greed', feedHealth?.fearGreed],
+            ['News', feedHealth?.news],
+            ['Whales', feedHealth?.whales],
+            ['ETH oracle', feedHealth?.ethOracle],
+          ] as const).map(([label, row]) => {
+            const state = row?.status || (feedHealth?.ok ? 'unknown' : 'error');
+            const source = row && 'source' in row && typeof row.source === 'string' ? row.source : null;
+            const detail = source || row?.detail || 'No verified observation';
+            return <div className={`feed-${state}`} key={label} title={row?.detail || detail}>
+              <span><i />{label}</span><strong>{state.replaceAll('_', ' ')}</strong><small>{detail}</small>
+            </div>;
+          })}
+        </div>}
+        <div className="apex-v3-integration-history">
+          <strong>Recent credential verification</strong>
+          {probeHistory.length ? probeHistory.slice(0, 6).map((row) => <div key={row.id}><span>{row.state}</span><b>{row.summary}</b><small>{row.latencyMs == null ? '—' : `${row.latencyMs} ms`} · {new Date(row.checkedAt).toLocaleTimeString('en-GB', { hour12: false, timeZone: 'UTC' })} UTC</small></div>) : <p>No credential verification has run in this server session.</p>}
+        </div>
+        <p className="apex-v3-form-note">Feed snapshot: {feedHealth?.fetchedAt ? new Date(feedHealth.fetchedAt).toLocaleString('en-GB', { hour12: false, timeZone: 'UTC' }) + ' UTC' : 'Unavailable'}. Missing values remain unavailable; this panel does not synthesize healthy state.</p>
       </Panel>
 
       <Panel className="settings-integration-card">
@@ -272,7 +350,7 @@ export function IntelligenceSourcesSettingsPanel({ onMessage }: { onMessage?: (m
               <div className={`apex-v3-provider-key ${providerCardState(configured[row.key], effectiveVerified)}`} data-provider-key={row.key} key={row.key}>
                 <div className="apex-v3-provider-key-head">
                   <span className="apex-v3-provider-key-icon" aria-hidden="true"><Icon size={13} strokeWidth={2.1} /></span>
-                  <span className="apex-v3-provider-key-title"><strong>{row.label}</strong><small>{row.detail}</small></span>
+                  <span className="apex-v3-provider-key-title"><strong>{row.label}</strong><small>{row.detail}{(keyCounts[row.key] || 0) > 1 ? ` · ${keyCounts[row.key]} keys in rotation` : ''}</small></span>
                   <StatusBadge tone={statusTone(configured[row.key], effectiveVerified)}>{statusLabel(configured[row.key], effectiveVerified)}</StatusBadge>
                 </div>
                 <div className="apex-v3-provider-key-input">

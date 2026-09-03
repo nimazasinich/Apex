@@ -33,6 +33,7 @@ export interface AutopilotControllerView {
   phaseText: string | null;
   phaseSince: number | null;
   enabled: boolean;
+  systemMode: 'MANUAL' | 'AUTO_RESEARCH';
   armedBy: 'NONE' | 'ENV' | 'OPERATOR';
   serverBackgroundLoop: boolean;
   activeCycleIndex: number | null;
@@ -54,6 +55,7 @@ interface StatusPayload {
     phaseText?: string;
     phaseSince?: number;
     enabled?: boolean;
+    systemMode?: string;
     armedBy?: string;
     activeCycleIndex?: number | null;
     cyclesCompleted?: number;
@@ -68,6 +70,7 @@ const EMPTY = {
   phaseText: null as string | null,
   phaseSince: null as number | null,
   enabled: false,
+  systemMode: 'MANUAL' as 'MANUAL' | 'AUTO_RESEARCH',
   armedBy: 'NONE' as 'NONE' | 'ENV' | 'OPERATOR',
   serverBackgroundLoop: false,
   activeCycleIndex: null as number | null,
@@ -87,6 +90,9 @@ function project(payload: StatusPayload): typeof EMPTY {
     phaseText: typeof controller.phaseText === 'string' ? controller.phaseText : null,
     phaseSince: typeof controller.phaseSince === 'number' ? controller.phaseSince : null,
     enabled: controller.enabled === true,
+    systemMode: controller.systemMode === 'AUTO_RESEARCH' || controller.enabled === true
+      ? 'AUTO_RESEARCH'
+      : 'MANUAL',
     armedBy: armedBy === 'ENV' || armedBy === 'OPERATOR' ? armedBy : 'NONE',
     serverBackgroundLoop: payload.scheduler?.serverBackgroundLoop === true,
     activeCycleIndex: typeof controller.activeCycleIndex === 'number' ? controller.activeCycleIndex : null,

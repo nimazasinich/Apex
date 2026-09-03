@@ -216,6 +216,24 @@
 .v20-positions-page .v20-main-column,
 .v20-alerts-page .v20-main-column,
 .v20-history-page .v20-main-column { display: grid; grid-template-rows: 46px 94px minmax(0,1fr); gap: 8px; }
+/* The Orders main column optionally renders a reconciliation-warning banner
+   between the hero and the KPI grid. The shared 3-track rule above only
+   accounts for the always-present children (hero, KPI grid, table), so when
+   the warning WAS present its 4th child fell into an implicit "auto" row
+   appended after minmax(0,1fr) — pushing the KPI grid to consume the 1fr
+   track instead of the table, and squeezing the table into an unintended
+   sliver. Named line placement below makes each section's row explicit and
+   independent of whether the warning renders; the "auto" warning track
+   collapses to 0 height when the section is absent. Specificity is bumped
+   (both root classes) so this wins over the shared 3-page rule regardless
+   of source order. */
+.v20-orders-page.v20-reference-page > .v20-main-column {
+  grid-template-rows: 46px auto 94px minmax(0, 1fr);
+}
+.v20-orders-page.v20-reference-page > .v20-main-column > .orders-hero { grid-row: 1; }
+.v20-orders-page.v20-reference-page > .v20-main-column > .orders-reconciliation-warning { grid-row: 2; }
+.v20-orders-page.v20-reference-page > .v20-main-column > .orders-kpi-grid { grid-row: 3; }
+.v20-orders-page.v20-reference-page > .v20-main-column > .v20-table-card { grid-row: 4; }
 .orders-reconciliation-warning {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -312,6 +330,12 @@
 .v20-orders-table tbody td:nth-child(6) .v20-progress { display: block; width: 100%; margin: 3px 0 0; }
 .v20-progress { display: inline-block; width: 92px; height: 5px; margin-left: 8px; border-radius: 9px; background: #e6ebe8; vertical-align: middle; overflow: hidden; }
 .v20-progress i { display: block; height: 100%; border-radius: inherit; background: var(--v20-green); }
+/* Order-assistant "Fill Progress" bar (below the half gauge). Previously only
+   styled inside the light-theme override layer, so it rendered with no
+   height/background/track in dark mode — the app's default resolved theme —
+   collapsing to nothing. Defined here, theme-agnostic, so it always renders. */
+.orders-fill-meter { height: 7px; margin: 8px 0 10px; overflow: hidden; border-radius: 999px; background: var(--v20-border); }
+.orders-fill-meter i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--v20-green), var(--v20-blue)); }
 .v20-radio { width: 10px; height: 10px; border: 1px solid #bdc9c1; border-radius: 50%; }
 .v20-table-card tr.selected .v20-radio { border: 3px solid var(--v20-green); }
 .v20-pill { display: inline-flex !important; align-items: center; justify-content: center; min-height: 21px; padding: 0 7px; border: 1px solid var(--v20-border); border-radius: 6px; background: var(--v20-surface-soft); color: var(--v20-muted); font-size: 8px; text-transform: capitalize; }
@@ -1937,8 +1961,13 @@
 .apex-mkt2-kebab-cell button:hover { background: #f1f3f2; color: #344054; }
 .apex-mkt2-range-cell { display: grid; gap: 4px; min-width: 118px; }
 .apex-mkt2-range-cell-values { display: flex; justify-content: space-between; gap: 6px; font-size: 9px; color: #98a3b3; font-variant-numeric: tabular-nums; }
-.apex-mkt2-range-cell-track { position: relative; height: 4px; border-radius: 999px; background: linear-gradient(90deg, #f0525d, #edce4c, #28b94a); opacity: .35; }
+/* This per-row track used opacity: .35 while the near-identical statbar
+   version above (`.apex-mkt2-stat-range-track`) uses .8 — at .35 the
+   red/yellow/green gradient washes out almost to white and loses its
+   semantic meaning entirely. Matched to the working statbar value. */
+.apex-mkt2-range-cell-track { position: relative; height: 4px; border-radius: 999px; background: linear-gradient(90deg, #f0525d, #edce4c, #28b94a); opacity: .8; }
 .apex-mkt2-range-cell-dot { position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: #152029; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(21,32,41,.3); transform: translate(-50%, -50%); }
+:root[data-apex-theme-resolved="dark"] .apex-mkt2-range-cell-dot { background: #e7eef7; border-color: #0d1721; box-shadow: 0 0 0 1px rgba(231,238,247,.35); }
 .apex-mkt2-empty-row td { text-align: center; color: #8b95a5; font-size: 11px; padding: 26px 10px; }
 
 /* ---- Pagination ---- */
@@ -1970,7 +1999,7 @@
 .apex-mkt2-gauge-svg { display: block; }
 .apex-mkt2-gauge-needle { stroke: #22304a; stroke-width: 3.4; stroke-linecap: round; }
 .apex-mkt2-gauge-pivot { fill: #22304a; }
-.apex-mkt2-gauge-center { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); text-align: center; display: grid; }
+.apex-mkt2-gauge-center { position: absolute; left: 50%; bottom: -2px; transform: translateX(-50%); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0px; }
 .apex-mkt2-gauge-center strong { font-size: 26px; font-weight: 800; line-height: 1; color: #152029; }
 .apex-mkt2-gauge-center span { font-size: 10.5px; font-weight: 650; color: #6e7c91; }
 .apex-mkt2-sentiment-legend { display: flex; justify-content: space-between; gap: 6px; margin-top: 10px; text-align: center; }
@@ -1979,6 +2008,19 @@
 .apex-mkt2-sentiment-legend span { font-size: 9.5px; color: #98a3b3; font-weight: 650; }
 .apex-mkt2-sentiment-legend .bearish strong { color: var(--apex-red-500, #f04452); }
 .apex-mkt2-sentiment-legend .bullish strong { color: var(--apex-green-600, #18a83a); }
+
+/* The sentiment card's header pairs a ProvenanceChip with a trailing chevron
+   (`<span className="apex-mkt2-panel-provenance">`), but no rule ever styled
+   that wrapper: chip and chevron sat with no gap between them and the chevron
+   inherited plain text color instead of a muted decorative tone. */
+.apex-mkt2-panel-provenance { display: inline-flex; align-items: center; gap: 5px; color: #b7c0cd; }
+:root[data-apex-theme-resolved="dark"] .apex-mkt2-panel-provenance { color: #445267; }
+
+/* Needle and pivot were hardcoded to a dark navy (#22304a) with no dark-theme
+   override, so on dark backgrounds — where every other gauge label already
+   gets a light-color override just above — the needle nearly disappeared. */
+:root[data-apex-theme-resolved="dark"] .apex-mkt2-gauge-needle { stroke: #e7eef7; }
+:root[data-apex-theme-resolved="dark"] .apex-mkt2-gauge-pivot { fill: #e7eef7; }
 
 .apex-mkt2-breadth-bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: #eef1ef; }
 .apex-mkt2-breadth-bar .seg.bearish { background: var(--apex-red-500, #f04452); }

@@ -10,6 +10,8 @@ import type {
   SizingResult,
   TradeDirection,
 } from '../types';
+import { academyTradePlanErrors } from '../features/academy/api/strategyIntelligence';
+import type { AcademyConsumerIntelligence } from '../features/academy/types';
 
 export const TRADE_PLAN_VERSION = 'trade_plan_v1';
 const DEFAULT_TAKER_FEE_RATE = 0.0006;
@@ -20,6 +22,9 @@ export interface TradePlanInput {
   direction: TradeDirection;
   levels: DerivedLevels;
   sizing: SizingConfig;
+  strategyId?: string | null;
+  strategyVersion?: number | null;
+  recordId?: string | null;
   decisionRef?: {
     score?: number;
     readinessTier?: CandidateScore['readinessTier'];
@@ -34,6 +39,7 @@ export interface TradePlanInput {
   holdHours?: number;
   now?: number;
   ttlMs?: number;
+  academyIntelligence?: AcademyConsumerIntelligence | null;
 }
 
 export interface TradePlan {
@@ -41,6 +47,9 @@ export interface TradePlan {
   id: string;
   symbol: string;
   direction: TradeDirection;
+  strategyId: string | null;
+  strategyVersion: number | null;
+  recordId: string | null;
   decisionRef: TradePlanInput['decisionRef'];
   entryType: 'MARKET' | 'LIMIT';
   entryPrice: number;
@@ -64,6 +73,7 @@ export interface TradePlan {
   validationErrors: string[];
   valid: boolean;
   sizing: SizingResult;
+  academyIntelligence?: AcademyConsumerIntelligence;
 }
 
 function directionalPrices(direction: TradeDirection, levels: DerivedLevels) {
@@ -191,11 +201,28 @@ export function buildTradePlan(input: TradePlanInput): TradePlan {
     ? [Number((entry - atr * 0.15).toFixed(6)), Number((entry + atr * 0.05).toFixed(6))]
     : [Number((entry - atr * 0.05).toFixed(6)), Number((entry + atr * 0.15).toFixed(6))];
 
+  const explicitStrategyId = input.strategyId ?? input.academyIntelligence?.strategyId ?? null;
+  const explicitStrategyVersion = input.strategyVersion ?? input.academyIntelligence?.strategyVersion ?? null;
+  const explicitRecordId = input.recordId ?? (explicitStrategyId && explicitStrategyVersion != null ? `${explicitStrategyId}@${explicitStrategyVersion}` : explicitStrategyId);
+
+  if (input.strategyId && input.academyIntelligence && input.strategyId !== input.academyIntelligence.strategyId) {
+    validationErrors.push(`TradePlan strategy identity (${input.strategyId}) does not match Academy intelligence (${input.academyIntelligence.strategyId}).`);
+  }
+  if (input.strategyVersion != null && input.academyIntelligence && input.strategyVersion !== input.academyIntelligence.strategyVersion) {
+    validationErrors.push(`TradePlan strategy version (${input.strategyVersion}) does not match Academy intelligence (${input.academyIntelligence.strategyVersion}).`);
+  }
+
+  const academyErrors = academyTradePlanErrors(input.academyIntelligence, { isStrategySpecific: Boolean(explicitStrategyId) });
+  validationErrors.push(...academyErrors);
+
   return {
     version: TRADE_PLAN_VERSION,
     id: `${input.symbol}-${input.direction}-${now}`,
     symbol: input.symbol,
     direction: input.direction,
+    strategyId: explicitStrategyId,
+    strategyVersion: explicitStrategyVersion,
+    recordId: explicitRecordId,
     decisionRef: input.decisionRef,
     entryType: 'LIMIT',
     entryPrice: entry,
@@ -214,6 +241,7 @@ export function buildTradePlan(input: TradePlanInput): TradePlan {
     validationErrors,
     valid: validationErrors.length === 0,
     sizing,
+    academyIntelligence: input.academyIntelligence ?? undefined,
   };
 }
 

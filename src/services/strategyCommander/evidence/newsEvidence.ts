@@ -1,7 +1,7 @@
 import type { CommanderEvidenceV1 } from '../../../contracts/commander/commanderEvidence';
 import type { SupplementalBundle } from '../../providers/supplementalTypes';
 import { directionFromSignedScore, makeCommanderEvidence, type CommanderEvidenceAdapterBaseInput, unavailableCommanderEvidence } from './evidenceAdapterUtils';
-import { exactSupplementalSymbol, supplementalExpiry, supplementalQuality } from './supplementalEvidenceUtils';
+import { exactSupplementalSymbol, supplementalExpiry, supplementalObservedAt, supplementalQuality } from './supplementalEvidenceUtils';
 
 export interface NewsEvidenceInput extends CommanderEvidenceAdapterBaseInput {
   supplementalBundle?: SupplementalBundle;
@@ -11,7 +11,7 @@ export function buildNewsEvidence(input: NewsEvidenceInput): CommanderEvidenceV1
   const news = input.supplementalBundle?.news;
   if (!news) return unavailableCommanderEvidence(input, 'NEWS', 'news_cache_missing');
   if (!exactSupplementalSymbol(input.symbol, news.symbol)) return unavailableCommanderEvidence(input, 'NEWS', 'news_symbol_identity_mismatch', 'INVALID');
-  const quality = supplementalQuality(news.source, news.updatedAt, input.receivedAt);
+  const quality = supplementalQuality(news, input.receivedAt);
   if (quality === 'INVALID') return unavailableCommanderEvidence(input, 'NEWS', 'news_timestamp_or_source_invalid', 'INVALID');
   if (quality === 'NOT_CONFIGURED' || quality === 'MISSING') {
     return unavailableCommanderEvidence(input, 'NEWS', news.reason ?? `news_${news.source}`, quality);
@@ -24,8 +24,8 @@ export function buildNewsEvidence(input: NewsEvidenceInput): CommanderEvidenceV1
   const confidence = Math.min(1, labeled.length / 5) * directionalCoverage;
   return makeCommanderEvidence({
     ...input,
-    observedAt: news.updatedAt,
-    expiresAt: supplementalExpiry(news.updatedAt),
+    observedAt: supplementalObservedAt(news)!,
+    expiresAt: supplementalExpiry(news),
     source: news.provider,
   }, 'NEWS', {
     direction: directionFromSignedScore(score, 0.1),

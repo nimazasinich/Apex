@@ -12,6 +12,16 @@ export interface TelegramStatus {
   enabled: boolean;
   chatConfigured: boolean;
   tokenConfigured?: boolean;
+  lastTest?: TelegramTestObservation | null;
+  history?: import('./integrationHealthHistory').IntegrationHealthEntry[];
+}
+
+export interface TelegramTestObservation {
+  ok: boolean;
+  checkedAt: number;
+  latencyMs: number;
+  route: 'direct' | 'proxy' | 'none';
+  error: string | null;
 }
 
 export interface TelegramConfigInput {
@@ -64,9 +74,9 @@ export function loadTelegramPrefs(): TelegramPrefs {
   return { ...DEFAULT_PREFS };
 }
 
-export function saveTelegramPrefs(prefs: TelegramPrefs): void {
-  if (typeof window === 'undefined' || !window.localStorage) return;
-  try { window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch { /* non-fatal */ }
+export function saveTelegramPrefs(prefs: TelegramPrefs): boolean {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+  try { window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); return true; } catch { return false; }
 }
 
 export async function fetchTelegramStatus(): Promise<TelegramStatus> {
@@ -76,6 +86,16 @@ export async function fetchTelegramStatus(): Promise<TelegramStatus> {
     return await res.json() as TelegramStatus;
   } catch {
     return { configured: false, enabled: false, chatConfigured: false };
+  }
+}
+
+export async function fetchTelegramStatusDetailed(): Promise<{ ok: boolean; status: TelegramStatus; error?: string }> {
+  try {
+    const res = await fetch('/api/telegram/status', { credentials: 'same-origin' });
+    if (!res.ok) return { ok: false, status: { configured: false, enabled: false, chatConfigured: false }, error: `http_${res.status}` };
+    return { ok: true, status: await res.json() as TelegramStatus };
+  } catch (error) {
+    return { ok: false, status: { configured: false, enabled: false, chatConfigured: false }, error: error instanceof Error ? error.message : 'telegram_status_failed' };
   }
 }
 
@@ -92,10 +112,10 @@ export async function saveTelegramConfig(cfg: TelegramConfigInput): Promise<Tele
   }
 }
 
-export async function sendTelegramTest(): Promise<{ ok: boolean; error?: string }> {
+export async function sendTelegramTest(): Promise<{ ok: boolean; error?: string; checkedAt?: number; latencyMs?: number; route?: 'direct' | 'proxy' | 'none'; history?: import('./integrationHealthHistory').IntegrationHealthEntry[] }> {
   try {
     const res = await apiMutate('/api/telegram/test', { credentials: 'same-origin' });
-    return await res.json() as { ok: boolean; error?: string };
+    return await res.json();
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'request_failed' };
   }

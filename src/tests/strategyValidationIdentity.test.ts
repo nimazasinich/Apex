@@ -255,6 +255,8 @@ function report(subject: StrategyValidationReport['subject']): StrategyValidatio
       reproducibility: true,
     },
     passedAllGates: true,
+    validationScope: 'FULL_STRATEGY',
+    fullStrategyValidated: true,
   } as unknown as StrategyValidationReport;
 }
 

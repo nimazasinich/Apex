@@ -83,6 +83,9 @@ export function runScannerPresetStrategy(args: {
     scannerConfig,
     direction: args.direction,
     maxBars: args.maxBars,
+    strategyId: args.definition.strategyId,
+    strategyVersion: args.definition.version,
+    academyEvaluationRole: 'RESEARCH_EVALUATION',
   });
 
   const trades = result.trades.map((trade) => {

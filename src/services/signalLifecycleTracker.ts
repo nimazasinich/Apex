@@ -95,6 +95,9 @@ function thesisKey(ticker: string, direction: TradeDirection): string {
 }
 
 function qualifies(candidate: CandidateScore): boolean {
+  if (candidate.decisionState) {
+    return candidate.decisionState === 'SIGNAL' || candidate.decisionState === 'QUALIFIED_SETUP';
+  }
   return candidate.guardPass && candidate.readinessTier !== 'BLOCKED';
 }
 

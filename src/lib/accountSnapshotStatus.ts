@@ -15,7 +15,7 @@
  */
 import { describeSnapshotFreshness, type SnapshotFreshnessState } from './snapshotFreshness';
 
-export type AccountSnapshotStatusState = 'loading' | 'error' | 'locked' | SnapshotFreshnessState;
+export type AccountSnapshotStatusState = 'loading' | 'error' | 'locked' | 'partial' | SnapshotFreshnessState;
 
 /** Visual variant, matching the existing `.v20-live-state` CSS vocabulary. */
 export type AccountSnapshotStatusVariant = 'loading' | 'error' | 'ready' | 'stale' | 'unknown';
@@ -24,7 +24,7 @@ export interface AccountSnapshotStatusInput {
   loading?: boolean;
   error?: string | null;
   connection?: { mode?: string | null; status?: string | null; exchange?: string | null } | null;
-  snapshot?: { syncedAt?: string | null } | null;
+  snapshot?: { syncedAt?: string | null; quality?: { state?: 'complete' | 'partial'; failures?: string[] } } | null;
   /** Injectable clock for deterministic tests. */
   now?: number;
 }
@@ -94,6 +94,10 @@ export function deriveAccountSnapshotStatus(input: AccountSnapshotStatusInput): 
   // Live mode without a connected session cannot be presented as live truth.
   if (input.connection?.mode === 'live' && input.connection?.status !== 'connected') {
     return { ...base, state: 'locked', variant: 'stale', label: 'Live locked', isLive: false, isDegraded: true };
+  }
+
+  if (input.snapshot?.quality?.state === 'partial') {
+    return { ...base, state: 'partial', variant: 'stale', label: 'Partial snapshot', isLive: false, isDegraded: true };
   }
 
   if (freshness.state === 'live') {

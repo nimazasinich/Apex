@@ -39,6 +39,13 @@ import {
   requestHfSpaceJson,
 } from './hfSpacesClient';
 import { MathEngine } from './mathEngine';
+import { validateClosedCandles, type ClosedCandleDiagnostics } from './closedCandleValidator';
+import { canonicalObservationMetadata, type ObservationMetadataV1 } from '../contracts/evidence/observationMetadata';
+import {
+  canonicalizeBinanceSymbol,
+  canonicalizeKuCoinContractSymbol,
+  sanitizeTickerUniverse,
+} from '../lib/tickerUniverse';
 
 export { fetchHfSpaceFearGreed as getFearGreed, fetchHfSpaceNews as getLatestNews } from './hfSpaceIntel';
 
@@ -52,6 +59,11 @@ const KUCOIN_FUTURES_BASE = process.env.KUCOIN_FUTURES_BASE || 'https://api-futu
 // but use realistic defaults for proxied market-data traffic.
 const MARKET_BULK_TIMEOUT_MS = Math.max(4_000, Number(process.env.MARKET_BULK_TIMEOUT_MS || 8_000));
 const MARKET_CANDLE_TIMEOUT_MS = Math.max(5_500, Number(process.env.MARKET_CANDLE_TIMEOUT_MS || 9_000));
+// Ticker bootstrap must not wait on a fan-out of per-symbol open-interest calls.
+// OI enrichment is opportunistic for the market table; decision paths fetch
+// their own evidence and fail closed when OI is unavailable.
+const BINANCE_TICKER_OI_ENRICH_LIMIT = Math.max(0, Math.min(24, Number(process.env.BINANCE_TICKER_OI_ENRICH_LIMIT || 12)));
+const BINANCE_TICKER_OI_ENRICH_BUDGET_MS = Math.max(500, Math.min(6_000, Number(process.env.BINANCE_TICKER_OI_ENRICH_BUDGET_MS || 2_200)));
 
 export type MarketDataSource = 'binance' | 'kucoin' | 'hf_space_2' | 'hf_space_4';
 
@@ -78,6 +90,8 @@ export interface CandlesResult {
   stale?: boolean;
   /** Age of the verified candle snapshot when stale=true. */
   ageMs?: number;
+  metadata?: ObservationMetadataV1;
+  validation?: ClosedCandleDiagnostics;
 }
 
 export interface OrderBookResult {
@@ -89,6 +103,19 @@ export interface OrderBookResult {
   microPrice: number;
   spread: number;
   volumeUnit: 'base_asset' | 'contracts_unknown';
+}
+
+export interface PrimaryProviderProbe {
+  status: DataState;
+  latencyMs: number | null;
+  route: string | null;
+  reason: string | null;
+}
+
+export interface PrimaryProviderHealth {
+  checkedAt: number;
+  binance: PrimaryProviderProbe;
+  kucoin: PrimaryProviderProbe;
 }
 
 export type CandleInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
@@ -115,28 +142,58 @@ function getCached<T>(key: string, ttlMs: number): T | null {
   return e.data as T;
 }
 function setCached<T>(key: string, data: T): void {
-  cache.set(key, { data, timestamp: Date.now() });
+  const timestamp = Date.now();
+  const candidate = data as T & { metadata?: ObservationMetadataV1 };
+  const stored = candidate?.metadata
+    ? { ...candidate, metadata: { ...candidate.metadata, cacheStoredAt: timestamp } }
+    : data;
+  cache.set(key, { data: stored, timestamp });
 }
 const TICKERS_TTL_MS = 5000;
 const CANDLES_TTL_MS = 30000;
 const MAX_STALE_CANDLE_AGE_MS = Number(process.env.APEX_MAX_STALE_CANDLE_AGE_MS || 15 * 60_000);
-const lastVerifiedCandles = new Map<string, CacheEntry<CandlesResult>>();
+interface VerifiedCandleEntry { data: CandlesResult; sourceObservedAt: number; }
+const lastVerifiedCandles = new Map<string, VerifiedCandleEntry>();
 
-function rememberVerifiedCandles(key: string, result: CandlesResult): CandlesResult {
-  lastVerifiedCandles.set(key, { data: { ...result, stale: false, ageMs: 0 }, timestamp: Date.now() });
+export function rememberVerifiedCandles(key: string, result: CandlesResult): CandlesResult {
+  const sourceObservedAt = result.metadata?.sourceObservedAt;
+  if (
+    result.dataState !== 'live'
+    || result.stale === true
+    || result.validation?.accepted !== true
+    || sourceObservedAt == null
+    || !Number.isFinite(sourceObservedAt)
+  ) return result;
+  const existing = lastVerifiedCandles.get(key);
+  if (!existing || sourceObservedAt > existing.sourceObservedAt) {
+    lastVerifiedCandles.set(key, { data: { ...result, stale: false, ageMs: 0 }, sourceObservedAt });
+  }
   return result;
 }
 
-function getStaleVerifiedCandles(key: string): CandlesResult | null {
+export function getStaleVerifiedCandles(key: string, now = Date.now()): CandlesResult | null {
   const entry = lastVerifiedCandles.get(key);
   if (!entry) return null;
-  const ageMs = Date.now() - entry.timestamp;
+  const ageMs = Math.max(0, now - entry.sourceObservedAt);
   if (ageMs > MAX_STALE_CANDLE_AGE_MS) {
     lastVerifiedCandles.delete(key);
     return null;
   }
-  return { ...entry.data, dataState: 'degraded', stale: true, ageMs };
+  return {
+    ...entry.data,
+    dataState: 'degraded',
+    stale: true,
+    ageMs,
+    metadata: entry.data.metadata ? {
+      ...entry.data.metadata,
+      qualityState: 'STALE',
+      staleReason: 'last_known_good_replay',
+      decisionEligible: false,
+    } : undefined,
+  };
 }
+
+export function __resetVerifiedCandleState(): void { lastVerifiedCandles.clear(); }
 
 const CANDLE_INTERVAL_MS: Record<CandleInterval, number> = {
   '1m': 60_000,
@@ -146,6 +203,59 @@ const CANDLE_INTERVAL_MS: Record<CandleInterval, number> = {
   '4h': 14_400_000,
   '1d': 86_400_000,
 };
+
+function validatedCandleResult(input: {
+  rows: Candle[];
+  symbol: string;
+  providerInstrumentId: string;
+  intervalKey: CandleInterval;
+  limit: number;
+  source: MarketDataSource;
+  dataState: DataState;
+  stale?: boolean;
+  ageMs?: number;
+  now?: number;
+}): CandlesResult | null {
+  const receivedAt = input.now ?? Date.now();
+  const intervalMs = CANDLE_INTERVAL_MS[input.intervalKey];
+  const validated = validateClosedCandles({
+    rows: input.rows,
+    intervalMs,
+    now: receivedAt,
+    limit: input.limit,
+    allowedGapIntervals: 3,
+  });
+  if (!validated.diagnostics.accepted || !validated.candles.length) return null;
+  const first = validated.candles[0].timestamp;
+  const last = validated.candles.at(-1)!.timestamp;
+  const sourceObservedAt = last + intervalMs;
+  const qualityState = input.stale ? 'STALE' : input.dataState === 'live' ? 'VALID' : 'DEGRADED';
+  return {
+    candles: validated.candles,
+    dataState: input.dataState,
+    source: input.source,
+    stale: input.stale,
+    ageMs: input.ageMs,
+    validation: validated.diagnostics,
+    metadata: canonicalObservationMetadata({
+      sourceObservedAt,
+      providerReadAt: receivedAt,
+      receivedAt,
+      cacheStoredAt: null,
+      provider: input.source,
+      venue: input.source === 'binance' ? 'BINANCE_USDM' : input.source === 'kucoin' ? 'KUCOIN_FUTURES' : input.source,
+      canonicalInstrumentId: input.symbol,
+      providerInstrumentId: input.providerInstrumentId,
+      adapterVersion: `market_candle_adapter_v2+${validated.diagnostics.version}`,
+      qualityState,
+      staleReason: input.stale ? 'provider_transport_cache' : input.dataState === 'degraded' ? 'non_primary_or_degraded_provider' : null,
+      lineageId: `candles:${input.source}:${input.providerInstrumentId}:${input.intervalKey}:${first}-${last}`,
+      dependencyFamily: 'PRICE_CANDLES',
+      parentLineageIds: [],
+      decisionEligible: input.dataState === 'live' && input.stale !== true,
+    }),
+  };
+}
 
 /**
  * Parse the verified Space-4 Short Hunter OHLCV envelope fail-closed.
@@ -252,6 +362,8 @@ function finalizeOrderBook(
   volumeUnit: OrderBookResult['volumeUnit'],
 ): OrderBookResult | null {
   if (!book.bids.length || !book.asks.length || book.bids[0].price >= book.asks[0].price) return null;
+  const canonicalSymbol = canonicalizeBinanceSymbol(symbol.replace('-', ''));
+  if (!canonicalSymbol) return null;
   const obi = MathEngine.calculateOBI(book);
   const microPrice = MathEngine.calculateMicroPrice(book);
   const spread = MathEngine.calculateSpread(book);
@@ -265,7 +377,7 @@ function finalizeOrderBook(
   return {
     book,
     summary: {
-      symbol: canonicalizeBinanceSymbol(symbol.replace('-', '')),
+      symbol: canonicalSymbol,
       bidDepthUsd,
       askDepthUsd,
       imbalancePct: Number((obi * 100).toFixed(4)),
@@ -383,36 +495,9 @@ export async function getOrderBook(symbol: string, limit = 20, priority: SmartFe
   throw new MarketDataError(`All order-book providers failed for ${symbol}`, attempts);
 }
 
-// ── Symbol canonicalization (private copies) ───────────────────────────────
-// Deliberately NOT imported from apexNextMarketRoutes.ts: that file's
-// formatTickerSymbol/normalizeTickerSymbol were the subject of a same-day
-// bug fix (XBT→BTC remap) and apexNextMarketRoutes.ts now depends on this
-// module, so importing back from it would create a circular import. These
-// mirror that same fixed logic for the KuCoin side; the Binance side is
-// simpler since Binance already natively uses "BTC" (no XBT quirk).
-
-function canonicalizeBinanceSymbol(raw: string): string {
-  const upper = raw.toUpperCase();
-  if (upper.endsWith('USDT')) return `${upper.slice(0, -4)}-USDT`;
-  return upper.includes('-') ? upper : `${upper}-USDT`;
-}
-
-function canonicalizeKuCoinContractSymbol(raw: string): string {
-  const upper = raw.toUpperCase();
-  let result: string;
-  if (upper.endsWith('USDTM')) result = `${upper.slice(0, -5)}-USDT`;
-  else if (upper.endsWith('USDM')) result = `${upper.slice(0, -4)}-USDT`;
-  else if (upper.endsWith('USDT')) result = `${upper.slice(0, -4)}-USDT`;
-  else if (upper.endsWith('M')) result = upper.slice(0, -1);
-  else result = upper.includes('-') ? upper : `${upper}-USDT`;
-  // KuCoin's real Bitcoin Futures contract is prefixed "XBT" (e.g. XBTUSDTM).
-  if (result === 'XBT-USDT') return 'BTC-USDT';
-  return result;
-}
-
 export function isKuCoinUsdtMarginedContract(contract: any): boolean {
   const symbol = String(contract?.symbol || '').trim().toUpperCase();
-  if (!symbol.endsWith('USDTM')) return false;
+  if (!symbol.endsWith('USDTM') || canonicalizeKuCoinContractSymbol(symbol) === null) return false;
 
   const settleCurrency = String(contract?.settleCurrency || '').trim().toUpperCase();
   const quoteCurrency = String(contract?.quoteCurrency || '').trim().toUpperCase();
@@ -453,6 +538,33 @@ export function normalizeKuCoinContractMetrics(
   };
 }
 
+function tickerObservationMetadata(input: {
+  source: 'binance' | 'kucoin' | 'hf_space_2';
+  canonicalSymbol: string;
+  providerSymbol: string;
+  sourceObservedAt: number | null;
+  providerReadAt: number;
+  stale: boolean;
+}): ObservationMetadataV1 {
+  return canonicalObservationMetadata({
+    sourceObservedAt: input.sourceObservedAt,
+    providerReadAt: input.providerReadAt,
+    receivedAt: input.providerReadAt,
+    cacheStoredAt: null,
+    provider: input.source,
+    venue: input.source === 'binance' ? 'BINANCE_USDM' : input.source === 'kucoin' ? 'KUCOIN_FUTURES' : input.source,
+    canonicalInstrumentId: input.canonicalSymbol,
+    providerInstrumentId: input.providerSymbol,
+    adapterVersion: 'market_ticker_adapter_v2',
+    qualityState: input.sourceObservedAt === null ? 'MISSING' : input.stale ? 'STALE' : input.source === 'hf_space_2' ? 'DEGRADED' : 'VALID',
+    staleReason: input.sourceObservedAt === null ? 'provider_event_time_missing' : input.stale ? 'provider_transport_cache' : null,
+    lineageId: `ticker:${input.source}:${input.providerSymbol}:${input.sourceObservedAt ?? 'unknown'}`,
+    dependencyFamily: 'DERIVATIVES_POSITIONING',
+    parentLineageIds: [],
+    decisionEligible: input.sourceObservedAt !== null && !input.stale && input.source !== 'hf_space_2',
+  });
+}
+
 // ── Tier 1: Binance bulk tickers ────────────────────────────────────────────
 // Binance has no bulk open-interest endpoint, so OI is fetched per-symbol in
 // parallel (Promise.all) for the already volume-sorted, size-limited slice
@@ -485,49 +597,73 @@ async function fetchBinanceTickersBulk(limit: number): Promise<{ tickers: Symbol
   const usdtRows = tickerResp.json
     .filter((t: any) =>
       typeof t.symbol === 'string' &&
-      t.symbol.endsWith('USDT') &&
+      canonicalizeBinanceSymbol(t.symbol) !== null &&
       (!exchangeInfoAuthoritative || tradableUsdtPerpetuals.has(String(t.symbol).toUpperCase()))
     )
     .map((t: any) => ({
       binSymbol: String(t.symbol),
+      canonicalSymbol: canonicalizeBinanceSymbol(t.symbol)!,
       lastPrice: parseFloat(String(t.lastPrice ?? '0')) || 0,
       priceChangePct: parseFloat(String(t.priceChangePercent ?? '0')) || 0,
       quoteVolume: parseFloat(String(t.quoteVolume ?? '0')) || 0,
       volume: parseFloat(String(t.volume ?? '0')) || 0,
       high: parseFloat(String(t.highPrice ?? '0')) || 0,
       low: parseFloat(String(t.lowPrice ?? '0')) || 0,
+      sourceObservedAt: Number.isFinite(Number(t.closeTime)) ? Number(t.closeTime) : null,
     }))
     .filter((t: any) => t.lastPrice > 0)
     .sort((a: any, b: any) => b.quoteVolume - a.quoteVolume)
     .slice(0, limit);
 
-  // Keep the wide market universe fast: open interest is fetched for the
-  // highest-liquidity contracts only, while price/volume/funding remain live
-  // for every returned market. This avoids firing 80-120 parallel OI requests.
-  const oiFetchLimit = Math.min(16, usdtRows.length);
-  const oiResults = await mapWithConcurrency(
-    usdtRows.map((row: any, index: number) => ({ row, index })),
-    3,
-    async ({ row, index }) => index < oiFetchLimit
-      ? binanceOpenInterest(row.binSymbol, 'background').catch(() => null)
-      : null,
+  // Keep the wide market universe fast: open interest enrichment is bounded by
+  // one short aggregate budget. Completed rows are kept; unfinished rows stay
+  // explicitly unavailable (NaN) instead of blocking the Overview bootstrap or
+  // being fabricated as zero. The underlying bounded requests may finish and
+  // warm the normal provider cache after this snapshot returns.
+  const oiFetchLimit = Math.min(BINANCE_TICKER_OI_ENRICH_LIMIT, usdtRows.length);
+  const oiResults: any[] = new Array(usdtRows.length).fill(null);
+  const oiWork = mapWithConcurrency(
+    usdtRows.slice(0, oiFetchLimit).map((row: any, index: number) => ({ row, index })),
+    4,
+    async ({ row, index }) => {
+      const value = await binanceOpenInterest(row.binSymbol, 'background').catch(() => null);
+      oiResults[index] = value;
+      return value;
+    },
   );
+  if (oiFetchLimit > 0) {
+    await Promise.race([
+      oiWork,
+      new Promise<void>((resolve) => setTimeout(resolve, BINANCE_TICKER_OI_ENRICH_BUDGET_MS)),
+    ]);
+    void oiWork.catch(() => undefined);
+  }
 
+  const providerReadAt = Date.now();
   const tickers: SymbolTicker[] = usdtRows.map((row: any, i: number) => {
     const oiResult: any = oiResults[i];
-    const oiBase = oiResult && oiResult.ok ? parseFloat(String(oiResult.data?.openInterest ?? '0')) : 0;
+    const oiBase = oiResult && oiResult.ok ? parseFloat(String(oiResult.data?.openInterest ?? '')) : Number.NaN;
+    const fundingRate = fundingMap.has(row.binSymbol) ? fundingMap.get(row.binSymbol)! : Number.NaN;
     return {
-      symbol: canonicalizeBinanceSymbol(row.binSymbol),
+      symbol: row.canonicalSymbol,
       lastPrice: row.lastPrice,
       turnover24h: row.quoteVolume,
       priceChange24hPct: Number(row.priceChangePct.toFixed(2)),
       volume24h: row.volume,
       high24h: row.high || row.lastPrice,
       low24h: row.low || row.lastPrice,
-      fundingRate: fundingMap.get(row.binSymbol) ?? 0,
-      openInterest: (Number.isFinite(oiBase) ? oiBase : 0) * row.lastPrice,
-      dataState: (bulkStale ? 'degraded' : 'live') as DataState,
-      timestamp: Date.now(),
+      fundingRate,
+      openInterest: Number.isFinite(oiBase) && oiBase > 0 ? oiBase * row.lastPrice : Number.NaN,
+      dataState: (bulkStale || row.sourceObservedAt === null ? 'degraded' : 'live') as DataState,
+      timestamp: row.sourceObservedAt ?? 0,
+      observationMetadata: tickerObservationMetadata({
+        source: 'binance',
+        canonicalSymbol: row.canonicalSymbol,
+        providerSymbol: row.binSymbol,
+        sourceObservedAt: row.sourceObservedAt,
+        providerReadAt,
+        stale: bulkStale,
+      }),
     };
   });
 
@@ -548,10 +684,16 @@ async function fetchKuCoinTickersBulk(limit: number): Promise<{ tickers: SymbolT
   }
 
   const kucoinBulkStale = response.stale === true;
+  const providerReadAt = Date.now();
+  const responseObservedRaw = Number(response.json.timestamp ?? response.json.ts);
+  const responseObservedAt = Number.isFinite(responseObservedRaw)
+    ? (responseObservedRaw < 10_000_000_000 ? responseObservedRaw * 1000 : responseObservedRaw)
+    : null;
   const tickers: SymbolTicker[] = response.json.data
     .filter((c: any) => isKuCoinUsdtMarginedContract(c))
     .map((c: any) => {
       const symbol = canonicalizeKuCoinContractSymbol(String(c.symbol || ''));
+      if (!symbol) return null;
       const lastPrice = parseFloat(String(c.lastTradePrice || c.indexPrice || '0')) || 0;
       const turnover24h = parseFloat(String(c.turnoverOf24h || '0')) || 0;
       const changePct = parseFloat(String(c.priceChgPct || '0')) * 100;
@@ -566,6 +708,10 @@ async function fetchKuCoinTickersBulk(limit: number): Promise<{ tickers: SymbolT
       const complete = Number.isFinite(highRaw) && highRaw > 0 &&
         Number.isFinite(lowRaw) && lowRaw > 0 &&
         Number.isFinite(fundingRaw) && metrics.openInterestUsd > 0;
+      const rowObservedRaw = Number(c.timestamp ?? c.ts ?? c.time);
+      const rowObservedAt = Number.isFinite(rowObservedRaw)
+        ? (rowObservedRaw < 10_000_000_000 ? rowObservedRaw * 1000 : rowObservedRaw)
+        : responseObservedAt;
       return {
         symbol,
         lastPrice,
@@ -576,11 +722,19 @@ async function fetchKuCoinTickersBulk(limit: number): Promise<{ tickers: SymbolT
         low24h: Number.isFinite(lowRaw) && lowRaw > 0 ? lowRaw : lastPrice,
         fundingRate,
         openInterest: metrics.openInterestUsd,
-        dataState: (complete && !kucoinBulkStale ? 'live' : 'degraded') as DataState,
-        timestamp: Date.now(),
+        dataState: (!kucoinBulkStale && lastPrice > 0 ? 'live' : 'degraded') as DataState,
+        timestamp: rowObservedAt ?? 0,
+        observationMetadata: tickerObservationMetadata({
+          source: 'kucoin',
+          canonicalSymbol: symbol,
+          providerSymbol: String(c.symbol || ''),
+          sourceObservedAt: rowObservedAt,
+          providerReadAt,
+          stale: kucoinBulkStale,
+        }),
       };
     })
-    .filter((t: SymbolTicker) => t.lastPrice > 0)
+    .filter((t: SymbolTicker | null): t is SymbolTicker => t !== null && t.lastPrice > 0)
     .sort((a: SymbolTicker, b: SymbolTicker) => b.turnover24h - a.turnover24h)
     .slice(0, limit);
 
@@ -745,7 +899,7 @@ async function fetchHfSpaceTickersBulk(limit: number): Promise<{ tickers: Symbol
     if (!Number.isFinite(baseVolume24h) || baseVolume24h <= 0) return null;
 
     return {
-      symbol: canonicalizeBinanceSymbol(`${row.baseAsset}USDT`),
+      symbol: canonicalizeBinanceSymbol(`${row.baseAsset}USDT`)!,
       lastPrice: row.lastPrice,
       turnover24h: row.turnover24hUsd,
       priceChange24hPct: row.priceChange24hPct,
@@ -757,6 +911,14 @@ async function fetchHfSpaceTickersBulk(limit: number): Promise<{ tickers: Symbol
       openInterest: futures.openInterest,
       dataState: 'degraded',
       timestamp: row.timestamp,
+      observationMetadata: tickerObservationMetadata({
+        source: 'hf_space_2',
+        canonicalSymbol: canonicalizeBinanceSymbol(`${row.baseAsset}USDT`)!,
+        providerSymbol: row.baseAsset,
+        sourceObservedAt: row.timestamp,
+        providerReadAt: Date.now(),
+        stale: false,
+      }),
     };
     });
 
@@ -776,6 +938,41 @@ async function fetchHfSpaceTickersBulk(limit: number): Promise<{ tickers: Symbol
   }
 }
 
+/**
+ * Probe the two public futures providers independently.
+ *
+ * The market-data hierarchy intentionally stops after the first usable source,
+ * so the winning source cannot also be used as evidence that the provider which
+ * was never attempted is degraded. These lightweight public endpoints produce
+ * a real per-provider health observation through the same direct/smart-DNS/proxy
+ * transport used by market reads.
+ */
+export async function probePrimaryProviderHealth(): Promise<PrimaryProviderHealth> {
+  const probe = async (url: string, logKey: string): Promise<PrimaryProviderProbe> => {
+    const startedAt = Date.now();
+    const result = await smartFetchJson(url, {
+      timeoutMs: MARKET_BULK_TIMEOUT_MS,
+      logKey,
+      priority: 'interactive',
+      cacheMode: 'none',
+      deduplicate: false,
+    });
+    const latencyMs = Math.max(0, Date.now() - startedAt);
+    return {
+      status: result.ok ? 'live' : 'unavailable',
+      latencyMs,
+      route: result.route || null,
+      reason: result.ok ? null : result.error || `HTTP ${result.status}`,
+    };
+  };
+
+  const [binance, kucoin] = await Promise.all([
+    probe(`${BINANCE_USDM_BASE}/fapi/v1/ping`, 'binance:health_ping'),
+    probe(`${KUCOIN_FUTURES_BASE}/api/v1/timestamp`, 'kucoin:health_timestamp'),
+  ]);
+  return { checkedAt: Date.now(), binance, kucoin };
+}
+
 // ── Public: getTickers ──────────────────────────────────────────────────────
 // All normal UI routes share one 80-market snapshot. This prevents Overview,
 // sentiment, scanner and symbol-detail requests from launching duplicate
@@ -785,7 +982,7 @@ export async function getTickers(limit = 40): Promise<TickersResult> {
   const masterLimit = safeLimit > 80 ? 120 : 80;
   const masterKey = `tickers_${masterLimit}`;
   const result = await coalesceMarketRequest<TickersResult>(masterKey, () => getTickersUncached(masterLimit));
-  return { ...result, tickers: result.tickers.slice(0, safeLimit) };
+  return { ...result, tickers: sanitizeTickerUniverse(result.tickers).slice(0, safeLimit) };
 }
 
 async function getTickersUncached(limit = 40): Promise<TickersResult> {
@@ -883,7 +1080,8 @@ async function getCandlesUncached(
         volume: Number(row[5]),
       })).filter((c: Candle) => Number.isFinite(c.close) && c.close > 0);
       if (candles.length) {
-        const out: CandlesResult = { candles, dataState: r.ok && r.stale ? 'degraded' : 'live', source: 'binance', stale: r.ok && r.stale === true, ageMs: r.ok ? r.cacheAgeMs : undefined };
+        const out = validatedCandleResult({ rows: candles, symbol, providerInstrumentId: toBinanceUsdmSymbol(symbol), intervalKey, limit, source: 'binance', dataState: r.ok && r.stale ? 'degraded' : 'live', stale: r.ok && r.stale === true, ageMs: r.ok ? r.cacheAgeMs : undefined });
+        if (!out) throw new Error('binance_closed_candle_validation_failed');
         setCached(cacheKey, out);
         return rememberVerifiedCandles(cacheKey, out);
       }
@@ -915,7 +1113,8 @@ async function getCandlesUncached(
         .sort((a: Candle, b: Candle) => a.timestamp - b.timestamp)
         .slice(-limit);
       if (candles.length) {
-        const out: CandlesResult = { candles, dataState: response.stale ? 'degraded' : 'live', source: 'kucoin', stale: response.stale === true, ageMs: response.cacheAgeMs };
+        const out = validatedCandleResult({ rows: candles, symbol, providerInstrumentId: kuSymbol, intervalKey, limit, source: 'kucoin', dataState: response.stale ? 'degraded' : 'live', stale: response.stale === true, ageMs: response.cacheAgeMs });
+        if (!out) throw new Error('kucoin_closed_candle_validation_failed');
         setCached(cacheKey, out);
         return rememberVerifiedCandles(cacheKey, out);
       }
@@ -943,7 +1142,8 @@ async function getCandlesUncached(
       ? parseHfSpace4Candles(response.json, intervalKey, limit)
       : [];
     if (candles.length) {
-      const out: CandlesResult = { candles, dataState: 'degraded', source: 'hf_space_4' };
+      const out = validatedCandleResult({ rows: candles, symbol, providerInstrumentId: hfSymbol, intervalKey, limit, source: 'hf_space_4', dataState: 'degraded' });
+      if (!out) throw new Error('hf_space_4_closed_candle_validation_failed');
       setCached(cacheKey, out);
       return rememberVerifiedCandles(cacheKey, out);
     }
@@ -958,11 +1158,8 @@ async function getCandlesUncached(
     try {
       const historical = await getSpace2HistoricalCandles(symbol, intervalKey, limit);
       if (historical?.candles.length) {
-        const out: CandlesResult = {
-          candles: historical.candles,
-          dataState: 'degraded',
-          source: 'hf_space_2',
-        };
+        const out = validatedCandleResult({ rows: historical.candles, symbol, providerInstrumentId: symbol, intervalKey, limit, source: 'hf_space_2', dataState: 'degraded' });
+        if (!out) throw new Error('hf_space_2_closed_candle_validation_failed');
         setCached(cacheKey, out);
         return rememberVerifiedCandles(cacheKey, out);
       }
@@ -1038,20 +1235,10 @@ async function getPaginatedBinanceHistory(
     if (parsed.length < batch) break;
   }
 
-  const intervalMs = CANDLE_INTERVAL_MS[intervalKey];
-  const now = Date.now();
-  const candles = [...rows.values()]
-    .filter((candle) => candle.timestamp + intervalMs <= now)
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-target);
-  if (candles.length < 2) return null;
-  return {
-    candles,
-    dataState: stale ? 'degraded' : 'live',
-    source: 'binance',
-    stale,
-    ageMs,
-  };
+  return validatedCandleResult({
+    rows: [...rows.values()], symbol, providerInstrumentId: normalized, intervalKey, limit: target,
+    source: 'binance', dataState: stale ? 'degraded' : 'live', stale, ageMs,
+  });
 }
 
 /**
@@ -1119,20 +1306,10 @@ async function getPaginatedKuCoinHistory(
     if (payload.length < KUCOIN_KLINE_PAGE_SIZE) break;
   }
 
-  const intervalMs = CANDLE_INTERVAL_MS[intervalKey];
-  const now = Date.now();
-  const candles = [...rows.values()]
-    .filter((candle) => candle.timestamp + intervalMs <= now)
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-target);
-  if (candles.length < 2) return null;
-  return {
-    candles,
-    dataState: stale ? 'degraded' : 'live',
-    source: 'kucoin',
-    stale,
-    ageMs,
-  };
+  return validatedCandleResult({
+    rows: [...rows.values()], symbol, providerInstrumentId: kuSymbol, intervalKey, limit: target,
+    source: 'kucoin', dataState: stale ? 'degraded' : 'live', stale, ageMs,
+  });
 }
 
 /** Backtest-safe candles with the still-open interval removed for every source. */

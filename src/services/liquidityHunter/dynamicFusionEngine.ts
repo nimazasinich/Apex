@@ -98,10 +98,10 @@ export class LiquidityHunterDynamicFusionEngine {
     this.stateMachine = new LiquidityHunterSetupStateMachine(this.idFactory, dependencies.setupEventLog ?? null);
   }
 
-  private applyGovernedThreshold(row: EdgeEvidence, symbol: string): EdgeEvidence {
+  private applyGovernedThreshold(row: EdgeEvidence, symbol: string, regime: string): EdgeEvidence {
     if (!this.edgeThresholdResolver) return row;
     try {
-      const profile = this.edgeThresholdResolver(row.edgeId, symbol, 'REALTIME', 'ANY');
+      const profile = this.edgeThresholdResolver(row.edgeId, symbol, 'REALTIME', regime);
       return applyEdgeThresholdGate(row, profile);
     } catch (error) {
       // Governance failures cannot manufacture execution authority. Preserve the
@@ -177,7 +177,12 @@ export class LiquidityHunterDynamicFusionEngine {
       }
     }
 
-    const governedEvidence = evidence.map((row) => this.applyGovernedThreshold(row, symbol));
+    // Classify macro volatility from raw evidence first, then resolve any separately
+    // promoted regime-specific edge thresholds. The registry still falls back to ANY,
+    // so enabling regime awareness cannot invent a threshold or bypass manual governance.
+    const provisionalMacro = evaluateLayer1Macro(evidence, now).macro;
+    const thresholdRegime = provisionalMacro.volatilityRegime;
+    const governedEvidence = evidence.map((row) => this.applyGovernedThreshold(row, symbol, thresholdRegime));
     const layer1 = evaluateLayer1Macro(governedEvidence, now);
     const layer2 = evaluateLayer2Target(governedEvidence, layer1.macro, now);
     const layer3 = evaluateLayer3Microstructure(governedEvidence, layer1.macro, layer2.target, now);
@@ -206,6 +211,7 @@ export class LiquidityHunterDynamicFusionEngine {
       `setup_state:${state.state}`,
       `layer4:${layer4.decision}`,
       `fusion_score:${fusionScore.toFixed(4)}`,
+      `threshold_regime:${thresholdRegime}`,
       ...(ready ? ['manual_confirmation_candidate_only'] : ['no_execution_authorization']),
     ];
     const evaluation: LiquidityHunterEvaluation = {

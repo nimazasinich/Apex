@@ -8,4 +8,11 @@ export interface AccountSnapshot {
   positionHistory: Array<Record<string, unknown>>;
   serverTime: unknown;
   syncedAt: string;
+  venue?: 'kucoin' | 'tabdeal' | 'demo';
+  observationMetadata?: { sourceObservedAt: number | null; providerReadAt: number; provenance: string };
+  /** Explicit partial-read metadata. Arrays are never silently treated as authoritative when an upstream read failed. */
+  quality?: {
+    state: 'complete' | 'partial';
+    failures: string[];
+  };
 }

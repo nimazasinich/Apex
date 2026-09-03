@@ -50,6 +50,7 @@ export interface OperationsProviderRow {
   rateLimitedUntil: number | null;
   reason: string | null;
   reasonCode: ProviderHealthReasonCode;
+  latencyMs?: number | null;
 }
 
 export interface OperationsProviderSummary {
@@ -273,6 +274,7 @@ export function classifyProviderHealthReason(
   if (item.rateLimitedUntil && now < item.rateLimitedUntil) return 'RATE_LIMITED';
   if (item.reasonCode) return item.reasonCode;
   if (item.isHealthy) return 'HEALTHY';
+  if (item.isConfigured && !item.lastSuccessTime && item.failureCount === 0) return 'NEVER_PROBED';
 
   const reason = String(item.reason || '').toLowerCase();
   if (/circuit.*open|breaker.*open/.test(reason)) return 'CIRCUIT_OPEN';
@@ -304,6 +306,7 @@ export function normalizeProviderRow(item: ProviderHealth, now = Date.now()): Op
     rateLimitedUntil: item.rateLimitedUntil ?? null,
     reason: item.reason ?? null,
     reasonCode,
+    latencyMs: item.latencyMs ?? null,
   };
 }
 

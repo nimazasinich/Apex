@@ -71,6 +71,14 @@ export interface LiveOrderPreview {
   tradePlan: TradePlan | null;
   riskDecision: RiskGovernorResult;
   contract: { lotSize: number; tickSize: number; multiplier: number; maxLeverage: number };
+  telemetrySeed: {
+    decisionAt: number;
+    midAtDecision: number | null;
+    expectedEntry: number;
+    spreadAtDecisionBps: number | null;
+    depthAtDecisionUsd: number | null;
+    provenance: string[];
+  };
   used: boolean;
 }
 
@@ -100,6 +108,9 @@ export interface AccountSnapshot {
   positionHistory: Array<Record<string, unknown>>;
   serverTime: unknown;
   syncedAt: string;
+  venue?: 'kucoin' | 'tabdeal' | 'demo';
+  observationMetadata?: { sourceObservedAt: number | null; providerReadAt: number; provenance: string };
+  quality?: { state: 'complete' | 'partial'; failures: string[] };
 }
 
 function asRecordArray(value: unknown): Array<Record<string, unknown>> {
@@ -313,6 +324,9 @@ export class ExchangeSessionManager {
 export async function fetchAccountSnapshot(adapter: KuCoinFuturesTestnetAdapter, includeHistory = true): Promise<AccountSnapshot> {
   const now = Date.now();
   const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const labels = includeHistory
+    ? ['server_time', 'account_overview', 'positions', 'open_orders', 'recent_orders', 'recent_trades', 'position_history'] as const
+    : ['server_time', 'account_overview', 'positions', 'open_orders'] as const;
   const requests: Promise<unknown>[] = [
     adapter.serverTime(),
     adapter.accountOverview(),
@@ -321,21 +335,34 @@ export async function fetchAccountSnapshot(adapter: KuCoinFuturesTestnetAdapter,
   ];
   if (includeHistory) {
     requests.push(
-      adapter.recentClosedOrders().catch(() => null),
-      adapter.recentTrades().catch(() => null),
-      adapter.positionHistory(weekAgo, now).catch(() => null),
+      adapter.recentClosedOrders(),
+      adapter.recentTrades(),
+      adapter.positionHistory(weekAgo, now),
     );
   }
-  const [serverTime, account, positions, openOrders, recentOrders, recentTrades, positionHistory] = await Promise.all(requests);
+
+  const settled = await Promise.allSettled(requests);
+  const accountResult = settled[1];
+  // Account overview is the one field that cannot be safely approximated. If it
+  // fails, preserve fail-closed behaviour. Secondary lists may fail independently
+  // without blanking every portfolio/history page.
+  if (!accountResult || accountResult.status === 'rejected') {
+    throw accountResult?.status === 'rejected' ? accountResult.reason : new Error('account_overview_unavailable');
+  }
+
+  const failures = settled.flatMap((result, index) => result.status === 'rejected' ? [labels[index] || `resource_${index}`] : []);
+  const valueAt = (index: number): unknown => settled[index]?.status === 'fulfilled' ? settled[index].value : null;
   return {
-    account: asRecord(account),
-    positions: itemsFrom(positions),
-    openOrders: itemsFrom(openOrders),
-    recentOrders: itemsFrom(recentOrders),
-    recentTrades: itemsFrom(recentTrades),
-    positionHistory: itemsFrom(positionHistory),
-    serverTime,
+    account: asRecord(accountResult.value),
+    positions: itemsFrom(valueAt(2)),
+    openOrders: itemsFrom(valueAt(3)),
+    recentOrders: itemsFrom(valueAt(4)),
+    recentTrades: itemsFrom(valueAt(5)),
+    positionHistory: itemsFrom(valueAt(6)),
+    serverTime: valueAt(0),
     syncedAt: new Date().toISOString(),
+    venue: 'kucoin',
+    quality: { state: failures.length ? 'partial' : 'complete', failures },
   };
 }
 
@@ -456,7 +483,9 @@ function evaluateLiveRisk(args: {
       leverage: args.draft.leverage,
       reduceOnly: args.draft.reduceOnly,
       exchange: 'kucoin',
-      strategy: args.plan?.decisionRef?.engineVersion ?? null,
+      strategyId: args.plan?.strategyId ?? null,
+      strategyVersion: args.plan?.strategyVersion ?? null,
+      strategy: args.plan?.strategyId ?? null,
     },
     account: {
       equityUsd: accountEquity(args.account),
@@ -481,6 +510,7 @@ function evaluateLiveRisk(args: {
     },
     executionMode: 'MANUAL',
     plan: args.plan,
+    academyIntelligence: args.plan?.academyIntelligence ?? null,
     policy: loadRiskGovernorPolicy(),
   });
 }
@@ -712,6 +742,12 @@ export async function previewLiveOrder(session: ExchangeSession, rawDraft: LiveO
     ...riskDecision.reasons,
   ];
   if (riskDecision.decision === 'APPROVED_REDUCED') warnings.unshift(`Risk Governor reduced quantity to ${draft.quantity}.`);
+  const bestBid = finite(ticker.bestBidPrice || ticker.bestBid);
+  const bestAsk = finite(ticker.bestAskPrice || ticker.bestAsk);
+  const midpoint = bestBid > 0 && bestAsk > bestBid ? (bestBid + bestAsk) / 2 : (markPrice > 0 ? markPrice : null);
+  const spreadAtDecisionBps = midpoint && bestBid > 0 && bestAsk > bestBid
+    ? ((bestAsk - bestBid) / midpoint) * 10_000
+    : null;
   const preview: LiveOrderPreview = {
     id: crypto.randomBytes(24).toString('base64url'),
     environment: 'LIVE',
@@ -728,6 +764,19 @@ export async function previewLiveOrder(session: ExchangeSession, rawDraft: LiveO
     tradePlan,
     riskDecision,
     contract: { lotSize, tickSize, multiplier, maxLeverage },
+    telemetrySeed: {
+      decisionAt: now,
+      midAtDecision: midpoint,
+      expectedEntry: referencePrice,
+      spreadAtDecisionBps,
+      depthAtDecisionUsd: null,
+      provenance: [
+        'decision_time=local_preview_creation',
+        'expected_entry=authoritative_preview_reference',
+        ...(spreadAtDecisionBps != null ? ['spread=kucoin_ticker_bid_ask'] : ['spread=unavailable']),
+        'depth=unavailable_not_fabricated',
+      ],
+    },
     used: false,
   };
   session.previews.set(preview.id, preview);
@@ -784,9 +833,15 @@ export async function submitPreviewedLiveOrder(session: ExchangeSession, preview
     order: preview.order,
     plan: preview.tradePlan,
     risk: riskDecision,
+    telemetrySeed: { ...preview.telemetrySeed, provenance: [...preview.telemetrySeed.provenance, 'venue=kucoin_operator_controlled_live'] },
   });
   try {
+    const orderSubmittedAt = Date.now();
+    session.intentStore.update(intent.id, {
+      executionTelemetry: { orderSubmittedAt, provenance: [...intent.executionTelemetry.provenance, 'order_submitted_at=local_adapter_call'] },
+    });
     const exchangeResponse = await session.adapter.submitLiveOrder(preview.order);
+    const ackAt = Date.now();
     const state = exchangeOrderState(exchangeResponse);
     let fills: LiveExecutionFillRecord[] = [];
     try { fills = normalizeLiveFills(await session.adapter.recentTrades(), intent, state.exchangeOrderId); } catch { /* REST fill history can lag acknowledgement. */ }
@@ -800,6 +855,11 @@ export async function submitPreviewedLiveOrder(session: ExchangeSession, preview
       exchangeResponse,
       protectiveOrderStatus: intent.protectiveOrderStatus === 'REQUESTED' ? 'ATTACHED_UNVERIFIED' : intent.protectiveOrderStatus,
       status: state.status === 'FILLED' ? 'FILLED' : state.status,
+      executionTelemetry: {
+        ackAt,
+        partialFillObserved: state.status === 'PARTIALLY_FILLED',
+        provenance: [...intent.executionTelemetry.provenance, 'ack_at=local_authoritative_submit_response', 'fills=kucoin_recent_trades'],
+      },
     });
     return {
       ok: true as const,

@@ -8,8 +8,11 @@ const STORE = 'decision_logs';
 const LOCAL_FALLBACK_KEY = 'apex.decisionMemory.fallback.v1';
 const MAX_FALLBACK_ROWS = 1200;
 const MIRROR_BATCH_SIZE = 50;
+/** Keep mirror requests comfortably below the server's 256 KiB global JSON limit. */
+export const MIRROR_MAX_PAYLOAD_BYTES = 128 * 1024;
 let mirrorQueue: SignalDecisionLog[] = [];
 let mirrorTimer: ReturnType<typeof setTimeout> | undefined;
+let mirrorFlushInFlight: Promise<void> | null = null;
 
 export type DecisionMemoryPersistenceState = 'synced' | 'browser_only' | 'mirror_degraded';
 
@@ -56,28 +59,93 @@ function queueMirror(log: SignalDecisionLog): void {
   }
 }
 
-async function flushMirror(): Promise<void> {
+function utf8Bytes(value: string): number {
+  return new TextEncoder().encode(value).byteLength;
+}
+
+export interface DecisionMemoryMirrorBatchPlan {
+  batches: SignalDecisionLog[][];
+  oversizedRowIds: string[];
+}
+
+export function decisionMemoryMirrorPayloadBytes(rows: readonly SignalDecisionLog[]): number {
+  return utf8Bytes(JSON.stringify({ rows }));
+}
+
+/** Greedy, order-preserving row and byte bounded batching for the mirror API. */
+export function buildDecisionMemoryMirrorBatchPlan(
+  rows: readonly SignalDecisionLog[],
+  maxRows = MIRROR_BATCH_SIZE,
+  maxPayloadBytes = MIRROR_MAX_PAYLOAD_BYTES,
+): DecisionMemoryMirrorBatchPlan {
+  const batches: SignalDecisionLog[][] = [];
+  const oversizedRowIds: string[] = [];
+  let current: SignalDecisionLog[] = [];
+
+  for (const row of rows) {
+    if (decisionMemoryMirrorPayloadBytes([row]) > maxPayloadBytes) {
+      if (current.length) batches.push(current);
+      current = [];
+      oversizedRowIds.push(row.id);
+      continue;
+    }
+    const candidate = [...current, row];
+    if (current.length && (candidate.length > maxRows || decisionMemoryMirrorPayloadBytes(candidate) > maxPayloadBytes)) {
+      batches.push(current);
+      current = [row];
+    } else {
+      current = candidate;
+    }
+  }
+  if (current.length) batches.push(current);
+  return { batches, oversizedRowIds };
+}
+
+async function postMirrorBatch(batch: SignalDecisionLog[]): Promise<boolean> {
+  const response = await apiMutate('/api/decision-memory/batch', {
+    method: 'POST',
+    body: JSON.stringify({ rows: batch }),
+  });
+  if (response.ok) return true;
+  // Defensive compatibility with a more restrictive reverse proxy: split a
+  // bounded batch again instead of repeatedly replaying the same 413 payload.
+  if (response.status === 413 && batch.length > 1) {
+    const middle = Math.ceil(batch.length / 2);
+    return (await postMirrorBatch(batch.slice(0, middle))) && (await postMirrorBatch(batch.slice(middle)));
+  }
+  return false;
+}
+
+async function drainMirrorQueue(): Promise<void> {
+  let allSynced = true;
+  while (mirrorQueue.length) {
+    const queued = mirrorQueue.splice(0, mirrorQueue.length);
+    const plan = buildDecisionMemoryMirrorBatchPlan(queued);
+    if (plan.oversizedRowIds.length) allSynced = false;
+    for (const batch of plan.batches) {
+      try {
+        if (!(await postMirrorBatch(batch))) allSynced = false;
+      } catch {
+        allSynced = false;
+      }
+    }
+  }
+  setPersistenceState(allSynced ? 'synced' : hasIndexedDB() ? 'mirror_degraded' : 'browser_only');
+}
+
+function flushMirror(): Promise<void> {
   if (mirrorTimer) {
     clearTimeout(mirrorTimer);
     mirrorTimer = undefined;
   }
-  if (!mirrorQueue.length) return;
-  const batch = mirrorQueue.splice(0, MIRROR_BATCH_SIZE);
-  try {
-    const response = await apiMutate('/api/decision-memory/batch', {
-      method: 'POST',
-      body: JSON.stringify({ rows: batch }),
+  if (!mirrorQueue.length && !mirrorFlushInFlight) return Promise.resolve();
+  if (!mirrorFlushInFlight) {
+    mirrorFlushInFlight = drainMirrorQueue().finally(() => {
+      mirrorFlushInFlight = null;
+      if (mirrorQueue.length) void flushMirror();
     });
-    if (!response.ok) throw new Error(`mirror_http_${response.status}`);
-    setPersistenceState('synced');
-  } catch {
-    // The browser store is authoritative. Backend outages must never block scans.
-    // Preserve that behavior while making the loss of durable mirroring visible
-    // to the operator. If IndexedDB itself is unavailable, the truthful state is
-    // browser-only because the localStorage fallback remains the sole store.
-    setPersistenceState(hasIndexedDB() ? 'mirror_degraded' : 'browser_only');
   }
-  if (mirrorQueue.length) void flushMirror();
+  return mirrorFlushInFlight;
 }
 
 function hasIndexedDB(): boolean {

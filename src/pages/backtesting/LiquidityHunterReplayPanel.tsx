@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Radar, X } from 'lucide-react';
+import { fetchJsonWithTimeout } from '../../services/apiQuery';
 
 interface Props { onClose: () => void }
 
@@ -11,17 +12,25 @@ function formatReplayDate(value?: number): string {
 }
 
 export function LiquidityHunterReplayPanel({ onClose }: Props) {
-  const [state, setState] = useState<{ setups: SetupSnapshot[]; datasets: ReplayDataset[]; error: string | null }>({ setups: [], datasets: [], error: null });
+  const [state, setState] = useState<{ setups: SetupSnapshot[]; datasets: ReplayDataset[]; error: string | null; warning: string | null }>({ setups: [], datasets: [], error: null, warning: null });
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      fetch('/api/liquidity-hunter/setups').then(async (response) => ({ response, payload: await response.json().catch(() => ({})) })),
-      fetch('/api/liquidity-hunter/replay-datasets').then(async (response) => ({ response, payload: await response.json().catch(() => ({})) })),
-    ]).then(([setups, datasets]) => {
+    Promise.allSettled([
+      fetchJsonWithTimeout<{ setups?: SetupSnapshot[] }>('/api/liquidity-hunter/setups', { timeoutMs: 12_000 }),
+      fetchJsonWithTimeout<{ datasets?: ReplayDataset[] }>('/api/liquidity-hunter/replay-datasets', { timeoutMs: 12_000 }),
+    ]).then(([setupsResult, datasetsResult]) => {
       if (cancelled) return;
-      if (!setups.response.ok || !datasets.response.ok) throw new Error('Liquidity Hunter replay evidence is unavailable.');
-      setState({ setups: Array.isArray(setups.payload.setups) ? setups.payload.setups as SetupSnapshot[] : [], datasets: Array.isArray(datasets.payload.datasets) ? datasets.payload.datasets as ReplayDataset[] : [], error: null });
-    }).catch((error) => { if (!cancelled) setState({ setups: [], datasets: [], error: error instanceof Error ? error.message : 'Replay evidence unavailable.' }); });
+      const setups = setupsResult.status === 'fulfilled' && Array.isArray(setupsResult.value.setups) ? setupsResult.value.setups : [];
+      const datasets = datasetsResult.status === 'fulfilled' && Array.isArray(datasetsResult.value.datasets) ? datasetsResult.value.datasets : [];
+      const failures = [setupsResult.status === 'rejected' ? 'setups' : null, datasetsResult.status === 'rejected' ? 'replay datasets' : null].filter(Boolean);
+      const bothUnavailable = failures.length === 2;
+      setState({
+        setups,
+        datasets,
+        error: bothUnavailable ? 'Liquidity Hunter replay evidence is unavailable.' : null,
+        warning: !bothUnavailable && failures.length ? `Partial replay evidence · unavailable: ${failures.join(', ')}` : null,
+      });
+    });
     return () => { cancelled = true; };
   }, []);
   return (
@@ -29,6 +38,7 @@ export function LiquidityHunterReplayPanel({ onClose }: Props) {
       <section className="apex-lh-replay-panel" role="dialog" aria-modal="true" aria-label="Liquidity Hunter replay evidence">
         <header><div><Radar size={16} /><span><strong>Liquidity Hunter Replay Evidence</strong><small>Durable setup transitions and recorded event manifests</small></span></div><button type="button" onClick={onClose} aria-label="Close Liquidity Hunter replay evidence"><X size={16} /></button></header>
         {state.error ? <p className="error">{state.error}</p> : <>
+          {state.warning && <p className="error">{state.warning}</p>}
           <article><h3>Setups</h3>{state.setups.length ? <div className="apex-lh-replay-list">{state.setups.map((setup, index) => {
             const transitions = Array.isArray(setup.transitions) ? setup.transitions : [];
             const latestStates = transitions.slice(-2).map((transition) => transition.nextState || 'UNKNOWN').join(' → ');

@@ -10,6 +10,7 @@ import {
   LogOut,
   Monitor,
   Moon,
+  Network,
   Save,
   Sun,
   Volume2,
@@ -26,6 +27,7 @@ import {
   selectAccountMode,
 } from '../../services/accountClient';
 import { saveSettings } from '../../lib/storage';
+import { fetchJsonWithTimeout } from '../../services/apiQuery';
 import { validateTerminalSettings } from '../../lib/workspaceUi';
 import {
   THEME_CHANGE_EVENT,
@@ -49,10 +51,13 @@ import {
 } from '../../components/ui/WorkspacePrimitives';
 import { TelegramSettingsPanel } from '../../components/TelegramSettingsPanel';
 import { IntelligenceSourcesSettingsPanel } from '../../components/IntelligenceSourcesSettingsPanel';
+import { ProxySettingsPanel } from '../../components/ProxySettingsPanel';
 import type { SettingsWorkspaceProps } from '../pageTypes';
 import { notifyWorkspace } from '../../lib/workspaceFeedback';
+import { connectTabdeal, disconnectTabdeal, getTabdealConnection, type TabdealConnectionState } from '../../services/tabdealConnectionClient';
+import { listExchangeConnections } from '../../config/exchangeConnections';
 
-type SettingsSection = 'account' | 'security' | 'appearance' | 'notifications' | 'trading' | 'api' | 'devices';
+type SettingsSection = 'account' | 'security' | 'appearance' | 'notifications' | 'trading' | 'api' | 'smart-proxy' | 'devices';
 
 const sections: Array<{ id: SettingsSection; label: string; icon: React.ComponentType<{ size?: number }> }> = [
   { id: 'account', label: 'Account', icon: UserRound },
@@ -61,6 +66,7 @@ const sections: Array<{ id: SettingsSection; label: string; icon: React.Componen
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'trading', label: 'Trading', icon: SlidersHorizontal },
   { id: 'api', label: 'API Management', icon: KuCoinLogoIcon },
+  { id: 'smart-proxy', label: 'Smart Proxy', icon: Network },
   { id: 'devices', label: 'Devices', icon: Laptop },
 ];
 
@@ -71,6 +77,7 @@ const sectionDescriptions: Record<SettingsSection, string> = {
   notifications: 'Sound & browser',
   trading: 'Risk & leverage',
   api: 'Exchange session',
+  'smart-proxy': 'Provider routing',
   devices: 'Active sessions',
 };
 
@@ -115,6 +122,8 @@ function KuCoinHeaderTitle() {
 
 export function SettingsPage({ connection, settings, onSettingsChange, onConnectionChange }: SettingsWorkspaceProps) {
   const [section, setSection] = useState<SettingsSection>('account');
+  const activeSectionMeta = sections.find((item) => item.id === section) ?? sections[0];
+  const ActiveSectionIcon = activeSectionMeta.icon;
   const [form, setForm] = useState({ apiKey: '', apiSecret: '', apiPassphrase: '', keyVersion: '2' as '2' | '3', enableTrading: true });
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -124,14 +133,29 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
   const [securityLoading, setSecurityLoading] = useState(false);
   const [themePreference, setThemeState] = useState<ThemePreference>(() => readThemePreference());
   const [notificationPermission, setNotificationPermission] = useState<BrowserNotificationPermission>(() => browserNotificationPermission());
+  const [tabdealForm, setTabdealForm] = useState({ apiKey: '', apiSecret: '' });
+  const [tabdealWorking, setTabdealWorking] = useState(false);
+  const [tabdealConnection, setTabdealConnection] = useState<TabdealConnectionState>({
+    connected: false,
+    apiKeyHint: null,
+    createdAt: null,
+    expiresAt: null,
+    executionStage: 'READ_ONLY',
+    status: 'DISCONNECTED',
+    signal: { credentialsPresent: false, lastPublicPingOk: null, lastAccountReadOk: null },
+    safety: { readOnly: true, automaticVenueFailoverEnabled: false, autonomousLiveExecutionEnabled: false },
+  });
   const hasLiveConnection = connection.liveAvailable;
+  const exchangeDescriptors = useMemo(() => listExchangeConnections({
+    kuCoinConnected: hasLiveConnection,
+    tabdealExecutionStage: 'READ_ONLY',
+    tabdealSignal: tabdealConnection.signal,
+  }), [hasLiveConnection, tabdealConnection.signal]);
 
   const loadSecurity = useCallback(async () => {
     setSecurityLoading(true);
     try {
-      const response = await fetch('/api/security/bootstrap', { credentials: 'same-origin' });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || `security_status_${response.status}`);
+      const payload = await fetchJsonWithTimeout<Record<string, unknown>>('/api/security/bootstrap', { timeoutMs: 10_000 });
       setSecurity(payload);
       setSecurityError(null);
     } catch (error) {
@@ -145,13 +169,18 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
     void loadSecurity();
   }, [loadSecurity]);
 
+  useEffect(() => {
+    let active = true;
+    void getTabdealConnection().then((result) => { if (active) setTabdealConnection(result.connection); }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
+
 
   const hasPreferenceChanges = useMemo(() => (
     localSettings.minLiquidityUsd !== settings.minLiquidityUsd
     || localSettings.defaultAccountBalanceUsd !== settings.defaultAccountBalanceUsd
     || localSettings.defaultRiskPct !== settings.defaultRiskPct
     || localSettings.defaultLeverage !== settings.defaultLeverage
-    || localSettings.autopilotEnabled !== settings.autopilotEnabled
     || localSettings.soundAlertsEnabled !== settings.soundAlertsEnabled
     || localSettings.maxLiveOrderNotionalUsd !== settings.maxLiveOrderNotionalUsd
   ), [localSettings, settings]);
@@ -226,6 +255,30 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
     finally { setWorking(false); }
   };
 
+  const connectTabdealSession = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setTabdealWorking(true); setMessage(null);
+    try {
+      const result = await connectTabdeal(tabdealForm);
+      setTabdealConnection(result.connection);
+      setTabdealForm({ apiKey: '', apiSecret: '' });
+      setMessage('Tabdeal FAPI verified in read-only mode. Live submission and automatic venue failover remain disabled.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'tabdeal_connection_failed');
+    } finally { setTabdealWorking(false); }
+  };
+
+  const disconnectTabdealSession = async () => {
+    setTabdealWorking(true); setMessage(null);
+    try {
+      const result = await disconnectTabdeal();
+      setTabdealConnection(result.connection);
+      setMessage('Tabdeal read-only session disconnected and credentials removed from server memory.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'tabdeal_disconnect_failed');
+    } finally { setTabdealWorking(false); }
+  };
+
   const switchMode = async (mode: 'demo' | 'live') => {
     if (mode === connection.mode || (mode === 'live' && !hasLiveConnection)) return;
     setWorking(true); setMessage(null);
@@ -256,7 +309,10 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
       setMessage(validation.errors.join(' '));
       return;
     }
-    saveSettings(validation.settings);
+    if (!saveSettings(validation.settings)) {
+      setMessage('Preferences were not saved because browser persistence is unavailable.');
+      return;
+    }
     setLocalSettings(validation.settings);
     onSettingsChange(validation.settings);
     setMessage('Preferences saved and connected to scanner, trade-plan and order-ticket defaults. API credentials were not stored.');
@@ -329,7 +385,7 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
       <div className="settings-overview-row">
         <span className="settings-overview-icon api"><KuCoinLogoIcon size={20} /></span>
         <span className="settings-overview-copy"><strong>API management</strong><small>Short-lived server session; credentials are not stored in browser storage</small></span>
-        <span className="settings-overview-values one"><span><small>KuCoin Futures</small><strong className={hasLiveConnection ? 'positive' : ''}>{hasLiveConnection ? 'Verified session' : 'Not connected'}</strong></span></span>
+        <span className="settings-overview-values two">{exchangeDescriptors.map((venue) => <span key={venue.id}><small>{venue.displayName}</small><strong className={venue.status === 'CONNECTED' || venue.status === 'READ_ONLY' ? 'positive' : ''}>{venue.statusLabel}</strong></span>)}</span>
         <button type="button" className="apex-v3-button secondary compact" onClick={() => setSection('api')}>Manage</button>
       </div>
     </Panel>
@@ -363,14 +419,39 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
       <label className="apex-v3-check apex-v3-kucoin-unlock"><input type="checkbox" checked={form.enableTrading} onChange={(event) => setForm({ ...form, enableTrading: event.target.checked })} /><span>Unlock live order actions after successful verification</span></label>
       <button className="apex-v3-button primary full apex-v3-kucoin-connect-button" type="submit" disabled={working}>{working ? <Loader2 className="spin" size={16} /> : <KeyRound size={16} />} Verify and connect</button>
     </form>}
+    <Panel className="settings-integration-card tabdeal-connection-card">
+      <PanelHeader title="Tabdeal FAPI" subtitle="Secondary venue · authenticated read-only connection" action={<StatusBadge tone={tabdealConnection.status === 'READ_ONLY' || tabdealConnection.status === 'CONNECTED' ? 'positive' : tabdealConnection.status === 'DEGRADED' ? 'warning' : 'neutral'}>{tabdealConnection.status.replaceAll('_', ' ')}</StatusBadge>} />
+      {tabdealConnection.connected ? <div className="apex-v3-connected-account">
+        <div><ShieldCheck size={24} /><span><strong>Read-only Tabdeal session</strong><small>{tabdealConnection.apiKeyHint || 'Verified API key'} · KuCoin remains the default execution venue</small></span></div>
+        <KeyValueList rows={[
+          { label: 'Stage', value: tabdealConnection.executionStage },
+          { label: 'Public API', value: tabdealConnection.signal.lastPublicPingOk === true ? 'Reachable' : tabdealConnection.signal.lastPublicPingOk === false ? 'Degraded' : 'Unknown' },
+          { label: 'Account read', value: tabdealConnection.signal.lastAccountReadOk === true ? 'Verified' : tabdealConnection.signal.lastAccountReadOk === false ? 'Degraded' : 'Unknown', tone: tabdealConnection.signal.lastAccountReadOk === true ? 'positive' : 'warning' },
+          { label: 'Live orders', value: 'Disabled' },
+          { label: 'Auto failover', value: 'Disabled' },
+        ]} />
+        <div className="apex-v3-button-row"><button className="apex-v3-button danger" type="button" onClick={() => void disconnectTabdealSession()} disabled={tabdealWorking}><LogOut size={15} /> Disconnect Tabdeal</button></div>
+      </div> : <form className="apex-v3-form-grid" onSubmit={(event) => void connectTabdealSession(event)} autoComplete="off">
+        <div className="apex-v3-security-banner"><ShieldCheck size={18} /><span><strong>Read-only rollout</strong><small>Credentials are verified once and kept only in short-lived server memory. This connection cannot submit orders or replace KuCoin automatically.</small></span></div>
+        <label><span>Tabdeal API Key</span><input name="tabdeal_api_key" value={tabdealForm.apiKey} onChange={(event) => setTabdealForm({ ...tabdealForm, apiKey: event.target.value })} required minLength={8} autoComplete="off" spellCheck={false} /></label>
+        <label><span>Tabdeal API Secret</span><input type="password" name="tabdeal_api_secret" value={tabdealForm.apiSecret} onChange={(event) => setTabdealForm({ ...tabdealForm, apiSecret: event.target.value })} required minLength={8} autoComplete="off" spellCheck={false} data-lpignore="true" /></label>
+        <button className="apex-v3-button secondary full" type="submit" disabled={tabdealWorking}>{tabdealWorking ? <Loader2 className="spin" size={16} /> : <KeyRound size={16} />} Verify Tabdeal read-only</button>
+      </form>}
+    </Panel>
     <IntelligenceSourcesSettingsPanel onMessage={setMessage} />
   </div>;
 
-  const tradingSection = <div className="apex-v3-settings-section settings-section-trading"><PanelHeader title="Trading preferences" subtitle="Safe local preferences; no credentials" action={<StatusBadge tone={hasPreferenceChanges ? 'warning' : 'positive'}>{hasPreferenceChanges ? 'Unsaved changes' : 'Saved'}</StatusBadge>} /><div className="apex-v3-form-grid apex-v3-preference-form"><div className="two"><label className="apex-v3-default-field"><span><span>Minimum liquidity</span><em>{formatUsdSetting(localSettings.minLiquidityUsd)}</em></span><input type="number" step="1000000" value={localSettings.minLiquidityUsd} onChange={(event) => setLocalSettings({ ...localSettings, minLiquidityUsd: Number(event.target.value) || 10_000_000 })} /></label><label className="apex-v3-default-field"><span><span>Demo starting balance</span><em>{formatUsdSetting(localSettings.defaultAccountBalanceUsd, 'USDT')}</em></span><input type="number" step="500" value={localSettings.defaultAccountBalanceUsd} onChange={(event) => setLocalSettings({ ...localSettings, defaultAccountBalanceUsd: Number(event.target.value) || 100_000 })} /></label></div><div className="two"><label className="apex-v3-default-field"><span><span>Default risk</span><em>{formatPercentSetting(localSettings.defaultRiskPct)}</em></span><input type="number" min="0.1" max="10" step="0.1" value={localSettings.defaultRiskPct} onChange={(event) => setLocalSettings({ ...localSettings, defaultRiskPct: Number(event.target.value) || 1 })} /></label><label className="apex-v3-default-field"><span><span>Default leverage</span><em>{formatLeverageSetting(localSettings.defaultLeverage)}</em></span><input type="number" min="1" max="100" value={localSettings.defaultLeverage} onChange={(event) => setLocalSettings({ ...localSettings, defaultLeverage: Number(event.target.value) || 5 })} /></label></div><label className="apex-v3-check apex-v3-settings-switch"><input type="checkbox" checked={localSettings.autopilotEnabled} onChange={(event) => setLocalSettings({ ...localSettings, autopilotEnabled: event.target.checked })} /><span>Smart Autopilot — rotate strategy/timeframe contexts every 5 minutes, auto-tune thresholds, and auto-promote only multi-agent + holdout/stress eligible candidates (research/paper only)</span></label><div className="apex-v3-button-row apex-v3-settings-actions"><button className="apex-v3-button primary" type="button" onClick={savePreferences} disabled={!hasPreferenceChanges}><Save size={15} /> Save preferences</button>{hasPreferenceChanges && <button className="apex-v3-button secondary" type="button" onClick={resetPreferenceDraft}>Reset changes</button>}{connection.mode === 'demo' && <button className="apex-v3-button danger" type="button" onClick={() => void resetDemo()} disabled={working}><WalletCards size={15} /> Reset demo wallet & history</button>}</div></div></div>;
+  const tradingSection = <div className="apex-v3-settings-section settings-section-trading"><PanelHeader title="Trading preferences" subtitle="Safe local preferences; no credentials" action={<StatusBadge tone={hasPreferenceChanges ? 'warning' : 'positive'}>{hasPreferenceChanges ? 'Unsaved changes' : 'Saved'}</StatusBadge>} /><div className="apex-v3-form-grid apex-v3-preference-form"><div className="two"><label className="apex-v3-default-field"><span><span>Minimum liquidity</span><em>{formatUsdSetting(localSettings.minLiquidityUsd)}</em></span><input type="number" step="1000000" value={localSettings.minLiquidityUsd} onChange={(event) => setLocalSettings({ ...localSettings, minLiquidityUsd: Number(event.target.value) || 10_000_000 })} /></label><label className="apex-v3-default-field"><span><span>Demo starting balance</span><em>{formatUsdSetting(localSettings.defaultAccountBalanceUsd, 'USDT')}</em></span><input type="number" step="500" value={localSettings.defaultAccountBalanceUsd} onChange={(event) => setLocalSettings({ ...localSettings, defaultAccountBalanceUsd: Number(event.target.value) || 100_000 })} /></label></div><div className="two"><label className="apex-v3-default-field"><span><span>Default risk</span><em>{formatPercentSetting(localSettings.defaultRiskPct)}</em></span><input type="number" min="0.1" max="10" step="0.1" value={localSettings.defaultRiskPct} onChange={(event) => setLocalSettings({ ...localSettings, defaultRiskPct: Number(event.target.value) || 1 })} /></label><label className="apex-v3-default-field"><span><span>Default leverage</span><em>{formatLeverageSetting(localSettings.defaultLeverage)}</em></span><input type="number" min="1" max="100" value={localSettings.defaultLeverage} onChange={(event) => setLocalSettings({ ...localSettings, defaultLeverage: Number(event.target.value) || 5 })} /></label></div><div className="apex-v3-security-banner"><ShieldCheck size={18} /><span><strong>One global Autopilot control</strong><small>Use the application-header control. Strategy, Backtesting, and Settings no longer create independent lifecycle switches or timers.</small></span></div><div className="apex-v3-button-row apex-v3-settings-actions"><button className="apex-v3-button primary" type="button" onClick={savePreferences} disabled={!hasPreferenceChanges}><Save size={15} /> Save preferences</button>{hasPreferenceChanges && <button className="apex-v3-button secondary" type="button" onClick={resetPreferenceDraft}>Reset changes</button>}{connection.mode === 'demo' && <button className="apex-v3-button danger" type="button" onClick={() => void resetDemo()} disabled={working}><WalletCards size={15} /> Reset demo wallet & history</button>}</div></div></div>;
+
+  const smartProxySection = <div className="apex-v3-settings-section settings-section-smart-proxy">
+    <PanelHeader title="Smart Proxy" subtitle="Server egress policy and non-destructive provider-route verification" action={<StatusBadge>Fail-closed routing</StatusBadge>} />
+    <ProxySettingsPanel onMessage={setMessage} />
+  </div>;
 
   const content: Record<SettingsSection, React.ReactNode> = {
     account: accountSection,
     api: apiSection,
+    'smart-proxy': smartProxySection,
     trading: tradingSection,
     notifications: <div className="apex-v3-settings-section settings-section-notifications">
       <PanelHeader title="Notifications" subtitle="Browser, sound and Telegram delivery channels" action={<StatusBadge tone={notificationPermission === 'granted' ? 'positive' : notificationPermission === 'denied' ? 'warning' : 'neutral'}>{notificationPermission}</StatusBadge>} />
@@ -402,7 +483,17 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
   };
 
   const main = <div className="apex-v3-settings-main">
-    <header className="apex-v3-settings-heading"><h1>Settings</h1><p>Manage your account, preferences, security and connected services.</p></header>
+    <header className={`apex-v3-settings-heading active-settings-${section}`}>
+      <div className="apex-v3-settings-heading-copy">
+        <span className="apex-v3-settings-heading-kicker">Terminal control center</span>
+        <h1>Settings</h1>
+        <p>Manage account access, execution preferences, integrations and workspace behavior from one verified control surface.</p>
+      </div>
+      <div className="apex-v3-settings-heading-section" aria-label={`Current settings section: ${activeSectionMeta.label}`}>
+        <span className="apex-v3-settings-heading-section-icon" aria-hidden="true"><ActiveSectionIcon size={18} /></span>
+        <span className="apex-v3-settings-heading-section-copy"><small>Current section</small><strong>{activeSectionMeta.label}</strong><em>{sectionDescriptions[section]}</em></span>
+      </div>
+    </header>
     <div className="apex-v3-settings-workspace">
       <nav className="apex-v3-settings-nav" aria-label="Settings sections">
         {sections.map((item) => { const Icon = item.icon; return <button type="button" key={item.id} className={section === item.id ? 'active' : ''} data-settings-section={item.id} aria-label={item.label} aria-current={section === item.id ? 'page' : undefined} onClick={() => setSection(item.id)}><span className="apex-v3-settings-nav-icon"><Icon size={18} /></span><span className="apex-v3-settings-nav-copy"><strong>{item.label}</strong><small>{sectionDescriptions[item.id]}</small></span></button>; })}
@@ -417,5 +508,5 @@ export function SettingsPage({ connection, settings, onSettingsChange, onConnect
     <Panel className="next-steps-card"><PanelHeader title="Recommended next steps" subtitle="Based on current state" />{!hasLiveConnection ? <button type="button" className="apex-v3-next-step" onClick={() => setSection('api')}><KeyRound size={16} /><span><strong>Verify a Live API session</strong><small>Required only for real account access.</small></span></button> : connection.mode === 'demo' ? <button type="button" className="apex-v3-next-step" onClick={() => void switchMode('live')}><Zap size={16} /><span><strong>Switch to Live</strong><small>Use the verified KuCoin session.</small></span></button> : <div className="apex-v3-next-step done"><CheckCircle2 size={16} /><span><strong>Live account ready</strong><small>Use server preview before every order.</small></span></div>}<button type="button" className="apex-v3-next-step" onClick={() => setSection('trading')}><SlidersHorizontal size={16} /><span><strong>Review risk defaults</strong><small>Confirm notional, risk and leverage limits.</small></span></button></Panel>
   </div>;
 
-  return <WorkspacePageFrame className="apex-v3-settings-page" main={main} context={context} />;
+  return <WorkspacePageFrame className={`apex-v3-settings-page settings-active-${section}`} main={main} context={context} />;
 }

@@ -43,7 +43,13 @@ export function hasBoundEvidence(strategy: StrategyDefinition): boolean {
 
 export function strategyDisplayStatus(strategy: StrategyDefinition): StrategyDisplayStatus {
   if (strategy.status === 'blocked') return 'Blocked';
-  if (strategy.status === 'validated' && hasBoundEvidence(strategy) && strategy.latestSnapshot?.dataState === 'live') return 'Verified';
+  const boundEvidence = hasBoundEvidence(strategy);
+  if (strategy.status === 'validated' && boundEvidence && strategy.latestSnapshot?.dataState === 'live') return 'Verified';
+  // A complete snapshot sourced from degraded/non-live data is evidence, but it
+  // must never be presented as an ordinary candidate state that can be mistaken
+  // for verification-ready evidence. Keep it explicitly pending until live data
+  // backs the snapshot.
+  if (boundEvidence && strategy.latestSnapshot?.dataState && strategy.latestSnapshot.dataState !== 'live') return 'Evidence Pending';
   if (strategy.status === 'validated') return 'Evidence Pending';
   if (strategy.wave !== 'wave1-mvp') return 'Research Preview';
   return 'Candidate';
