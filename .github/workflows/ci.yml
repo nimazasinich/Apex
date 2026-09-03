@@ -8,14 +8,15 @@ name: CI
 # execute this at all.
 
 on:
-  # Temporarily disable automatic CI triggers so direct commits are not blocked by
-  # required workflow checks while the repo is being stabilized.
+  # Keep CI available on demand while avoiding automatic blocking of ordinary
+  # development work. Most validation can still be run manually when needed.
   workflow_dispatch:
 
-# Cancel superseded runs on the same PR/branch instead of queuing stale ones.
+# Avoid canceling runs when a workflow is triggered manually or later by a
+# schedule; the goal is low friction for everyday commits.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
