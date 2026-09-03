@@ -1,0 +1,53 @@
+name: APEX Scan H4 Binary Blobs
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apex-scan-h4-binary-blobs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch related public APEX histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote add canonical https://github.com/nimazasinich/Apex-v1.0.70-Canonical.git || true
+          git remote add amin https://github.com/aminchedo/Apex.git || true
+          git fetch canonical '+refs/heads/*:refs/remotes/canonical/*' --no-tags || true
+          git fetch amin '+refs/heads/*:refs/remotes/amin/*' --no-tags || true
+      - name: Scan desired H4 binary blob SHAs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/wanted.txt <<'EOF'
+          d594f5633a67047791623ee4f8bac17cc650aed4 public/portfolio/holdings-wallet-reference.png
+          98a6b8dc56310484aa05703e138e98d0aa68443d vendor/why-is-node-running-2.3.0.tgz
+          4c1de399a741a6c856f8a2dcd0a3fb1e763e7c8d vendor/yallist-3.1.1.tgz
+          fe9ac2845eca6fe6da8a63cd096d9cf9e24ece10 APP_INDEX/app-index.sqlite-shm
+          544d200f279a39106a43afd58c4f9474b0cc4abd Doc/KNOWN_ISSUES.md
+          686f4bc3d8cba38d54ea773c1fa39aa19f8b65bc Doc/mockups/APEX-Overview-Mockup-1368x753.png
+          48d38e56c045b68c6715ab4e3793f6a8a46209d1 Doc/mockups/APEX-Settings-Smart-Proxy-Mockup-1368x753.png
+          10264df1a96aa5d658f8b7ddc60d90eabef7960d Doc/reference/attached/analytics-target.png
+          a43aecfd070de1484265f4d453a2db9321aee247 Doc/reference/attached/orders-issue.png
+          3e21c4c77f6240720db23ccb2de3abe2f9838c8e Doc/reference/attached/overview-attention-full.png
+          d80474898b2271d5ac4f04c48d264860d74ab785 Doc/reference/attached/overview-target.png
+          85591cf6e1e24f0a7d0558539eeae98c3415974e Doc/reference/attached/screener-issue.png
+          dd554d91bdcd41a18ba88dff4f99236bf3b39139 public/analytics/trend-bearish.png
+          5dca312e4bfa9a9f7db602c869fa5c0a01f532d2 public/analytics/trend-bullish.png
+          18eb9bd86f3b2ff1d6eb9d71fa8cc4effae8abb5 public/overview-action-clear.png
+          EOF
+          while read -r sha path; do
+            if git cat-file -e "$sha^{blob}" 2>/dev/null; then
+              printf 'FOUND %s %s\n' "$sha" "$path"
+            else
+              printf 'MISSING %s %s\n' "$sha" "$path"
+            fi
+          done < /tmp/wanted.txt
