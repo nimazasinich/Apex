@@ -72,6 +72,7 @@ export const ALWAYS_RUN = new Set([
   'check:api-contract',
   'check:build-identity',
   'release:gate',
+  'qa:app-index',
 ]);
 
 /**
@@ -113,6 +114,14 @@ export const NON_SOURCE_PATHS = [
   '.serena/**',
   '.agent-index/**',
   'public/build-info.json',
+  'APP_INDEX/APP_MAP.json',
+  'APP_INDEX/APP_MAP.md',
+  'APP_INDEX/TREE.md',
+  'APP_INDEX/APP_GRAPH.dot',
+  'APP_INDEX/LAYER_GRAPH.mmd',
+  'APP_INDEX/app-index.sqlite',
+  'APP_INDEX/app-index.sqlite-wal',
+  'APP_INDEX/app-index.sqlite-shm',
 ];
 
 const SRC_WIDE = ['src/**', 'server.ts', 'package.json', 'package-lock.json'];
@@ -169,7 +178,8 @@ export const VERIFY_FAST_CHAIN = [
     note: 'inputs are exactly BUILD_IDENTITY_INPUTS: build must run whenever check:build-identity would otherwise see a stale public/build-info.json',
   },
 
-  // ---- stage 5: test:runtime children (14) --------------------------------
+  // ---- stage 5: test:runtime children (16) --------------------------------
+  { gate: 'qa:academy-intelligence-runtime', run: { npm: 'qa:academy-intelligence-runtime' }, expensive: false, inputs: ['src/features/academy/**', 'src/services/scannerCore.ts', 'src/services/tradePlan.ts', 'src/services/riskGovernor.ts', 'scripts/qa/runAcademyIntelligenceRuntime.mts'] },
   { gate: 'qa:strategy-engines', run: { npm: 'qa:strategy-engines' }, expensive: true, inputs: ['src/services/**', 'scripts/qa/smokeStrategyEngines.mjs'] },
   { gate: 'qa:backtest-runtime', run: { npm: 'qa:backtest-runtime' }, expensive: true, inputs: ['src/**', 'server.ts', 'scripts/qa/verifyBacktestRuntime.mts'], note: 'resolves inputs dynamically via imports; mapped broadly on purpose' },
   { gate: 'qa:adaptive-governor', run: { npm: 'qa:adaptive-governor' }, expensive: true, inputs: ['src/services/**', 'scripts/qa/verifyAdaptiveGovernor.mjs'] },
@@ -178,6 +188,7 @@ export const VERIFY_FAST_CHAIN = [
   { gate: 'qa:strategy-integration', run: { npm: 'qa:strategy-integration' }, expensive: true, inputs: ['src/**', 'vite.config.ts', 'package.json'], note: 'vitest run src/tests/strategyValidationRuntime.test.ts' },
   { gate: 'qa:strategy-backtest-production', run: { npm: 'qa:strategy-backtest-production' }, expensive: true, inputs: ['src/**', 'vite.config.ts', 'package.json'], note: 'vitest run src/tests/strategyBacktestProduction.test.ts' },
   { gate: 'qa:unified-safety-runtime', run: { npm: 'qa:unified-safety-runtime' }, expensive: true, inputs: ['src/services/**', 'src/contracts/**', 'scripts/qa/runUnifiedSafetyRuntime.mjs'] },
+  { gate: 'qa:autopilot-lifecycle-environment', run: { npm: 'qa:autopilot-lifecycle-environment' }, expensive: false, inputs: ['server.ts', 'src/services/apexNextMarketRoutes.ts', 'scripts/qa/verifyAutopilotLifecycleEnvironmentClassifier.mjs'] },
   {
     gate: 'qa:autopilot-lifecycle-runtime',
     run: { npm: 'qa:autopilot-lifecycle-runtime' },
@@ -188,33 +199,42 @@ export const VERIFY_FAST_CHAIN = [
   { gate: 'qa:comprehensive-simulation', run: { npm: 'qa:comprehensive-simulation' }, expensive: true, inputs: ['src/**', 'package.json', 'scripts/qa/generateComprehensiveSimulationData.mjs', 'scripts/qa/runComprehensiveSimulationRuntime.mjs'] },
   { gate: 'qa:supplemental-key-runtime', run: { npm: 'qa:supplemental-key-runtime' }, expensive: true, inputs: ['src/services/**', 'scripts/qa/runSupplementalKeyRuntime.mjs'] },
   { gate: 'qa:proxy-fetch-optional-deps', run: { npm: 'qa:proxy-fetch-optional-deps' }, expensive: true, inputs: ['src/services/**', 'package.json', 'package-lock.json', 'scripts/qa/runProxyFetchOptionalDependencyRuntime.mjs'] },
+  { gate: 'qa:proxy-fetch-mockability', run: { npm: 'qa:proxy-fetch-mockability' }, expensive: false, inputs: ['src/services/proxyFetch.ts', 'src/services/proxyConfig.ts', 'package.json', 'scripts/qa/verifyProxyFetchMockability.mjs'], note: 'CP28-0B: asserts the test fetch seam intercepts both the direct (undici.Agent) and proxy-pool (undici.ProxyAgent) dispatcher routes, and stays inert outside a test runtime' },
   { gate: 'qa:smart-backtesting-fixtures', run: { npm: 'qa:smart-backtesting-fixtures' }, expensive: true, inputs: ['src/**', 'scripts/qa/generateSmartBacktestingSyntheticFixtures.mjs'], note: 'fixture generator consumed by the hardening gate below; mapped broadly' },
   { gate: 'qa:smart-backtesting-runtime-hardening', run: { npm: 'qa:smart-backtesting-runtime-hardening' }, expensive: true, inputs: ['src/**', 'scripts/qa/verifySmartBacktestingRuntimeHardening.mjs'] },
 
-  // ---- stage 6: check:source-contracts children (26) ----------------------
+  // ---- stage 6: check:source-contracts children (30) ----------------------
   { gate: 'qa:merged-stage-ui', run: { npm: 'qa:merged-stage-ui' }, expensive: false, inputs: ['src/**', 'server.ts', 'package.json', 'scripts/capture/**', 'scripts/utilities/**', 'Doc/qa/**', 'Doc/FUNCTION_INDEX_AUTOMATION.md', 'scripts/qa/verifyMergedStageUi.mjs'] },
   { gate: 'qa:agent-safe-merge', run: { npm: 'qa:agent-safe-merge' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/services/**', 'src/lib/**', 'src/styles/**', ...APP_SHELL, 'public/sw.js', 'package.json', 'scripts/qa/verifyAgentSafeMerge.mjs'] },
+  { gate: 'qa:overview-semantic-preservation', run: { npm: 'qa:overview-semantic-preservation' }, expensive: false, inputs: ['src/components/overview/**', 'src/components/workspace/TradingToolbox.tsx', 'src/pages/analytics/AnalyticsCommandPage.tsx', 'src/services/workspaceInsights.ts', 'src/lib/dataProvenance.ts', 'scripts/qa/verifyOverviewSemanticPreservation.mjs'] },
   { gate: 'qa:design-tokens', run: { npm: 'qa:design-tokens' }, expensive: false, inputs: ['src/index.css', 'src/styles/**', 'scripts/qa/verifyDesignTokens.mjs'] },
   { gate: 'qa:reference-ui', run: { npm: 'qa:reference-ui' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/services/**', 'src/styles/**', ...APP_SHELL, 'Doc/reference/**', 'scripts/qa/verifyReferenceUiRedesign.mjs'] },
   { gate: 'qa:ui-interaction-polish', run: { npm: 'qa:ui-interaction-polish' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/styles/**', ...APP_SHELL, 'scripts/qa/verifyUiInteractionPolish.mjs'] },
   { gate: 'qa:ui-theme-merge', run: { npm: 'qa:ui-theme-merge' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/styles/**', ...APP_SHELL, 'public/tutorial-thumbnails/**', 'scripts/qa/verifyUiThemeMerge.mjs'] },
   { gate: 'qa:light-theme', run: { npm: 'qa:light-theme' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/styles/**', ...APP_SHELL, 'index.html', 'public/sw.js', 'public/theme-init.js', 'package.json', 'scripts/qa/verifyLightTheme.mjs'] },
-  { gate: 'verifyV19Contract', run: { node: 'scripts/qa/verifyV19Contract.mjs' }, expensive: false, inputs: ['src/components/**', 'src/services/**', 'src/App.tsx', 'src/index.css', 'server.ts', 'vite.config.ts', 'scripts/capture/**', 'scripts/qa/verifyV19Contract.mjs'], note: 'check:source-contracts invokes this as a bare node command; there is no npm script alias' },
+  { gate: 'qa:v19-contract', run: { npm: 'qa:v19-contract' }, expensive: false, inputs: ['src/components/**', 'src/services/**', 'src/App.tsx', 'src/index.css', 'server.ts', 'vite.config.ts', 'scripts/capture/**', 'scripts/qa/verifyV19Contract.mjs'], note: 'source-core suite leaf; npm alias keeps verifyFast aligned with the canonical suite catalog' },
   { gate: 'qa:v20-contract', run: { npm: 'qa:v20-contract' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/services/**', 'src/styles/**', ...APP_SHELL, 'server.ts', 'scripts/qa/verifyV20ReferenceContract.mjs'] },
   { gate: 'qa:workspace-light-polish', run: { npm: 'qa:workspace-light-polish' }, expensive: false, inputs: ['src/components/**', 'src/styles/**', 'src/main.tsx', 'package.json', 'package-lock.json', 'vendor/**', 'scripts/qa/verifyWorkspaceLightPolish.mjs'] },
   { gate: 'qa:strategy-optimization', run: { npm: 'qa:strategy-optimization' }, expensive: false, inputs: ['src/pages/**', 'src/services/**', 'src/tests/**', 'openapi/**', 'package.json', 'scripts/qa/verifyStrategyOptimizationIntegration.mjs'] },
   { gate: 'qa:core10-fusion', run: { npm: 'qa:core10-fusion' }, expensive: false, inputs: ['src/pages/**', 'src/services/**', 'openapi/**', 'package.json', 'Doc/strategy-library/**', 'scripts/qa/verifyCore10DynamicFusion.mjs'] },
   { gate: 'qa:feature-preservation', run: { npm: 'qa:feature-preservation' }, expensive: false, inputs: ['src/pages/**', 'src/services/**', 'scripts/qa/verifyFeaturePreservation.mjs'] },
   { gate: 'qa:liquidity-hunter', run: { npm: 'qa:liquidity-hunter' }, expensive: true, inputs: [...LIQUIDITY_HUNTER, 'scripts/qa/**'], note: '15-child chain of research/runtime gates; scripts/qa/** included because every child is one of those files' },
-  { gate: 'verifyV1054CapabilityPreservation', run: { node: 'scripts/qa/verifyV1054CapabilityPreservation.mjs' }, expensive: false, inputs: ['src/App.tsx', 'src/services/**', 'server.ts', 'package.json', 'scripts/qa/**'], note: 'bare node command in check:source-contracts; it inspects the scripts/qa directory itself' },
+  { gate: 'qa:v1054-capability-preservation', run: { npm: 'qa:v1054-capability-preservation' }, expensive: false, inputs: ['src/App.tsx', 'src/services/**', 'server.ts', 'package.json', 'scripts/qa/**'], note: 'source-core suite leaf; it inspects the scripts/qa directory itself' },
   { gate: 'qa:ui-completeness-r2', run: { npm: 'qa:ui-completeness-r2' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/lib/**', 'scripts/qa/verifyUiCompletenessR2.mjs'] },
   { gate: 'qa:research-workspace-layout', run: { npm: 'qa:research-workspace-layout' }, expensive: false, inputs: ['src/pages/**', 'scripts/qa/verifyResearchWorkspaceLayout.mjs'] },
+  { gate: 'qa:research-agent', run: { npm: 'qa:research-agent' }, expensive: false, inputs: ['scripts/research/**', 'scripts/research-agent/**', 'scripts/qa/verifyResearchAgent.mjs', 'package.json'] },
+  { gate: 'qa:app-index', run: { npm: 'qa:app-index' }, expensive: false, inputs: ['*'], note: 'always-run repository cartography freshness + structural contract; raw import edges never imply liveness' },
+  { gate: 'qa:function-usage-index', run: { npm: 'qa:function-usage-index' }, expensive: false, inputs: ['src/**', 'scripts/**', 'tests/**', 'server.ts', 'package.json', 'Doc/FUNCTION_INDEX.json', 'scripts/qa/verifyFunctionUsageIndex.mjs'], note: 'canonical dependency/reachability atlas must not silently accumulate unresolved src orphans' },
   { gate: 'qa:multi-agent-multi-trading', run: { npm: 'qa:multi-agent-multi-trading' }, expensive: true, inputs: ['src/pages/**', 'src/services/**', 'openapi/**', 'scripts/qa/verifyMultiAgentMultiTrading.mjs', 'scripts/qa/runMultiAgentMultiTradingRuntime.mjs'], note: 'has a runtime child appended to the source check' },
   { gate: 'qa:maximal-merge-safety', run: { npm: 'qa:maximal-merge-safety' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/services/**', 'server.ts', 'package.json', 'scripts/qa/verifyMaximalMergeSafety.mjs'] },
   { gate: 'qa:supplemental-key-wiring', run: { npm: 'qa:supplemental-key-wiring' }, expensive: false, inputs: ['src/services/**', 'src/tests/**', 'server.ts', 'scripts/qa/verifySupplementalKeyWiring.mjs'] },
   { gate: 'qa:smart-autopilot', run: { npm: 'qa:smart-autopilot' }, expensive: false, inputs: ['src/components/**', 'src/pages/**', 'src/services/**', 'src/lib/**', 'src/App.tsx', 'openapi/**', 'package.json', 'scripts/qa/verifySmartAutopilot.mjs'] },
   { gate: 'qa:strategy-studio-reference', run: { npm: 'qa:strategy-studio-reference' }, expensive: false, inputs: ['src/pages/**', 'public/assets/**', 'scripts/qa/verifyStrategyStudioReference.mjs'] },
   { gate: 'qa:strategy-page-modernization', run: { npm: 'qa:strategy-page-modernization' }, expensive: false, inputs: ['src/pages/**', 'scripts/qa/verifyStrategyPageModernization.mjs'] },
+  { gate: 'qa:live-data-truth', run: { npm: 'qa:live-data-truth' }, expensive: false, inputs: ['src/pages/academy/**', 'src/services/**', 'server.ts', 'scripts/qa/verifyLiveDataTruthfulness.mjs'] },
+  { gate: 'qa:dataflow-hardening', run: { npm: 'qa:dataflow-hardening' }, expensive: false, inputs: ['src/App.tsx', 'src/pages/**', 'src/components/ui/AccountFreshnessChip.tsx', 'src/lib/accountSnapshotStatus.ts', 'src/services/accountTypes.ts', 'src/services/connectedExchange.ts', 'src/services/apexNextMarketRoutes.ts', 'scripts/qa/verifyDataflowHardening.mjs'] },
+  { gate: 'qa:attached-reference-pages', run: { npm: 'qa:attached-reference-pages' }, expensive: false, inputs: ['src/pages/**', 'src/App.tsx', 'scripts/qa/verifyAttachedReferencePages.mjs'] },
+  { gate: 'qa:academy-intelligence', run: { npm: 'qa:academy-intelligence' }, expensive: false, inputs: ['src/features/academy/**', 'src/pages/academy/**', 'src/services/scannerCore.ts', 'src/services/tradePlan.ts', 'src/services/riskGovernor.ts', 'src/tests/academyIntelligenceEngine.test.ts', 'server.ts', 'openapi/**', 'Doc/ACADEMY_INTELLIGENCE_ENGINE.md', 'scripts/qa/verifyAcademyIntelligenceEngine.mjs'] },
   { gate: 'check:root-contract', run: { npm: 'check:root-contract' }, expensive: false, inputs: ['*'], note: 'always-run: asserts the entire root listing is classified' },
   { gate: 'check:api-contract', run: { npm: 'check:api-contract' }, expensive: false, inputs: ['*'], note: 'always-run: regenerates the route index from server.ts and compares' },
   { gate: 'check:build-identity', run: { npm: 'check:build-identity' }, expensive: false, inputs: ['*'], note: 'always-run: hashes BUILD_IDENTITY_INPUTS against public/build-info.json' },

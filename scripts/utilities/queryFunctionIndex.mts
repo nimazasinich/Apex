@@ -31,6 +31,19 @@ type AgentFn = {
   tags?: string[];
 };
 
+type FileUsageEntry = {
+  file: string;
+  importedBy?: string[];
+  typeImportedBy?: string[];
+  sourceContractReferencedBy?: string[];
+  rootKinds?: string[];
+  productionReachable?: boolean;
+  productionTypeReachable?: boolean;
+  testToolReachable?: boolean;
+  sourceContractReachable?: boolean;
+  usageStatus?: string;
+};
+
 type DocFn = {
   name: string;
   qualname?: string;
@@ -66,10 +79,67 @@ function loadEntries(): AgentFn[] {
   return [];
 }
 
+
+function loadFileUsage(): Record<string, FileUsageEntry> {
+  for (const indexPath of [AGENT_INDEX, DOC_INDEX]) {
+    if (!fs.existsSync(indexPath)) continue;
+    try {
+      const raw = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      const usage = raw.file_usage ?? raw.fileUsage;
+      if (usage && typeof usage === 'object') return usage as Record<string, FileUsageEntry>;
+    } catch {
+      // Try the next index source.
+    }
+  }
+  return {};
+}
+
+function printUnused(): void {
+  const usage = loadFileUsage();
+  const candidates = Object.values(usage)
+    .filter((entry) => entry.usageStatus === 'unreferenced-static')
+    .sort((a, b) => a.file.localeCompare(b.file));
+  const sourceContracts = Object.values(usage).filter((entry) => entry.usageStatus === 'source-contract-only');
+  if (!Object.keys(usage).length) {
+    console.error('File-usage graph not found. Run: npm run index:functions');
+    process.exit(1);
+  }
+  console.log(`Static orphan candidates: ${candidates.length} (source-contract-only retained: ${sourceContracts.length})\n`);
+  for (const entry of candidates) {
+    console.log(`${entry.file}`);
+    console.log(`  importedBy=${entry.importedBy?.length ?? 0} typeImportedBy=${entry.typeImportedBy?.length ?? 0}`);
+  }
+  console.log('\nNote: source-contract-only files are intentionally excluded; inspect dynamic/path-computed consumers before deletion.');
+}
+
+function printFileUsage(file: string): void {
+  const usage = loadFileUsage();
+  const normalized = file.replaceAll('\\', '/').replace(/^\.\//, '');
+  const entry = usage[normalized];
+  if (!entry) {
+    console.error(`No usage record for: ${normalized}. Run: npm run index:functions`);
+    process.exit(1);
+  }
+  console.log(JSON.stringify(entry, null, 2));
+}
+
 function main(): void {
   const pattern = process.argv[2];
+  if (pattern === '--unused') {
+    printUnused();
+    return;
+  }
+  if (pattern === '--file') {
+    const file = process.argv[3];
+    if (!file) {
+      console.error('Usage: queryFunctionIndex.mts --file <repo-relative-path>');
+      process.exit(1);
+    }
+    printFileUsage(file);
+    return;
+  }
   if (!pattern) {
-    console.error('Usage: npx tsx scripts/queryFunctionIndex.mts <name_or_pattern>');
+    console.error('Usage: npx tsx scripts/queryFunctionIndex.mts <name_or_pattern> | --unused | --file <path>');
     console.error('Hint: run `npm run index:functions` first if the index is missing.');
     process.exit(1);
   }

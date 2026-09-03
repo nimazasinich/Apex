@@ -1,0 +1,4 @@
+{
+  "$schemaNote": "No studies are queued by default. Add reviewed development-only studies deliberately; the queue runner never opens the sealed holdout.",
+  "studies": []
+}

@@ -118,6 +118,21 @@ function purpose(p: string, cat: Cat): string {
   return 'Requires manual inspection';
 }
 
+
+let atlasUsageCache: Record<string, { usageStatus?: string }> | null | undefined;
+function atlasUsage(): Record<string, { usageStatus?: string }> | null {
+  if (atlasUsageCache !== undefined) return atlasUsageCache;
+  try {
+    const index = JSON.parse(readFileSync(join(root, 'Doc/FUNCTION_INDEX.json'), 'utf8')) as {
+      fileUsage?: Record<string, { usageStatus?: string }>;
+    };
+    atlasUsageCache = index.fileUsage ?? null;
+  } catch {
+    atlasUsageCache = null;
+  }
+  return atlasUsageCache;
+}
+
 function referenced(p: string): string {
   if (p === 'server.ts' || p === 'src/main.tsx' || p === 'index.html') return 'Yes — package.json / Vite entry';
   if (p.startsWith('scripts/')) {
@@ -129,7 +144,14 @@ function referenced(p: string): string {
       return 'Unknown';
     }
   }
-  if (p.startsWith('src/')) return 'Yes — import graph / tests';
+  if (p.startsWith('src/')) {
+    const status = atlasUsage()?.[p]?.usageStatus;
+    if (status === 'production-runtime') return 'Yes — production import graph';
+    if (status === 'production-type-only') return 'Type-only — production graph';
+    if (status === 'test-tool-only') return 'Yes — QA/test/tooling only';
+    if (status === 'unreferenced-static') return 'No static consumer found — inspect dynamic use';
+    return 'Unknown — function atlas usage graph unavailable';
+  }
   if (p.startsWith('Doc/')) return 'Yes — documentation index / README';
   return 'No direct reference found';
 }

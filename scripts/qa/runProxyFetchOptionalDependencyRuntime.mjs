@@ -31,6 +31,17 @@ if (diagnostics.length) throw new Error(`transpile_failed:${diagnostics.map((ite
 const compiled = path.join(temp, 'src/services/proxyFetch.js');
 fs.mkdirSync(path.dirname(compiled), { recursive: true });
 fs.writeFileSync(compiled, output.outputText);
+// proxyFetch imports the real routing validator. Keep the isolated runtime
+// hermetic without replacing that dependency with a permissive fixture.
+const proxyConfigSource = path.join(root, 'src/services/proxyConfig.ts');
+const proxyConfigOutput = ts.transpileModule(fs.readFileSync(proxyConfigSource, 'utf8'), {
+  fileName: 'src/services/proxyConfig.ts',
+  reportDiagnostics: true,
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, moduleResolution: ts.ModuleResolutionKind.Node10, esModuleInterop: true },
+});
+const proxyConfigDiagnostics = (proxyConfigOutput.diagnostics ?? []).filter((item) => item.category === ts.DiagnosticCategory.Error);
+if (proxyConfigDiagnostics.length) throw new Error(`proxy_config_transpile_failed:${proxyConfigDiagnostics.map((item) => ts.flattenDiagnosticMessageText(item.messageText, ' ')).join('|')}`);
+fs.writeFileSync(path.join(temp, 'src/services/proxyConfig.js'), proxyConfigOutput.outputText);
 
 const checks = [];
 function check(label, condition) {

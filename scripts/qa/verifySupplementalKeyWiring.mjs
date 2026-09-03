@@ -20,9 +20,9 @@ check(
 );
 check(
   'orchestrator prefers dedicated BscScan key',
-  orchestrator.includes('const bscKey = config?.bscScanKey || config?.etherscanKey') &&
-    orchestrator.includes('new BscScanProvider({ apiKey: bscKey, timeout })'),
-  'BscScan uses its dedicated key first and only falls back to the Etherscan V2 key.',
+  orchestrator.includes('const effectiveBscKeys = bscScanKeys.length ? bscScanKeys : etherscanKeys') &&
+    orchestrator.includes('new BscScanProvider({ apiKey, timeout })'),
+  'BscScan uses dedicated primary/reserve keys first and falls back to the Etherscan V2 key rotation only when BSC keys are absent.',
 );
 check(
   'environment bootstrap propagates BSCSCAN_KEY',

@@ -122,9 +122,9 @@ function assertDock(name: string, m: Awaited<ReturnType<typeof measure>>, closed
 }
 
 async function startServer(): Promise<ChildProcess> {
-  const child = spawn('npx', ['tsx', 'server.ts'], {
+  const child = spawn(process.execPath, ['--import', 'tsx', 'server.ts'], {
     cwd: root,
-    shell: true,
+    shell: false,
     env: { ...process.env, PORT: String(PORT) },
     stdio: 'pipe',
   });

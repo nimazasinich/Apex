@@ -24,7 +24,7 @@ check('fusion preview is compute-rate-limited', read('src/services/serverSecurit
 check('fusion preview route exists', routes.includes("/api/strategies/:strategyId/fusion-preview"));
 check('fusion preview uses supplemental orchestrator', routes.includes('getSupplementalOrchestrator().fetchAll'));
 check('live funding is bound and OI remains fail closed', routes.includes('marketDataService.getTickers(120)') && routes.includes('fundingDirectional,') && routes.includes('openInterestDirectional: null'));
-check('strategy studio exposes live fusion refresh', model.includes('Refresh live fusion') && model.includes('fusionSnapshot.components.map'));
+check('strategy studio exposes evidence-qualified fusion refresh', model.includes('aria-label="Refresh strategy fusion evidence"') && model.includes('onClick={onRefreshFusion}') && model.includes('fusionSnapshot.components.map'));
 check('smoke includes the regime router', engineSmoke.includes('regimeRoutedComposite.ts'));
 check('causal regime router is registered', engineIndex.includes('regimeRoutedComposite') && router.includes('prior closed candles only'));
 check('router can abstain', router.includes("child: null") && router.includes('routeCounts.abstain'));

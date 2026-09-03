@@ -26,10 +26,10 @@ const openapi = read('openapi/apex-api.v1.yaml');
 const pkg = JSON.parse(read('package.json'));
 
 check('optimizer and revision store exist', exists('src/services/strategyOptimization.ts') && exists('src/services/strategyOptimizationStore.ts'));
-check('optimizer uses chronological selection and untouched holdout', optimizer.includes('splitChronologically') && optimizer.includes('split.holdout') && optimizer.includes('fullSelectionWindows'));
+check('optimizer uses chronological development selection with structurally sealed final holdout', optimizer.includes('partitionFiveWayWithSealedHoldout') && optimizer.includes('split.holdout.metadata.datasetFingerprint') && optimizer.includes('fullSelectionWindows'));
 check('successive halving reduces expensive window evaluations', optimizer.includes('Successive halving') && optimizer.includes('secondaryCount') && optimizer.includes('refinementFinalistCount') && optimizer.includes('searchEfficiency'));
 check('cost stress and neighbor stability gate promotion', optimizer.includes('costStressMultiplier') && optimizer.includes('cost_stress_failed') && optimizer.includes('neighbor_stability_failed'));
-check('overfit, drawdown, sample, and holdout gates remain fail closed', ['overfit_gap_exceeds_limit','holdout_drawdown_exceeds_limit','holdout_trade_count_too_low','holdout_improvement_below_minimum'].every((text) => optimizer.includes(text)));
+check('development overfit, drawdown, sample, and cost gates remain fail closed', ['development_overfit_gap_exceeds_limit','development_validation_drawdown_exceeds_limit','development_validation_trade_count_too_low','development_cost_stress_failed'].every((text) => optimizer.includes(text)));
 check('search is bounded by hard field limits and ten fields', optimizer.includes('SCANNER_FIELD_RANGES') && optimizer.includes('return fields.slice(0, 10)'));
 check('optimizer has abort and timeout controls', optimizer.includes('throwIfAborted') && optimizer.includes('strategy_optimizer_timeout'));
 check('evaluation failures are not cached', optimizer.includes('cache.delete(key)'));
@@ -60,9 +60,9 @@ check('scanner candidates can bypass fixed registry overrides only during optimi
 check('optimization workload input is finite and bounded', validation.includes('validateStrategyOptimizationInput') && validation.includes('1000, 5000') && validation.includes('1, 8'));
 check('optimization route is compute-rate-limited', security.includes("pathname.endsWith('/optimize')"));
 check('Strategy Studio exposes optimize, manual promotion, active profile, and rollback', strategyPage.includes('/optimize') && strategyPage.includes('/optimization?') && strategyPage.includes('/optimization/promote') && strategyPage.includes('/optimization/rollback') && evidenceRail.includes('Run Smart Optimization') && evidenceRail.includes('Promote reviewed candidate') && evidenceRail.includes('Roll back'));
-check('Strategy Studio describes evidence rather than perfection', evidenceRail.includes('untouched holdout') && optimizer.includes('cannot prove a perfect strategy'));
+check('Strategy Studio describes evidence without overstating final validation', evidenceRail.includes('final sealed holdout is not opened here') && optimizer.includes('Optimization is development-only') && optimizer.includes('final sealed governance holdout'));
 check('OpenAPI documents optimization state, optimize, promotion, and rollback', openapi.includes('/api/strategies/{strategyId}/optimization:') && openapi.includes('/api/strategies/{strategyId}/optimize:') && openapi.includes('/api/strategies/{strategyId}/optimization/promote:') && openapi.includes('/api/strategies/{strategyId}/optimization/rollback:'));
-check('optimizer tests cover stable promotion, holdout rejection, persistence, and rollback', read('src/tests/strategyOptimization.test.ts').includes('holdout reverses') && read('src/tests/strategyOptimization.test.ts').includes("source).toBe('ROLLBACK')"));
+check('optimizer tests cover development nomination, sealed-holdout exclusion, persistence, and rollback', read('src/tests/strategyOptimization.test.ts').includes('finds a bounded stable improvement and marks it eligible') && read('src/tests/strategyOptimization.test.ts').includes('never exposes the final sealed partition to optimizer evaluators') && read('src/tests/strategyOptimization.test.ts').includes("source).toBe('ROLLBACK')"));
 check('optimizer load benchmark is shipped', pkg.scripts?.['stress:strategy-optimization'] === 'tsx scripts/qa/benchmarkStrategyOptimization.mts' && exists('scripts/qa/benchmarkStrategyOptimization.mts'));
 
 const failed = checks.filter((item) => !item.pass);

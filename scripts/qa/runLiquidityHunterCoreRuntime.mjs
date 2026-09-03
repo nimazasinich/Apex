@@ -1,13 +1,12 @@
 #!/usr/bin/env node
+import { loadTypeScript } from './lib/loadTypeScript.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import Module, { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-let ts;
-try { ts = require('typescript'); }
-catch { ts = require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js'); }
+const ts = loadTypeScript();
 
 const root = process.cwd();
 process.env.NODE_PATH = [path.join(root, 'node_modules'), process.env.NODE_PATH].filter(Boolean).join(path.delimiter);

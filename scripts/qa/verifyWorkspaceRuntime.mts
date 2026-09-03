@@ -15,7 +15,7 @@ const TRANSPORT_BRIDGE = process.env.APEX_QA_TRANSPORT_BRIDGE === '1';
 
 const ROUTES = [
   'overview', 'markets', 'watchlist', 'screener', 'portfolio', 'trading', 'orders', 'positions',
-  'alerts', 'history', 'analytics', 'backtesting', 'strategies', 'settings', 'help',
+  'alerts', 'history', 'analytics', 'backtesting', 'academy', 'strategies', 'settings', 'help',
 ];
 const VIEWPORTS = [
   { name: '1368x753', width: 1368, height: 753 },
@@ -83,9 +83,9 @@ async function startServer(): Promise<void> {
   if (await isServerReady()) return;
   if (!AUTO_START) throw new Error(`APEX runtime is not reachable at ${BASE_URL}`);
 
-  server = spawn('npm', ['run', 'dev:server'], {
+  server = spawn(process.execPath, ['--import', 'tsx', 'server.ts'], {
     cwd: ROOT,
-    shell: process.platform === 'win32',
+    shell: false,
     detached: process.platform !== 'win32',
     env: { ...process.env, PORT: String(PORT), APEX_PORT: String(PORT), DISABLE_HMR: 'true', APEX_ENABLE_HMR: 'false' },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -125,6 +125,12 @@ async function stopServer(): Promise<void> {
   server = null;
 }
 
+
+function isMissingPlaywrightBrowser(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Executable doesn't exist|playwright install|browserType\.launch.*executable/i.test(message);
+}
+
 async function launchBrowser(): Promise<Browser> {
   const options = { headless: process.env.HEADLESS !== '0', args: ['--disable-dev-shm-usage', '--disable-features=TranslateUI'] };
   if (PLAYWRIGHT_EXECUTABLE) return chromium.launch({ ...options, executablePath: PLAYWRIGHT_EXECUTABLE });
@@ -132,6 +138,12 @@ async function launchBrowser(): Promise<Browser> {
   if (channel) {
     try { return await chromium.launch({ ...options, channel: channel as any }); }
     catch (error) { findings.push({ kind: 'warning', scope: 'browser', message: `Channel ${channel} unavailable: ${String(error)}` }); }
+  }
+  if (process.platform === 'win32') {
+    for (const installedChannel of ['chrome', 'msedge'] as const) {
+      try { return await chromium.launch({ ...options, channel: installedChannel }); }
+      catch { /* fall through to the next installed or Playwright-managed browser */ }
+    }
   }
   return chromium.launch(options);
 }
@@ -462,8 +474,9 @@ async function verifyLightThemeRuntime(browser: Browser): Promise<void> {
     { route: 'positions', selector: '.positions-reference-metric' },
     { route: 'alerts', selector: '.apex-v3-table-panel' },
     { route: 'history', selector: '.apex-v3-table-panel' },
-    { route: 'analytics', selector: '.v20-chart-card' },
+    { route: 'analytics', selector: '.analytics-card' },
     { route: 'backtesting', selector: '.apex-bt-rail-card' },
+    { route: 'academy', selector: '.academy-panel' },
     { route: 'strategies', selector: '.strategy-identity-card' },
     { route: 'settings', selector: '.settings-overview-card' },
     { route: 'help', selector: '.apex-v3-topics-card' },
@@ -563,6 +576,215 @@ async function verifyThemePersistence(browser: Browser): Promise<void> {
   }
 }
 
+async function verifySettingsIntegrationRuntime(browser: Browser): Promise<void> {
+  const context = await browser.newContext({ viewport: { width: 1368, height: 753 } });
+  const page = await context.newPage();
+  await seedTheme(page, 'light');
+  const diagnostics = attachDiagnostics(page);
+  const fail = (scope: string, message: string) => findings.push({ kind: 'failure', scope: `settings-integrations/${scope}`, message });
+
+  await page.goto(`${BASE_URL}/#/settings`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await page.waitForSelector('.apex-shell[data-page="settings"]', { timeout: 15_000 });
+  await page.locator('button[data-settings-section="api"]').click();
+  await page.waitForSelector('.settings-section-api .apex-v3-feed-runtime-card', { timeout: 15_000 });
+  await page.locator('.apex-v3-feed-health-skeleton').waitFor({ state: 'detached', timeout: 15_000 }).catch(() => undefined);
+
+  const feedTiles = page.locator('.apex-v3-feed-runtime-card .apex-v3-feed-health-grid > div');
+  if ((await feedTiles.count()) < 5) fail('feed-health', 'Live feed panel did not render the five expected source states.');
+  const syntheticHealthy = await feedTiles.evaluateAll((tiles) => tiles.some((tile) => {
+    const text = tile.textContent || '';
+    return /Unavailable/i.test(text) && tile.classList.contains('feed-connected');
+  }));
+  if (syntheticHealthy) fail('feed-truthfulness', 'An unavailable live feed was styled as connected.');
+
+  await page.locator('.settings-section-api .apex-v3-feed-runtime-card').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: resolve(OUT_DIR, 'settings-api-integrations-1368x753.png'), fullPage: false });
+
+  await page.locator('button[data-settings-section="smart-proxy"]').click();
+  await page.waitForSelector('.settings-section-smart-proxy .apex-proxy-settings', { timeout: 15_000 });
+  await page.locator('.apex-proxy-skeleton').waitFor({ state: 'detached', timeout: 15_000 }).catch(() => undefined);
+
+  const proxyPanel = page.locator('.settings-section-smart-proxy .apex-proxy-settings');
+  const modeCount = await proxyPanel.locator('.apex-proxy-mode-cards input[name="proxy-mode"]').count();
+  if (modeCount !== 3) fail('proxy-modes', `Expected 3 explicit routing modes; rendered ${modeCount}.`);
+  if (!(await proxyPanel.getByRole('button', { name: 'Save policy' }).isVisible().catch(() => false))) fail('proxy-save', 'Save policy action is missing.');
+
+  const testDraft = proxyPanel.getByRole('button', { name: 'Test draft' });
+  if (!(await testDraft.isVisible().catch(() => false))) {
+    fail('proxy-test', 'Test draft action is missing.');
+  } else {
+    await testDraft.click();
+    await page.waitForSelector('.apex-proxy-provider-results .row', { timeout: 45_000 });
+    const providerRows = proxyPanel.locator('.apex-proxy-provider-results .row');
+    const providerCount = await providerRows.count();
+    if (providerCount !== 4) fail('proxy-test', `Expected 4 fixed provider probes; rendered ${providerCount}.`);
+    const results = await providerRows.evaluateAll((rows) => rows.map((row) => {
+      const cells = [...row.querySelectorAll('strong, span')].map((cell) => cell.textContent?.trim() || '');
+      return { provider: cells[0] || '', state: cells[1] || '', route: cells[2] || '', latency: cells[3] || '' };
+    }));
+    for (const result of results) {
+      if (!result.provider) fail('proxy-test', 'A provider probe row has no provider identity.');
+      if (!/^(Direct|Proxy|None)/.test(result.route)) fail('proxy-test', `${result.provider || 'Provider'} has no explicit observed route (${result.route || 'empty'}).`);
+      if (!/^\d+ ms$/.test(result.latency)) fail('proxy-test', `${result.provider || 'Provider'} has no measured latency (${result.latency || 'empty'}).`);
+    }
+    if (results.length && results.every((row) => row.state !== 'Connected')) {
+      const badge = (await proxyPanel.locator('.apex-v3-panel-head .apex-v3-status').first().textContent())?.trim() || '';
+      if (badge === 'CONNECTED') fail('proxy-truthfulness', 'Panel claimed CONNECTED even though every live provider probe failed.');
+    }
+  }
+
+  await proxyPanel.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: resolve(OUT_DIR, 'settings-smart-proxy-1368x753.png'), fullPage: false });
+
+  await page.locator('button[data-settings-section="notifications"]').click();
+  await page.waitForSelector('.settings-section-notifications .apex-v3-telegram-panel', { timeout: 15_000 });
+  await page.locator('.apex-v3-telegram-skeleton').waitFor({ state: 'detached', timeout: 15_000 }).catch(() => undefined);
+  const telegramPanel = page.locator('.apex-v3-telegram-panel');
+  if ((await telegramPanel.locator('.apex-v3-telegram-health-grid > div').count()) !== 4) fail('telegram-health', 'Telegram health summary did not render all 4 operational fields.');
+  if (!(await telegramPanel.getByRole('button', { name: 'Send real test' }).isVisible().catch(() => false))) fail('telegram-test', 'Real Telegram test action is missing.');
+  if (!(await telegramPanel.locator('.apex-v3-telegram-history').isVisible().catch(() => false))) fail('telegram-history', 'Telegram delivery history is missing.');
+  const telegramBadge = (await telegramPanel.locator('.apex-v3-panel-head .apex-v3-status').first().textContent())?.trim() || '';
+  const telegramTestDisabled = await telegramPanel.getByRole('button', { name: 'Send real test' }).isDisabled();
+  if (telegramTestDisabled && telegramBadge === 'CONNECTED') fail('telegram-truthfulness', 'Telegram claimed CONNECTED while the real test action was unavailable.');
+  await telegramPanel.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: resolve(OUT_DIR, 'settings-telegram-cp20-1368x753.png'), fullPage: false });
+
+  const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  if (horizontalOverflow) fail('layout', 'Settings integration view has horizontal overflow at 1368x753.');
+  for (const message of diagnostics.pageErrors) fail('runtime', `Page error: ${message}`);
+  for (const message of diagnostics.consoleErrors.filter((value) => !value.startsWith('NETWORK:'))) fail('runtime', `Console error: ${message}`);
+  for (const message of diagnostics.badResponses.filter((value) => value.includes(BASE_URL) && /->\s*5\d\d/.test(value))) fail('runtime', `Server response: ${message}`);
+  await context.close();
+}
+
+async function verifyCanonicalInteractiveFlows(browser: Browser): Promise<void> {
+  const context = await browser.newContext({ viewport: { width: 1368, height: 753 }, acceptDownloads: true });
+  const page = await context.newPage();
+  const diagnostics = attachDiagnostics(page);
+  const fail = (scope: string, message: string) => findings.push({ kind: 'failure', scope: `interactive/${scope}`, message });
+  const expectPage = async (route: string, scope: string) => {
+    const actual = await page.locator('.apex-shell').getAttribute('data-page');
+    if (actual !== route) fail(scope, `Expected page ${route}, rendered ${actual ?? 'none'}.`);
+  };
+
+  await page.goto(`${BASE_URL}/#/overview`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await page.waitForSelector('.apex-shell[data-page="overview"]', { timeout: 15_000 });
+
+  // Shell navigation is exercised through the rendered controls rather than
+  // by changing hashes directly. This verifies route state and focusable
+  // navigation wiring for every reachable workspace page.
+  for (const route of ROUTES.filter((value) => value !== 'settings' && value !== 'help')) {
+    await page.locator(`.apex-sidebar button[data-route="${route}"]`).click();
+    await page.waitForSelector(`.apex-shell[data-page="${route}"]`, { timeout: 10_000 });
+    await expectPage(route, `navigation/${route}`);
+  }
+  for (const route of ['settings', 'help']) {
+    await page.locator('.apex-sidebar-bottom button').filter({ hasText: route === 'settings' ? 'Settings' : 'Help' }).click();
+    await page.waitForSelector(`.apex-shell[data-page="${route}"]`, { timeout: 10_000 });
+    await expectPage(route, `navigation/${route}`);
+  }
+
+  // Global keyboard search and both operational drawers.
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+K' : 'Control+K');
+  const globalSearch = page.getByRole('combobox', { name: 'Search markets and workspace pages' });
+  await globalSearch.fill('Academy');
+  const academyResult = page.getByRole('option').filter({ hasText: 'Academy' }).first();
+  if (await academyResult.count()) {
+    await academyResult.click();
+    await expectPage('academy', 'global-search');
+  } else fail('global-search', 'Academy page result was not rendered.');
+
+  await page.getByRole('button', { name: 'Open system health' }).click();
+  if (!(await page.getByRole('dialog').isVisible().catch(() => false))) fail('system-health', 'System health dialog did not open.');
+  await page.getByRole('button', { name: 'Close system health' }).click();
+  await page.getByRole('button', { name: 'Open decision journal' }).click();
+  if (!(await page.getByRole('dialog').isVisible().catch(() => false))) fail('decision-journal', 'Decision journal dialog did not open.');
+  await page.getByRole('button', { name: 'Close decision journal' }).click();
+
+  // Overview: activity tabs, market selection, details disclosure and linked
+  // workflow are all stateful controls whose rendered outcome is asserted.
+  await page.locator('.apex-sidebar button[data-route="overview"]').click();
+  for (const label of ['Positions', 'Orders', 'Decisions', 'Alerts']) {
+    const tab = page.locator('.apex-overview-activity-tabs button').filter({ hasText: label });
+    await tab.click();
+    if (!(await tab.evaluate((node) => node.classList.contains('active')))) fail('overview/activity-tabs', `${label} did not become active.`);
+  }
+  const marketTiles = page.locator('.apex-overview-market-tiles button');
+  if (await marketTiles.count()) {
+    await marketTiles.first().click();
+    if ((await marketTiles.filter({ has: page.locator('[aria-pressed="true"]') }).count()) === 0
+      && (await marketTiles.first().getAttribute('aria-pressed')) !== 'true') fail('overview/market-selection', 'Selected market did not become pressed.');
+  }
+  const sentiment = page.locator('.apex-overview-sentiment-inline');
+  if (await sentiment.count()) {
+    await sentiment.locator('summary').click();
+    if (!(await sentiment.getAttribute('open'))) fail('overview/sentiment', 'Sentiment disclosure did not open.');
+  }
+  await page.screenshot({ path: resolve(OUT_DIR, 'interactive-overview-1368x753.png'), fullPage: false });
+
+  // Orders: every status tab, search, select filters, keyboard row selection,
+  // and assistant selection clearing. Draft/cancel controls are checked for
+  // honest enablement but are not submitted by an automated review gate.
+  await page.locator('.apex-sidebar button[data-route="orders"]').click();
+  await page.waitForSelector('.v20-orders-table', { timeout: 10_000 });
+  for (const label of ['All Orders', 'Open', 'Partially Filled', 'Filled', 'Cancelled']) {
+    const tab = page.getByRole('tab', { name: label, exact: true });
+    await tab.click();
+    if ((await tab.getAttribute('aria-selected')) !== 'true') fail('orders/status-tabs', `${label} was not selected.`);
+  }
+  const orderSearch = page.getByPlaceholder('Search orders by ID or market…');
+  await orderSearch.fill('__no_such_order__');
+  if (!(await page.locator('.orders-empty-state').isVisible().catch(() => false))) fail('orders/search', 'No-results state did not render.');
+  await orderSearch.fill('');
+  await page.getByLabel('Filter orders by side').selectOption('buy');
+  await page.getByLabel('Filter orders by type').selectOption('limit');
+  const clearFilters = page.getByRole('button', { name: /Clear Filters/ });
+  if (await clearFilters.isDisabled()) fail('orders/filters', 'Clear Filters stayed disabled after filters changed.');
+  else await clearFilters.click();
+  const orderRows = page.locator('.v20-orders-table tbody tr');
+  if (await orderRows.count()) {
+    await orderRows.first().focus();
+    await page.keyboard.press('Enter');
+    if (!(await orderRows.first().evaluate((node) => node.classList.contains('selected')))) fail('orders/keyboard-selection', 'Enter did not select the focused order.');
+    await page.getByRole('button', { name: 'Clear selected order' }).click();
+  }
+  await page.screenshot({ path: resolve(OUT_DIR, 'interactive-orders-1368x753.png'), fullPage: false });
+
+  // Academy: filtering, scoped tabs, registry keyboard/compare selection,
+  // drill-down tabs and Safety Guide navigation.
+  await page.locator('.apex-sidebar button[data-route="academy"]').click();
+  await page.waitForSelector('[data-testid="strategy-academy"]', { timeout: 10_000 });
+  await page.getByRole('button', { name: 'Advanced filters' }).click();
+  if (!(await page.locator('.academy-filter-popover').isVisible().catch(() => false))) fail('academy/filters', 'Advanced filter popover did not open.');
+  await page.locator('.academy-filter-popover select').nth(1).selectOption('Standard');
+  await page.getByRole('button', { name: 'Reset filters' }).click();
+  for (const label of ['All', 'FULL_STRATEGY', 'BASE_REPLAY', 'BLOCKED']) {
+    const scope = page.locator('.academy-scope-tabs button').filter({ hasText: label }).first();
+    await scope.click();
+    if (!(await scope.evaluate((node) => node.classList.contains('active')))) fail('academy/scope-tabs', `${label} did not become active.`);
+  }
+  await page.locator('.academy-scope-tabs button').filter({ hasText: 'All' }).first().click();
+  const compareChecks = page.locator('.academy-registry-table tbody input[type="checkbox"]');
+  if (await compareChecks.count() >= 2) {
+    await compareChecks.nth(0).check();
+    await compareChecks.nth(1).check();
+    if (!(await page.locator('.academy-comparison-table').isVisible().catch(() => false))) fail('academy/compare', 'Comparison table did not render after selecting two strategies.');
+  }
+  for (const label of ['Summary', 'Evidence', 'Statistics', 'Limitations', 'History']) {
+    const tab = page.locator('.academy-drill-tabs button').filter({ hasText: label });
+    await tab.click();
+    if (!(await tab.evaluate((node) => node.classList.contains('active')))) fail('academy/drill-tabs', `${label} did not become active.`);
+  }
+  await page.getByRole('button', { name: 'Safety Guide' }).click();
+  await expectPage('help', 'academy/safety-guide');
+  await page.screenshot({ path: resolve(OUT_DIR, 'interactive-academy-safety-guide-1368x753.png'), fullPage: false });
+
+  for (const message of diagnostics.pageErrors) fail('runtime', `Page error: ${message}`);
+  for (const message of diagnostics.consoleErrors) fail('runtime', `Console error: ${message}`);
+  for (const message of diagnostics.badResponses.filter((value) => value.includes(BASE_URL) && /->\s*5\d\d/.test(value))) fail('runtime', `Server response: ${message}`);
+  await context.close();
+}
+
 async function main(): Promise<void> {
   if (TRANSPORT_BRIDGE) {
     const result = spawnSync(process.execPath, ['scripts/qa/verifyUi1368.mjs'], { cwd: ROOT, env: process.env, stdio: 'inherit' });
@@ -571,7 +793,30 @@ async function main(): Promise<void> {
   }
   mkdirSync(OUT_DIR, { recursive: true });
   await startServer();
-  const browser = await launchBrowser();
+  let browser: Browser;
+  try {
+    browser = await launchBrowser();
+  } catch (error) {
+    if (!isMissingPlaywrightBrowser(error)) throw error;
+    const reason = 'environment_missing_playwright_browser';
+    const report = {
+      generatedAt: new Date().toISOString(),
+      baseUrl: BASE_URL,
+      strict: STRICT,
+      skipped: true,
+      skipReason: reason,
+      canonicalViewport: '1368x753',
+      routesChecked: ROUTES,
+      findings: [{ kind: 'warning', scope: 'browser', message: String(error) }],
+      routeResults: [],
+    };
+    writeFileSync(resolve(OUT_DIR, 'workspace-runtime-report.json'), `${JSON.stringify(report, null, 2)}
+`, 'utf8');
+    console.log(`SKIP workspace runtime browser QA — ${reason}. Install Playwright Chromium or set APEX_PLAYWRIGHT_EXECUTABLE to execute this gate.`);
+    await stopServer();
+    if (STRICT && process.env.APEX_QA_ALLOW_BROWSER_SKIP !== '1') process.exitCode = 1;
+    return;
+  }
 
   try {
     const routeViewports = LIGHT_ONLY ? [VIEWPORTS[0]] : VIEWPORTS;
@@ -592,6 +837,8 @@ async function main(): Promise<void> {
     await verifyLightThemeRuntime(browser);
     await verifyWatchlistPersistence(browser);
     await verifyThemePersistence(browser);
+    await verifySettingsIntegrationRuntime(browser);
+    await verifyCanonicalInteractiveFlows(browser);
   } finally {
     await browser.close();
     await stopServer();

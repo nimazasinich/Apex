@@ -37,9 +37,9 @@ export async function startCaptureServer(port: number, qaQuery = 'qa=visual'): P
   freePort(port);
   freePort(24678);
 
-  const server = spawn('npx', ['tsx', 'server.ts'], {
+  const server = spawn(process.execPath, ['--import', 'tsx', 'server.ts'], {
     cwd: root,
-    shell: true,
+    shell: false,
     env: {
       ...process.env,
       PORT: String(port),

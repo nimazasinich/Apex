@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "description": "Ordered, conservative path rules for APEX App Index architecture labels. First match wins; these labels describe repository placement, not permission to cross boundaries.",
+  "rules": [
+    {
+      "pattern": "^index\\.html$",
+      "layer": "frontend/html-entrypoint"
+    },
+    {
+      "pattern": "^server\\.ts$",
+      "layer": "backend/entrypoint"
+    },
+    {
+      "pattern": "^src/main\\.tsx$",
+      "layer": "frontend/entrypoint"
+    },
+    {
+      "pattern": "^src/pages/",
+      "layer": "frontend/page"
+    },
+    {
+      "pattern": "^src/components/",
+      "layer": "frontend/component"
+    },
+    {
+      "pattern": "^src/hooks/",
+      "layer": "frontend/hook"
+    },
+    {
+      "pattern": "^src/services/exchanges/",
+      "layer": "integration/exchange"
+    },
+    {
+      "pattern": "^src/services/providers/",
+      "layer": "integration/provider"
+    },
+    {
+      "pattern": "^src/services/",
+      "layer": "application/service"
+    },
+    {
+      "pattern": "^src/strateg",
+      "layer": "domain/strategy"
+    },
+    {
+      "pattern": "^src/(types|models|domain)/",
+      "layer": "domain/model"
+    },
+    {
+      "pattern": "^src/tests/",
+      "layer": "verification/test"
+    },
+    {
+      "pattern": "^tests/",
+      "layer": "verification/test"
+    },
+    {
+      "pattern": "^scripts/qa/",
+      "layer": "verification/qa"
+    },
+    {
+      "pattern": "^scripts/research-agent/",
+      "layer": "research/agent"
+    },
+    {
+      "pattern": "^scripts/research/",
+      "layer": "research/study"
+    },
+    {
+      "pattern": "^scripts/",
+      "layer": "tooling/script"
+    },
+    {
+      "pattern": "^openapi/",
+      "layer": "contract/openapi"
+    },
+    {
+      "pattern": "^Doc/",
+      "layer": "documentation"
+    },
+    {
+      "pattern": "^QA/",
+      "layer": "verification/evidence"
+    },
+    {
+      "pattern": "^public/",
+      "layer": "frontend/public-asset"
+    },
+    {
+      "pattern": "^vendor/",
+      "layer": "vendor"
+    },
+    {
+      "pattern": "^APP_INDEX/",
+      "layer": "repository/cartography"
+    },
+    {
+      "pattern": "^\\.github/",
+      "layer": "repository/automation"
+    },
+    {
+      "pattern": "^\\.serena/",
+      "layer": "repository/agent-metadata"
+    },
+    {
+      "pattern": "^(package(-lock)?\\.json|tsconfig.*\\.json|vite\\.config\\.ts|VERSION|README.*|CLAUDE\\.md)$",
+      "layer": "repository/root"
+    },
+    {
+      "pattern": "^src/",
+      "layer": "application/source"
+    }
+  ],
+  "fallback": "repository/other"
+}

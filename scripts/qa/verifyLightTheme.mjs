@@ -20,6 +20,7 @@ const themeInit = exists('public/theme-init.js') ? read('public/theme-init.js') 
 const backtestingCss = read('src/pages/backtesting/BacktestingPage.css');
 const serviceWorker = read('public/sw.js');
 const runtimeQa = read('scripts/qa/verifyWorkspaceRuntime.mts');
+const qaSuiteCatalog = read('scripts/qa/qaSuiteCatalog.mjs');
 const pkg = JSON.parse(read('package.json'));
 
 const canonicalImports = [
@@ -73,8 +74,8 @@ check('backtesting token resolved', !backtestingCss.includes('--bt-surface-soft'
 check('required green scale complete', ['--apex-green-050:', '--apex-green-100:', '--apex-green-200:', '--apex-green-300:', '--apex-green-400:', '--apex-green-500:', '--apex-green-600:', '--apex-green-700:', '--apex-green-800:'].every((token) => tokens.includes(token)), 'Tinted icons and highlights have a complete scale.');
 check('service worker cache version', serviceWorker.includes(`const APP_VERSION = '${pkg.version}'`) && serviceWorker.includes('const CACHE_NAME = `apex-shell-v${APP_VERSION}-${BUILD_HASH}`'), 'Old CSS is separated by release and build identity.');
 check('package version is valid semver and synchronized by the release gate', /^\d+\.\d+\.\d+$/.test(pkg.version), `package.json=${pkg.version}`);
-check('QA wired into verify', pkg.scripts?.['qa:light-theme'] === 'node scripts/qa/verifyLightTheme.mjs' && (pkg.scripts?.verify?.includes('npm run qa:light-theme') || pkg.scripts?.['check:source-contracts']?.includes('npm run qa:light-theme')), 'The active verification chain catches a regression.');
-check('all workspace routes covered at runtime', ['overview','markets','watchlist','portfolio','trading','orders','positions','alerts','history','analytics','backtesting','strategies','settings','help'].every((route) => runtimeQa.includes(`route: '${route}'`)), 'The browser contract checks every active route in forced Light mode.');
+check('QA wired into verify', pkg.scripts?.['qa:light-theme'] === 'node scripts/qa/verifyLightTheme.mjs' && (pkg.scripts?.verify?.includes('npm run qa:light-theme') || (pkg.scripts?.['check:source-contracts']?.includes('qa:suite:source-core') && qaSuiteCatalog.includes("'qa:light-theme'"))), 'The active verification chain catches a regression, directly or through the source-core suite.');
+check('all workspace routes covered at runtime', ['overview','markets','watchlist','portfolio','trading','orders','positions','alerts','history','analytics','backtesting','academy','strategies','settings','help'].every((route) => runtimeQa.includes(`route: '${route}'`)), 'The browser contract checks every active route in forced Light mode.');
 check('hardening file exists', exists('src/styles/light-theme-hardening.css'), 'Release light-theme layer is present.');
 
 function hexToRgb(hex) {

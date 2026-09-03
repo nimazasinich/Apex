@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+import { loadTypeScript } from './lib/loadTypeScript.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-const require=createRequire(import.meta.url); let ts; try{ts=require('typescript')}catch{ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js')}
+const require=createRequire(import.meta.url); const ts = loadTypeScript();
 const root=process.cwd(), temp=fs.mkdtempSync(path.join(os.tmpdir(),'apex-multi-runtime-'));
 function walk(dir,files=[]){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,e.name);if(e.isDirectory())walk(f,files);else if(e.isFile()&&f.endsWith('.ts')&&!f.endsWith('.test.ts'))files.push(f)}return files}
 for(const absolute of walk(path.join(root,'src'))){const file=path.relative(root,absolute);const o=ts.transpileModule(fs.readFileSync(absolute,'utf8'),{fileName:file,reportDiagnostics:true,compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,moduleResolution:ts.ModuleResolutionKind.Node10,esModuleInterop:true}});const errors=(o.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error);if(errors.length)throw new Error(`transpile_failed:${file}`);const target=path.join(temp,file.replace(/\.ts$/,'.js'));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,o.outputText)}

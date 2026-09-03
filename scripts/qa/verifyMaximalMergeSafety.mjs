@@ -15,6 +15,7 @@ const lhRest = read('src/services/liquidityHunter/restContextBootstrap.ts');
 const routes = read('src/services/apexNextMarketRoutes.ts');
 const panel = read('src/pages/backtesting/MultiStrategyResearchPanel.tsx');
 const packageJson = JSON.parse(read('package.json'));
+const qaSuiteCatalog = read('scripts/qa/qaSuiteCatalog.mjs');
 
 check('execution readiness exposes versioned capability truth', server.includes("capabilitiesVersion: 'execution_capabilities_v2'"));
 check('execution readiness names account preview route', server.includes("previewRoute: '/api/account/orders/preview'"));
@@ -55,11 +56,11 @@ check('stale duplicate production pages are retired', stale.every((p) => !exists
 check('two-tier replay coordinator is restored as research-only', exists('src/services/replay/twoTierReplayCoordinator.ts') && read('src/services/replay/twoTierReplayCoordinator.ts').includes('researchOnly: true') && read('src/services/replay/twoTierReplayCoordinator.ts').includes('executionAuthorized: false'));
 check('read-plane view model is exposed by LH state route', exists('src/services/readPlane/liquidityHunterViewModel.ts') && server.includes('buildLiquidityHunterViewModel'));
 check('multi-agent runtime verifier is wired', packageJson.scripts?.['qa:multi-agent-multi-trading']?.includes('qa:multi-agent-multi-trading-runtime'));
-check('unified safety runtime is wired into runtime gate', packageJson.scripts?.['qa:unified-safety-runtime'] && packageJson.scripts?.['test:runtime']?.includes('qa:unified-safety-runtime'));
+check('unified safety runtime is wired into runtime gate', packageJson.scripts?.['qa:unified-safety-runtime'] && (packageJson.scripts?.['test:runtime']?.includes('qa:unified-safety-runtime') || (packageJson.scripts?.['test:runtime']?.includes('qa:suite:runtime-safety') && qaSuiteCatalog.includes("'qa:unified-safety-runtime'"))));
 
-check('R2 verifier is wired into package scripts', packageJson.scripts?.['qa:ui-completeness-r2'] && packageJson.scripts?.['check:source-contracts']?.includes('qa:ui-completeness-r2'));
-check('Research Matrix verifier is wired into package scripts', packageJson.scripts?.['qa:research-workspace-layout'] && packageJson.scripts?.['check:source-contracts']?.includes('qa:research-workspace-layout'));
-check('multi-agent paper research verifier is wired into package scripts', packageJson.scripts?.['qa:multi-agent-multi-trading'] && packageJson.scripts?.['check:source-contracts']?.includes('qa:multi-agent-multi-trading'));
+check('R2 verifier is wired into package scripts', packageJson.scripts?.['qa:ui-completeness-r2'] && (packageJson.scripts?.['check:source-contracts']?.includes('qa:ui-completeness-r2') || (packageJson.scripts?.['check:source-contracts']?.includes('qa:suite:source-core') && qaSuiteCatalog.includes("'qa:ui-completeness-r2'"))));
+check('Research Matrix verifier is wired into package scripts', packageJson.scripts?.['qa:research-workspace-layout'] && (packageJson.scripts?.['check:source-contracts']?.includes('qa:research-workspace-layout') || (packageJson.scripts?.['check:source-contracts']?.includes('qa:suite:source-core') && qaSuiteCatalog.includes("'qa:research-workspace-layout'"))));
+check('multi-agent paper research verifier is wired into package scripts', packageJson.scripts?.['qa:multi-agent-multi-trading'] && (packageJson.scripts?.['check:source-contracts']?.includes('qa:multi-agent-multi-trading') || (packageJson.scripts?.['check:source-contracts']?.includes('qa:suite:source-core') && qaSuiteCatalog.includes("'qa:multi-agent-multi-trading'"))));
 
 let passed = 0;
 for (const c of checks) {

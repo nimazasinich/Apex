@@ -11,41 +11,32 @@
  * dist/server.cjs.map were all written correctly.
  *
  * This script runs the same three steps with Node's own child_process
- * spawning (shell: true only for npx resolution on Windows), and makes the
+ * spawning of pinned local tools, and makes the
  * pass/fail decision itself from each child's real exit code — not from
  * whatever the parent shell decides to do with stderr noise. Output is still
  * streamed straight through (stdio: 'inherit'), so this is a drop-in
  * replacement, not a black box.
  *
- * Usage: npm run build   (now calls: tsx scripts/utilities/buildAndBundle.mts)
+ * Usage: npm run build
  */
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const isWin = process.platform === 'win32';
-const npx = isWin ? 'npx.cmd' : 'npx';
+const viteCli = path.join(root, 'node_modules', 'vite', 'bin', 'vite.js');
+const esbuildCli = path.join(root, 'node_modules', 'esbuild', 'bin', 'esbuild');
 
 type Step = { label: string; command: string; args: string[] };
 
 const steps: Step[] = [
   { label: 'build identity', command: process.execPath, args: ['scripts/utilities/generateBuildIdentity.mjs'] },
-  { label: 'vite build', command: npx, args: ['vite', 'build'] },
+  { label: 'vite build', command: process.execPath, args: [viteCli, 'build'] },
   { label: 'service worker build stamp', command: process.execPath, args: ['scripts/utilities/stampServiceWorker.mjs'] },
   {
     label: 'esbuild (server.cjs)',
-    command: npx,
-    args: [
-      'esbuild',
-      'server.ts',
-      '--bundle',
-      '--platform=node',
-      '--format=cjs',
-      '--packages=external',
-      '--sourcemap',
-      '--outfile=dist/server.cjs',
-    ],
+    command: process.execPath,
+    args: [esbuildCli, 'server.ts', '--bundle', '--platform=node', '--format=cjs', '--packages=external', '--sourcemap', '--outfile=dist/server.cjs'],
   },
   {
     label: 'function index',
@@ -59,14 +50,10 @@ const steps: Step[] = [
 function runStep(step: Step): number {
   console.log(`\n[build] ▶ ${step.label}`);
 
-  // On Windows, shell is only required for batch files/scripts (like npx.cmd).
-  // Running process.execPath (node.exe) with shell: true can fail if its path contains spaces.
-  const useShell = isWin && step.command !== process.execPath;
-
   const result = spawnSync(step.command, step.args, {
     cwd: root,
     stdio: 'inherit',
-    shell: useShell,
+    shell: false,
   });
 
   if (result.error) {

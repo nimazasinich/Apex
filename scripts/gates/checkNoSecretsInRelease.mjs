@@ -10,8 +10,9 @@ const forbiddenNamePatterns = [/^\.env\.(?!example$).+/i, /secrets?\.local\.env/
 const forbiddenExtensions = new Set(['.pem', '.p12', '.pfx', '.key']);
 const skippedDirs = new Set(['node_modules', '.git']);
 const requiredExamples = ['.env.example', '.external-api-sources.config.example.json'];
-const requiredBuiltIdentifiers = ['canonical_v2', 'risk_governor_v1', 'adaptive_governance_v1', 'live-execution-intents'];
-const errors = [];
+const requiredBuiltIdentifiers = ['canonical_v5_parliament_confluence', 'risk_governor_v1', 'adaptive_governance_v1', 'live-execution-intents'];
+const secretViolations = [];
+const blockedErrors = [];
 const sourceOnly = process.argv.includes('--source-only');
 
 function forbiddenPath(relPath) {
@@ -60,23 +61,23 @@ function walk(dir) {
 
 for (const file of walk(root)) {
   const rel = relative(root, file).replaceAll('\\', '/');
-  if (forbiddenPath(rel)) errors.push(`Forbidden secret-bearing path: ${rel}`);
+  if (forbiddenPath(rel)) secretViolations.push(`Forbidden secret-bearing path: ${rel}`);
   if (extname(file).toLowerCase() === '.zip') {
     try {
       const entries = zipEntries(file);
-      for (const entry of entries) if (forbiddenPath(entry)) errors.push(`Forbidden path inside ${rel}: ${entry}`);
+      for (const entry of entries) if (forbiddenPath(entry)) secretViolations.push(`Forbidden path inside ${rel}: ${entry}`);
     } catch (error) {
-      errors.push(`Unable to inspect archive ${rel}: ${error instanceof Error ? error.message : String(error)}`);
+      blockedErrors.push(`Unable to inspect archive ${rel}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }
 
 for (const name of requiredExamples) {
   const path = join(root, name);
-  if (!existsSync(path)) errors.push(`Required placeholder file missing: ${name}`);
+  if (!existsSync(path)) blockedErrors.push(`Required placeholder file missing: ${name}`);
   else {
     const text = readFileSync(path, 'utf8');
-    if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(text)) errors.push(`Private key material found in template: ${name}`);
+    if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(text)) secretViolations.push(`Private key material found in template: ${name}`);
   }
 }
 
@@ -84,13 +85,13 @@ if (!sourceOnly) {
   const distServerPath = join(root, 'dist', 'server.cjs');
   const distIndexPath = join(root, 'dist', 'index.html');
   if (!existsSync(distServerPath) || !existsSync(distIndexPath)) {
-    errors.push('dist/server.cjs or dist/index.html missing — run `npm run build` before packaging.');
+    blockedErrors.push('dist/server.cjs or dist/index.html missing — run `npm run build` before packaging.');
   } else {
     const srcMtime = latestSourceMtime();
     const distMtime = Math.max(statSync(distServerPath).mtimeMs, statSync(distIndexPath).mtimeMs);
-    if (distMtime < srcMtime) errors.push(`dist/ predates source changes (${new Date(distMtime).toISOString()} < ${new Date(srcMtime).toISOString()}).`);
+    if (distMtime < srcMtime) blockedErrors.push(`dist/ predates source changes (${new Date(distMtime).toISOString()} < ${new Date(srcMtime).toISOString()}).`);
     const bundleText = readFileSync(distServerPath, 'utf8');
-    for (const identifier of requiredBuiltIdentifiers) if (!bundleText.includes(identifier)) errors.push(`dist/server.cjs is missing expected identifier "${identifier}".`);
+    for (const identifier of requiredBuiltIdentifiers) if (!bundleText.includes(identifier)) blockedErrors.push(`dist/server.cjs is missing expected identifier "${identifier}".`);
   }
 }
 
@@ -106,11 +107,22 @@ function latestSourceMtime() {
 }
 function readDirSafe(dir) { try { return readdirSync(dir); } catch { return []; } }
 
-if (errors.length) {
-  console.error('\n[release-gate] FAILED\n');
-  for (const error of [...new Set(errors)]) console.error(`  - ${error}`);
+if (secretViolations.length) {
+  console.error('\n[release-gate] FAIL — Secrets or forbidden credentials found:\n');
+  for (const error of [...new Set(secretViolations)]) console.error(`  - ${error}`);
+  if (blockedErrors.length) {
+    console.error('\n[release-gate] Additional build/scan prerequisites missing:');
+    for (const error of [...new Set(blockedErrors)]) console.error(`  - ${error}`);
+  }
   process.exit(1);
 }
+
+if (blockedErrors.length) {
+  console.error('\n[release-gate] BLOCKED — Cannot complete release scan: build artifacts missing or out of date:\n');
+  for (const error of [...new Set(blockedErrors)]) console.error(`  - ${error}`);
+  process.exit(2);
+}
+
 console.log(sourceOnly
   ? '[release-gate] passed: source-only secret scan, archive scan, and template checks succeeded.'
   : '[release-gate] passed: recursive secret scan, archive scan, templates, and fresh dist checks succeeded.');

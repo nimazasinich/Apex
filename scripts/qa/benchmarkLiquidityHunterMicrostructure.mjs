@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { loadTypeScript } from './lib/loadTypeScript.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -6,9 +7,7 @@ import { createRequire } from 'node:module';
 import { performance } from 'node:perf_hooks';
 
 const require = createRequire(import.meta.url);
-let ts;
-try { ts = require('typescript'); }
-catch { ts = require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js'); }
+const ts = loadTypeScript();
 const root = process.cwd();
 const packageVersion = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 const sourceFile = path.join(root, 'src/services/replay/microstructureFillSimulator.ts');

@@ -25,7 +25,10 @@ function walk(dir, out = []) {
   return out;
 }
 
-const commit = command('git', ['rev-parse', '--short=12', 'HEAD']);
+const SOURCE_ARCHIVE_GIT = 'NOT_AVAILABLE_SOURCE_ARCHIVE';
+const SOURCE_ARCHIVE_DIRTY = 'NOT_APPLICABLE';
+const PARENT_ARTIFACT_SHA256 = '36e22cb8cbd584264da29bd4ae029a6847898b5e7693dd0d62ff1a6b6ce08ce7';
+const PARENT_BUILD_ID = 'apex-2.0.1-f74c0bbe625c';
 const hash = crypto.createHash('sha256');
 for (const rel of ['package.json', 'package-lock.json', 'server.ts', 'index.html', 'vite.config.ts', 'tsconfig.json', 'tsconfig.ui02.json']) {
   const absolute = path.join(root, rel);
@@ -45,22 +48,21 @@ for (const base of ['src', 'public', 'scripts', 'openapi']) {
   }
 }
 
-const sourceHash = hash.digest('hex').slice(0, 12);
-const dirtyOutput = commit ? command('git', ['status', '--porcelain']) : null;
-const dirtyTree = commit ? Boolean(dirtyOutput) : null;
-const buildId = commit && !dirtyTree
-  ? commit
-  : commit
-    ? `${commit.slice(0, 8)}-${sourceHash.slice(0, 8)}`
-    : sourceHash;
+const sourceTreeHash = hash.digest('hex');
+const sourceHash = sourceTreeHash.slice(0, 12);
+const buildId = `apex-${pkg.version}-${sourceHash}`;
 const payload = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   application: pkg.name,
   version: pkg.version,
   buildId,
   sourceHash,
-  commit: commit || null,
-  dirtyTree,
+  sourceTreeHash,
+  gitCommit: SOURCE_ARCHIVE_GIT,
+  dirtyTree: SOURCE_ARCHIVE_DIRTY,
+  parentArtifactSha256: PARENT_ARTIFACT_SHA256,
+  parentBuildId: PARENT_BUILD_ID,
+  commit: null,
   generatedAt: new Date().toISOString(),
   nodeVersion: process.version,
   platform: process.platform,
@@ -73,7 +75,17 @@ if (process.argv.includes('--check')) {
     process.exit(1);
   }
   const current = JSON.parse(fs.readFileSync(output, 'utf8'));
-  const mismatches = ['version', 'buildId', 'sourceHash'].filter((field) => current[field] !== payload[field]);
+  const mismatches = [
+    'application',
+    'version',
+    'buildId',
+    'sourceHash',
+    'sourceTreeHash',
+    'gitCommit',
+    'dirtyTree',
+    'parentArtifactSha256',
+    'parentBuildId',
+  ].filter((field) => current[field] !== payload[field]);
   if (mismatches.length) {
     console.error(`[build-identity] stale identity: ${mismatches.join(', ')}`);
     process.exit(1);

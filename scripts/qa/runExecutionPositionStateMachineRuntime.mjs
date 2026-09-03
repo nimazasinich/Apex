@@ -1,12 +1,11 @@
 #!/usr/bin/env node
+import { loadTypeScript } from './lib/loadTypeScript.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-let ts;
-try { ts = require('typescript'); }
-catch { ts = require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js'); }
+const ts = loadTypeScript();
 const root=process.cwd(); const temp=fs.mkdtempSync(path.join(os.tmpdir(),'apex-exec-state-'));
 for (const file of ['src/contracts/realtime/executionPositionState.ts','src/services/execution/executionPositionStateMachine.ts']) {
   const out=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{fileName:file,compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,moduleResolution:ts.ModuleResolutionKind.Node10,esModuleInterop:true}});

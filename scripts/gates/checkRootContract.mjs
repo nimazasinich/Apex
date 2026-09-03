@@ -4,10 +4,14 @@ import { resolve } from 'node:path';
 
 const root = process.cwd();
 const classified = new Set([
-  '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.github', '.gitignore',
+  '.agent-index', '.apex-data', '.claude', '.env.example', '.external-api-sources.config.example.json', '.gitattributes', '.github', '.gitignore',
   '.mcp-recovered', '.node-version', '.nvmrc', '.playwright-browsers', '.serena', 'apex-npm-tarballs.zip', 'CLAUDE.md', 'Doc', 'QA', 'README.md', 'README.txt', '_archive', '_qa', '_release', 'dist', 'index.html',
   'node_modules', 'openapi', 'package-lock.json', 'package.json', 'public', 'RUN-APEX.bat', 'scripts', 'server.ts', 'src', 'tests',
   'test-results', 'tools', 'tsconfig.json', 'tsconfig.ui02.json', 'vendor', 'VERSION', 'vite.config.ts',
+  'APEX_V1_0_71_VERIFICATION.txt', 'APEX_v2_0_13_PATCH_NOTES.md', 'AUDIT_FIX_REPORT.md',
+  'LITE_TRANSFER_MANIFEST.md', 'NEXT_AGENT_RULES.md', 'REMEDIATION_CHECKPOINTS.json', 'REMEDIATION_CHECKPOINTS.md',
+  'evidence', 'APP_INDEX', '.apex-private-seed', 'HF2_BINANCE_PROXY_RECOVERY.md', 'HF2_BINANCE_PROXY_RECOVERY.patch',
+  'APEX_ACADEMY_SYSTEM_UPGRADE_REPORT.md',
 ]);
 // `.git` is version-control metadata, not a source artifact to classify. It is
 // created by every clone and every `actions/checkout` run, so it is filtered out

@@ -18,7 +18,7 @@ const backtestHero = read('src/pages/backtesting/BacktestEvidenceHero.tsx');
 const strategyWorkspace = read('src/pages/strategies/StrategyModelWorkspace.tsx');
 const strategyDirectionPolicy = read('src/pages/strategies/directionPolicy.ts');
 const help = read('src/pages/help/HelpPage.tsx');
-const analytics = read('src/pages/analytics/AnalyticsPage.tsx');
+const analytics = read('src/pages/analytics/AnalyticsCommandPage.tsx');
 const history = read('src/pages/history/HistoryPage.tsx');
 const accountClient = read('src/services/accountClient.ts');
 const decisionMemory = read('src/services/decisionMemory.ts');
@@ -29,7 +29,7 @@ check('strategy mutation helper', strategy.includes('apiMutate(') && strategy.in
 check('strategy explicit direction', strategyWorkspace.includes('<DirectionSelector') && strategy.includes('setDirection') && strategy.includes('direction: identity.direction') && strategyDirectionPolicy.includes("return ['LONG', 'SHORT']"));
 check('backtesting explicit direction', backtesting.includes('setDirection') && backtestBuilder.includes('<DirectionSelector') && backtestHero.includes('Configuration changed since last run') && backtestHeader.includes('STALE CONFIGURATION'));
 check('health trigger and drawer', help.includes('View Status') && help.includes('<SystemHealthDrawer') && shell.includes('<SystemHealthDrawer'));
-check('analytics correlation', analytics.includes('<CorrelationMatrix') && exists('src/pages/analytics/components/CorrelationMatrix.tsx'));
+check('analytics correlation', analytics.includes('<CorrelationMatrix') && analytics.includes('correlationOpen') && exists('src/pages/analytics/components/CorrelationMatrix.tsx'));
 check('history current insights', history.includes('props.insights?.activities') && !history.includes('/api/account/history'));
 check('decision journal canonical store', journal.includes('DecisionMemoryDB') && decisionMemory.includes('async patch(') && decisionMemory.includes('async delete('));
 check('canonical trade plan visualization', accountViews.includes('<TradePlanRiskReward') && exists('src/components/trading/TradePlanRiskReward.tsx'));
@@ -39,7 +39,7 @@ check('no disconnected workspace client', !exists('src/services/workspaceClient.
 check('no deleted legacy endpoints in active pages', ![help, analytics, history].some((text) => /\/api\/(?:account\/(?:history|analytics)|help\/)/.test(text)));
 check('account mutations shared', accountClient.includes("apiMutate('/api/account/connection'") && !/fetch\('\/api\/account\/connection'[\s\S]{0,160}method:\s*'DELETE'/.test(accountClient));
 check('duplicate paths removed', !exists('src/pages/components/workspace/AccountViews.tsx') && !exists('src/pages/pages/strategies/StrategyPage.css'));
-check('score disclaimer', journal.includes('scores are not probabilities') && analytics.includes('No score is treated as probability'));
+check('score disclaimer', journal.includes('scores are not probabilities') && analytics.includes('not calibrated win probabilities'));
 
 const failed = checks.filter((item) => !item.ok);
 const report = { generatedAt: new Date().toISOString(), passed: checks.length - failed.length, failed: failed.length, checks };

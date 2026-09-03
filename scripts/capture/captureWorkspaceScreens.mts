@@ -28,8 +28,19 @@ const PAGES = [
   'feed',
 ] as const;
 
-const SETTINGS_TABS = ['Execution', 'Telegram', 'External sources', 'Supplemental'] as const;
+const SETTINGS_TABS = [
+  ['account', 'Account'],
+  ['security', 'Security'],
+  ['appearance', 'Appearance'],
+  ['notifications', 'Notifications'],
+  ['trading', 'Trading'],
+  ['api', 'API Management'],
+  ['smart-proxy', 'Smart Proxy'],
+  ['devices', 'Devices'],
+] as const;
 const CORRIDOR_TABS = ['Signal', 'Book', 'Feed', 'Archive'] as const;
+
+const CHROME_EXECUTABLE = String(process.env.APEX_PLAYWRIGHT_EXECUTABLE || '').trim();
 
 function backupIfExists(dir: string) {
   if (!existsSync(dir)) return;
@@ -178,8 +189,15 @@ try {
   }
   await waitForServer();
 
-  const channel = process.platform === 'win32' ? 'msedge' : undefined;
-  browser = await chromium.launch({ headless: true, channel });
+  const launchOptions = CHROME_EXECUTABLE
+    ? { headless: true, executablePath: CHROME_EXECUTABLE }
+    : { headless: true, channel: process.platform === 'win32' ? 'chrome' as const : undefined };
+  try {
+    browser = await chromium.launch(launchOptions);
+  } catch (error) {
+    if (CHROME_EXECUTABLE || process.platform !== 'win32') throw error;
+    browser = await chromium.launch({ headless: true, channel: 'msedge' });
+  }
   const page = await browser.newPage({ viewport: { width: 1368, height: 753 } });
   await page.route('**/api/**', (route) =>
     route.fulfill({
@@ -198,19 +216,14 @@ try {
     manifest.push({ name: `desktop-${key}`, notes: `Workspace page: ${key}` });
   }
 
-  // Settings modal + tabs
+  // Canonical Settings workspace — all eight navigation tabs.
   await goPage(page, 'settings');
   await page.waitForTimeout(700);
-  await shot(page, 'desktop-settings-execution', false);
-  manifest.push({ name: 'desktop-settings-execution', notes: 'Settings modal — Execution tab' });
-  for (const tab of SETTINGS_TABS) {
-    if (tab === 'Execution') continue;
-    const btn = page.getByRole('button', { name: new RegExp(tab, 'i') });
-    if ((await btn.count()) > 0) {
-      await btn.first().click({ force: true, timeout: 4000 }).catch(() => undefined);
-      await shot(page, `desktop-settings-${tab.toLowerCase().replace(/\s+/g, '-')}`, false);
-      manifest.push({ name: `desktop-settings-${tab.toLowerCase().replace(/\s+/g, '-')}`, notes: `Settings tab: ${tab}` });
-    }
+  for (const [id, label] of SETTINGS_TABS) {
+    const btn = page.locator(`button[data-settings-section="${id}"]`);
+    await btn.click({ force: true, timeout: 4000 });
+    await shot(page, `desktop-settings-${id}`, false);
+    manifest.push({ name: `desktop-settings-${id}`, notes: `Settings tab: ${label}` });
   }
   await page.keyboard.press('Escape');
   await page.waitForTimeout(400);

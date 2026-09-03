@@ -1,0 +1,77 @@
+flowchart LR
+  L0["application/service\n237 files"]
+  L1["application/source\n89 files"]
+  L2["backend/entrypoint\n1 files"]
+  L3["contract/openapi\n1 files"]
+  L4["documentation\n291 files"]
+  L5["frontend/component\n60 files"]
+  L6["frontend/entrypoint\n1 files"]
+  L7["frontend/hook\n1 files"]
+  L8["frontend/html-entrypoint\n1 files"]
+  L9["frontend/page\n78 files"]
+  L10["frontend/public-asset\n326 files"]
+  L11["integration/exchange\n9 files"]
+  L12["integration/provider\n11 files"]
+  L13["repository/automation\n7 files"]
+  L14["repository/cartography\n4 files"]
+  L15["repository/other\n23 files"]
+  L16["repository/root\n9 files"]
+  L17["research/agent\n16 files"]
+  L18["research/study\n18 files"]
+  L19["tooling/script\n98 files"]
+  L20["vendor\n2 files"]
+  L21["verification/qa\n130 files"]
+  L22["verification/test\n166 files"]
+  L0 -->|240| L1
+  L0 -->|1| L11
+  L0 -->|35| L12
+  L1 -->|19| L0
+  L1 -->|9| L5
+  L1 -->|14| L9
+  L1 -->|5| L10
+  L1 -->|1| L11
+  L1 -->|1| L12
+  L2 -->|54| L0
+  L2 -->|2| L1
+  L2 -->|1| L11
+  L2 -->|2| L12
+  L2 -->|1| L19
+  L5 -->|36| L0
+  L5 -->|62| L1
+  L5 -->|2| L7
+  L5 -->|3| L10
+  L6 -->|10| L1
+  L6 -->|2| L5
+  L7 -->|3| L0
+  L8 -->|1| L6
+  L8 -->|3| L10
+  L9 -->|32| L0
+  L9 -->|89| L1
+  L9 -->|33| L5
+  L9 -->|7| L10
+  L11 -->|3| L0
+  L11 -->|1| L1
+  L12 -->|8| L0
+  L12 -->|1| L1
+  L18 -->|12| L0
+  L18 -->|1| L1
+  L19 -->|32| L0
+  L19 -->|12| L1
+  L19 -->|13| L2
+  L19 -->|1| L12
+  L19 -->|4| L21
+  L21 -->|32| L0
+  L21 -->|12| L1
+  L21 -->|6| L2
+  L21 -->|7| L10
+  L21 -->|5| L19
+  L22 -->|278| L0
+  L22 -->|118| L1
+  L22 -->|1| L2
+  L22 -->|11| L5
+  L22 -->|17| L9
+  L22 -->|6| L11
+  L22 -->|8| L12
+  L22 -->|4| L18
+  L22 -->|1| L19
+  L22 -->|1| L21

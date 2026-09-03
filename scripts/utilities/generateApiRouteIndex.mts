@@ -22,7 +22,11 @@ function walk(dir: string): string[] {
 }
 function normalizePath(path: string): string { return path.replace(/:([A-Za-z0-9_]+)/g, '{$1}'); }
 function discoverRuntimeRoutes(): Route[] {
-  const files = [resolve(root, 'server.ts'), ...walk(resolve(root, 'src/services'))];
+  const files = [
+    resolve(root, 'server.ts'),
+    ...walk(resolve(root, 'src/services')),
+    ...walk(resolve(root, 'src/features')),
+  ];
   const routes: Route[] = [];
   const seen = new Set<string>();
   const pattern = /\b(?:app|router)\.(get|post|put|patch|delete|options|head)\s*\(\s*(['"`])(\/api\/[^'"`]+)\2/g;
@@ -62,7 +66,7 @@ function build() {
     `OpenAPI operations: **${openapi.size}**  `,
     `Runtime operations documented in OpenAPI: **${documented} (${(coverage*100).toFixed(1)}%)**  `,
     `CI coverage floor: **${(minCoverage*100).toFixed(1)}%**`,'',
-    '> Generated from current literal Express route registrations in `server.ts` and `src/services/**/*.ts`. Parameter syntax is normalized from `:param` to `{param}` only for OpenAPI comparison.','',
+    '> Generated from current literal Express route registrations in `server.ts`, `src/services/**/*.ts`, and `src/features/**/*.ts`. Parameter syntax is normalized from `:param` to `{param}` only for OpenAPI comparison.','',
     '## Route groups','', '| Prefix | Operations |','|---|---:|',
     ...[...groups].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([p,c])=>`| \`${p}\` | ${c} |`), '',
     '## Complete route index','', '| Method | Path | Source | OpenAPI |','|---|---|---|---|',

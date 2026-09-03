@@ -20,7 +20,7 @@ expect('right context rail', css.includes('--apex-rail-w: 48px') && css.includes
 expect('chart feed empty state', css.includes('.apex-chart-feed-state') && existsSync(resolve(root, 'src/components/PriceChart.tsx')), 'No synthetic chart is drawn when providers fail');
 expect('KuCoin seconds granularity', market.includes("'1m': 60") && market.includes("'1h': 3600"), 'KuCoin futures kline granularity is seconds');
 expect('request coalescing', market.includes('coalesceMarketRequest') && market.includes('masterLimit'), 'Concurrent initial routes share provider work');
-expect('fast overview detail route', routes.includes('includeMicrostructure') && app.includes('includeMicrostructure=${page === \'trading\' ? \'1\' : \'0\'}'), 'Overview does not wait for trading-only microstructure');
+expect('fast overview detail route', routes.includes('includeMicrostructure') && app.includes("const includeMicrostructure = page === 'trading'") && app.includes("includeMicrostructure=${includeMicrostructure ? '1' : '0'}"), 'Overview and Analytics stay on the fast non-microstructure detail path while Trading opts into microstructure');
 expect('live API no-cache', server.includes("app.use('/api'") && server.includes('no-store, no-cache'), 'Empty API responses cannot be replayed by browser/proxy caches');
 expect('standalone Vite API proxy', vite.includes("'/api'") && vite.includes('APEX_API_ORIGIN'), 'Direct Vite sessions can reach the backend when it is running on port 3000');
 expect('capture default 1368x753', capture.includes("'VIEWPORT_WIDTH', 1368") && capture.includes("'VIEWPORT_HEIGHT', 753"), 'Visual QA uses the product viewport by default');

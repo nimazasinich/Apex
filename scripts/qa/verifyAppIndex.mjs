@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
+
+const checks = [];
+const check = (name, ok, detail='') => { checks.push({name,ok:Boolean(ok)}); console.log(`${ok?'PASS':'FAIL'} ${name}${detail?` — ${detail}`:''}`); };
+const map = JSON.parse(fs.readFileSync('APP_INDEX/APP_MAP.json','utf8'));
+check('app index schema v3 resolver + AST metadata present', map.schemaVersion >= 3 && map.resolution && Array.isArray(map.resolution.aliases));
+const files = Object.fromEntries(map.files.map((f)=>[f.path,f]));
+const privateWorkingRoots = ['.apex-data/', '.apex-private-data/', '.claude/', '.mcp-recovered/', '.playwright-browsers/', '_release/'];
+check('app index maps repository files', map.summary.totalFiles > 700, String(map.summary.totalFiles));
+check('runtime/private working roots are excluded from App Index', map.files.every((f)=>!privateWorkingRoots.some((root)=>f.path.startsWith(root))));
+check('function atlas symbols are linked', map.summary.symbols > 3900, String(map.summary.symbols));
+check('production roots are explicit', map.roots.production.includes('server.ts') && map.roots.production.includes('src/main.tsx'));
+check('server is production reachable', files['server.ts']?.usageStatus === 'production-runtime');
+check('main is production reachable', files['src/main.tsx']?.usageStatus === 'production-runtime');
+check('reachability proof exists for active service', Array.isArray(files['src/services/providerHealth.ts']?.reachability?.productionProof) && files['src/services/providerHealth.ts'].reachability.productionProof.length >= 2);
+check('reverse dependencies are indexed', Array.isArray(files['src/services/providerHealth.ts']?.dependencies?.reverse));
+check('dead island model exists independently of import counts', Array.isArray(map.deadIslands));
+check('runtime cycle model exists', Array.isArray(map.cycles));
+check('public service worker is mapped as production asset', files['public/sw.js']?.usageStatus === 'production-asset');
+check('theme init is mapped as production asset', files['public/theme-init.js']?.usageStatus === 'production-asset');
+check('current files expose stable history ids', map.files.every((f)=>typeof f.fileId==='string' && f.fileId.startsWith('file_')));
+check('layer labels are present', map.files.every((f)=>typeof f.layer==='string' && f.layer.length>0));
+check('all indexed code files have liveness status', map.files.filter((f)=>f.code).every((f)=>['production-runtime','production-type-only','possible-production-runtime','possible-production-type-only','test-tool-only','source-contract-only','dead-island','orphan','production-asset','test-tool-asset'].includes(f.usageStatus)));
+check('app index has zero unresolved static internal imports', map.summary.unresolvedStaticImports === 0, String(map.summary.unresolvedStaticImports));
+check('live dead-code classification has no unresolved dynamic blind spot', map.summary.deadClassificationTrusted === true, String(map.summary.liveUnresolvedDynamicImports));
+check('case mismatch fallback is visible and clean in canonical source', map.summary.caseMismatchResolutions === 0, String(map.summary.caseMismatchResolutions));
+check('QA/runtime source has no machine-specific absolute TypeScript fallback', map.summary.absoluteRuntimeImports === 0, String(map.summary.absoluteRuntimeImports));
+check('fuzzy fallback cannot become authoritative liveness proof', map.resolution?.fuzzyFallback?.authoritative === false);
+check('tsconfig path aliases are discovered from config', map.resolution?.aliases?.some((a)=>a.kind==='tsconfig-paths'));
+check('Vite aliases are discovered from config', map.resolution?.aliases?.some((a)=>a.kind==='vite'));
+check('resolved dependency edges carry resolution provenance', map.files.some((f)=>(f.dependencies?.internal||[]).some((d)=>typeof d.resolution==='string' && Number.isFinite(d.confidence))));
+check('authoritative dependency edges preserve imported symbol names', map.files.some((f)=>(f.dependencies?.internal||[]).some((d)=>Array.isArray(d.importedNames) && d.importedNames.length>0)));
+check('AST top-level declarations are linked per code file', map.summary.astDeclarations > 5000 && map.files.filter((f)=>f.code).some((f)=>Array.isArray(f.astDeclarations) && f.astDeclarations.length>0), String(map.summary.astDeclarations));
+check('module export facts are indexed', map.summary.moduleExports > 1500 && Array.isArray(map.unusedExportCandidates), String(map.summary.moduleExports));
+check('unused export analysis is advisory, never deletion authority', map.files.every((f)=>!f.exportUsage || f.exportUsage.trustedForDeletion === false));
+check('LOC is indexed and parse diagnostics are clean', map.summary.totalLoc > 100000 && map.summary.parseErrorFiles === 0, `loc=${map.summary.totalLoc} parseErrors=${map.summary.parseErrorFiles}`);
+check('generated APP_INDEX outputs cannot invalidate their own freshness hash', ['APP_INDEX/APP_MAP.json','APP_INDEX/APP_MAP.md','APP_INDEX/TREE.md','APP_INDEX/APP_GRAPH.dot','APP_INDEX/LAYER_GRAPH.mmd','APP_INDEX/app-index.sqlite'].every((file)=>!files[file] || files[file].snapshotTriggerIncluded === false));
+check('build identity output cannot invalidate APP_INDEX freshness', files['public/build-info.json']?.snapshotTriggerIncluded === false);
+
+check('root README directs agents to APP_INDEX', fs.readFileSync('README.md','utf8').includes('APP_INDEX/APP_MAP.json'));
+check('graphviz file graph exists', fs.existsSync('APP_INDEX/APP_GRAPH.dot') && fs.readFileSync('APP_INDEX/APP_GRAPH.dot','utf8').includes('digraph'));
+check('mermaid layer graph exists', fs.existsSync('APP_INDEX/LAYER_GRAPH.mmd') && fs.readFileSync('APP_INDEX/LAYER_GRAPH.mmd','utf8').includes('flowchart'));
+check('schema documentation exists', fs.existsSync('APP_INDEX/SCHEMA.md'));
+check('history database exists', fs.existsSync('APP_INDEX/app-index.sqlite'));
+if (fs.existsSync('APP_INDEX/app-index.sqlite')) {
+  const db = new DatabaseSync('APP_INDEX/app-index.sqlite',{readOnly:true});
+  const snap = db.prepare('SELECT COUNT(*) AS n FROM snapshots').get();
+  const vers = db.prepare('SELECT COUNT(*) AS n FROM file_versions').get();
+  const depCols = db.prepare('PRAGMA table_info(dependencies)').all().map((r)=>r.name);
+  const diagTable = db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='dependency_diagnostics'").get();
+  const exportTable = db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='module_exports'").get();
+  const verCols = db.prepare('PRAGMA table_info(file_versions)').all().map((r)=>r.name);
+  check('history database has snapshots', Number(snap.n) >= 1, String(snap.n));
+  check('history database has file versions', Number(vers.n) >= map.summary.totalFiles, String(vers.n));
+  check('dependency history stores resolution + imported-symbol provenance', ['resolution','confidence','authoritative','imported_names','is_type_only','metadata'].every((c)=>depCols.includes(c)));
+  check('dependency diagnostics history table exists', Number(diagTable.n) === 1);
+  check('module export history table exists', Number(exportTable.n) === 1);
+  check('file history stores LOC and parse diagnostics', ['loc','parse_error','parse_diagnostic_count'].every((c)=>verCols.includes(c)));
+  db.close();
+}
+const failed = checks.filter((c)=>!c.ok);
+console.log(`\nApp Index contract: ${checks.length-failed.length}/${checks.length} PASS`);
+process.exit(failed.length?1:0);

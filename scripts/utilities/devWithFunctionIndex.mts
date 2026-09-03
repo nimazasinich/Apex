@@ -15,7 +15,6 @@ import { ensureApexPortAvailable } from './portTakeover.mts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const isWin = process.platform === 'win32';
-const npx = isWin ? 'npx.cmd' : 'npx';
 const cliArgs = process.argv.slice(2);
 const forwardedPort = getCliValue('port');
 const forwardedHost = getCliValue('host');
@@ -46,11 +45,11 @@ function getCliValue(name: string) {
 }
 
 function run(label: string, args: string[], required = false) {
-  const child = spawn(npx, ['tsx', ...args], {
+  const child = spawn(process.execPath, ['--import', 'tsx', ...args], {
     cwd: root,
     stdio: 'inherit',
     env: childEnv,
-    shell: isWin,
+    shell: false,
   });
   child.on('exit', (code, signal) => {
     if (shuttingDown) return;
@@ -61,7 +60,7 @@ function run(label: string, args: string[], required = false) {
     }
     if (code && code !== 0) {
       console.error(`[${label}] exited with code ${code}`);
-      shutdown(code);
+      if (required) shutdown(code);
       return;
     }
     if (required) shutdown(0);

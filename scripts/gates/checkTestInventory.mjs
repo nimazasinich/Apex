@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
-import ts from 'typescript';
+import { loadTypeScript } from '../qa/lib/loadTypeScript.mjs';
+
+const ts = loadTypeScript();
 
 const root = process.cwd();
 const minimumFiles = 125;

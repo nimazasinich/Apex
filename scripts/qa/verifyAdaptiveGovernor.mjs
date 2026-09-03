@@ -1,3 +1,4 @@
+import { loadTypeScript } from './lib/loadTypeScript.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -5,12 +6,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-let ts;
-try {
-  ts = require('typescript');
-} catch {
-  ts = require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript');
-}
+const ts = loadTypeScript();
 
 const root = process.cwd();
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-governor-'));
@@ -43,6 +39,23 @@ assert.equal(syntaxErrors.length, 0, syntaxErrors.map((diagnostic) => ts.flatten
 const modulePath = path.join(temp, 'proxyFetch.cjs');
 fs.writeFileSync(modulePath, compiled.outputText);
 
+// Keep this isolated fixture aligned with proxyFetch's real routing validator.
+// Compiling the production dependency beside the temporary CommonJS module
+// preserves validation semantics without reaching back into the source tree.
+const proxyConfigSource = fs.readFileSync(path.join(root, 'src/services/proxyConfig.ts'), 'utf8');
+const proxyConfigCompiled = ts.transpileModule(proxyConfigSource, {
+  compilerOptions: {
+    target: ts.ScriptTarget.ES2022,
+    module: ts.ModuleKind.CommonJS,
+    esModuleInterop: true,
+  },
+  fileName: 'proxyConfig.ts',
+  reportDiagnostics: true,
+});
+const proxyConfigErrors = (proxyConfigCompiled.diagnostics || []).filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error);
+assert.equal(proxyConfigErrors.length, 0, proxyConfigErrors.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')).join('\n'));
+fs.writeFileSync(path.join(temp, 'proxyConfig.js'), proxyConfigCompiled.outputText);
+
 Object.assign(process.env, {
   PROXY_MODE: 'direct_first',
   APEX_AUTO_LOCAL_PROXY: 'false',
@@ -67,6 +80,23 @@ globalThis.fetch = async (url, options = {}) => {
   await new Promise((resolve) => setTimeout(resolve, 80));
   return { ok: true, status: 200, json: async () => ({ url, fetchCount, method: options.method || 'GET', authorization: options.headers?.Authorization || options.headers?.authorization || null }) };
 };
+
+// proxyFetch.ts resolves the optional `undici` package relative to
+// process.cwd() (the project root), not relative to this script's temp
+// directory — so the fake node_modules/undici written above is never
+// actually reached by its require resolution, and the real project-root
+// undici package (with a real `fetch` export) loads instead. Direct-route
+// requests correctly dispatch through that module's own `fetch` (matching
+// its own dispatcher — the fix for qa:proxy-fetch-optional-deps), so this
+// harness must mock the *same cached* undici module's `fetch`, not just
+// globalThis.fetch, or a real network call slips through untested.
+try {
+  const realUndici = require('undici');
+  realUndici.fetch = globalThis.fetch;
+} catch {
+  // undici not installed in this environment — globalThis.fetch is the only
+  // fetch implementation proxyFetch.ts can use, so the mock above suffices.
+}
 
 const governor = require(modulePath);
 

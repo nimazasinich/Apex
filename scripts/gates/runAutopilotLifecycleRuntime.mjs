@@ -158,6 +158,7 @@ if (!EXTERNAL_BASE) {
   }
 }
 
+// Intentionally differs from qa/: tsx.cmd needs shell:true on Windows; qa/ spawns process.execPath with shell:false, and this orphan copy is not wired into verify.
 const child = EXTERNAL_BASE ? null : spawn(tsxBin, ['server.ts'], {
   cwd: root,
   shell: process.platform === 'win32',

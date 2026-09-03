@@ -1,0 +1,4 @@
+{
+  "$schemaNote": "Human-maintained promotion approvals. ready:true is necessary but not sufficient: approvedStudySha256 must match the exact study file and the latest successful development run before openHoldout.mts will proceed.",
+  "candidates": []
+}

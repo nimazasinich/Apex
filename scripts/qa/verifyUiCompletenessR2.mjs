@@ -18,7 +18,7 @@ function check(name, predicate) {
 
 const activeDialogs = [
   'src/components/workspace/AccountViews.tsx',
-  'src/pages/analytics/AnalyticsPage.tsx',
+  'src/pages/analytics/AnalyticsCommandPage.tsx',
   'src/pages/help/HelpPage.tsx',
   'src/pages/strategies/StrategyCompareDialog.tsx',
   'src/pages/strategies/StrategyDetailPage.tsx',
@@ -81,9 +81,20 @@ check('System Health visibly distinguishes planned, shadow and live authority', 
     && drawer.includes('Planned and shadow modules are never presented as active authority');
 });
 check('shared provenance truth remains wired to active market intelligence cards', () => {
-  const sentiment = read('src/components/SentimentGaugeCard.tsx');
-  const correlation = read('src/components/CorrelationMatrixCard.tsx');
-  return sentiment.includes('<ProvenanceChip') && correlation.includes('<ProvenanceChip');
+  const markets = read('src/components/workspace/MarketsPage.tsx');
+  const correlation = read('src/pages/analytics/components/CorrelationMatrix.tsx');
+  return markets.includes('<ProvenanceChip') && markets.includes('describeProvenance')
+    && correlation.includes('<ProvenanceChip') && correlation.includes('describeProvenance');
+});
+check('provider NEVER_PROBED sentinel cannot render as epoch-sized check age', () => {
+  const providerHealth = read('src/services/providerHealth.ts');
+  const overviewModel = read('src/components/overview/overviewModel.ts');
+  const regression = read('src/tests/providerCheckAgeNeverProbed.test.ts');
+  return providerHealth.includes('lastCheckTime: 0')
+    && overviewModel.includes('row.lastCheckTime <= 0')
+    && overviewModel.includes('!Number.isFinite(row.lastCheckTime)')
+    && regression.includes('lastCheckTime: 0')
+    && regression.includes("expect(label).toBe('—')");
 });
 
 for (const item of checks) {

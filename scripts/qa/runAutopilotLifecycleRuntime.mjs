@@ -47,8 +47,10 @@
  */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
+import { classifyMarketDataEnvironment } from './lib/classifyMarketDataEnvironment.mjs';
 
 const root = process.cwd();
 const PORT = Number(process.env.APEX_RUNTIME_PORT || 4599);
@@ -58,7 +60,10 @@ const PORT = Number(process.env.APEX_RUNTIME_PORT || 4599);
  * already looking at in the browser; leave it unset for a clean boot.
  */
 const EXTERNAL_BASE = (process.env.APEX_RUNTIME_BASE_URL || '').trim().replace(/\/$/, '');
-const BASE = EXTERNAL_BASE || `http://127.0.0.1:${PORT}`;
+if (EXTERNAL_BASE) {
+  throw new Error('qa_private_data_isolation_unavailable_for_external_base: APEX_RUNTIME_BASE_URL targets a server this harness did not boot, so the harness cannot guarantee an isolated APEX_PRIVATE_DATA_DIR. Run without APEX_RUNTIME_BASE_URL for this gate.');
+}
+const BASE = `http://127.0.0.1:${PORT}`;
 const BOOT_TIMEOUT_MS = Number(process.env.APEX_RUNTIME_BOOT_TIMEOUT_MS || 180_000);
 const CYCLE_TIMEOUT_MS = Number(process.env.APEX_RUNTIME_CYCLE_TIMEOUT_MS || 900_000);
 const SYMBOL = String(process.env.APEX_RUNTIME_SYMBOL || 'BTC-USDT');
@@ -128,9 +133,13 @@ function safetyIntact(safety) {
 // ---------------------------------------------------------------------------
 // Boot the real server.
 // ---------------------------------------------------------------------------
-const tsxBin = path.join(root, 'node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx');
-if (!EXTERNAL_BASE && !fs.existsSync(tsxBin)) {
-  throw new Error(`qa_dependency_missing:tsx:${tsxBin}. Run npm ci before qa:autopilot-lifecycle-runtime, or set APEX_RUNTIME_BASE_URL to an already-running server.`);
+const tsxPackage = pathlessTsxPackageCheck();
+function pathlessTsxPackageCheck() {
+  try { return import.meta.resolve('tsx'); }
+  catch { return ''; }
+}
+if (!EXTERNAL_BASE && !tsxPackage) {
+  throw new Error('qa_dependency_missing:tsx. Run npm ci before qa:autopilot-lifecycle-runtime, or set APEX_RUNTIME_BASE_URL to an already-running server.');
 }
 
 /**
@@ -167,13 +176,33 @@ if (!EXTERNAL_BASE) {
   }
 }
 
-const child = EXTERNAL_BASE ? null : spawn(tsxBin, ['server.ts'], {
+const QA_PRIVATE_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'apex-autopilot-lifecycle-private-'));
+let privateDataDirRemoved = false;
+function cleanupPrivateDataDir() {
+  if (privateDataDirRemoved) return;
+  privateDataDirRemoved = true;
+  fs.rmSync(QA_PRIVATE_DATA_DIR, { recursive: true, force: true });
+}
+
+const child = spawn(process.execPath, ['--import', 'tsx', 'server.ts'], {
   cwd: root,
-  shell: process.platform === 'win32',
+  // shell:false is load-bearing here, not a style preference. Under shell:true
+  // Windows hands the concatenated, unescaped command line to cmd.exe (see
+  // DEP0190), so a `process.execPath` containing a space — the default install
+  // path `C:\Program Files\nodejs\node.exe` — is truncated at that space and the
+  // boot dies immediately with "'C:\Program' is not recognized as an internal or
+  // external command", which surfaced here as `server exited early code=1` and
+  // `FAIL harness error — server_not_reachable` before a single assertion ran.
+  // node.exe is a real executable image, so it needs no shell to launch; keeping
+  // shell:false also makes `child.pid` the server's own pid rather than a cmd.exe
+  // wrapper's, so stopServer()'s `taskkill /pid <pid> /T /F` targets the process
+  // this run actually booted.
+  shell: false,
   stdio: ['ignore', 'pipe', 'pipe'],
   env: {
     ...process.env,
     PORT: String(PORT),
+    APEX_PRIVATE_DATA_DIR: QA_PRIVATE_DATA_DIR,
     // The scheduler remains default-OFF at boot so this run proves the real
     // operator START path arms it. The interval IS overridden (see
     // SCHEDULER_INTERVAL_MS above) so the two required cycles do not each
@@ -226,6 +255,7 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
     signalHandled = true;
     console.log(`\n${signal} received — stopping the spawned server so it cannot outlive this run.`);
     stopServer();
+    cleanupPrivateDataDir();
     setTimeout(() => process.exit(signal === 'SIGINT' ? 130 : 143), 1_500);
   });
 }
@@ -282,6 +312,22 @@ try {
     && started.json?.scheduler?.nextRunAt > Date.now(),
   `mode=${started.json?.scheduler?.mode} nextRunAt=${started.json?.scheduler?.nextRunAt}`);
 
+  // Preflight the same provider-aware health contract the application exposes.
+  // A server that is healthy while both primary market providers are blocked by
+  // proxy/geo/timeout transport errors cannot prove RESEARCHING -> VALIDATING.
+  // That is an environment limitation, not a state-machine failure. We only
+  // skip when the classifier is overwhelmingly transport-shaped; semantic or
+  // malformed-provider failures still run the assertions and therefore FAIL.
+  const marketHealth = await call('GET', '/api/health', undefined, 90_000);
+  const marketPrecondition = classifyMarketDataEnvironment(marketHealth.json);
+  check('market-data preflight health contract answers', marketHealth.status === 200, `status=${marketHealth.status}`);
+  const skipNetworkLifecycle = marketPrecondition.disposition === 'SKIP_ELIGIBLE';
+  if (skipNetworkLifecycle) {
+    skip('scheduler lifecycle transitions requiring live market data', marketPrecondition.reason);
+    skip('manual walk-forward validation requiring verified market history', marketPrecondition.reason);
+  }
+
+  if (!skipNetworkLifecycle) {
   // -------------------------------------------------------------------------
   // 3. Two real scheduler-owned cycles, with the phase observed live while
   // they run. The verifier never POSTs /cycle: the scheduler is the trigger.
@@ -473,6 +519,8 @@ try {
     }
   }
 
+  } // end market-data-dependent lifecycle assertions
+
   // -------------------------------------------------------------------------
   // 5. STOP really disarms.
   // -------------------------------------------------------------------------
@@ -501,5 +549,6 @@ try {
 } finally {
   stopServer();
   await sleep(1_500);
+  cleanupPrivateDataDir();
   process.exit(exitCode);
 }

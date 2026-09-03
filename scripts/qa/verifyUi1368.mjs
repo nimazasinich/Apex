@@ -25,7 +25,7 @@ const SYSTEM_CHROMIUM = ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr
 const EXECUTABLE = String(process.env.APEX_PLAYWRIGHT_EXECUTABLE || SYSTEM_CHROMIUM).trim();
 const DEFAULT_ROUTES = [
   'overview', 'markets', 'watchlist', 'screener', 'portfolio', 'trading', 'orders', 'positions',
-  'alerts', 'history', 'analytics', 'backtesting', 'strategies', 'settings', 'help',
+  'alerts', 'history', 'analytics', 'backtesting', 'academy', 'strategies', 'settings', 'help',
 ];
 const ROUTES = String(process.env.APEX_QA_ROUTES || '').trim()
   ? String(process.env.APEX_QA_ROUTES).split(',').map((route) => route.trim()).filter((route) => DEFAULT_ROUTES.includes(route))
@@ -42,6 +42,12 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let server = null;
+
+
+function isMissingPlaywrightBrowser(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Executable doesn't exist|playwright install|browserType\.launch.*executable/i.test(message);
+}
 
 async function stopServer() {
   if (!server?.pid) return;
@@ -505,9 +511,8 @@ async function makeInlineBundle() {
 }
 
 async function main() {
-  const windows = process.platform === 'win32';
-  const serverCommand = windows ? (process.env.ComSpec || 'cmd.exe') : 'npm';
-  const serverArgs = windows ? ['/d', '/s', '/c', 'npm run dev:server'] : ['run', 'dev:server'];
+  const serverCommand = process.execPath;
+  const serverArgs = ['--import', 'tsx', 'server.ts'];
   server = spawn(serverCommand, serverArgs, {
     cwd: ROOT,
     detached: process.platform !== 'win32',
@@ -567,7 +572,32 @@ async function main() {
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--force-device-scale-factor=1'],
     ...(EXECUTABLE ? { executablePath: EXECUTABLE } : {}),
   };
-  const browser = await chromium.launch(launchOptions);
+  let browser;
+  try {
+    browser = await chromium.launch(launchOptions);
+  } catch (error) {
+    if (!isMissingPlaywrightBrowser(error)) throw error;
+    const reason = 'environment_missing_playwright_browser';
+    const report = {
+      generatedAt: new Date().toISOString(),
+      mode: 'REAL_BROWSER_INLINE_BUNDLE_WITH_LOCAL_SERVER_TRANSPORT_BRIDGE',
+      skipped: true,
+      skipReason: reason,
+      viewport: VIEWPORT,
+      theme: 'light',
+      routesChecked: ROUTES,
+      executionSafety: { automatedExecutionKilled: true, orderSubmissionTested: false },
+      summary: { passed: false, skipped: true, failures: 0 },
+    };
+    fs.writeFileSync(path.resolve(OUT_DIR, 'ui-1368-light-report.json'), `${JSON.stringify(report, null, 2)}
+`);
+    console.log(`SKIP 1368x753 visual browser QA — ${reason}. Install Playwright Chromium or set APEX_PLAYWRIGHT_EXECUTABLE to execute this gate.`);
+    await stopServer();
+    await sleep(150);
+    cleanupEphemeralQaRuntimeState();
+    if (process.env.APEX_QA_ALLOW_BROWSER_SKIP !== '1') process.exitCode = 1;
+    return;
+  }
   const context = await browser.newContext({ viewport: VIEWPORT, colorScheme: 'light', deviceScaleFactor: 1 });
   const page = await context.newPage();
   const pageErrors = [];
@@ -689,7 +719,7 @@ async function main() {
   })()`);
 
   const html = `<!doctype html><html data-apex-theme="light" data-apex-theme-resolved="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style></head><body class="antialiased overflow-hidden"><div id="root"></div><script>${js}<\/script></body></html>`;
-  await page.setContent(html, { waitUntil: 'load' });
+  await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await page.waitForTimeout(2_000);
   if (apexLogoDataUri) {
     await page.evaluate((logoDataUri) => {

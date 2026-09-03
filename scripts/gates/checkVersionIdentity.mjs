@@ -9,11 +9,13 @@ const lock = readJson('package-lock.json');
 const manifest = readJson('public/manifest.json');
 const worker = readFileSync(resolve(root, 'public/sw.js'), 'utf8');
 const workerVersion = worker.match(/const APP_VERSION = '([^']+)'/)?.[1] ?? null;
+const rootVersion = readFileSync(resolve(root, 'VERSION'), 'utf8').trim();
 const checks = {
+  rootVersion: pkg.version === rootVersion,
   packageAndLock: pkg.version === lock.version && pkg.version === lock.packages?.['']?.version,
   manifest: pkg.version === manifest.version,
   serviceWorker: pkg.version === workerVersion,
   archiveScriptUsesPackageVersion: readFileSync(resolve(root, 'scripts/utilities/createReleaseArchive.mts'), 'utf8').includes('apex-unified-terminal-v${version}.zip'),
 };
-console.log(JSON.stringify({ version: pkg.version, workerVersion, checks }, null, 2));
+console.log(JSON.stringify({ version: pkg.version, rootVersion, workerVersion, checks }, null, 2));
 if (Object.values(checks).some((value) => !value)) process.exit(1);

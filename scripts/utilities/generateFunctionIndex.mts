@@ -73,6 +73,28 @@ interface AgentFunctionEntry {
   tags: string[];
 }
 
+type FileUsageStatus =
+  | 'production-runtime'
+  | 'production-type-only'
+  | 'test-tool-only'
+  | 'source-contract-only'
+  | 'unreferenced-static';
+
+interface FileUsageEntry {
+  file: string;
+  imports: string[];
+  typeImports: string[];
+  importedBy: string[];
+  typeImportedBy: string[];
+  sourceContractReferencedBy: string[];
+  rootKinds: string[];
+  productionReachable: boolean;
+  productionTypeReachable: boolean;
+  testToolReachable: boolean;
+  sourceContractReachable: boolean;
+  usageStatus: FileUsageStatus;
+}
+
 const ROOT = process.cwd();
 const INCLUDE_ROOTS = ['server.ts', 'src', 'scripts', 'tests'];
 const EXCLUDED_DIRS = new Set([
@@ -306,6 +328,227 @@ function byFileThenLine(a: FunctionEntry, b: FunctionEntry): number {
   return a.file.localeCompare(b.file) || a.line - b.line || a.name.localeCompare(b.name);
 }
 
+
+const MODULE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.mjs', '.js', '.jsx'];
+
+function resolveIndexedModule(importer: string, specifier: string, indexedFiles: Set<string>): string | null {
+  if (!specifier.startsWith('.')) return null;
+  const importerAbs = path.join(ROOT, importer);
+  const base = path.resolve(path.dirname(importerAbs), specifier);
+  const candidates = new Set<string>();
+  candidates.add(base);
+  for (const ext of MODULE_EXTENSIONS) candidates.add(`${base}${ext}`);
+  for (const ext of MODULE_EXTENSIONS) candidates.add(path.join(base, `index${ext}`));
+
+  // TS source often imports a runtime .js path. Map that back to the source module.
+  if (/\.(?:m?js|jsx)$/.test(base)) {
+    const withoutRuntimeExt = base.replace(/\.(?:m?js|jsx)$/, '');
+    for (const ext of ['.ts', '.tsx', '.mts']) candidates.add(`${withoutRuntimeExt}${ext}`);
+  }
+
+  for (const absolute of candidates) {
+    const relative = toPosix(path.relative(ROOT, absolute));
+    if (!relative.startsWith('../') && indexedFiles.has(relative)) return relative;
+  }
+  return null;
+}
+
+function collectStaticReferences(
+  filePath: string,
+  indexedFiles: Set<string>,
+): { runtime: Set<string>; typeOnly: Set<string> } {
+  const source = fs.readFileSync(filePath, 'utf8');
+  const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true);
+  const importer = toPosix(path.relative(ROOT, filePath));
+  const runtime = new Set<string>();
+  const typeOnly = new Set<string>();
+
+  const add = (specifier: string, isTypeOnly: boolean) => {
+    const resolved = resolveIndexedModule(importer, specifier, indexedFiles);
+    if (!resolved || resolved === importer) return;
+    if (isTypeOnly) typeOnly.add(resolved);
+    else runtime.add(resolved);
+  };
+
+  const visit = (node: TypeScript.Node): void => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      const clause = node.importClause;
+      const allNamedTypeOnly = Boolean(
+        clause &&
+          !clause.name &&
+          clause.namedBindings &&
+          ts.isNamedImports(clause.namedBindings) &&
+          clause.namedBindings.elements.length > 0 &&
+          clause.namedBindings.elements.every((element) => element.isTypeOnly),
+      );
+      add(node.moduleSpecifier.text, Boolean(clause?.isTypeOnly || allNamedTypeOnly));
+    } else if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      add(node.moduleSpecifier.text, Boolean(node.isTypeOnly));
+    } else if (ts.isCallExpression(node) && node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) {
+      if (node.expression.kind === ts.SyntaxKind.ImportKeyword) add(node.arguments[0].text, false);
+      if (ts.isIdentifier(node.expression) && node.expression.text === 'require') add(node.arguments[0].text, false);
+    } else if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument) && ts.isStringLiteral(node.argument.literal)) {
+      add(node.argument.literal.text, true);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+
+  // QA/research runners sometimes compile src to JS and load it by literal path.
+  // Preserve those explicit source consumers even though they are not ES imports.
+  if (importer.startsWith('scripts/') || importer.startsWith('tests/') || importer.startsWith('src/tests/')) {
+    const literalPattern = /["'`](src\/[A-Za-z0-9_./-]+\.(?:m?js|jsx))["'`]/g;
+    for (const match of source.matchAll(literalPattern)) {
+      const runtimePath = match[1];
+      const sourceCandidates = [
+        runtimePath.replace(/\.mjs$/, '.mts'),
+        runtimePath.replace(/\.jsx$/, '.tsx'),
+        runtimePath.replace(/\.js$/, '.ts'),
+        runtimePath.replace(/\.js$/, '.tsx'),
+      ];
+      const resolved = sourceCandidates.find((candidate) => indexedFiles.has(candidate));
+      if (resolved && resolved !== importer) runtime.add(resolved);
+    }
+  }
+
+  for (const target of runtime) typeOnly.delete(target);
+  return { runtime, typeOnly };
+}
+
+
+function collectLiteralSourceContractReferences(filePath: string, indexedFiles: Set<string>): Set<string> {
+  const source = fs.readFileSync(filePath, 'utf8');
+  const targets = new Set<string>();
+  // QA/tests often inspect source text with read('src/...') / exists('src/...').
+  // Those are intentional source contracts, not runtime imports, and must not be
+  // reported as dead code merely because the target is never executed.
+  const literalPattern = /["'`](src\/[A-Za-z0-9_./-]+\.(?:ts|tsx|mts|mjs|js|jsx))["'`]/g;
+  for (const match of source.matchAll(literalPattern)) {
+    const target = match[1];
+    if (indexedFiles.has(target)) targets.add(target);
+  }
+  return targets;
+}
+
+function packageToolRoots(indexedFiles: Set<string>): Set<string> {
+  const roots = new Set<string>();
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')) as { scripts?: Record<string, string> };
+    for (const command of Object.values(pkg.scripts ?? {})) {
+      for (const match of command.matchAll(/(?:^|\s)(scripts\/[A-Za-z0-9_./-]+\.(?:ts|tsx|mts|mjs|js|jsx))(?=\s|$)/g)) {
+        if (indexedFiles.has(match[1])) roots.add(match[1]);
+      }
+    }
+  } catch {
+    // Index generation should remain available even if package metadata is temporarily malformed.
+  }
+  return roots;
+}
+
+function reachableFrom(roots: Iterable<string>, adjacency: Map<string, Set<string>>): Set<string> {
+  const reached = new Set<string>();
+  const queue = [...roots];
+  while (queue.length) {
+    const current = queue.shift()!;
+    if (reached.has(current)) continue;
+    reached.add(current);
+    for (const next of adjacency.get(current) ?? []) {
+      if (!reached.has(next)) queue.push(next);
+    }
+  }
+  return reached;
+}
+
+function buildFileUsage(files: string[]): Record<string, FileUsageEntry> {
+  const relativeFiles = files.map((filePath) => toPosix(path.relative(ROOT, filePath))).sort();
+  const indexedFiles = new Set(relativeFiles);
+  const runtimeAdj = new Map<string, Set<string>>();
+  const allAdj = new Map<string, Set<string>>();
+  const importedBy = new Map<string, Set<string>>();
+  const typeImportedBy = new Map<string, Set<string>>();
+  const literalSourceRefsByImporter = new Map<string, Set<string>>();
+
+  for (const filePath of files) {
+    const importer = toPosix(path.relative(ROOT, filePath));
+    const refs = collectStaticReferences(filePath, indexedFiles);
+    runtimeAdj.set(importer, refs.runtime);
+    allAdj.set(importer, new Set([...refs.runtime, ...refs.typeOnly]));
+    if (importer.startsWith('scripts/') || importer.startsWith('tests/') || importer.startsWith('src/tests/')) {
+      literalSourceRefsByImporter.set(importer, collectLiteralSourceContractReferences(filePath, indexedFiles));
+    }
+    for (const target of refs.runtime) {
+      const consumers = importedBy.get(target) ?? new Set<string>();
+      consumers.add(importer);
+      importedBy.set(target, consumers);
+    }
+    for (const target of refs.typeOnly) {
+      const consumers = typeImportedBy.get(target) ?? new Set<string>();
+      consumers.add(importer);
+      typeImportedBy.set(target, consumers);
+    }
+  }
+
+  const productionRoots = ['server.ts', 'src/main.tsx'].filter((file) => indexedFiles.has(file));
+  const toolRoots = packageToolRoots(indexedFiles);
+  const testRoots = relativeFiles.filter((file) => file.startsWith('tests/') || file.startsWith('src/tests/'));
+  const productionRuntime = reachableFrom(productionRoots, runtimeAdj);
+  const productionAll = reachableFrom(productionRoots, allAdj);
+  const testTool = reachableFrom([...toolRoots, ...testRoots], allAdj);
+
+  const sourceContractRoots = new Set<string>();
+  const sourceContractReferencedBy = new Map<string, Set<string>>();
+  for (const [importer, targets] of literalSourceRefsByImporter) {
+    if (!testTool.has(importer)) continue;
+    for (const target of targets) {
+      sourceContractRoots.add(target);
+      const consumers = sourceContractReferencedBy.get(target) ?? new Set<string>();
+      consumers.add(importer);
+      sourceContractReferencedBy.set(target, consumers);
+    }
+  }
+  // Keep the import/type dependency closure of source-contract roots. A QA-only
+  // reference page still has to typecheck with its own local dependencies.
+  const sourceContract = reachableFrom(sourceContractRoots, allAdj);
+
+  const usage: Record<string, FileUsageEntry> = {};
+  for (const file of relativeFiles) {
+    const rootKinds: string[] = [];
+    if (productionRoots.includes(file)) rootKinds.push('production-root');
+    if (toolRoots.has(file)) rootKinds.push('tool-root');
+    if (testRoots.includes(file)) rootKinds.push('test-root');
+
+    const productionReachable = productionRuntime.has(file);
+    const productionTypeReachable = !productionReachable && productionAll.has(file);
+    const testToolReachable = testTool.has(file);
+    const sourceContractReachable = sourceContract.has(file);
+    const usageStatus: FileUsageStatus = productionReachable
+      ? 'production-runtime'
+      : productionTypeReachable
+        ? 'production-type-only'
+        : testToolReachable
+          ? 'test-tool-only'
+          : sourceContractReachable
+            ? 'source-contract-only'
+            : 'unreferenced-static';
+
+    usage[file] = {
+      file,
+      imports: [...(runtimeAdj.get(file) ?? [])].sort(),
+      typeImports: [...(allAdj.get(file) ?? [])].filter((target) => !(runtimeAdj.get(file) ?? new Set()).has(target)).sort(),
+      importedBy: [...(importedBy.get(file) ?? [])].sort(),
+      typeImportedBy: [...(typeImportedBy.get(file) ?? [])].sort(),
+      sourceContractReferencedBy: [...(sourceContractReferencedBy.get(file) ?? [])].sort(),
+      rootKinds,
+      productionReachable,
+      productionTypeReachable,
+      testToolReachable,
+      sourceContractReachable,
+      usageStatus,
+    };
+  }
+  return usage;
+}
+
 function toAgentEntry(entry: FunctionEntry): AgentFunctionEntry {
   return {
     name: entry.name,
@@ -322,7 +565,7 @@ function toAgentEntry(entry: FunctionEntry): AgentFunctionEntry {
   };
 }
 
-function renderMarkdown(entries: FunctionEntry[]): string {
+function renderMarkdown(entries: FunctionEntry[], fileUsage: Record<string, FileUsageEntry>): string {
   const grouped = new Map<string, FunctionEntry[]>();
   for (const entry of entries) {
     const current = grouped.get(entry.file) ?? [];
@@ -347,7 +590,24 @@ function renderMarkdown(entries: FunctionEntry[]): string {
     '## Summary',
     '',
     `- Total indexed symbols: ${entries.length}`,
+    `- Indexed files: ${Object.keys(fileUsage).length}`,
+    `- Production-runtime files: ${Object.values(fileUsage).filter((entry) => entry.usageStatus === 'production-runtime').length}`,
+    `- Production type-only files: ${Object.values(fileUsage).filter((entry) => entry.usageStatus === 'production-type-only').length}`,
+    `- Test/tool-only files: ${Object.values(fileUsage).filter((entry) => entry.usageStatus === 'test-tool-only').length}`,
+    `- Source-contract-only files: ${Object.values(fileUsage).filter((entry) => entry.usageStatus === 'source-contract-only').length}`,
+    `- Static orphan candidates: ${Object.values(fileUsage).filter((entry) => entry.usageStatus === 'unreferenced-static').length}`,
     `- Generated at: ${new Date().toISOString()}`,
+    '',
+    '## Static Orphan Candidates',
+    '',
+    '> Conservative static result. Dynamic/path-computed loading can require manual review before deletion.',
+    '',
+    '| File | Imported By | Type Imported By |',
+    '|---|---|---|',
+    ...Object.values(fileUsage)
+      .filter((entry) => entry.usageStatus === 'unreferenced-static')
+      .sort((a, b) => a.file.localeCompare(b.file))
+      .map((entry) => `| \`${entry.file}\` | ${entry.importedBy.length} | ${entry.typeImportedBy.length} |`),
     '',
     '## Tag Index',
     '',
@@ -447,11 +707,12 @@ function collectCurrentHashes(): Record<string, string> {
   return fileHashes;
 }
 
-function buildIndex(): { entries: FunctionEntry[]; fileCount: number; fileHashes: Record<string, string> } {
+function buildIndex(): { entries: FunctionEntry[]; fileCount: number; fileHashes: Record<string, string>; fileUsage: Record<string, FileUsageEntry> } {
   const files: string[] = [];
   for (const root of INCLUDE_ROOTS) walk(root, files);
 
   const entries = files.flatMap(collectFromFile).sort(byFileThenLine);
+  const fileUsage = buildFileUsage(files);
   const fileHashes: Record<string, string> = {};
   for (const filePath of files) {
     fileHashes[toPosix(path.relative(ROOT, filePath))] = fileHash(filePath);
@@ -464,20 +725,21 @@ function buildIndex(): { entries: FunctionEntry[]; fileCount: number; fileHashes
 
   fs.writeFileSync(
     OUTPUT_JSON,
-    `${JSON.stringify({ generatedAt, process: 'Apex Function Atlas', fileHashes, entries }, null, 2)}\n`,
+    `${JSON.stringify({ generatedAt, process: 'Apex Function Atlas', fileHashes, fileUsage, entries }, null, 2)}\n`,
   );
-  fs.writeFileSync(OUTPUT_MD, renderMarkdown(entries));
+  fs.writeFileSync(OUTPUT_MD, renderMarkdown(entries, fileUsage));
 
   const agentPayload = {
     generated_at: generatedAt,
     root: ROOT,
     total_functions: entries.length,
     file_hashes: fileHashes,
+    file_usage: fileUsage,
     functions: entries.map(toAgentEntry),
   };
   fs.writeFileSync(AGENT_INDEX, `${JSON.stringify(agentPayload, null, 2)}\n`, 'utf8');
 
-  return { entries, fileCount: files.length, fileHashes };
+  return { entries, fileCount: files.length, fileHashes, fileUsage };
 }
 
 function runOnce(label = 'Indexed', opts?: { force?: boolean }): boolean {
