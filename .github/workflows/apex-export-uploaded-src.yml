@@ -1,9 +1,9 @@
 name: APEX Export Uploaded src.zip
 
 on:
-  push:
-    paths:
-      - '.github/workflows/apex-export-uploaded-src.yml'
+  # Manual trigger only. Automatic pushes for this helper workflow were creating
+  # unnecessary automation churn without helping everyday development.
+  workflow_dispatch:
 
 permissions:
   contents: read

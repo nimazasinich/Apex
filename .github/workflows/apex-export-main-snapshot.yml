@@ -1,9 +1,9 @@
 name: APEX Export Main Snapshot
 
 on:
-  push:
-    paths:
-      - '.github/workflows/apex-export-main-snapshot.yml'
+  # Manual trigger only. Automatic pushes for this helper workflow were creating
+  # unnecessary automation churn without helping everyday development.
+  workflow_dispatch:
 
 permissions:
   contents: read

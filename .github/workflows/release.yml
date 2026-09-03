@@ -1,9 +1,8 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Keep release packaging available but avoid automatic tag-driven execution during
+  # regular development. Use the manual trigger when a release is actually ready.
   workflow_dispatch:
     inputs:
       publish_release:

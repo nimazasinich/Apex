@@ -1,9 +1,9 @@
 name: APEX Apply src.zip to Main
 
 on:
-  push:
-    paths:
-      - '.github/workflows/apex-apply-src-zip-to-main.yml'
+  # Manual trigger only. Automatic pushes for this helper workflow were creating
+  # unnecessary automation churn without helping everyday development.
+  workflow_dispatch:
 
 permissions:
   contents: write
